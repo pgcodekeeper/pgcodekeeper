@@ -22,23 +22,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class StatementFormatter {
+public abstract class StatementFormatter {
 
     private final int start;
     private final int stop;
@@ -47,18 +40,17 @@ public class StatementFormatter {
      * all other offsets are statement-string-based
      */
     private final int defOffset;
-    private final List<? extends Token> tokens;
     private final FormatConfiguration config;
     /**
      * tab replacement string if tabs are forbidden; null otherwise
      */
     private final String tabReplace;
 
-    private int currentIndent = 1;
+    protected int currentIndent = 1;
     /**
      * position of token following last non-whitespace or newline token
      */
-    private int lastTokenOffset;
+    protected int lastTokenOffset;
     /**
      * whether indent of the current line has characters mismatched with indent setting
      */
@@ -89,31 +81,14 @@ public class StatementFormatter {
      */
     private final List<FormatItem> changes = new ArrayList<>();
 
-    public StatementFormatter(int start, int stop, String functionDefinition,
-            int defOffset, String language, FormatConfiguration config) {
+    public StatementFormatter(int start, int stop, int defOffset, int lastTokenOffset, FormatConfiguration config) {
         this.start = start;
         this.stop = stop;
         this.defOffset = defOffset;
-        this.lastTokenOffset = defOffset;
+        this.lastTokenOffset = lastTokenOffset;
         this.config = config;
-        this.tabReplace = config.getIndentType() == IndentType.WHITESPACE ?
-                config.createIndent(config.getIndentSize()) : null;
-        this.tokens = analyzeDefinition(functionDefinition, language);
-    }
-
-
-    public StatementFormatter(int start, int stop, Function_bodyContext definition,
-            CommonTokenStream tokenStream, FormatConfiguration config) {
-        this.start = start;
-        this.stop = stop;
-        this.defOffset = 0;
-        this.config = config;
-        this.tabReplace = config.getIndentType() == IndentType.WHITESPACE ?
-                config.createIndent(config.getIndentSize()) : null;
-        this.tokens = analyzeDefinition(definition, tokenStream);
-        if (!tokens.isEmpty()) {
-            lastTokenOffset = tokens.get(0).getStartIndex();
-        }
+        this.tabReplace = config.getIndentType() == IndentType.WHITESPACE ? config.createIndent(config.getIndentSize())
+                : null;
     }
 
     public List<FormatItem> getChanges() {
@@ -121,12 +96,12 @@ public class StatementFormatter {
     }
 
     public void format() {
-        for (Token t : tokens) {
+        for (Token t : getTokens()) {
             int tokenStart = defOffset + t.getStartIndex();
             int length = t.getStopIndex() - t.getStartIndex() + 1;
             int type = t.getType();
 
-            if (type == SQLLexer.New_Line) {
+            if (isNewLineToken(type)) {
                 removeTrailingWhitespace(tokenStart);
                 needSpace = false;
 
@@ -136,7 +111,7 @@ public class StatementFormatter {
                 continue;
             }
 
-            if (type == SQLLexer.Tab || type == SQLLexer.Space) {
+            if (isTabToken(type) || isSpaceToken(type)) {
                 processSpaces(type, tokenStart, length);
                 needSpace = false;
                 continue;
@@ -170,53 +145,14 @@ public class StatementFormatter {
         }
     }
 
-    private List<? extends Token> analyzeDefinition(String definition, String language) {
-        Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
-        if (isLexerOnly()) {
-            // fast-path when no parser is required for advanced structure detection
-            return lexer.getAllTokens();
-        }
-        CommonTokenStream stream = new CommonTokenStream(lexer);
-        SQLParser parser = new SQLParser(stream);
-
-        ParserRuleContext ctx;
-        if ("SQL".equalsIgnoreCase(language)) {
-            ctx = parser.sql();
-            currentIndent = 0;
-        } else {
-            AntlrUtils.removeIntoStatements(parser);
-            ctx = parser.plpgsql_function();
-        }
-        runFormatListener(ctx, stream);
-        return stream.getTokens();
-    }
-
-    private List<? extends Token> analyzeDefinition(Function_bodyContext definition,
-            CommonTokenStream tokenStream) {
-        if (!isLexerOnly()) {
-            runFormatListener(definition, tokenStream);
-        }
-        return tokenStream.getTokens(definition.getStart().getTokenIndex(), definition.getStop().getTokenIndex());
-    }
-
-    private boolean isLexerOnly() {
-        return IndentType.DISABLE == config.getIndentType()
-                && !config.isAddWhitespaceAfterOp()
-                && !config.isAddWhitespaceBeforeOp();
-    }
-
-    private void runFormatListener(ParserRuleContext definition, CommonTokenStream tokenStream) {
-        ParseTreeListener listener = new FormatParseTreeListener(tokenStream, indents, unaryOps);
-        ParseTreeWalker.DEFAULT.walk(listener, definition);
-    }
 
     private void processSpaces(int type, int tokenStart, int length) {
-        if (type == SQLLexer.Tab && config.getIndentType() == IndentType.WHITESPACE
-                || type == SQLLexer.Space && config.getIndentType() == IndentType.TAB) {
+        if (isTabToken(type) && config.getIndentType() == IndentType.WHITESPACE
+                || isSpaceToken(type) && config.getIndentType() == IndentType.TAB) {
             isMixedIndent = true;
         }
 
-        if (type == SQLLexer.Tab && tabReplace != null) {
+        if (isTabToken(type) && tabReplace != null) {
             tabs.add(new FormatItem(tokenStart, length, tabReplace));
         }
     }
@@ -242,6 +178,9 @@ public class StatementFormatter {
                 writeIndent(false, --currentIndent, tokenStart);
                 currentIndent -= indent.getSecond() - 1;
                 break;
+            case NEW_LINE:
+                writeIndent(true, currentIndent, tokenStart);
+                break;
             }
         } else if (firstTokenInLine) {
             writeIndent(false, currentIndent, tokenStart);
@@ -249,25 +188,7 @@ public class StatementFormatter {
     }
 
     private void proccessOperators(int type, int tokenStart, Token t) {
-        switch (type) {
-        case SQLLexer.EQUAL:
-        case SQLLexer.NOT_EQUAL:
-        case SQLLexer.LTH:
-        case SQLLexer.LEQ:
-        case SQLLexer.GTH:
-        case SQLLexer.GEQ:
-        case SQLLexer.PLUS:
-        case SQLLexer.MINUS:
-        case SQLLexer.MULTIPLY:
-        case SQLLexer.DIVIDE:
-        case SQLLexer.MODULAR:
-        case SQLLexer.EXP:
-        case SQLLexer.EQUAL_GTH:
-        case SQLLexer.COLON_EQUAL:
-        case SQLLexer.LESS_LESS:
-        case SQLLexer.GREATER_GREATER:
-        case SQLLexer.HASH_SIGN:
-        case SQLLexer.OP_CHARS:
+        if (isOperatorToken(type)) {
             if (unaryOps.contains(t)) {
                 return;
             }
@@ -276,12 +197,9 @@ public class StatementFormatter {
                 addChange(new FormatItem(tokenStart, 0, " "));
             }
             needSpace = config.isAddWhitespaceAfterOp();
-            break;
-        default:
-            if (needSpace) {
-                addChange(new FormatItem(tokenStart, 0, " "));
-                needSpace = false;
-            }
+        } else if (needSpace) {
+            addChange(new FormatItem(tokenStart, 0, " "));
+            needSpace = false;
         }
     }
 
@@ -294,13 +212,10 @@ public class StatementFormatter {
             addChange(new FormatItem(lastTokenOffset, 0, "\n"));
         }
 
-        int expectedIndent = indent * (config.getIndentType() == IndentType.TAB ?
-                1 : config.getIndentSize());
+        int expectedIndent = indent * (config.getIndentType() == IndentType.TAB ? 1 : config.getIndentSize());
         int spaceSize = tokenStart - lastTokenOffset;
-
         if (spaceSize != expectedIndent || isMixedIndent) {
-            addChange(new FormatItem(lastTokenOffset, spaceSize,
-                    config.createIndent(expectedIndent)));
+            addChange(new FormatItem(lastTokenOffset, spaceSize, config.createIndent(expectedIndent)));
         }
         tabs.clear();
     }
@@ -319,4 +234,35 @@ public class StatementFormatter {
             }
         }
     }
+
+    protected List<? extends Token> analyzeDefinition(ParserRuleContext definition, CommonTokenStream tokenStream) {
+        if (!isLexerOnly()) {
+            runFormatListener(definition, tokenStream);
+        }
+        return tokenStream.getTokens(definition.getStart().getTokenIndex(), definition.getStop().getTokenIndex());
+    }
+
+    protected boolean isLexerOnly() {
+        return IndentType.DISABLE == config.getIndentType()
+                && !config.isAddWhitespaceAfterOp()
+                && !config.isAddWhitespaceBeforeOp();
+    }
+
+    protected void runFormatListener(ParserRuleContext ctx, CommonTokenStream tokenStream) {
+        FormatParseTreeListener listener = getListener(tokenStream, indents, unaryOps);
+        ParseTreeWalker.DEFAULT.walk(listener, ctx);
+    }
+
+    protected abstract FormatParseTreeListener getListener(CommonTokenStream tokenStream,
+            Map<Token, Pair<IndentDirection, Integer>> indents, Set<Token> unaryOps);
+
+    protected abstract List<? extends Token> getTokens();
+
+    protected abstract boolean isTabToken(int type);
+
+    protected abstract boolean isSpaceToken(int type);
+
+    protected abstract boolean isOperatorToken(int type);
+
+    protected abstract boolean isNewLineToken(int type);
 }

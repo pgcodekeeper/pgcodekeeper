@@ -21,7 +21,6 @@ import java.util.List;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.From_itemContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.From_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Grouping_element_listContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_opsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmt_no_parensContext;
@@ -163,9 +162,9 @@ public final class ChSelect extends ChAbstractExprWithNmspc<Select_stmtContext> 
     }
 
     private void primary(From_primaryContext primary) {
-        Select_opsContext selectOps = primary.select_ops();
+        Select_stmt_no_parensContext selectOps = primary.select_stmt_no_parens();
         if (selectOps != null) {
-            new ChSelect(this).selectOps(new ChSelectOps(selectOps));
+            new ChSelect(this).analyze(selectOps);
             return;
         }
         vex.functionCall(primary.function_call());

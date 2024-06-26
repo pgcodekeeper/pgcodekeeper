@@ -11,10 +11,10 @@ DROP VIEW default.v_3_1;
 DROP VIEW default.v_3_2;
 
 ALTER TABLE default.v_4_1
-	MODIFY QUERY SELECT concat ( tuple ( * ) . 1 , 'mv1' ) AS b FROM default . src;
+	MODIFY QUERY SELECT concat(tuple(*).1, 'mv1') AS b FROM default.src;
 
 ALTER TABLE default.v_4_2
-	MODIFY QUERY SELECT concat ( tuple ( * ) . 1 , 'mv1' ) AS s FROM default . src;
+	MODIFY QUERY SELECT concat(tuple(*).1, 'mv1') AS s FROM default.src;
 
 ALTER TABLE default.v_5_1
 	MODIFY COMMENT 'TEST';

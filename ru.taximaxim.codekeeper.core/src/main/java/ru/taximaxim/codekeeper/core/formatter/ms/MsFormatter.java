@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.formatter;
+package ru.taximaxim.codekeeper.core.formatter.ms;
 
-public enum IndentDirection {
-    /**
-     * First token in new block
-     */
-    BLOCK_START,
-    /**
-     * Last token in block
-     */
-    BLOCK_STOP,
-    /**
-     * New line in block
-     */
-    BLOCK_LINE,
-    /**
-     * Forced new line
-     */
-    NEW_LINE
+import java.util.Collections;
+import java.util.List;
+
+import ru.taximaxim.codekeeper.core.formatter.AbstractFormatter;
+import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
+import ru.taximaxim.codekeeper.core.formatter.FormatItem;
+
+public class MsFormatter extends AbstractFormatter {
+
+    public MsFormatter(String source, int start, int stop, FormatConfiguration config) {
+        super(source, start, stop, config);
+    }
+
+    @Override
+    public List<FormatItem> getFormatItems() {
+        return Collections.emptyList();
+    }
 }

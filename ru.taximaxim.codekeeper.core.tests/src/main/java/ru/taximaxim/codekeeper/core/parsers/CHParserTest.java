@@ -53,7 +53,7 @@ class CHParserTest {
         "ch_view, 10",
         "ch_policy, 0",
         "ch_table, 1",
-        "ch_select, 179",
+        "ch_select, 180",
         "ch_privileges, 0",
         "ch_user, 0",
         "ch_role, 0",

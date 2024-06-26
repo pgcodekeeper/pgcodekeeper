@@ -79,17 +79,11 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
                     col.setDefaultType("ALIAS");
                 } else if (defType.EPHEMERAL() != null) {
                     col.setDefaultType("EPHEMERAL");
-                } else {
-                    throw new IllegalArgumentException("context type is unsupported to processing parse:\n"
-                            + getFullCtxText(defType));
                 }
                 if (defType.expr() != null) {
                     setExprWithAnalyze(AbstractColumn::setDefaultValue, col, defType.expr());
                 }
             }
-        } else {
-            throw new IllegalArgumentException("context type is unsupported to processing parse table body part:\n"
-                    + getFullCtxText(typeExpr));
         }
         if (column.not_null() != null) {
             col.setNullValue(column.not_null().NOT() != null);
@@ -104,17 +98,6 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
         }
         if (column.TTL() != null) {
             setExprWithAnalyze(ChColumn::setTtl, col, column.ttl);
-        }
-        if (column.STATISTIC() != null) {
-            throw new IllegalArgumentException(
-                    "unsupported experimental element of ClickHouse by 26.02.2024: STATISTICS");
-        }
-        if (column.PRIMARY() != null) {
-            throw new IllegalArgumentException(
-                    "unsupported syntax sugar part for ChTable by 26.02.2024: column PRIMARY KEY");
-        }
-        if (column.SETTINGS() != null) {
-            throw new IllegalArgumentException("unsupported settings for ChColumn by 26.02.2024");
         }
         return col;
     }

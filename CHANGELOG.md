@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added code formatting feature for SELECT queries in views in ClickHouse.
+
 ### Changed
 
 ### Fixed

@@ -15,21 +15,21 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.formatter;
 
-public enum IndentDirection {
-    /**
-     * First token in new block
-     */
-    BLOCK_START,
-    /**
-     * Last token in block
-     */
-    BLOCK_STOP,
-    /**
-     * New line in block
-     */
-    BLOCK_LINE,
-    /**
-     * Forced new line
-     */
-    NEW_LINE
+import java.util.List;
+
+public abstract class AbstractFormatter {
+
+    protected final String source;
+    protected final int start;
+    protected final int stop;
+    protected final FormatConfiguration config;
+
+    public AbstractFormatter(String source, int start, int stop, FormatConfiguration config) {
+        this.source = source;
+        this.start = start;
+        this.stop = stop;
+        this.config = config;
+    }
+
+    protected abstract List<FormatItem> getFormatItems();
 }
