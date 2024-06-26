@@ -24,7 +24,7 @@ public abstract class AbstractFormatter {
     protected final int stop;
     protected final FormatConfiguration config;
 
-    public AbstractFormatter(String source, int start, int stop, FormatConfiguration config) {
+    protected AbstractFormatter(String source, int start, int stop, FormatConfiguration config) {
         this.source = source;
         this.start = start;
         this.stop = stop;
