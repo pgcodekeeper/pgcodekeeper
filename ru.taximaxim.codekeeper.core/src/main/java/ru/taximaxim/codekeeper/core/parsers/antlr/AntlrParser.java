@@ -144,15 +144,16 @@ public class AntlrParser {
             lexer = new TSQLLexer(stream);
             parser = new TSQLParser(new CommonTokenStream(lexer));
             parser.setErrorHandler(new CustomTSQLAntlrErrorStrategy());
+        } else if (parserClass.isAssignableFrom(CHParser.class)) {
+            lexer = new CHLexer(stream);
+            parser = new CHParser(new CommonTokenStream(lexer));
+            parser.setErrorHandler(new CustomChSQLAntlrErrorStrategy());
         } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
             lexer = new IgnoreListLexer(stream);
             parser = new IgnoreListParser(new CommonTokenStream(lexer));
         } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
             lexer = new PrivilegesLexer(stream);
             parser = new PrivilegesParser(new CommonTokenStream(lexer));
-        } else if (parserClass.isAssignableFrom(CHParser.class)) {
-            lexer = new CHLexer(stream);
-            parser = new CHParser(new CommonTokenStream(lexer));
         } else {
             throw new IllegalArgumentException("Unknown parser class: " + parserClass);
         }

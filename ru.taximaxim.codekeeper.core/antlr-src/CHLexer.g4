@@ -499,7 +499,11 @@ BOM: '\ufeff';
 
 BLOCK_COMMENT: '/*' (BLOCK_COMMENT |.)*? '*/' -> channel(HIDDEN);
 LINE_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
-WHITESPACE: [ \u000B\u000C\t\r\n] -> skip;  // '\n' can be part of multiline single query
+
+SPACE: ' ' -> channel(HIDDEN);
+WHITESPACE: [\u000B\u000C] -> channel(HIDDEN);
+NEW_LINE : [\n\r] -> channel(HIDDEN);
+TAB : '\t' -> channel(HIDDEN);
 
 /* Quoted Identifiers
 *

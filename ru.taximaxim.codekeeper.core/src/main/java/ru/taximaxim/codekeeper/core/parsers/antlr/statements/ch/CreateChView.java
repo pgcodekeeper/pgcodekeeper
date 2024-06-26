@@ -75,7 +75,7 @@ public class CreateChView extends ChParserAbstract {
     public void parseObject(ChView view) {
         var vQuery = ctx.subquery_clause();
         if (vQuery != null) {
-            view.setQuery(getQuery(vQuery), AntlrUtils.normalizeWhitespaceUnquoted(vQuery, stream));
+            view.setQuery(getQuery(vQuery), AntlrUtils.normalizeWhitespaceUnquoted(vQuery, stream, getDbType()));
             db.addAnalysisLauncher(new ChViewAnalysisLauncher(view, vQuery, fileName));
         }
 

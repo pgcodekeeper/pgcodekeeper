@@ -81,68 +81,68 @@ AS SELECT a, f FROM ( SELECT toLowCardinality(toNullable(number)) AS l0
 ----------------------------------------------------------------------
  --check getQuery
  --check query with "ANY LEFT JOIN", "USING" rule;
-  CREATE VIEW default.v_5_5
+CREATE VIEW default.v_5_5
 (
 	`s` UInt8 NOT NULL
 ) as SELECT * FROM t ANY LEFT JOIN x  USING date, id;
 
 
  --check query with "UNION ALL" and nested from rule;
-  CREATE VIEW default.v_5_6
+CREATE VIEW default.v_5_6
 (
 	`s` UInt8 NOT NULL
 ) as SELECT 1 AS max_size, groupArray(max_size)(col) FROM (SELECT col FROM ( SELECT 1 AS col UNION ALL SELECT 2 ) ORDER BY col);
 
  --check cols;
-  CREATE VIEW default.v_5_7
+CREATE VIEW default.v_5_7
 (
 	`s` UInt8 NOT NULL
 ) as SELECT 2 AS x, arrayJoin([NULL, NULL, NULL]) GROUP BY GROUPING SETS ( (0), ([NULL, NULL, NULL])) ORDER BY x ASC WITH FILL FROM 1 TO 10;
 
  --check INNER JOIN;
-  CREATE VIEW default.v_5_8
+CREATE VIEW default.v_5_8
 (
 	`s` UInt8 NOT NULL
 ) as SELECT a, b FROM t1 AS tt1 INNER JOIN ( SELECT c FROM t2 ) AS tt2 ON tt1.a = tt2.c INNER JOIN ( SELECT f FROM t3 ) AS tt3 ON tt1.b = tt3.f;
 
  --check HAVING, GROUP BY a WITH TOTALS;
-  CREATE VIEW default.v_5_9
+CREATE VIEW default.v_5_9
 (
 	`s` UInt8 NOT NULL
 ) as SELECT a, count() FROM remote('127.0.0.{1,2}', currentDatabase(), local_t) GROUP BY a WITH TOTALS HAVING a IN ( SELECT 1 );
 
  --check EXCEPT, DISTINCT
-  CREATE VIEW default.v_5_10
+CREATE VIEW default.v_5_10
 (
 	`s` UInt8 NOT NULL
 ) as SELECT '2' FROM numbers(10) EXCEPT DISTINCT SELECT '1' FROM numbers(5);
 
  --check WITH CUBE SETTINGS
-   CREATE VIEW default.v_5_11
+CREATE VIEW default.v_5_11
 (
 	`s` UInt8 NOT NULL
 ) as SELECT 'a' AS key, 'b' as value GROUP BY key WITH CUBE SETTINGS allow_experimental_analyzer = 1;
 
  --check WITH SETTINGS
-   CREATE VIEW default.v_5_12
+CREATE VIEW default.v_5_12
 (
 	`s` UInt8 NOT NULL
 ) as SELECT 'a' IN (SELECT 1) SETTINGS transform_null_in = 1;
 
  --check UNION ALL 
-   CREATE VIEW default.v_5_13
+CREATE VIEW default.v_5_13
 (
 	`s` UInt8 NOT NULL
 ) as SELECT 'a' UNION ALL (SELECT 'a' UNION ALL SELECT 'a' UNION SELECT 'a');
 
  --check EXPLAIN 
-   CREATE VIEW default.v_5_14
+CREATE VIEW default.v_5_14
 (
 	`s` UInt8 NOT NULL
 ) as SELECT * FROM ( EXPLAIN PLAN indexes = 1 SELECT * FROM tab WHERE match(str, '.*(ClickHouse|World)') ORDER BY id ) WHERE explain LIKE '%Granules: %' SETTINGS allow_experimental_analyzer = 1;
 
  --check simple from 
-   CREATE VIEW default.v_5_15
+CREATE VIEW default.v_5_15
 (
 	`s` UInt8 NOT NULL
 ) as SELECT * FROM functional_index_mergetree WHERE x < 7.49;
@@ -181,3 +181,24 @@ CREATE VIEW default.v_5_20
 	`s` UInt8 NOT NULL
 )
 AS SELECT * FROM `02538_bf_ngrambf_map_values_test` PREWHERE (map['']) = 'V2V\0V2V2V2V2V2V2' WHERE (map[NULL]) = 'V2V\0V2V2V2V2V2V2V2V\0V2V2V2V2V2V2V2V\0V2V2V2V2V2V2V2V\0V2V2V2V2V2V2' SETTINGS force_data_skipping_indices = 'map_values_ngrambf';
+
+--check UNION clause
+CREATE VIEW default.v_5_21
+(
+	`x` Int64 NOT NULL
+)
+AS SELECT ttt.x FROM (SELECT c1 AS x, c1 * 2 AS y FROM default.t1 AS tt UNION ALL SELECT tt2.col1 AS x, tt2.col1 - 1 AS y FROM default.t2 AS tt2) AS ttt;
+
+-- unary operator
+CREATE VIEW default.v_5_22
+(
+	`s` Int8 NOT NULL
+)
+AS SELECT -1;
+
+-- operator
+CREATE VIEW default.v_5_23
+(
+	`s` UInt16 NOT NULL
+)
+AS SELECT 1+1;

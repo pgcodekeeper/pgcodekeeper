@@ -67,12 +67,20 @@ public class ChSelectOps {
         return isNp ? opsNp.UNION() : ops.UNION();
     }
 
+    public TerminalNode all() {
+        return isNp ? opsNp.ALL() : ops.ALL();
+    }
+
     public TerminalNode intersect() {
         return isNp ? opsNp.INTERSECT() : ops.INTERSECT();
     }
 
     public TerminalNode except() {
         return isNp ? opsNp.EXCEPT() : ops.EXCEPT();
+    }
+
+    public TerminalNode distinct() {
+        return isNp ? opsNp.DISTINCT() : ops.DISTINCT();
     }
 
     public Select_primaryContext selectPrimary() {

@@ -251,12 +251,12 @@ with_query
 
 select_ops
     : LPAREN select_stmt RPAREN
-    | select_ops (INTERSECT | EXCEPT | UNION ALL?) DISTINCT? select_ops
+    | select_ops (INTERSECT | EXCEPT ALL? | UNION ALL?) DISTINCT? select_ops
     | select_primary
     ;
 
 select_ops_no_parens
-    : select_ops (INTERSECT | EXCEPT | UNION ALL?) DISTINCT? select_ops
+    : select_ops (INTERSECT | EXCEPT ALL? | UNION ALL?) DISTINCT? select_ops
     | select_primary
     ;
 
@@ -798,8 +798,8 @@ rename_stmt
     : RENAME TABLE qualified_name TO qualified_name (COMMA qualified_name TO qualified_name)* cluster_clause?
     ;
 
-select_primary:
-    with_clause?
+select_primary
+    : with_clause?
     SELECT DISTINCT? top_clause?
     select_list
     from_clause?
@@ -834,17 +834,22 @@ from_clause
     ;
 
 from_item
-    : from_item (GLOBAL | LOCAL)? join_op? JOIN from_item (ON | USING) expr_list
-    | from_item (GLOBAL | LOCAL)? (PASTE | CROSS) JOIN from_item
+    : from_item join_type? join_op? JOIN from_item (ON | USING) expr_list
+    | from_item join_type? (PASTE | CROSS) JOIN from_item
     | LPAREN from_item RPAREN
     | from_primary alias_clause? FINAL? sample_clause?
+    ;
+
+join_type
+    : GLOBAL
+    | LOCAL
     ;
 
 from_primary
     : qualified_name
     | function_call
     | LPAREN explain_stmt RPAREN
-    | LPAREN select_ops RPAREN
+    | LPAREN select_stmt_no_parens RPAREN
     ;
 
 array_join_clause

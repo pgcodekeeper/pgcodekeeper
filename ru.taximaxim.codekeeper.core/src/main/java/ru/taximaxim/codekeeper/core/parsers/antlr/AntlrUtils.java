@@ -26,15 +26,22 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
 
 public class AntlrUtils {
 
     public static String normalizeWhitespaceUnquoted(ParserRuleContext ctx, CommonTokenStream stream) {
+        return normalizeWhitespaceUnquoted(ctx, stream, DatabaseType.PG);
+    }
+
+    public static String normalizeWhitespaceUnquoted(ParserRuleContext ctx,
+            CommonTokenStream stream, DatabaseType dbType) {
         StringBuilder sb = new StringBuilder();
 
         // skip space before first token
-        int previous = SQLLexer.DOT;
+        int previous = dbType == DatabaseType.PG ? SQLLexer.DOT : CHLexer.DOT;
 
         List<Token> tokens = stream.getTokens();
         for (int i = ctx.getStart().getTokenIndex(); i <= ctx.getStop().getTokenIndex(); i++) {
@@ -45,24 +52,40 @@ public class AntlrUtils {
             }
             int type = token.getType();
 
-            // remove whitespace after and before some special characters
-            if (previous != SQLLexer.DOT
-                    && previous != SQLLexer.LEFT_PAREN
-                    && previous != SQLLexer.Text_between_Dollar
-                    && previous != SQLLexer.BeginDollarStringConstant
-                    && type != SQLLexer.DOT
-                    && type != SQLLexer.RIGHT_PAREN
-                    && type != SQLLexer.Text_between_Dollar
-                    && type != SQLLexer.EndDollarStringConstant
-                    && type != SQLLexer.COMMA) {
+            // remove whitespace after and before some special characters for PG and CH
+            if (!isSpecialChar(type, previous, dbType)) {
                 sb.append(' ');
             }
-
             sb.append(getTokenText(type, token));
             previous = type;
         }
-
         return sb.toString();
+    }
+
+    private static boolean isSpecialChar(int type, int previous, DatabaseType dbType) {
+        if (dbType == DatabaseType.PG) {
+            return previous == SQLLexer.DOT
+                    || previous == SQLLexer.LEFT_PAREN
+                    || previous == SQLLexer.Text_between_Dollar
+                    || previous == SQLLexer.BeginDollarStringConstant
+                    || type == SQLLexer.DOT
+                    || type == SQLLexer.RIGHT_PAREN
+                    || type == SQLLexer.Text_between_Dollar
+                    || type == SQLLexer.EndDollarStringConstant
+                    || type == SQLLexer.COMMA;
+        }
+
+        if (dbType == DatabaseType.CH) {
+            return previous == CHLexer.DOT
+                    || previous == CHLexer.LPAREN
+                    || type == CHLexer.DOT
+                    || type == CHLexer.RPAREN
+                    || type == CHLexer.LPAREN
+                    || type == CHLexer.COMMA;
+        }
+
+        //for MS db
+        return false;
     }
 
     private static String getTokenText(int type, Token token) {
@@ -128,7 +151,7 @@ public class AntlrUtils {
                 break;
             case SQLLexer.INTO:
                 if (isImport || stream.LA(-1) == SQLLexer.INSERT
-                        || stream.LA(-1) == SQLLexer.MERGE) {
+                || stream.LA(-1) == SQLLexer.MERGE) {
                     break;
                 }
                 hideIntoTokens(stream);
