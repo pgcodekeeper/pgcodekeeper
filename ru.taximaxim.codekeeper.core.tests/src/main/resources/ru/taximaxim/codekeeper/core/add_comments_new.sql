@@ -91,6 +91,10 @@ COMMENT ON MATERIALIZED VIEW public.test_mat_view IS 'test mat view';
 CREATE VIEW public.test_view AS
     SELECT test.id, test.text FROM public.test;
 
+CREATE STATISTICS public.s1 ON id, text FROM public.test;
+
+COMMENT ON STATISTICS public.s1 IS 'test statistics';
+
 COMMENT ON VIEW public.test_view IS 'test view';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col';

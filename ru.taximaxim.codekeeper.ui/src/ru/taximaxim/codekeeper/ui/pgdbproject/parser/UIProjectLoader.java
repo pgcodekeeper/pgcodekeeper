@@ -160,7 +160,7 @@ public class UIProjectLoader extends ProjectLoader {
             IFolder schemaDir = (IFolder) sub;
             if (checkIgnoreSchemaList(schemaDir.getName())) {
                 loadSubdir(schemaDir, db);
-                for (DbObjType dirSub : DIR_LOAD_ORDER) {
+                for (DbObjType dirSub : WorkDirs.getDirLoadOrder()) {
                     loadSubdir(schemaDir.getFolder(dirSub.name()), db);
                 }
             }

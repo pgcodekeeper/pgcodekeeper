@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.pg.RulesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.SchemasReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.SequencesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ServersReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.pg.StatisticsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.TablesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.TriggersReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.TypesReader;
@@ -103,9 +104,13 @@ public class JdbcLoader extends JdbcLoaderBase {
             }
             new TriggersReader(this).read();
             new IndicesReader(this).read();
-            // non-ANTLR tasks
             new ConstraintsReader(this).read();
             new TypesReader(this).read();
+            if (SupportedVersion.VERSION_10.isLE(getVersion())) {
+                new StatisticsReader(this).read();
+            }
+
+            // non-ANTLR tasks
             new SequencesReader(this).read();
             new FtsParsersReader(this).read();
             new FtsTemplatesReader(this).read();

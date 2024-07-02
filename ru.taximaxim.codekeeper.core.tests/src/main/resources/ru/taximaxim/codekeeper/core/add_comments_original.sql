@@ -52,7 +52,9 @@ CREATE MATERIALIZED VIEW public.test_mat_view AS
 
 CREATE VIEW public.test_view AS
     SELECT test.id, test.text FROM public.test;
- 
+
+CREATE STATISTICS public.s1 ON id, text FROM public.test;
+
 ALTER TABLE public.test ALTER COLUMN id SET DEFAULT nextval('public.test_id_seq'::regclass);
 
 ALTER TABLE ONLY public.test

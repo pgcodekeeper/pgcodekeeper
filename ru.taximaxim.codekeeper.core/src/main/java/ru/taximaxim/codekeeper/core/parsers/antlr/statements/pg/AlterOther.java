@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_oper
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_policy_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_schema_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_server_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_statistics_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_type_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_user_mapping_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Encoding_identifierContext;
@@ -42,6 +43,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgBaseType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.schema.pg.PgStatistics;
 
 public class AlterOther extends PgParserAbstract {
 
@@ -78,6 +81,8 @@ public class AlterOther extends PgParserAbstract {
             alterUserMapping(ctx.alter_user_mapping_statement());
         } else if (ctx.alter_event_trigger_statement() != null) {
             alterEventTrigger(ctx.alter_event_trigger_statement());
+        } else if (ctx.alter_statistics_statement() != null) {
+            alterStatistics(ctx.alter_statistics_statement());
         }
     }
 
@@ -153,6 +158,18 @@ public class AlterOther extends PgParserAbstract {
         }
     }
 
+    private void alterStatistics(Alter_statistics_statementContext ctx) {
+        List<ParserRuleContext> ids = getIdentifiers(ctx.name);
+        addObjReference(ids, DbObjType.STATISTICS, ACTION_ALTER);
+
+        PgStatistics stat = getSafe(PgSchema::getStatistics, getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
+
+        var statCtx = ctx.set_statistics();
+        if (statCtx != null) {
+            doSafe(PgStatistics::setStatistics, stat, Integer.parseInt(statCtx.signed_number_literal().getText()));
+        }
+    }
+
     private void alterForeignDataWrapper(Alter_foreign_data_wrapperContext ctx) {
         addObjReference(Arrays.asList(ctx.identifier()), DbObjType.FOREIGN_DATA_WRAPPER, ACTION_ALTER);
     }
@@ -222,6 +239,9 @@ public class AlterOther extends PgParserAbstract {
         if (ctx.alter_event_trigger_statement() != null) {
             return DbObjType.EVENT_TRIGGER;
         }
+        if (ctx.alter_statistics_statement() != null) {
+            return DbObjType.STATISTICS;
+        }
         return null;
     }
 
@@ -262,6 +282,9 @@ public class AlterOther extends PgParserAbstract {
         }
         if (ctx.alter_event_trigger_statement() != null) {
             return ctx.alter_event_trigger_statement().name;
+        }
+        if (ctx.alter_statistics_statement() != null) {
+            return ctx.alter_statistics_statement().name;
         }
         return null;
     }

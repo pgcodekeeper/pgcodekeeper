@@ -233,6 +233,9 @@ class PgDiffDepciesTest {
             "change_constrPk_usr",
             // CREATE objects with collation dependency, USER SELECTION: all except collations
             "add_objects_with_collation_usr_all",
+            // CREATE statistics object with dependencies, user selection : statistics
+            "add_statistics_usr_s1",
+            "add_statistics_usr_s2",
     })
     void runDiff(final String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, false);

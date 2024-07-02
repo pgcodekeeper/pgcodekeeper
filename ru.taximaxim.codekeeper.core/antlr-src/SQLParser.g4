@@ -894,7 +894,8 @@ alter_owner_statement
     : (OPERATOR target_operator
         | LARGE OBJECT NUMBER_LITERAL
         | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | EVENT TRIGGER | SERVER | DOMAIN | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
+        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | EVENT TRIGGER | SERVER | DOMAIN
+          | STATISTICS | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
         if_exists? name=schema_qualified_name) owner_to
     ;
 
@@ -906,7 +907,7 @@ alter_tablespace_action
     ;
 
 alter_statistics_statement
-    : STATISTICS name=schema_qualified_name (rename_to | set_schema | owner_to | set_statistics)
+    : STATISTICS name=schema_qualified_name (rename_to | set_schema | set_statistics)
     ;
 
 set_statistics
@@ -1030,9 +1031,9 @@ create_tablespace_statement
 
 create_statistics_statement
     : STATISTICS (if_not_exists? name=schema_qualified_name)?
-    (LEFT_PAREN identifier_list RIGHT_PAREN)? 
-    ON identifier COMMA identifier_list
-    FROM schema_qualified_name
+    (LEFT_PAREN kind=identifier_list RIGHT_PAREN)?
+    ON vex (COMMA vex)*
+    FROM table_name=schema_qualified_name
     ;
 
 create_foreign_data_wrapper_statement

@@ -110,6 +110,10 @@ COMMENT ON VIEW public.test_view IS 'test view';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col';
 
+CREATE STATISTICS public.s1 ON id, text FROM public.test;
+
+COMMENT ON STATISTICS public.s1 IS 'test statistics';
+
 ALTER TABLE public.test ALTER COLUMN id SET DEFAULT nextval('public.test_id_seq'::regclass);
 
 ALTER TABLE ONLY public.test

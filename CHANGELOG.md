@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for STATISTICS object in PostgreSQL.
 - Added code formatting feature for SELECT queries in views in ClickHouse.
 
 ### Changed

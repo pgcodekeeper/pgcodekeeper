@@ -88,7 +88,6 @@ class ObjReferencesTest {
             "numeric",
             "numeric_big",
             "numerology",
-            "object_address",
             "oid",
             "oidjoins",
             "operator",

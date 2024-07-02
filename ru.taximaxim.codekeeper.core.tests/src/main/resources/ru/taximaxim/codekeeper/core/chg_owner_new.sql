@@ -53,3 +53,7 @@ CREATE VIEW public.test_view AS
 
 
 ALTER TABLE public.test_view OWNER TO fordfrog;
+
+CREATE STATISTICS public.s1 ON id, text FROM public.test;
+
+ALTER STATISTICS public.s1 OWNER TO fordfrog;

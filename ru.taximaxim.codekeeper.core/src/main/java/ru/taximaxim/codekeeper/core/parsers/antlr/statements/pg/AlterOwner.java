@@ -89,6 +89,9 @@ public class AlterOwner extends PgParserAbstract {
             } else if (ctx.VIEW() != null) {
                 st = getSafe(PgSchema::getView, schema, nameCtx);
                 type = DbObjType.VIEW;
+            } else if (ctx.STATISTICS() != null) {
+                st = getSafe(PgSchema::getStatistics, schema, nameCtx);
+                type = DbObjType.STATISTICS;
             } else if (ctx.DICTIONARY() != null) {
                 st = getSafe(PgSchema::getFtsDictionary, schema, nameCtx);
                 type = DbObjType.FTS_DICTIONARY;

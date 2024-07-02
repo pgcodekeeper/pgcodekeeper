@@ -51,6 +51,7 @@ public enum DbObjType {
     INDEX("INDEX"),
     CONSTRAINT("CONSTRAINT"),
     VIEW("VIEW"),
+    STATISTICS("STATISTICS"),
     TRIGGER("TRIGGER"),
     RULE("RULE"),
     POLICY("POLICY");

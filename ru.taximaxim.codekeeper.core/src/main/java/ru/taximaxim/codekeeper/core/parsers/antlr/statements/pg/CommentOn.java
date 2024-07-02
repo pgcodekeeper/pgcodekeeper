@@ -233,6 +233,9 @@ public class CommentOn extends PgParserAbstract {
         } else if (obj.TEMPLATE() != null) {
             type = DbObjType.FTS_TEMPLATE;
             st = getSafe(PgSchema::getFtsTemplate, schema, nameCtx);
+        } else if (obj.STATISTICS() != null) {
+            type = DbObjType.STATISTICS;
+            st = getSafe(PgSchema::getStatistics, schema, nameCtx);
         } else {
             addOutlineRefForCommentOrRule(ACTION_COMMENT, ctx);
             return;

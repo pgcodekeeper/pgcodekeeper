@@ -72,6 +72,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateRule;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateSequence;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateServer;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateStatistics;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateTrigger;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateType;
@@ -191,6 +192,8 @@ implements SqlContextProcessor {
             p = new GrantPrivilege(ctx.rule_common(), db);
         } else if (ctx.create_database_statement() != null) {
             p = new CreateDatabase(ctx.create_database_statement(), db);
+        } else if (ctx.create_statistics_statement() != null) {
+            p = new CreateStatistics(ctx.create_statistics_statement(), db, stream);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
@@ -232,7 +235,8 @@ implements SqlContextProcessor {
                 || ctx.alter_server_statement() != null
                 || ctx.alter_collation_statement() != null
                 || ctx.alter_event_trigger_statement() != null
-                || ctx.alter_user_mapping_statement() != null) {
+                || ctx.alter_user_mapping_statement() != null
+                || ctx.alter_statistics_statement() != null) {
             p = new AlterOther(ctx, db);
         } else {
             addToQueries(ctx, getAction(ctx));

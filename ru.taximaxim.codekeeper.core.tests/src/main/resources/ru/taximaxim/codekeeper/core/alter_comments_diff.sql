@@ -46,6 +46,8 @@ COMMENT ON VIEW public.test_view IS 'test view 2';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col 2';
 
+COMMENT ON STATISTICS public.s1 IS 'test statistics 2';
+
 COMMENT ON TRIGGER test_trigger ON public.test IS 'test trigger 2';
 
 COMMENT ON RULE test_rule ON public.test IS 'test rule 2';

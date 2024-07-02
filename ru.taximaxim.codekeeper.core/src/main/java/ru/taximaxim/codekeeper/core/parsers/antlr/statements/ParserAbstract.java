@@ -305,6 +305,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         case TYPE:
         case VIEW:
         case INDEX:
+        case STATISTICS:
         case COLLATION:
         case FUNCTION:
         case PROCEDURE:

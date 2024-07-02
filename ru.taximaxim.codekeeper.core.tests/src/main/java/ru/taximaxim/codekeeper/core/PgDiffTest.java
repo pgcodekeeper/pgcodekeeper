@@ -582,7 +582,9 @@ class PgDiffTest {
             // Test scenario where CONSTRAINT columns order is altered.
             "alter_constraint_columns_order",
             // Test scenario where objects with quoted names is added.
-            "add_objects_with_quoted_name"
+            "add_objects_with_quoted_name",
+            // Test scenario where objects with quoted names is added.
+            "compare_statistics",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);
