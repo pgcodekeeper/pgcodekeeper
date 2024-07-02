@@ -339,6 +339,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         case FTS_TEMPLATE:
         case FTS_DICTIONARY:
         case FTS_CONFIGURATION:
+        case STATISTICS:
             return s.getChild(gc.table, type);
         case TYPE:
             return (PgStatement) resolveTypeCall(s, gc.table);

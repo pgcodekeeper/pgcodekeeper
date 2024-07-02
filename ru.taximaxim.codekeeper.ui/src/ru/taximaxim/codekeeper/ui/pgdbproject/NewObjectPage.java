@@ -105,7 +105,7 @@ public final class NewObjectPage extends WizardPage {
 
     private final EnumSet<DbObjType> secondLevelTypes = EnumSet.of(DbObjType.COLLATION,
             DbObjType.DOMAIN, DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.SEQUENCE,
-            DbObjType.AGGREGATE, DbObjType.TABLE, DbObjType.VIEW, DbObjType.TYPE,
+            DbObjType.AGGREGATE, DbObjType.TABLE, DbObjType.VIEW, DbObjType.STATISTICS, DbObjType.TYPE,
             DbObjType.FTS_PARSER, DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     private final EnumSet<DbObjType> thirdLevelTypes = EnumSet.of(DbObjType.TRIGGER, DbObjType.RULE,

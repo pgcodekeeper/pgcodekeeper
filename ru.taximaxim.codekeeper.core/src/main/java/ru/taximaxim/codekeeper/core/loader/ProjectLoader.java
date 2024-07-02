@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -52,17 +51,6 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 
 public class ProjectLoader extends DatabaseLoader {
-
-    /**
-     * Loading order and directory names of the objects in exported DB schemas.
-     * NOTE: constraints, triggers and indexes are now stored in tables,
-     * those directories are here for backward compatibility only
-     */
-    protected static final EnumSet<DbObjType> DIR_LOAD_ORDER = EnumSet.of(DbObjType.COLLATION, DbObjType.TYPE,
-            DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.PROCEDURE,
-            DbObjType.AGGREGATE, DbObjType.OPERATOR, DbObjType.TABLE, DbObjType.CONSTRAINT,
-            DbObjType.INDEX, DbObjType.TRIGGER, DbObjType.VIEW, DbObjType.DICTIONARY, DbObjType.FTS_PARSER,
-            DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     private final String dirPath;
     protected final PgDiffArguments arguments;
@@ -166,7 +154,7 @@ public class ProjectLoader extends DatabaseLoader {
             for (Path schemaDir : PgDiffUtils.sIter(schemas)) {
                 if (Files.isDirectory(schemaDir) && checkIgnoreSchemaList(schemaDir.getFileName().toString())) {
                     loadSubdir(schemasCommonDir, schemaDir.getFileName().toString(), db);
-                    for (DbObjType dirSub : DIR_LOAD_ORDER) {
+                    for (DbObjType dirSub : WorkDirs.getDirLoadOrder()) {
                         loadSubdir(schemaDir, dirSub.name(), db);
                     }
                 }

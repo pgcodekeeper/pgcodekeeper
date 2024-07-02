@@ -97,7 +97,6 @@ class PgParserTest {
             "numeric",
             "numeric_big",
             "numerology",
-            "object_address",
             "oid",
             "oidjoins",
             "operator",

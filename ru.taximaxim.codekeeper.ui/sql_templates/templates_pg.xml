@@ -142,7 +142,14 @@ $$$$;</template>
     BEFORE UPDATE ON ${schemaName}.${parentName}
     FOR EACH STATEMENT
     EXECUTE PROCEDURE ${schemaName}.${functionName}();</template>
-    
+
+<template 
+    name="create_statistics"
+    description="%create.statistics.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypePg.createstatistics.protected"
+    >CREATE STATISTICS ${schemaName}.${objectName} ON ${columns} FROM ${schema_name}.${table_name};</template>
+
 <template
     name="create_event_trigger"
     description="%create.event_trigger.desc"

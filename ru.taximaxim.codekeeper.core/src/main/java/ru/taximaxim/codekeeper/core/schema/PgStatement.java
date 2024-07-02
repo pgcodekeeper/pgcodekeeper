@@ -110,6 +110,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         case TYPE:
         case DOMAIN:
         case ASSEMBLY:
+        case STATISTICS:
             return true;
         default :
             return false;

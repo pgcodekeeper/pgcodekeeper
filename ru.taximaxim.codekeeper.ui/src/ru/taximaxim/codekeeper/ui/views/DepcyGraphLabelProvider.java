@@ -120,6 +120,8 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "TBL " + st.getBareName(); //$NON-NLS-1$
             case TRIGGER:
                 return "TRG " + st.getBareName(); //$NON-NLS-1$
+            case STATISTICS:
+                return "STAT " + st.getBareName(); //$NON-NLS-1$
             case RULE:
                 return "RULE " + st.getBareName(); //$NON-NLS-1$
             case POLICY:

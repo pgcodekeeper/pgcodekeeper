@@ -120,6 +120,24 @@ public class StatementUtils {
         sbSQL.append(')');
     }
 
+    public static void appendCollection(StringBuilder sbSQL, Collection<String> collection,
+            String delimiter, boolean needParens) {
+        if (collection.isEmpty()) {
+            return;
+        }
+
+        if (needParens) {
+            sbSQL.append(" (");
+        }
+        for (var element : collection) {
+            sbSQL.append(element).append(delimiter);
+        }
+        sbSQL.setLength(sbSQL.length() - delimiter.length());
+        if (needParens) {
+            sbSQL.append(')');
+        }
+    }
+
     /**
      * Appends parameters/options at StringBuilder. This StringBuilder used in
      * schema package Constraint's classes in the method getDifinition()

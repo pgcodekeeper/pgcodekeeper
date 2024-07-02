@@ -1,129 +1,26 @@
-Reference: Object = inhx (TABLE), action = CREATE, offset = 56, line number = 2, charPositionInLine = 13
-Reference: Object = ctla (TABLE), action = CREATE, offset = 221, line number = 10, charPositionInLine = 13
-Reference: Object = ctlb (TABLE), action = CREATE, offset = 250, line number = 11, charPositionInLine = 13
-Reference: Object = foo (TABLE), action = CREATE, offset = 296, line number = 13, charPositionInLine = 13
-Reference: Object = inhe (TABLE), action = CREATE, offset = 334, line number = 15, charPositionInLine = 13
-Reference: Object = inhe (TABLE), action = INSERT, offset = 389, line number = 16, charPositionInLine = 12
-Reference: action = SELECT, offset = 445, line number = 17, charPositionInLine = 0
-Reference: action = SELECT, offset = 505, line number = 18, charPositionInLine = 0
-Reference: action = SELECT, offset = 576, line number = 19, charPositionInLine = 0
-Reference: action = SELECT, offset = 615, line number = 20, charPositionInLine = 0
-Reference: Object = inhf (TABLE), action = CREATE, offset = 668, line number = 22, charPositionInLine = 13
-Reference: Object = inhf (TABLE), action = CREATE, offset = 729, line number = 24, charPositionInLine = 13
-Reference: Object = inhf (TABLE), action = INSERT, offset = 800, line number = 25, charPositionInLine = 12
-Reference: action = SELECT, offset = 821, line number = 26, charPositionInLine = 0
-Reference: Object = inhx (TABLE), action = ALTER, offset = 891, line number = 28, charPositionInLine = 12
-Reference: Object = inhx.foo (CONSTRAINT), action = CREATE, offset = 911, line number = 28, charPositionInLine = 32
-Reference: Object = inhx (TABLE), action = ALTER, offset = 948, line number = 29, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = CREATE, offset = 988, line number = 30, charPositionInLine = 13
-Reference: Object = inhg (TABLE), action = INSERT, offset = 1048, line number = 31, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = DROP, offset = 1080, line number = 32, charPositionInLine = 11
-Reference: Object = inhg (TABLE), action = CREATE, offset = 1099, line number = 33, charPositionInLine = 13
-Reference: Object = inhg (TABLE), action = INSERT, offset = 1192, line number = 34, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = INSERT, offset = 1251, line number = 35, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = INSERT, offset = 1343, line number = 36, charPositionInLine = 12
-Reference: action = SELECT, offset = 1406, line number = 37, charPositionInLine = 0
-Reference: Object = inhg (TABLE), action = DROP, offset = 1501, line number = 38, charPositionInLine = 11
-Reference: Object = test_like_id_1 (TABLE), action = CREATE, offset = 1521, line number = 40, charPositionInLine = 13
-Reference: Object = test_like_id_1 (TABLE), action = INSERT, offset = 1598, line number = 42, charPositionInLine = 12
-Reference: action = SELECT, offset = 1632, line number = 43, charPositionInLine = 0
-Reference: Object = test_like_id_2 (TABLE), action = CREATE, offset = 1675, line number = 44, charPositionInLine = 13
-Reference: Object = test_like_id_2 (TABLE), action = INSERT, offset = 1726, line number = 46, charPositionInLine = 12
-Reference: action = SELECT, offset = 1760, line number = 47, charPositionInLine = 0
-Reference: Object = test_like_id_3 (TABLE), action = CREATE, offset = 1831, line number = 48, charPositionInLine = 13
-Reference: Object = test_like_id_3 (TABLE), action = INSERT, offset = 1901, line number = 50, charPositionInLine = 12
-Reference: action = SELECT, offset = 1935, line number = 51, charPositionInLine = 0
-Reference: Object = test_like_id_1 (TABLE), action = DROP, offset = 2012, line number = 52, charPositionInLine = 11
-Reference: Object = test_like_id_2 (TABLE), action = DROP, offset = 2028, line number = 52, charPositionInLine = 27
-Reference: Object = test_like_id_3 (TABLE), action = DROP, offset = 2044, line number = 52, charPositionInLine = 43
-Reference: Object = inhg (TABLE), action = CREATE, offset = 2074, line number = 54, charPositionInLine = 13
-Reference: Object = inhg (TABLE), action = INSERT, offset = 2159, line number = 55, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = INSERT, offset = 2192, line number = 56, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = DROP, offset = 2240, line number = 57, charPositionInLine = 11
-Reference: Object = inhg (TABLE), action = CREATE, offset = 2308, line number = 59, charPositionInLine = 13
-Reference: Object = inhz (TABLE), action = CREATE, offset = 2393, line number = 60, charPositionInLine = 13
-Reference: Object = inhz_xx_idx (INDEX), action = CREATE, offset = 2459, line number = 61, charPositionInLine = 20
-Reference: Object = inhz (TABLE), action = null, offset = 2474, line number = 61, charPositionInLine = 35
-Reference: Object = inhg (TABLE), action = CREATE, offset = 2560, line number = 63, charPositionInLine = 13
-Reference: Object = inhg (TABLE), action = INSERT, offset = 2623, line number = 64, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = INSERT, offset = 2676, line number = 65, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = INSERT, offset = 2730, line number = 66, charPositionInLine = 12
-Reference: Object = inhg (TABLE), action = DROP, offset = 2797, line number = 67, charPositionInLine = 11
-Reference: Object = inhz (TABLE), action = DROP, offset = 2814, line number = 68, charPositionInLine = 11
-Reference: Object = ctlt1 (TABLE), action = CREATE, offset = 2868, line number = 71, charPositionInLine = 13
-Reference: Object = ctlt1_b_key (INDEX), action = CREATE, offset = 2939, line number = 72, charPositionInLine = 13
-Reference: Object = ctlt1 (TABLE), action = null, offset = 2954, line number = 72, charPositionInLine = 28
-Reference: Object = ctlt1_fnidx (INDEX), action = CREATE, offset = 2978, line number = 73, charPositionInLine = 13
-Reference: Object = ctlt1 (TABLE), action = null, offset = 2993, line number = 73, charPositionInLine = 28
-Reference: action = CREATE STATISTICS, offset = 3011, line number = 74, charPositionInLine = 0
-Reference: action = COMMENT, offset = 3063, line number = 75, charPositionInLine = 0
-Reference: Object = ctlt1 (SCHEMA), action = null, offset = 3133, line number = 76, charPositionInLine = 18
-Reference: Object = ctlt1.ctlt1.a (COLUMN), action = COMMENT, offset = 3139, line number = 76, charPositionInLine = 24
-Reference: Object = ctlt1 (SCHEMA), action = null, offset = 3167, line number = 77, charPositionInLine = 18
-Reference: Object = ctlt1.ctlt1.b (COLUMN), action = COMMENT, offset = 3173, line number = 77, charPositionInLine = 24
-Reference: Object = ctlt1.ctlt1_a_check (CONSTRAINT), action = COMMENT, offset = 3205, line number = 78, charPositionInLine = 22
-Reference: Object = ctlt1 (TABLE), action = null, offset = 3222, line number = 78, charPositionInLine = 39
-Reference: Object = ctlt1_pkey (INDEX), action = COMMENT, offset = 3262, line number = 79, charPositionInLine = 17
-Reference: Object = ctlt1_b_key (INDEX), action = COMMENT, offset = 3307, line number = 80, charPositionInLine = 17
-Reference: Object = ctlt1 (TABLE), action = ALTER, offset = 3349, line number = 81, charPositionInLine = 12
-Reference: Object = ctlt2 (TABLE), action = CREATE, offset = 3402, line number = 83, charPositionInLine = 13
-Reference: Object = ctlt2 (TABLE), action = ALTER, offset = 3430, line number = 84, charPositionInLine = 12
-Reference: Object = ctlt2 (SCHEMA), action = null, offset = 3491, line number = 85, charPositionInLine = 18
-Reference: Object = ctlt2.ctlt2.c (COLUMN), action = COMMENT, offset = 3497, line number = 85, charPositionInLine = 24
-Reference: Object = ctlt3 (TABLE), action = CREATE, offset = 3521, line number = 87, charPositionInLine = 13
-Reference: Object = ctlt3 (TABLE), action = ALTER, offset = 3579, line number = 88, charPositionInLine = 12
-Reference: Object = ctlt3 (TABLE), action = ALTER, offset = 3634, line number = 89, charPositionInLine = 12
-Reference: Object = ctlt3 (SCHEMA), action = null, offset = 3691, line number = 90, charPositionInLine = 18
-Reference: Object = ctlt3.ctlt3.a (COLUMN), action = COMMENT, offset = 3697, line number = 90, charPositionInLine = 24
-Reference: Object = ctlt3 (SCHEMA), action = null, offset = 3726, line number = 91, charPositionInLine = 18
-Reference: Object = ctlt3.ctlt3.c (COLUMN), action = COMMENT, offset = 3732, line number = 91, charPositionInLine = 24
-Reference: Object = ctlt3.ctlt3_a_check (CONSTRAINT), action = COMMENT, offset = 3764, line number = 92, charPositionInLine = 22
-Reference: Object = ctlt3 (TABLE), action = null, offset = 3781, line number = 92, charPositionInLine = 39
-Reference: Object = ctlt4 (TABLE), action = CREATE, offset = 3818, line number = 94, charPositionInLine = 13
-Reference: Object = ctlt4 (TABLE), action = ALTER, offset = 3854, line number = 95, charPositionInLine = 12
-Reference: Object = ctlt12_storage (TABLE), action = CREATE, offset = 3911, line number = 97, charPositionInLine = 13
-Reference: Object = ctlt12_comments (TABLE), action = CREATE, offset = 4002, line number = 99, charPositionInLine = 13
-Reference: Object = ctlt1_inh (TABLE), action = CREATE, offset = 4096, line number = 101, charPositionInLine = 13
-Reference: action = SELECT, offset = 4179, line number = 103, charPositionInLine = 0
-Reference: Object = ctlt13_inh (TABLE), action = CREATE, offset = 4350, line number = 104, charPositionInLine = 13
-Reference: Object = ctlt13_like (TABLE), action = CREATE, offset = 4403, line number = 106, charPositionInLine = 13
-Reference: action = SELECT, offset = 4506, line number = 108, charPositionInLine = 0
-Reference: Object = ctlt_all (TABLE), action = CREATE, offset = 4680, line number = 110, charPositionInLine = 13
-Reference: action = SELECT, offset = 4718, line number = 112, charPositionInLine = 0
-Reference: action = SELECT, offset = 4959, line number = 113, charPositionInLine = 0
-Reference: Object = inh_error1 (TABLE), action = CREATE, offset = 5186, line number = 115, charPositionInLine = 13
-Reference: Object = inh_error2 (TABLE), action = CREATE, offset = 5238, line number = 116, charPositionInLine = 13
-Reference: Object = ctlt1 (TABLE), action = DROP, offset = 5310, line number = 118, charPositionInLine = 11
-Reference: Object = ctlt2 (TABLE), action = DROP, offset = 5317, line number = 118, charPositionInLine = 18
-Reference: Object = ctlt3 (TABLE), action = DROP, offset = 5324, line number = 118, charPositionInLine = 25
-Reference: Object = ctlt4 (TABLE), action = DROP, offset = 5331, line number = 118, charPositionInLine = 32
-Reference: Object = ctlt12_storage (TABLE), action = DROP, offset = 5338, line number = 118, charPositionInLine = 39
-Reference: Object = ctlt12_comments (TABLE), action = DROP, offset = 5354, line number = 118, charPositionInLine = 55
-Reference: Object = ctlt1_inh (TABLE), action = DROP, offset = 5371, line number = 118, charPositionInLine = 72
-Reference: Object = ctlt13_inh (TABLE), action = DROP, offset = 5382, line number = 118, charPositionInLine = 83
-Reference: Object = ctlt13_like (TABLE), action = DROP, offset = 5394, line number = 118, charPositionInLine = 95
-Reference: Object = ctlt_all (TABLE), action = DROP, offset = 5407, line number = 118, charPositionInLine = 108
-Reference: Object = ctla (TABLE), action = DROP, offset = 5417, line number = 118, charPositionInLine = 118
-Reference: Object = ctlb (TABLE), action = DROP, offset = 5423, line number = 118, charPositionInLine = 124
-Reference: Object = ctlt4 (TABLE), action = CREATE, offset = 5490, line number = 123, charPositionInLine = 13
-Reference: Object = ctlseq1 (SEQUENCE), action = CREATE, offset = 5530, line number = 125, charPositionInLine = 16
-Reference: Object = ctlt10 (TABLE), action = CREATE, offset = 5552, line number = 126, charPositionInLine = 13
-Reference: Object = ctlv1 (VIEW), action = CREATE, offset = 5597, line number = 128, charPositionInLine = 12
-Reference: Object = ctlt11 (TABLE), action = CREATE, offset = 5640, line number = 129, charPositionInLine = 13
-Reference: Object = ctlt11a (TABLE), action = CREATE, offset = 5674, line number = 130, charPositionInLine = 13
-Reference: Object = ctlty1 (TYPE), action = CREATE, offset = 5723, line number = 132, charPositionInLine = 12
-Reference: Object = ctlt12 (TABLE), action = CREATE, offset = 5763, line number = 133, charPositionInLine = 13
-Reference: Object = ctlseq1 (SEQUENCE), action = DROP, offset = 5800, line number = 135, charPositionInLine = 14
-Reference: Object = ctlty1 (TYPE), action = DROP, offset = 5819, line number = 136, charPositionInLine = 10
-Reference: Object = ctlv1 (VIEW), action = DROP, offset = 5837, line number = 137, charPositionInLine = 10
-Reference: Object = ctlt4 (TABLE), action = DROP, offset = 5865, line number = 138, charPositionInLine = 21
-Reference: Object = ctlt10 (TABLE), action = DROP, offset = 5872, line number = 138, charPositionInLine = 28
-Reference: Object = ctlt11 (TABLE), action = DROP, offset = 5880, line number = 138, charPositionInLine = 36
-Reference: Object = ctlt11a (TABLE), action = DROP, offset = 5888, line number = 138, charPositionInLine = 44
-Reference: Object = ctlt12 (TABLE), action = DROP, offset = 5897, line number = 138, charPositionInLine = 53
-Reference: Object = test_like_4 (TABLE), action = CREATE, offset = 5918, line number = 139, charPositionInLine = 13
-Reference: Object = test_like_4a (TABLE), action = CREATE, offset = 6012, line number = 140, charPositionInLine = 13
-Reference: Object = test_like_4b (TABLE), action = CREATE, offset = 6058, line number = 141, charPositionInLine = 13
-Reference: Object = test_like_4c (TABLE), action = CREATE, offset = 6123, line number = 142, charPositionInLine = 13
-Reference: Object = test_like_4d (TABLE), action = CREATE, offset = 6189, line number = 143, charPositionInLine = 13
-Reference: Object = test_like_5d (TABLE), action = CREATE, offset = 6274, line number = 144, charPositionInLine = 13
+Reference: Object = foo (TABLE), action = CREATE, offset = 56, line number = 2, charPositionInLine = 13
+Reference: Object = inhe (TABLE), action = CREATE, offset = 93, line number = 3, charPositionInLine = 13
+Reference: Object = inhf (TABLE), action = CREATE, offset = 149, line number = 4, charPositionInLine = 13
+Reference: Object = inhg (TABLE), action = CREATE, offset = 221, line number = 5, charPositionInLine = 13
+Reference: Object = inhg (TABLE), action = CREATE, offset = 282, line number = 6, charPositionInLine = 13
+Reference: Object = test_like_id_2 (TABLE), action = CREATE, offset = 376, line number = 7, charPositionInLine = 13
+Reference: Object = test_like_id_3 (TABLE), action = CREATE, offset = 427, line number = 8, charPositionInLine = 13
+Reference: Object = inhg (TABLE), action = CREATE, offset = 497, line number = 9, charPositionInLine = 13
+Reference: Object = inhg (TABLE), action = CREATE, offset = 583, line number = 10, charPositionInLine = 13
+Reference: Object = inhg (TABLE), action = CREATE, offset = 668, line number = 11, charPositionInLine = 13
+Reference: Object = ctlt12_storage (TABLE), action = CREATE, offset = 732, line number = 12, charPositionInLine = 13
+Reference: Object = ctlt12_comments (TABLE), action = CREATE, offset = 822, line number = 13, charPositionInLine = 13
+Reference: Object = ctlt1_inh (TABLE), action = CREATE, offset = 915, line number = 14, charPositionInLine = 13
+Reference: Object = ctlt13_like (TABLE), action = CREATE, offset = 1010, line number = 15, charPositionInLine = 13
+Reference: Object = ctlt_all (TABLE), action = CREATE, offset = 1125, line number = 16, charPositionInLine = 13
+Reference: Object = inh_error1 (TABLE), action = CREATE, offset = 1175, line number = 17, charPositionInLine = 13
+Reference: Object = inh_error2 (TABLE), action = CREATE, offset = 1227, line number = 18, charPositionInLine = 13
+Reference: Object = ctlt10 (TABLE), action = CREATE, offset = 1300, line number = 19, charPositionInLine = 13
+Reference: Object = ctlt11 (TABLE), action = CREATE, offset = 1336, line number = 20, charPositionInLine = 13
+Reference: Object = ctlt11a (TABLE), action = CREATE, offset = 1370, line number = 21, charPositionInLine = 13
+Reference: Object = ctlt12 (TABLE), action = CREATE, offset = 1419, line number = 22, charPositionInLine = 13
+Reference: Object = test_like_4a (TABLE), action = CREATE, offset = 1454, line number = 23, charPositionInLine = 13
+Reference: Object = test_like_4b (TABLE), action = CREATE, offset = 1500, line number = 24, charPositionInLine = 13
+Reference: Object = test_like_4c (TABLE), action = CREATE, offset = 1565, line number = 25, charPositionInLine = 13
+Reference: Object = test_like_4d (TABLE), action = CREATE, offset = 1631, line number = 26, charPositionInLine = 13
+Reference: Object = test_like_5d (TABLE), action = CREATE, offset = 1716, line number = 27, charPositionInLine = 13

@@ -155,6 +155,7 @@ public final class MetaUtils {
         case DICTIONARY:
         case TYPE:
         case VIEW:
+        case STATISTICS:
             gc = new GenericColumn(st.getParent().getName(), st.getName(), type);
             break;
         case INDEX:

@@ -188,6 +188,9 @@ public class DropStatement extends PgParserAbstract {
         if (ctx.EVENT() != null) {
             return DbObjType.EVENT_TRIGGER;
         }
+        if (ctx.STATISTICS() != null) {
+            return DbObjType.STATISTICS;
+        }
         return null;
     }
 

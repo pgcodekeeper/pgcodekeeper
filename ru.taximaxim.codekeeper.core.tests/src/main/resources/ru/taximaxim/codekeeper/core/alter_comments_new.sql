@@ -106,6 +106,10 @@ COMMENT ON VIEW public.test_view IS 'test view 2';
 
 COMMENT ON COLUMN public.test_view.id IS 'view id col 2';
 
+CREATE STATISTICS public.s1 ON id, text FROM public.test;
+
+COMMENT ON STATISTICS public.s1 IS 'test statistics 2';
+
 ALTER TABLE ONLY public.test
     ADD CONSTRAINT test_pkey PRIMARY KEY (id);
 

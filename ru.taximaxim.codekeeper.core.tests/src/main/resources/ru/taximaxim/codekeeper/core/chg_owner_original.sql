@@ -52,3 +52,7 @@ CREATE VIEW public.test_view AS
    FROM public.test;
 
 ALTER TABLE public.test_view OWNER TO botov_av;
+
+CREATE STATISTICS public.s1 ON id, text FROM public.test;
+
+ALTER STATISTICS public.s1 OWNER TO botov_av;

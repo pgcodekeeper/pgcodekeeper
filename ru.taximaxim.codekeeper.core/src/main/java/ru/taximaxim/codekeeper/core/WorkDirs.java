@@ -16,7 +16,9 @@
 package ru.taximaxim.codekeeper.core;
 
 import java.nio.file.Path;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -73,6 +75,16 @@ public final class WorkDirs {
     // CH first level folder
     private static final List<String> CH_DIRECTORY_NAMES = List.of(CH_DATABASE, CH_FUNCTION, CH_USER,
             CH_POLICY, CH_ROLE);
+
+    /**
+     * Loading order and directory names of the objects in exported DB schemas. NOTE: constraints, triggers and indexes
+     * are now stored in tables, those directories are here for backward compatibility only
+     */
+    private static final EnumSet<DbObjType> DIR_LOAD_ORDER = EnumSet.of(DbObjType.COLLATION, DbObjType.TYPE,
+            DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.PROCEDURE,
+            DbObjType.AGGREGATE, DbObjType.OPERATOR, DbObjType.TABLE, DbObjType.CONSTRAINT,
+            DbObjType.INDEX, DbObjType.TRIGGER, DbObjType.VIEW, DbObjType.STATISTICS, DbObjType.DICTIONARY,
+            DbObjType.FTS_PARSER, DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
         switch (databaseType) {
@@ -189,6 +201,7 @@ public final class WorkDirs {
         case FTS_PARSER:
         case FTS_DICTIONARY:
         case FTS_CONFIGURATION:
+        case STATISTICS:
             return type.name();
         case FOREIGN_DATA_WRAPPER:
             return PG_FDW;
@@ -236,6 +249,7 @@ public final class WorkDirs {
         case FTS_PARSER:
         case FTS_DICTIONARY:
         case FTS_CONFIGURATION:
+        case STATISTICS:
             PgStatement parentSt = st.getParent();
             schemaName = FileUtils.getValidFilename(parentSt.getBareName());
             return baseDir.resolve(PG_SCHEMA).resolve(schemaName).resolve(getPgDirectoryNameForType(type));
@@ -284,6 +298,10 @@ public final class WorkDirs {
         default:
             throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
         }
+    }
+
+    public static Set<DbObjType> getDirLoadOrder() {
+        return DIR_LOAD_ORDER;
     }
 
     private WorkDirs() {

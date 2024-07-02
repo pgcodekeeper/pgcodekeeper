@@ -46,6 +46,7 @@ public class PgSchema extends AbstractSchema {
     private final Map<String, PgFtsConfiguration> configurations = new LinkedHashMap<>();
     private final Map<String, PgOperator> operators = new LinkedHashMap<>();
     private final Map<String, PgCollation> collations = new LinkedHashMap<>();
+    private final Map<String, PgStatistics> statistics = new LinkedHashMap<>();
 
     public PgSchema(String name) {
         super(name);
@@ -108,6 +109,10 @@ public class PgSchema extends AbstractSchema {
         return operators.get(signature);
     }
 
+    public PgStatistics getStatistics(final String name) {
+        return statistics.get(name);
+    }
+
     public Collection<PgFtsParser> getFtsParsers() {
         return Collections.unmodifiableCollection(parsers.values());
     }
@@ -134,6 +139,10 @@ public class PgSchema extends AbstractSchema {
 
     public Collection<PgDomain> getDomains() {
         return Collections.unmodifiableCollection(domains.values());
+    }
+
+    public Collection<PgStatistics> getStatistics() {
+        return Collections.unmodifiableCollection(statistics.values());
     }
 
     public void addCollation(final PgCollation collation) {
@@ -164,6 +173,10 @@ public class PgSchema extends AbstractSchema {
         addUnique(operators, oper);
     }
 
+    public void addStatistics(final PgStatistics rule) {
+        addUnique(statistics, rule);
+    }
+
     @Override
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         super.fillChildrenList(l);
@@ -174,6 +187,7 @@ public class PgSchema extends AbstractSchema {
         l.add(configurations.values());
         l.add(operators.values());
         l.add(collations.values());
+        l.add(statistics.values());
     }
 
     @Override
@@ -193,6 +207,8 @@ public class PgSchema extends AbstractSchema {
             return getOperator(name);
         case COLLATION:
             return getCollation(name);
+        case STATISTICS:
+            return getStatistics(name);
         default:
             return super.getChild(name, type);
         }
@@ -223,6 +239,9 @@ public class PgSchema extends AbstractSchema {
         case COLLATION:
             addCollation((PgCollation) st);
             break;
+        case STATISTICS:
+            addStatistics((PgStatistics) st);
+            break;
         default:
             super.addChild(st);
         }
@@ -239,7 +258,8 @@ public class PgSchema extends AbstractSchema {
                     && templates.equals(schema.templates)
                     && dictionaries.equals(schema.dictionaries)
                     && configurations.equals(schema.configurations)
-                    && operators.equals(schema.operators);
+                    && operators.equals(schema.operators)
+                    && statistics.equals(schema.statistics);
         }
         return false;
     }
@@ -254,6 +274,7 @@ public class PgSchema extends AbstractSchema {
         hasher.putUnordered(dictionaries);
         hasher.putUnordered(configurations);
         hasher.putUnordered(operators);
+        hasher.putUnordered(statistics);
     }
 
     @Override
