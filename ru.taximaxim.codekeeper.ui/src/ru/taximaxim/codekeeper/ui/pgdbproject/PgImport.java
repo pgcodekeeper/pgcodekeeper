@@ -121,6 +121,7 @@ class PgImport extends WizardPage {
 
         cmbDbType = new ComboViewer(area, SWT.READ_ONLY);
         cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
         cmbDbType.setInput(DatabaseType.values());
         cmbDbType.getCombo().select(0);
 

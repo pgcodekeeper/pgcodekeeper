@@ -303,6 +303,7 @@ public final class Messages extends NLS {
     public static String DbPropertyListEditor_properties_hint;
     public static String DbPropertyListEditor_pg_link_hint;
     public static String DbPropertyListEditor_ms_link_hint;
+    public static String DbPropertyListEditor_ch_link_hint;
     public static String DbPropertyListEditor_new_property;
     public static String DbPropertyListEditor_field_name;
     public static String DbPropertyListEditor_field_value;
@@ -732,8 +733,6 @@ public final class Messages extends NLS {
     public static String NewProjWizard_select_time_zone;
 
     public static String NewProjWizard_get_from_db;
-
-    public static String NewProjWizard_new_ms_project;
 
     public static String NewProjWizard_not_empty_dir;
     public static String NormalizeProject_are_you_sure;
