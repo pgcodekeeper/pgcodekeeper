@@ -31,7 +31,7 @@ class CliArgsTest {
                     "Option \"-o (--output)\" takes an operand",
 
             "--parse -s filename -t filename -o filename;" +
-                    "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse]",
+                    "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse, --insert]",
 
             "--graph --db-type MS jdbc:postgresql:q;" +
                     "Cannot work with PG database as MS project.",
@@ -137,6 +137,12 @@ class CliArgsTest {
 
             "filename filename --simplify-views --db-type MS;"
                     + "option \"--simplify-views\" cannot be used with the option(s) [--db-type mssql]",
+
+            "--insert 'jdbc:postgresql:q';"
+                    + "option \"--insert\" requires the option(s) [--insert-name, --insert-filter]",
+                    
+            "--insert-name table_name 'jdbc:postgresql:q';"
+                    + "option \"--insert-name\" requires the option(s) [--insert]",
     })
     void badArgsTest(String arguments, String message) {
         String[] args = arguments.split(" ");

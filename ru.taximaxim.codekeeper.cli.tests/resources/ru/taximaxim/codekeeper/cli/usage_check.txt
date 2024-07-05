@@ -15,6 +15,7 @@ Usage
                                           schema as a directory hierarchy
  --graph                                : run in graph mode to show objects
                                           dependencies
+ --insert                               : run in insert mode to collect data
  -s (--source) <path or JDBC>           : source of schema changes
  -t (--target) <path or JDBC>           : destination for schema changes (diff
                                           mode only)
@@ -144,6 +145,10 @@ Usage
                                           objects types
  --graph-invert-filter                  : invert graph filter object types:
                                           hide objects specified by the filter
+ --insert-name <name>                   : name of start object in data insert
+                                          mode
+ --insert-filter <filter>               : value of where for script of select
+                                          for start object
 
 DANGER_STATEMENT : [DROP_TABLE | ALTER_COLUMN | DROP_COLUMN | RESTART_WITH | UPDATE]
 OBJECT_TYPE : [CAST | USER | ROLE | ASSEMBLY | SCHEMA | EXTENSION | EVENT_TRIGGER | FOREIGN_DATA_WRAPPER | SERVER | USER_MAPPING | COLLATION | TYPE | DOMAIN | SEQUENCE | OPERATOR | FTS_PARSER | FTS_TEMPLATE | FTS_DICTIONARY | FTS_CONFIGURATION | TABLE | DICTIONARY | FUNCTION | PROCEDURE | AGGREGATE | INDEX | CONSTRAINT | VIEW | STATISTICS | TRIGGER | RULE | POLICY]

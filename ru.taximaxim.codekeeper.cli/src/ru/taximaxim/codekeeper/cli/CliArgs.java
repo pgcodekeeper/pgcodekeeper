@@ -107,13 +107,17 @@ public class CliArgs extends PgDiffArguments {
             usage="run in graph mode to show objects dependencies")
     private boolean modeGraph;
 
+    @Option(name="--insert", forbids={"--parse", "--graph"}, depends={"--insert-name", "--insert-filter"},
+            usage="run in insert mode to collect data")
+    private boolean isInsertMode;
+
     @Option(name="-s", depends="-t", aliases="--source", metaVar="<path or JDBC>",
             usage="source of schema changes")
     @Argument(index=0, metaVar="SOURCE", usage="source of schema changes")
     private String newSrc;
 
     @Option(name="-t", depends="-s", aliases="--target", metaVar="<path or JDBC>",
-            forbids={"--graph", "--parse"}, usage="destination for schema changes (diff mode only)")
+            forbids={"--graph", "--parse", "--insert"}, usage="destination for schema changes (diff mode only)")
     @Argument(index=1, metaVar="DEST", usage="destination for schema changes (diff mode only)")
     private String oldSrc;
 
@@ -121,7 +125,7 @@ public class CliArgs extends PgDiffArguments {
             usage="script output file or parser output directory")
     private String outputTarget;
 
-    @Option(name="-r", aliases="--run-on-target", forbids={"--parse, --graph", "-R"},
+    @Option(name="-r", aliases="--run-on-target", forbids={"--parse", "--graph", "--insert", "-R"},
             usage="run generated script on the target database")
     private boolean runOnTarget;
 
@@ -159,7 +163,7 @@ public class CliArgs extends PgDiffArguments {
             usage="wrap generated script with transaction statements")
     private boolean addTransaction;
 
-    @Option(name="-F", aliases="--no-check-function-bodies", forbids={"--graph", "--parse"},
+    @Option(name="-F", aliases="--no-check-function-bodies", forbids={"--graph", "--parse", "--insert"},
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
@@ -167,17 +171,17 @@ public class CliArgs extends PgDiffArguments {
             usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
     private boolean enableFunctionBodiesDependencies;
 
-    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--ms-sql"},
+    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--insert", "--ms-sql"},
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
-    @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph"},
+    @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph", "--insert"},
             usage="PRE script file path or directory with PRE scripts"
                     + "\nnested directories are loaded recursively"
                     + "\nspecify multiple times to use several paths")
     private List<String> preFilePath = new ArrayList<>();
 
-    @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph"},
+    @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph", "--insert"},
             usage="POST script file path or directory with POST scripts"
                     + "\nnested directories are loaded recursively"
                     + "\nspecify multiple times to use several paths")
@@ -191,39 +195,39 @@ public class CliArgs extends PgDiffArguments {
             usage="print CONSTRAINT NOT VALID for no partitioned tables")
     private boolean generateConstraintNotValid;
 
-    @Option(name="--using-off", forbids={"--graph", "--parse"},
+    @Option(name="--using-off", forbids={"--graph", "--parse", "--insert"},
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
-    @Option(name="--migrate-data", forbids={"--graph", "--parse"},
+    @Option(name="--migrate-data", forbids={"--graph", "--parse", "--insert"},
             usage="migrate data when re-creating tables")
     private boolean dataMovementMode;
 
-    @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse"},
+    @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse", "--insert"},
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
-    @Option(name="--generate-exist", forbids={"--graph", "--parse"},
+    @Option(name="--generate-exist", forbids={"--graph", "--parse", "--insert"},
             usage="print CREATE IF NOT EXISTS / DROP IF EXISTS")
     private boolean generateExists;
 
-    @Option(name="-do", aliases="--generate-exist-do-block", forbids={"--graph", "--parse"},
+    @Option(name="-do", aliases="--generate-exist-do-block", forbids={"--graph", "--parse", "--insert"},
             usage="print creation of CONSTRAINT and IDENTITY in DO block (PG only)")
     private boolean generateExistDoBlock;
 
-    @Option(name="--drop-before-create", forbids={"--graph", "--parse"},
+    @Option(name="--drop-before-create", forbids={"--graph", "--parse", "--insert"},
             usage="print DROP before CREATE statement")
     private boolean dropBeforeCreate;
 
-    @Option(name="--comments-to-end", forbids={"--graph", "--parse"},
+    @Option(name="--comments-to-end", forbids={"--graph", "--parse", "--insert"},
             usage="print comments at the end of the script")
     private boolean commentsToEnd;
 
-    @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse"},
+    @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse", "--insert"},
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
 
-    @Option(name="-D", aliases="--allow-danger-ddl", forbids={"--graph", "--parse"},
+    @Option(name="-D", aliases="--allow-danger-ddl", forbids={"--graph", "--parse", "--insert"},
             handler=DangerStatementOptionHandler.class,
             usage="allows dangerous statements in safe-mode scripts")
     private List<DangerStatement> allowedDangers;
@@ -233,16 +237,16 @@ public class CliArgs extends PgDiffArguments {
             usage="build the script using these object types only, hide statements of other objects")
     private List<DbObjType> allowedTypes;
 
-    @Option(name="--stop-not-allowed", forbids={"--graph", "--parse"},
+    @Option(name="--stop-not-allowed", forbids={"--graph", "--parse", "--insert"},
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
 
-    @Option(name="--selected-only", forbids={"--graph"},
+    @Option(name="--selected-only", forbids={"--graph", "--insert"},
             usage="build the script using 'selected' objects only, hide statements of other objects"
                     + "\nin CLI, selected means included by --allowed-object and ignore lists")
     private boolean selectedOnly;
 
-    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph"},
+    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--insert"},
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
@@ -298,31 +302,63 @@ public class CliArgs extends PgDiffArguments {
             usage="specify database type for work: PG, MS, CH")
     private DatabaseType dbType;
 
-    @Option(name="--update-project", depends={"--parse"}, forbids={"--graph"},
+    @Option(name="--update-project", depends={"--parse"}, forbids={"--graph", "--insert"},
             usage="update an existing project in parse mode")
     private boolean projUpdate;
 
-    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse"}, depends={"--graph"},
+    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse", "--insert"}, depends={"--graph"},
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
 
-    @Option(name="--graph-reverse",  depends={"--graph-name", "--graph"}, forbids={"--parse"},
+    @Option(name="--graph-reverse",  depends={"--graph-name", "--graph"},
             usage="reverse the direction of the graph to show objects on which the starting object depends")
     private boolean graphReverse;
 
-    @Option(name="--graph-name", metaVar="<name>", forbids={"--parse"}, depends={"--graph"},
+    @Option(name="--graph-name", metaVar="<name>", depends={"--graph"},
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
-    @Option(name="--graph-filter-object", forbids={"--parse"}, depends={"--graph"},
+    @Option(name="--graph-filter-object", depends={"--graph"},
             handler=DbObjTypeOptionHandler.class,
             usage="show these object types, hide  other objects types")
     private List<DbObjType> graphFilterTypes;
 
-    @Option(name="--graph-invert-filter", forbids={"--parse"}, depends={"--graph", "--graph-filter-object"},
+    @Option(name="--graph-invert-filter", depends={"--graph", "--graph-filter-object"},
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
+
+    @Option(name="--insert-name", metaVar="<name>", depends={"--insert"},
+            usage="name of start object in data insert mode")
+    private String insertName;
+
+    @Option(name="--insert-filter", metaVar="<filter>", depends={"--insert"},
+            usage="value of where for script of select for start object")
+    private String insertFilter;
+
+    public void setInsertName(String insertName) {
+        this.insertName = insertName;
+    }
+
+    public String getInsertName() {
+        return insertName;
+    }
+
+    public void setInsertFilter(String insertFilter) {
+        this.insertFilter = insertFilter;
+    }
+
+    public String getInsertFilter() {
+        return insertFilter;
+    }
+
+    public void setInsertMode(boolean isInsertMode) {
+        this.isInsertMode = isInsertMode;
+    }
+
+    public boolean isInsertMode() {
+        return isInsertMode;
+    }
 
     public boolean isClearLibCache() {
         return clearLibCache;
@@ -795,12 +831,28 @@ public class CliArgs extends PgDiffArguments {
             setOldSrcFormat(parsePath(getOldSrc()));
         }
 
-        if (isModeParse() || isModeGraph()) {
+        if (isModeParse() || isModeGraph() || isInsertMode()) {
             if (getNewSrc() == null) {
                 badArgs("Please specify SCHEMA.");
             }
             if (getOldSrc() != null && !isProjUpdate()) {
                 badArgs("DEST argument isn't required.");
+            }
+            
+            if (modeParse && dbType != DatabaseType.PG && timeZone != null) {
+                badArgs("option \"-Z (--time-zone)\" cannot be used with dbType: " + dbType);
+            }
+            
+            if (isInsertMode()) {
+                if (!getNewSrc().startsWith(URL_START_JDBC)) {
+                    badArgs("Cannot run work with non-database source.");
+                }
+                if (getDbType() == DatabaseType.CH) {
+                    badArgs("--insert cannot be used with ClickHouse database");
+                }
+                if (getRunOnDb() != null && !getRunOnDb().startsWith(URL_START_JDBC)) {
+                    badArgs("Option -R (--run-on) must specify JDBC connection string.");
+                }
             }
             DatabaseType typeNewSrc = getDatabaseTypeFromSource(getNewSrc());
             if (getDbType() != typeNewSrc) {

@@ -213,7 +213,7 @@ class FailParseArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse]\n";
+        return "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse, --insert]\n";
     }
 }
 

@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Set;
@@ -47,6 +48,7 @@ import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyWriter;
+import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
@@ -70,6 +72,9 @@ public final class Main {
             }
             if (arguments.isClearLibCache()) {
                 clearCache();
+            }
+            if (arguments.isInsertMode()) {
+                return insert(writer, arguments);
             }
             if (arguments.isModeParse()) {
                 return parse(arguments);
@@ -167,6 +172,35 @@ public final class Main {
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(System.err::println);
             return false;
+        }
+        return true;
+    }
+
+    private static boolean insert(PrintWriter writer, CliArgs arguments)
+            throws IOException, InterruptedException, SQLException {
+        PgDiff diff = new PgDiff(arguments);
+        AbstractDatabase db;
+        try {
+            db = diff.loadNewDatabaseWithLibraries();
+        } catch (PgCodekeeperException ex) {
+            diff.getErrors().forEach(System.err::println);
+            return false;
+        }
+
+        var script = InsertWriter.write(db, arguments, arguments.getInsertName(), arguments.getInsertFilter());
+
+        try (PrintWriter pw = getDiffWriter(arguments)) {
+            if (pw != null) {
+                pw.println(script);
+            }
+            String url = arguments.getRunOnDb();
+            if (url != null) {
+                try (Connection connection = JdbcConnector.fromUrl(url).getConnection()) {
+                    new JdbcRunner().run(connection.createStatement(), script);
+                }
+            } else if (pw == null) {
+                writer.println(script);
+            }
         }
         return true;
     }
