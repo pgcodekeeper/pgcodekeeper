@@ -136,7 +136,7 @@ class CliArgsTest {
                     + "Option -R (--run-on) must specify JDBC connection string.",
 
             "filename filename --simplify-views --db-type MS;"
-                    + "option \"--simplify-views\" cannot be used with the option(s) [--db-type mssql]",
+                    + "option \"--simplify-views\" cannot be used with dbType: MS",
 
             "--insert 'jdbc:postgresql:q';"
                     + "option \"--insert\" requires the option(s) [--insert-name, --insert-filter]",

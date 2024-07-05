@@ -155,7 +155,7 @@ public class CliArgs extends PgDiffArguments {
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
 
-    @Option(name="--simplify-views", forbids="--db-type mssql",
+    @Option(name="--simplify-views", forbids={"--graph", "--insert"},
             usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
     private boolean simplifyView;
 
@@ -187,11 +187,11 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several paths")
     private List<String> postFilePath = new ArrayList<>();
 
-    @Option(name="--ignore-column-order",
+    @Option(name="--ignore-column-order", forbids={"--parse", "--graph", "--insert"},
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
 
-    @Option(name="-v", aliases="--generate-constraint-not-valid",
+    @Option(name="-v", aliases="--generate-constraint-not-valid", forbids={"--parse", "--graph", "--insert"},
             usage="print CONSTRAINT NOT VALID for no partitioned tables")
     private boolean generateConstraintNotValid;
 
@@ -270,17 +270,17 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 
-    @Option(name="--tgt-lib-xml", metaVar="<path>",
+    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids={"--parse", "--graph", "--insert"},
             usage="add xml with library dependencies to target"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> sourceLibXmls;
 
-    @Option(name="--tgt-lib", metaVar="<path or JDBC>",
+    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids={"--parse", "--graph", "--insert"},
             usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
-    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>",
+    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids={"--parse", "--graph", "--insert"},
             usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
@@ -839,8 +839,13 @@ public class CliArgs extends PgDiffArguments {
                 badArgs("DEST argument isn't required.");
             }
             
-            if (modeParse && dbType != DatabaseType.PG && timeZone != null) {
-                badArgs("option \"-Z (--time-zone)\" cannot be used with dbType: " + dbType);
+            if (modeParse && dbType != DatabaseType.PG) {
+                if (timeZone != null) {
+                    badArgs("option \"-Z (--time-zone)\" cannot be used with dbType: " + dbType);
+                }
+                if (simplifyView) {
+                    badArgs("option \"--simplify-views\" cannot be used with dbType: " + dbType);
+                }
             }
             
             if (isInsertMode()) {
@@ -864,6 +869,17 @@ public class CliArgs extends PgDiffArguments {
                     return true;
                 }
                 badArgs("Please specify both SOURCE and DEST.");
+            }
+            if (dbType != DatabaseType.PG) {
+                if (generateExistDoBlock) {
+                    badArgs("option \"-do (--generate-exist-do-block)\" cannot be used with dbType: " + dbType);
+                }
+                if (simplifyView) {
+                    badArgs("option \"--simplify-views\" cannot be used with dbType: " + dbType);
+                }
+            }
+            if (commentsToEnd && dbType == DatabaseType.CH) {
+                badArgs("option \"--comments-to-end\" cannot be used with dbType " + dbType);
             }
             if (isAddTransaction() && isConcurrentlyMode() && getDbType() == DatabaseType.PG) {
                 badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");

@@ -74,7 +74,8 @@ class OutputTest {
                 Arguments.of(new FailGraphNameArgumentsProvider()),
                 Arguments.of(new FailGraphArgumentsProvider()),
                 Arguments.of(new IgnoreColumnOrderArgumentsProvider()),
-                Arguments.of(new MsDeprecatedOption()));
+                Arguments.of(new MsDeprecatedOption()),
+                Arguments.of(new FailGenerateExistDoBlock()));
     }
 
     @ParameterizedTest
@@ -846,5 +847,18 @@ class MsDeprecatedOption extends ArgumentsProvider {
     @Override
     public String output() {
         return "option \"-s (--source)\" requires the option(s) [-t]\n";
+    }
+}
+
+class FailGenerateExistDoBlock extends ArgumentsProvider {
+
+    @Override
+    protected String[] args() throws URISyntaxException, IOException {
+        return new String[] { "-do", "--ms-sql", "tgt", "src" };
+    }
+
+    @Override
+    public String output() {
+        return "option \"-do (--generate-exist-do-block)\" cannot be used with dbType: MS\n";
     }
 }

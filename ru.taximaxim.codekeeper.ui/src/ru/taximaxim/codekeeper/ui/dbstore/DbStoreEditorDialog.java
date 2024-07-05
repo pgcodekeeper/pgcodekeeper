@@ -443,6 +443,9 @@ public final class DbStoreEditorDialog extends TrayDialog {
         addLink(tabAreaProperties, Messages.DbPropertyListEditor_ms_link_hint,
                 "https://docs.microsoft.com/sql/connect/jdbc/setting-the-connection-properties"); //$NON-NLS-1$
 
+        addLink(tabAreaProperties, Messages.DbPropertyListEditor_ch_link_hint,
+                "https://clickhouse.com/docs/en/integrations/java#jdbc-driver");
+
         propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
         propertyListEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
 
