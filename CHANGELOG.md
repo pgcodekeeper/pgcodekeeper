@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added support for STATISTICS object in PostgreSQL.
 - Added code formatting feature for SELECT queries in views in ClickHouse.
+- Added the `--insert` parameter to the cli version to generate a script for inserting records with dependent data.
 
 ### Changed
 
