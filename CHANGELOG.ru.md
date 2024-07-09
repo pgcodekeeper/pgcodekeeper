@@ -9,9 +9,17 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.10.0] - 2024-07-09
+
+### Добавлено
+
 - Добавлена поддержка объекта STATISTICS в PostgreSQL.
 - Добавлена возможность форматирования SELECT запросов в представлениях в ClickHouse.
-- Добавлен параметр `--insert` в cli версии для формирования скрипта вставки записей с зависимыми данными.
+- Добавлен параметр [--insert](https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#insert) в CLI версии для формирования скрипта вставки записей с зависимыми данными.
 
 ### Изменено
 
@@ -1962,7 +1970,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...HEAD
+[9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
 [9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
 [9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0
 [9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
