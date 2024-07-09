@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.10.0] - 2024-07-09
+
+### Added
+
 - Added support for STATISTICS object in PostgreSQL.
 - Added code formatting feature for SELECT queries in views in ClickHouse.
-- Added the `--insert` parameter to the cli version to generate a script for inserting records with dependent data.
+- Added the [--insert](https://pgcodekeeper.readthedocs.io/en/latest/cli_version.html#insert) parameter to the CLI version to generate a script for inserting records with dependent data.
 
 ### Changed
 
@@ -1961,7 +1969,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...HEAD
+[9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
 [9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
 [9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0
 [9.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.6.0...v9.7.0
