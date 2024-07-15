@@ -36,7 +36,7 @@ insert into alias_2__fuzz_25 (dt, col, col2, col3) values ('2020-02-01', 1, 2, 3
 insert into alias_key_condition values (1, 2), (3, 4);
 INSERT INTO alias_local10 (Id, EventDate, field1, field2) VALUES (1, '2000-01-01', 1, '12345'), (2, '2000-01-01', 2, '54321'), (3, '2000-01-01', 0, '');
 insert into aliases_test (id) values (0);
-INSERT INTO all_valid VALUES (1, 'SELECT 1') (2, 'SeLeCt 22') (3, 'InSerT into TAB values (\'\')');
+INSERT INTO all_valid VALUES (1, 'SELECT 1'), (2, 'SeLeCt 22'), (3, 'InSerT into TAB values (\'\')');
 INSERT INTO Alpha VALUES ('a', 1);
 INSERT INTO alter_00061 VALUES ('2015-01-01', 10, 42);
 INSERT INTO alter_00061 VALUES ('2015-01-01', 6,38,[10,20,30],['asd','qwe','qwe'],['2000-01-01','2000-01-01','2000-01-03'],'100500');
@@ -97,7 +97,7 @@ INSERT INTO collapsing VALUES ('k4', 'k4v1', -1), ('k4', 'k4v2', 1), ('k4', 'k4v
 INSERT INTO collapsing_merge_tree VALUES ('2000-01-01', 'Hello, world!', 123, 'xxx yyy', -123, 123456789);
 INSERT INTO collapsing_merge_tree VALUES (1, 1, '2020-01-01'), (2, 1, '2020-01-02'), (1, -1, '2020-01-01'), (2, -1, '2020-01-02'), (1, 1, '2020-01-01');
 INSERT INTO collapsing_merge_tree_with_sampling VALUES ('2000-01-01', 'Hello, world!', 123, 'xxx yyy', -123, 123456789);
-INSERT INTO collapsing_suspicious_granularity VALUES (1, 1, -1) (1, 1, 1);
+INSERT INTO collapsing_suspicious_granularity VALUES (1, 1, -1), (1, 1, 1);
 INSERT INTO collapsing_table SELECT if(number == 8192, 8191, number), 1, if(number == 8192, +1, -1) FROM numbers(8193);
 INSERT INTO collate_test1 VALUES (1, (1, 'Ё')), (1, (1, 'ё')), (1, (1, 'а')), (2, (2, 'А')), (2, (1, 'я')), (2, (2, 'Я')), (1, (2,'а')), (1, (3, 'я'));
 INSERT INTO collate_test1 VALUES (1, ['Ё']), (1, ['ё']), (1, ['а']), (2, ['А']), (2, ['я', 'а']), (2, ['Я']), (1, ['ё','а']), (1, ['ё', 'я']), (2, ['ё', 'а', 'а']);

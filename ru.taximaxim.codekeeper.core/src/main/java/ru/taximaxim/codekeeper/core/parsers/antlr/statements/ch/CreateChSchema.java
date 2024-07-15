@@ -36,7 +36,10 @@ public class CreateChSchema extends ChParserAbstract {
     public void parseObject() {
         var nameCtx = ctx.name_with_cluster().identifier();
         var schema = new ChSchema(nameCtx.getText());
-        schema.setEngine(getEngine(ctx.engine_expr()));
+        var engine = ctx.engine_expr();
+        if (engine != null) {
+            schema.setEngine(getEngine(engine));
+        }
         var commCtx = ctx.comment_expr();
         if (commCtx != null) {
             schema.setComment(commCtx.STRING_LITERAL().getText());

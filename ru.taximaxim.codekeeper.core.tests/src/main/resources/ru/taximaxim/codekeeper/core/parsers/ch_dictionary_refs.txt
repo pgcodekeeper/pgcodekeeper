@@ -1,0 +1,29 @@
+Reference: Object = "01681_database_for_cache_dictionary" (SCHEMA), action = null, offset = 18, line number = 1, charPositionInLine = 18
+Reference: Object = "01681_database_for_cache_dictionary".cache_dictionary_simple_key_complex_attributes (DICTIONARY), action = CREATE, offset = 56, line number = 1, charPositionInLine = 56
+Reference: Object = "01681_database_for_cache_dictionary" (SCHEMA), action = null, offset = 441, line number = 2, charPositionInLine = 18
+Reference: Object = "01681_database_for_cache_dictionary".cache_dictionary_simple_key_hierarchy (DICTIONARY), action = CREATE, offset = 479, line number = 2, charPositionInLine = 56
+Reference: Object = simple_key_range_hashed_dictionary_01862 (DICTIONARY), action = CREATE, offset = 757, line number = 3, charPositionInLine = 18
+Reference: Object = simple_key_range_hashed_dictionary_01862 (DICTIONARY), action = CREATE, offset = 1054, line number = 4, charPositionInLine = 18
+Reference: Object = simple_key_sparse_hashed_dictionary_01862 (DICTIONARY), action = CREATE, offset = 1351, line number = 5, charPositionInLine = 18
+Reference: Object = somedict (DICTIONARY), action = CREATE, offset = 1598, line number = 6, charPositionInLine = 18
+Reference: Object = sqllt (SCHEMA), action = null, offset = 1877, line number = 7, charPositionInLine = 18
+Reference: Object = sqllt.dictionary (DICTIONARY), action = CREATE, offset = 1883, line number = 7, charPositionInLine = 24
+Reference: Object = table_function_dictionary_test_dictionary (DICTIONARY), action = CREATE, offset = 2055, line number = 8, charPositionInLine = 18
+Reference: Object = test_01191 (SCHEMA), action = null, offset = 2302, line number = 9, charPositionInLine = 18
+Reference: Object = test_01191.dict (DICTIONARY), action = CREATE, offset = 2313, line number = 9, charPositionInLine = 29
+Reference: Object = test_01676 (SCHEMA), action = null, offset = 2482, line number = 10, charPositionInLine = 18
+Reference: Object = test_01676.dict (DICTIONARY), action = CREATE, offset = 2493, line number = 10, charPositionInLine = 29
+Reference: Object = test_complex_dictionary_10_shards (DICTIONARY), action = CREATE, offset = 2675, line number = 11, charPositionInLine = 18
+Reference: Object = test_complex_dictionary_load_factor (DICTIONARY), action = CREATE, offset = 2906, line number = 12, charPositionInLine = 18
+Reference: Object = test_dict (DICTIONARY), action = CREATE, offset = 3143, line number = 13, charPositionInLine = 18
+Reference: Object = test_dict_db (SCHEMA), action = null, offset = 3416, line number = 14, charPositionInLine = 18
+Reference: Object = test_dict_db.table1_dict (DICTIONARY), action = CREATE, offset = 3429, line number = 14, charPositionInLine = 31
+Reference: Object = test_dictionary (DICTIONARY), action = CREATE, offset = 3980, line number = 15, charPositionInLine = 18
+Reference: Object = test_dictionary (DICTIONARY), action = CREATE, offset = 4118, line number = 16, charPositionInLine = 18
+Reference: action = ATTACH, offset = 5157, line number = 36, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5200, line number = 37, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5234, line number = 38, charPositionInLine = 0
+Reference: action = DETACH, offset = 5290, line number = 40, charPositionInLine = 0
+Reference: action = DETACH, offset = 5333, line number = 41, charPositionInLine = 0
+Reference: action = DETACH, offset = 5367, line number = 42, charPositionInLine = 0
+Reference: action = DETACH, offset = 5422, line number = 43, charPositionInLine = 0

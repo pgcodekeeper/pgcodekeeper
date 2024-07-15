@@ -88,12 +88,14 @@ public final class ChPolicy extends AbstractPolicy {
 
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        if (!compare(newCondition)) {
-            ((ChPolicy) newCondition).appendFullSQL(sb, false);
-            return true;
+        final int startLength = sb.length();
+        ChPolicy police = (ChPolicy) newCondition;
+
+        if (!compare(police)) {
+            police.appendFullSQL(sb, false);
         }
 
-        return false;
+        return sb.length() > startLength;
     }
 
     @Override

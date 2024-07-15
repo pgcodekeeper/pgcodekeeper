@@ -62,12 +62,10 @@ class CHParserTest {
     void parse(String fileNameTemplate, int allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();
         AtomicInteger ambiguity = new AtomicInteger();
-        String dirName = "ch/";
 
-        String sql = TestUtils.readResource(dirName+fileNameTemplate + FILES_POSTFIX.SQL, getClass());
+        String sql = TestUtils.readResource(fileNameTemplate + FILES_POSTFIX.SQL, getClass());
 
-        CHParser parser = AntlrParser
-                .makeBasicParser(CHParser.class, sql, fileNameTemplate, errors);
+        CHParser parser = AntlrParser.makeBasicParser(CHParser.class, sql, fileNameTemplate, errors);
 
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {
