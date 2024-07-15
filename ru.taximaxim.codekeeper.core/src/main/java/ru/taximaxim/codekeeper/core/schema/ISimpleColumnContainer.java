@@ -21,4 +21,5 @@ package ru.taximaxim.codekeeper.core.schema;
 
 public interface ISimpleColumnContainer {
     void addColumn(SimpleColumn column);
+    void addInclude(String column);
 }

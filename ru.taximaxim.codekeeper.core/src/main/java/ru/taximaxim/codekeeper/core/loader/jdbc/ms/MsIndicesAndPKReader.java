@@ -85,7 +85,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             boolean isDesc = col.getBoolean("is_desc");
             String colName = col.getString("name");
             if (col.getBoolean("is_inc")) {
-                ((MsIndex) stmt).addInclude(colName);
+                stmt.addInclude(colName);
             } else {
                 var simpleCol = new SimpleColumn(colName);
                 simpleCol.setDesc(isDesc);

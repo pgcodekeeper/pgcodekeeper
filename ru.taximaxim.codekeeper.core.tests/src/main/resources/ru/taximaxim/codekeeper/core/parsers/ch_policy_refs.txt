@@ -1,0 +1,89 @@
+Reference: Object = "p1_01295 ON db.table" (POLICY), action = ALTER, offset = 13, line number = 1, charPositionInLine = 13
+Reference: Object = "p1_01295 ON db.table" (POLICY), action = ALTER, offset = 60, line number = 2, charPositionInLine = 13
+Reference: Object = "p2_01295 ON db.table" (POLICY), action = ALTER, offset = 70, line number = 2, charPositionInLine = 23
+Reference: Object = "p1_01296 ON table" (POLICY), action = ALTER, offset = 112, line number = 3, charPositionInLine = 13
+Reference: Object = "p1_01296 ON table" (POLICY), action = ALTER, offset = 152, line number = 4, charPositionInLine = 13
+Reference: Object = "p2_01296 ON table" (POLICY), action = ALTER, offset = 162, line number = 4, charPositionInLine = 23
+Reference: Object = "p2_01295 ON db.table" (POLICY), action = ALTER, offset = 201, line number = 5, charPositionInLine = 13
+Reference: Object = "p1_01295 ON db.table" (POLICY), action = ALTER, offset = 248, line number = 6, charPositionInLine = 17
+Reference: Object = "p2_01295 ON db.table" (POLICY), action = ALTER, offset = 321, line number = 7, charPositionInLine = 17
+Reference: Object = "p1_01295 ON db.table" (POLICY), action = CREATE, offset = 386, line number = 8, charPositionInLine = 14
+Reference: Object = "NONE" (ROLE), action = null, offset = 410, line number = 8, charPositionInLine = 38
+Reference: Object = "p1_01296 ON table" (POLICY), action = CREATE, offset = 430, line number = 9, charPositionInLine = 14
+Reference: Object = "p2_01295 ON db.table" (POLICY), action = CREATE, offset = 463, line number = 10, charPositionInLine = 14
+Reference: Object = "ALL" (ROLE), action = null, offset = 487, line number = 10, charPositionInLine = 38
+Reference: Object = "p3_01295 ON db.table" (POLICY), action = CREATE, offset = 506, line number = 11, charPositionInLine = 14
+Reference: Object = r1_01295 (ROLE), action = null, offset = 530, line number = 11, charPositionInLine = 38
+Reference: Object = "p3_01295 ON db.table" (POLICY), action = CREATE, offset = 554, line number = 12, charPositionInLine = 14
+Reference: Object = "p4_01295 ON db.table" (POLICY), action = CREATE, offset = 590, line number = 13, charPositionInLine = 14
+Reference: Object = u1_01295 (ROLE), action = null, offset = 614, line number = 13, charPositionInLine = 38
+Reference: Object = "p5_01295 ON db.table" (POLICY), action = CREATE, offset = 638, line number = 14, charPositionInLine = 14
+Reference: Object = r1_01295 (ROLE), action = null, offset = 662, line number = 14, charPositionInLine = 38
+Reference: Object = u1_01295 (ROLE), action = null, offset = 672, line number = 14, charPositionInLine = 48
+Reference: Object = "p6_01295 ON db.table" (POLICY), action = CREATE, offset = 696, line number = 15, charPositionInLine = 14
+Reference: Object = "ALL" (ROLE), action = null, offset = 720, line number = 15, charPositionInLine = 38
+Reference: Object = r1_01295 (ROLE), action = null, offset = 731, line number = 15, charPositionInLine = 49
+Reference: Object = "p7_01295 ON db.table" (POLICY), action = CREATE, offset = 755, line number = 16, charPositionInLine = 14
+Reference: Object = "ALL" (ROLE), action = null, offset = 779, line number = 16, charPositionInLine = 38
+Reference: Object = r1_01295 (ROLE), action = null, offset = 790, line number = 16, charPositionInLine = 49
+Reference: Object = u1_01295 (ROLE), action = null, offset = 800, line number = 16, charPositionInLine = 59
+Reference: Object = "sqllt_policy ON sqllt.table" (POLICY), action = CREATE, offset = 824, line number = 17, charPositionInLine = 14
+Reference: Object = "sqllt_policy ON sqllt.view" (POLICY), action = CREATE, offset = 824, line number = 17, charPositionInLine = 14
+Reference: Object = "sqllt_policy ON sqllt.dictionary" (POLICY), action = CREATE, offset = 824, line number = 17, charPositionInLine = 14
+Reference: Object = "ALL" (ROLE), action = null, offset = 899, line number = 17, charPositionInLine = 89
+Reference: Object = "sqllt_row_policy ON sqllt.table" (POLICY), action = CREATE, offset = 918, line number = 18, charPositionInLine = 14
+Reference: Object = "sqllt_row_policy ON sqllt.view" (POLICY), action = CREATE, offset = 918, line number = 18, charPositionInLine = 14
+Reference: Object = "sqllt_row_policy ON sqllt.dictionary" (POLICY), action = CREATE, offset = 918, line number = 18, charPositionInLine = 14
+Reference: Object = "ALL" (ROLE), action = null, offset = 997, line number = 18, charPositionInLine = 93
+Reference: Object = "filter_2 ON rqtable" (POLICY), action = CREATE, offset = 1020, line number = 19, charPositionInLine = 18
+Reference: Object = "ALL" (ROLE), action = null, offset = 1067, line number = 19, charPositionInLine = 65
+Reference: Object = "p1 ON default.*" (POLICY), action = CREATE, offset = 1104, line number = 20, charPositionInLine = 32
+Reference: action = DROP, offset = 1134, line number = 21, charPositionInLine = 0
+Reference: action = DROP, offset = 1172, line number = 22, charPositionInLine = 0
+Reference: action = DROP, offset = 1253, line number = 23, charPositionInLine = 0
+Reference: action = DROP, offset = 1304, line number = 24, charPositionInLine = 0
+Reference: action = DROP, offset = 1348, line number = 25, charPositionInLine = 0
+Reference: action = DROP, offset = 1442, line number = 26, charPositionInLine = 0
+Reference: action = DROP, offset = 1482, line number = 27, charPositionInLine = 0
+Reference: action = DROP, offset = 1513, line number = 28, charPositionInLine = 0
+Reference: action = DROP, offset = 1554, line number = 29, charPositionInLine = 0
+Reference: action = DROP, offset = 1600, line number = 30, charPositionInLine = 0
+Reference: action = DROP, offset = 1639, line number = 31, charPositionInLine = 0
+Reference: action = DROP, offset = 1697, line number = 32, charPositionInLine = 0
+Reference: action = DROP, offset = 1748, line number = 33, charPositionInLine = 0
+Reference: action = DROP, offset = 1791, line number = 34, charPositionInLine = 0
+Reference: action = DROP, offset = 1828, line number = 35, charPositionInLine = 0
+Reference: action = DROP, offset = 1873, line number = 36, charPositionInLine = 0
+Reference: action = DROP, offset = 1913, line number = 37, charPositionInLine = 0
+Reference: action = DROP, offset = 1959, line number = 38, charPositionInLine = 0
+Reference: action = DROP, offset = 1994, line number = 39, charPositionInLine = 0
+Reference: action = DROP, offset = 2034, line number = 40, charPositionInLine = 0
+Reference: action = DROP, offset = 2106, line number = 41, charPositionInLine = 0
+Reference: action = DROP, offset = 2138, line number = 42, charPositionInLine = 0
+Reference: action = DROP, offset = 2181, line number = 43, charPositionInLine = 0
+Reference: action = DROP, offset = 2210, line number = 44, charPositionInLine = 0
+Reference: action = DROP, offset = 2241, line number = 45, charPositionInLine = 0
+Reference: action = DROP, offset = 2288, line number = 46, charPositionInLine = 0
+Reference: action = DROP, offset = 2338, line number = 47, charPositionInLine = 0
+Reference: action = DROP, offset = 2388, line number = 48, charPositionInLine = 0
+Reference: action = DROP, offset = 2432, line number = 49, charPositionInLine = 0
+Reference: action = DROP, offset = 2482, line number = 50, charPositionInLine = 0
+Reference: action = DROP, offset = 2526, line number = 51, charPositionInLine = 0
+Reference: action = DROP, offset = 2579, line number = 52, charPositionInLine = 0
+Reference: action = DROP, offset = 2618, line number = 53, charPositionInLine = 0
+Reference: action = DROP, offset = 2659, line number = 54, charPositionInLine = 0
+Reference: action = DROP, offset = 2715, line number = 55, charPositionInLine = 0
+Reference: action = DROP, offset = 2775, line number = 56, charPositionInLine = 0
+Reference: action = DROP, offset = 2840, line number = 57, charPositionInLine = 0
+Reference: action = DROP, offset = 2912, line number = 58, charPositionInLine = 0
+Reference: action = DROP, offset = 2972, line number = 59, charPositionInLine = 0
+Reference: action = DROP, offset = 3062, line number = 60, charPositionInLine = 0
+Reference: action = DROP, offset = 3151, line number = 61, charPositionInLine = 0
+Reference: action = DROP, offset = 3211, line number = 62, charPositionInLine = 0
+Reference: action = DROP, offset = 3273, line number = 63, charPositionInLine = 0
+Reference: action = DROP, offset = 3330, line number = 64, charPositionInLine = 0
+Reference: action = DROP, offset = 3388, line number = 65, charPositionInLine = 0
+Reference: action = DROP, offset = 3454, line number = 66, charPositionInLine = 0
+Reference: action = DROP, offset = 3479, line number = 67, charPositionInLine = 0
+Reference: action = DROP, offset = 3529, line number = 68, charPositionInLine = 0
+Reference: action = DROP, offset = 3581, line number = 69, charPositionInLine = 0

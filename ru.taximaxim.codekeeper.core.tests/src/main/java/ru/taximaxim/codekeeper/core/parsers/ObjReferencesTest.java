@@ -184,6 +184,24 @@ class ObjReferencesTest {
         compareReferences(fileNameTemplate, DatabaseType.MS);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "ch_database",
+            "ch_function",
+            "ch_show",
+            "ch_view",
+            "ch_policy",
+            "ch_table",
+            "ch_select",
+            "ch_privileges",
+            "ch_user",
+            "ch_role",
+            "ch_dictionary"
+    })
+    void compareChReferences(final String fileNameTemplate) throws IOException, InterruptedException {
+        compareReferences(fileNameTemplate, DatabaseType.CH);
+    }
+
     void compareReferences(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setDbType(dbType);

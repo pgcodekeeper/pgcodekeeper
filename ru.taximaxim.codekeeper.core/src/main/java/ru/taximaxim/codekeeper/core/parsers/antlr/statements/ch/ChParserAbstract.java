@@ -134,7 +134,8 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
     protected void parseEngineOption(ChEngine engine, Engine_optionContext optionCtx) {
         var orderBy = optionCtx.order_by_clause();
         if (orderBy != null) {
-            engine.setOrderBy(getFullCtxText(orderBy.order_expr_list()));
+            var orderByList = orderBy.order_expr_list();
+            engine.setOrderBy(orderByList != null ? getFullCtxText(orderByList) : "()");
             return;
         }
 

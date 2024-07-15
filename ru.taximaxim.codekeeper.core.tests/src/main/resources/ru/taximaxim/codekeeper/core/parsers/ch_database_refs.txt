@@ -1,0 +1,108 @@
+Reference: Object = db_comment (SCHEMA), action = CREATE, offset = 16, line number = 1, charPositionInLine = 16
+Reference: Object = test_database (SCHEMA), action = CREATE, offset = 93, line number = 2, charPositionInLine = 16
+Reference: Object = mysql_db (SCHEMA), action = CREATE, offset = 228, line number = 3, charPositionInLine = 16
+Reference: Object = sqlite_db (SCHEMA), action = CREATE, offset = 378, line number = 4, charPositionInLine = 16
+Reference: Object = r (SCHEMA), action = CREATE, offset = 480, line number = 6, charPositionInLine = 16
+Reference: Object = r (SCHEMA), action = CREATE, offset = 552, line number = 7, charPositionInLine = 16
+Reference: Object = r (SCHEMA), action = CREATE, offset = 629, line number = 8, charPositionInLine = 16
+Reference: Object = r (SCHEMA), action = CREATE, offset = 707, line number = 9, charPositionInLine = 16
+Reference: Object = postgres_db (SCHEMA), action = CREATE, offset = 778, line number = 10, charPositionInLine = 16
+Reference: Object = postgres_database (SCHEMA), action = CREATE, offset = 916, line number = 11, charPositionInLine = 16
+Reference: Object = database1 (SCHEMA), action = CREATE, offset = 1120, line number = 12, charPositionInLine = 16
+Reference: Object = mysql (SCHEMA), action = CREATE, offset = 1403, line number = 13, charPositionInLine = 16
+Reference: Object = db_name (SCHEMA), action = CREATE, offset = 1579, line number = 14, charPositionInLine = 16
+Reference: Object = db (SCHEMA), action = CREATE, offset = 1987, line number = 29, charPositionInLine = 16
+Reference: Object = db (SCHEMA), action = CREATE, offset = 2023, line number = 30, charPositionInLine = 16
+Reference: Object = db (SCHEMA), action = CREATE, offset = 2057, line number = 31, charPositionInLine = 16
+Reference: Object = ordinary_db (SCHEMA), action = CREATE, offset = 2109, line number = 32, charPositionInLine = 16
+Reference: Object = "01945.db" (SCHEMA), action = CREATE, offset = 2156, line number = 33, charPositionInLine = 16
+Reference: Object = "foo 1234" (SCHEMA), action = CREATE, offset = 2184, line number = 34, charPositionInLine = 16
+Reference: Object = "foo 123" (SCHEMA), action = CREATE, offset = 2212, line number = 35, charPositionInLine = 16
+Reference: Object = conv_main (SCHEMA), action = CREATE, offset = 2239, line number = 36, charPositionInLine = 16
+Reference: Object = database_123456789abcde (SCHEMA), action = CREATE, offset = 2333, line number = 37, charPositionInLine = 16
+Reference: Object = database_for_dict (SCHEMA), action = CREATE, offset = 2374, line number = 38, charPositionInLine = 16
+Reference: Object = database_for_dict_01018 (SCHEMA), action = CREATE, offset = 2409, line number = 39, charPositionInLine = 16
+Reference: Object = replicated_database_test (SCHEMA), action = CREATE, offset = 2464, line number = 40, charPositionInLine = 30
+Reference: Object = shard_0 (SCHEMA), action = CREATE, offset = 2665, line number = 41, charPositionInLine = 30
+Reference: Object = shard_1 (SCHEMA), action = CREATE, offset = 2704, line number = 42, charPositionInLine = 30
+Reference: Object = shard_1 (SCHEMA), action = CREATE, offset = 2743, line number = 43, charPositionInLine = 30
+Reference: Object = test_01487 (SCHEMA), action = CREATE, offset = 2782, line number = 44, charPositionInLine = 30
+Reference: Object = test_max_num_to_warn_10 (SCHEMA), action = CREATE, offset = 2824, line number = 45, charPositionInLine = 30
+Reference: Object = test_max_num_to_warn_8 (SCHEMA), action = CREATE, offset = 2879, line number = 46, charPositionInLine = 30
+Reference: Object = test_max_num_to_warn_9 (SCHEMA), action = CREATE, offset = 2933, line number = 47, charPositionInLine = 30
+Reference: Object = "{CLICKHOUSE_DATABASE:Identifier}" (SCHEMA), action = CREATE, offset = 2987, line number = 48, charPositionInLine = 30
+Reference: Object = imdb_01148 (SCHEMA), action = CREATE, offset = 3037, line number = 49, charPositionInLine = 16
+Reference: Object = lazy_db (SCHEMA), action = CREATE, offset = 3139, line number = 50, charPositionInLine = 16
+Reference: Object = local_t_l5ydey (SCHEMA), action = CREATE, offset = 3181, line number = 51, charPositionInLine = 16
+Reference: Object = memory_01069 (SCHEMA), action = CREATE, offset = 3319, line number = 52, charPositionInLine = 16
+Reference: Object = memory_db (SCHEMA), action = CREATE, offset = 3365, line number = 53, charPositionInLine = 16
+Reference: Object = ordinary_db (SCHEMA), action = CREATE, offset = 3408, line number = 54, charPositionInLine = 16
+Reference: Object = replicated_database_params (SCHEMA), action = CREATE, offset = 3437, line number = 55, charPositionInLine = 16
+Reference: Object = replicated_database_params (SCHEMA), action = CREATE, offset = 3569, line number = 56, charPositionInLine = 16
+Reference: Object = replicated_db_no_args (SCHEMA), action = CREATE, offset = 3712, line number = 57, charPositionInLine = 16
+Reference: Object = shard_0 (SCHEMA), action = CREATE, offset = 3769, line number = 58, charPositionInLine = 16
+Reference: Object = shard_1 (SCHEMA), action = CREATE, offset = 3794, line number = 59, charPositionInLine = 16
+Reference: Object = some_db (SCHEMA), action = CREATE, offset = 3819, line number = 60, charPositionInLine = 16
+Reference: Object = sqllt (SCHEMA), action = CREATE, offset = 3844, line number = 61, charPositionInLine = 16
+Reference: Object = t_2710_db (SCHEMA), action = CREATE, offset = 3867, line number = 62, charPositionInLine = 16
+Reference: Object = test1601_detach_permanently_atomic (SCHEMA), action = CREATE, offset = 3908, line number = 63, charPositionInLine = 16
+Reference: Object = test1601_detach_permanently_lazy (SCHEMA), action = CREATE, offset = 3974, line number = 64, charPositionInLine = 16
+Reference: Object = test1601_detach_permanently_ordinary (SCHEMA), action = CREATE, offset = 4040, line number = 65, charPositionInLine = 16
+Reference: Object = test_01048 (SCHEMA), action = CREATE, offset = 4110, line number = 66, charPositionInLine = 16
+Reference: Object = test_01109 (SCHEMA), action = CREATE, offset = 4154, line number = 67, charPositionInLine = 16
+Reference: Object = test_01109_ordinary (SCHEMA), action = CREATE, offset = 4196, line number = 68, charPositionInLine = 16
+Reference: Object = test_01109_other_atomic (SCHEMA), action = CREATE, offset = 4249, line number = 69, charPositionInLine = 16
+Reference: Object = test_01109_rename_exists (SCHEMA), action = CREATE, offset = 4290, line number = 70, charPositionInLine = 16
+Reference: Object = test_01148_atomic (SCHEMA), action = CREATE, offset = 4346, line number = 71, charPositionInLine = 16
+Reference: Object = test_01148_ordinary (SCHEMA), action = CREATE, offset = 4395, line number = 72, charPositionInLine = 16
+Reference: Object = test_01155_atomic (SCHEMA), action = CREATE, offset = 4448, line number = 73, charPositionInLine = 16
+Reference: Object = test_01155_ordinary (SCHEMA), action = CREATE, offset = 4497, line number = 74, charPositionInLine = 16
+Reference: Object = test_01191 (SCHEMA), action = CREATE, offset = 4550, line number = 75, charPositionInLine = 16
+Reference: Object = test_01249 (SCHEMA), action = CREATE, offset = 4592, line number = 76, charPositionInLine = 16
+Reference: Object = test_01457 (SCHEMA), action = CREATE, offset = 4636, line number = 77, charPositionInLine = 16
+Reference: Object = test_01516 (SCHEMA), action = CREATE, offset = 4664, line number = 78, charPositionInLine = 16
+Reference: Object = test_01600 (SCHEMA), action = CREATE, offset = 4708, line number = 79, charPositionInLine = 16
+Reference: Object = test_01676 (SCHEMA), action = CREATE, offset = 4736, line number = 80, charPositionInLine = 16
+Reference: Object = test_01748 (SCHEMA), action = CREATE, offset = 4764, line number = 81, charPositionInLine = 16
+Reference: Object = test_01915_db (SCHEMA), action = CREATE, offset = 4792, line number = 82, charPositionInLine = 16
+Reference: Object = test_02771 (SCHEMA), action = CREATE, offset = 4837, line number = 83, charPositionInLine = 16
+Reference: Object = test_1164_memory (SCHEMA), action = CREATE, offset = 4865, line number = 84, charPositionInLine = 16
+Reference: Object = test_1602 (SCHEMA), action = CREATE, offset = 4913, line number = 85, charPositionInLine = 16
+Reference: Object = test_1603_rename_bug_atomic (SCHEMA), action = CREATE, offset = 4940, line number = 86, charPositionInLine = 16
+Reference: Object = test_1603_rename_bug_ordinary (SCHEMA), action = CREATE, offset = 4999, line number = 87, charPositionInLine = 16
+Reference: Object = test_buffer (SCHEMA), action = CREATE, offset = 5062, line number = 88, charPositionInLine = 16
+Reference: Object = test_dict_db (SCHEMA), action = CREATE, offset = 5091, line number = 89, charPositionInLine = 16
+Reference: Object = test_query_log_factories_info1 (SCHEMA), action = CREATE, offset = 5121, line number = 90, charPositionInLine = 16
+Reference: Object = truncate_test (SCHEMA), action = CREATE, offset = 5183, line number = 91, charPositionInLine = 16
+Reference: Object = "{CLICKHOUSE_DATABASE:Identifier}" (SCHEMA), action = CREATE, offset = 5214, line number = 92, charPositionInLine = 16
+Reference: Object = "{CLICKHOUSE_DATABASE:Identifier}" (SCHEMA), action = CREATE, offset = 5280, line number = 93, charPositionInLine = 16
+Reference: Object = "{CLICKHOUSE_DATABASE_1:Identifier}" (SCHEMA), action = CREATE, offset = 5330, line number = 94, charPositionInLine = 16
+Reference: Object = "{old_db_name:Identifier}" (SCHEMA), action = CREATE, offset = 5382, line number = 95, charPositionInLine = 16
+Reference: action = ATTACH, offset = 5408, line number = 96, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5434, line number = 97, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5465, line number = 98, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5517, line number = 99, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5567, line number = 100, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5621, line number = 101, charPositionInLine = 0
+Reference: action = ATTACH, offset = 5649, line number = 102, charPositionInLine = 0
+Reference: Object = database_for_cache_dictionary (SCHEMA), action = DROP, offset = 5691, line number = 103, charPositionInLine = 14
+Reference: Object = "01945.db" (SCHEMA), action = DROP, offset = 5736, line number = 104, charPositionInLine = 14
+Reference: Object = "foo 1234" (SCHEMA), action = DROP, offset = 5762, line number = 105, charPositionInLine = 14
+Reference: Object = "foo 123" (SCHEMA), action = DROP, offset = 5788, line number = 106, charPositionInLine = 14
+Reference: Object = database_123456789abcde (SCHEMA), action = DROP, offset = 5813, line number = 107, charPositionInLine = 14
+Reference: Object = database_for_dict (SCHEMA), action = DROP, offset = 5852, line number = 108, charPositionInLine = 14
+Reference: Object = database_for_range_dict (SCHEMA), action = DROP, offset = 5885, line number = 109, charPositionInLine = 14
+Reference: Object = db_01048 (SCHEMA), action = DROP, offset = 5924, line number = 110, charPositionInLine = 14
+Reference: Object = empty_db_01036 (SCHEMA), action = DROP, offset = 5948, line number = 111, charPositionInLine = 14
+Reference: Object = empty_db_02179 (SCHEMA), action = DROP, offset = 5978, line number = 112, charPositionInLine = 14
+Reference: Object = "{CLICKHOUSE_DATABASE_1:Identifier}" (SCHEMA), action = DROP, offset = 6008, line number = 113, charPositionInLine = 14
+Reference: Object = db1 (SCHEMA), action = DROP, offset = 6068, line number = 114, charPositionInLine = 24
+Reference: Object = "foo 123" (SCHEMA), action = DROP, offset = 6097, line number = 115, charPositionInLine = 24
+Reference: Object = imdb_01148 (SCHEMA), action = DROP, offset = 6122, line number = 116, charPositionInLine = 14
+Reference: Object = main_01487 (SCHEMA), action = DROP, offset = 6148, line number = 117, charPositionInLine = 14
+Reference: Object = memory_01069 (SCHEMA), action = DROP, offset = 6174, line number = 118, charPositionInLine = 14
+Reference: Object = replicated_database_params (SCHEMA), action = DROP, offset = 6202, line number = 119, charPositionInLine = 14
+Reference: action = DETACH, offset = 6230, line number = 120, charPositionInLine = 0
+Reference: action = DETACH, offset = 6256, line number = 121, charPositionInLine = 0
+Reference: action = DETACH, offset = 6287, line number = 122, charPositionInLine = 0
+Reference: action = DETACH, offset = 6315, line number = 123, charPositionInLine = 0

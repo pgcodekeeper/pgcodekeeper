@@ -91,6 +91,11 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
+    public void addInclude(String column) {
+        throw new IllegalStateException("Unsupported operation");
+    }
+
+    @Override
     public Map<String, String> getOptions() {
         return Collections.unmodifiableMap(options);
     }
