@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a error when using `-R` and `--insert` parameters together.
+
 ## [9.10.0] - 2024-07-09
 
 ### Added
@@ -20,10 +22,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for STATISTICS object in PostgreSQL.
 - Added code formatting feature for SELECT queries in views in ClickHouse.
 - Added the [--insert](https://pgcodekeeper.readthedocs.io/en/latest/cli_version.html#insert) parameter to the CLI version to generate a script for inserting records with dependent data.
-
-### Changed
-
-### Fixed
 
 ## [9.9.0] - 2024-06-25
 
