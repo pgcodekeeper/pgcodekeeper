@@ -25,7 +25,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Set;
@@ -195,9 +194,8 @@ public final class Main {
             }
             String url = arguments.getRunOnDb();
             if (url != null) {
-                try (Connection connection = JdbcConnector.fromUrl(url).getConnection()) {
-                    new JdbcRunner().run(connection.createStatement(), script);
-                }
+                new JdbcRunner().runBatches(JdbcConnector.fromUrl(url),
+                        new ScriptParser("CLI", script, arguments.getDbType()).batch(), null);
             } else if (pw == null) {
                 writer.println(script);
             }
