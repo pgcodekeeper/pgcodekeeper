@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.CycleDetector;
@@ -41,15 +42,20 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 
@@ -124,14 +130,9 @@ public final class InsertWriter {
      */
     public static String write(AbstractDatabase db, PgDiffArguments arguments, String name, String filter)
             throws InterruptedException, IOException, SQLException {
-        var writer = new InsertWriter(db);
-        if (writer.cols.get(name) == null) {
-            throw new IllegalArgumentException("Table with name: " + name + " not found in database");
-        }
-
         var sb = new StringBuilder();
-        var isTransaction = arguments.isAddTransaction();
         var dbType = arguments.getDbType();
+        var isTransaction = arguments.isAddTransaction();
         if (isTransaction) {
             switch (dbType) {
             case MS:
@@ -145,7 +146,9 @@ public final class InsertWriter {
             }
         }
 
-        writer.generateScript(arguments.getNewSrc(), name, filter, sb);
+        String qName = getQualifiedName(name, db);
+        var writer = new InsertWriter(db);
+        writer.generateScript(arguments.getNewSrc(), qName, filter, sb);
 
         if (isTransaction) {
             switch (dbType) {
@@ -161,6 +164,30 @@ public final class InsertWriter {
         }
 
         return sb.toString();
+    }
+
+    private static String getQualifiedName(String name, AbstractDatabase db) {
+        String[] names = name.split("\\.");
+        if (names.length != 2) {
+            throw new IllegalArgumentException("Invalid input format: " + name + ". Expected format : schema.table");
+        }
+
+        var escapeList = List.of("[", "\"");
+        boolean isNeedQuotes = Utils.stringContainsAnyItem(name, escapeList);
+
+        Predicate<PgStatement> qNameFilter;
+        if (isNeedQuotes) {
+            qNameFilter = st -> st.getQualifiedName().equalsIgnoreCase(name);
+        } else {
+            qNameFilter = st -> StatementUtils.getFullBareName(st).equalsIgnoreCase(name);
+        }
+
+        return db.getDescendants()
+                .filter(st -> st.getStatementType() == DbObjType.TABLE)
+                .filter(qNameFilter)
+                .map(st -> st.getQualifiedName())
+                .findAny()
+                .orElseThrow(() -> new IllegalArgumentException("Table " + name + " not found in database"));
     }
 
     /**
@@ -408,9 +435,9 @@ public final class InsertWriter {
 
     private String getTableName(String schema, String name) {
         if (dbType == DatabaseType.MS) {
-            return '[' + schema + "].[" + name + ']';
+            return MsDiffUtils.quoteName(schema) + '.' + MsDiffUtils.quoteName(name);
         }
-        return schema + '.' + name;
+        return PgDiffUtils.getQuotedName(schema) + '.' + PgDiffUtils.getQuotedName(name);
     }
 
     private void removeCycles(RowData source, RowData target) {

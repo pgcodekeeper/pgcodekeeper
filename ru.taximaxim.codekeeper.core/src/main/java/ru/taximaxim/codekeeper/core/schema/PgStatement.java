@@ -746,11 +746,11 @@ public abstract class PgStatement implements IStatement, IHashable {
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
         }
-        StringBuilder sb = new StringBuilder(quoter.apply(getName()));
+        StringBuilder sb = new StringBuilder(quoter.apply(getBareName()));
 
         PgStatement par = this.parent;
         while (par != null && !(par instanceof AbstractDatabase)) {
-            sb.insert(0, '.').insert(0, quoter.apply(par.getName()));
+            sb.insert(0, '.').insert(0, quoter.apply(par.getBareName()));
             par = par.getParent();
         }
 

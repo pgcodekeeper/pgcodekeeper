@@ -175,5 +175,16 @@ public class StatementUtils {
         sbSQL.setLength(sbSQL.length() - 2);
     }
 
+    public static String getFullBareName(PgStatement st) {
+        StringBuilder sb = new StringBuilder(st.getBareName());
+        PgStatement par = st.getParent();
+        while (par != null && !(par instanceof AbstractDatabase)) {
+            sb.insert(0, '.').insert(0, par.getBareName());
+            par = par.getParent();
+        }
+
+        return sb.toString();
+    }
+
     private StatementUtils() {}
 }

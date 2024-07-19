@@ -838,7 +838,7 @@ public class CliArgs extends PgDiffArguments {
             if (getOldSrc() != null && !isProjUpdate()) {
                 badArgs("DEST argument isn't required.");
             }
-            
+
             if (modeParse && dbType != DatabaseType.PG) {
                 if (timeZone != null) {
                     badArgs("option \"-Z (--time-zone)\" cannot be used with dbType: " + dbType);
@@ -847,7 +847,7 @@ public class CliArgs extends PgDiffArguments {
                     badArgs("option \"--simplify-views\" cannot be used with dbType: " + dbType);
                 }
             }
-            
+
             if (isInsertMode()) {
                 if (!getNewSrc().startsWith(URL_START_JDBC)) {
                     badArgs("Cannot run work with non-database source.");

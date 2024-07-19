@@ -20,19 +20,22 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.jgrapht.Graph;
 import org.jgrapht.graph.DefaultEdge;
 
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public class DepcyWriter {
 
@@ -63,11 +66,18 @@ public class DepcyWriter {
 
     public void write(Collection<String> names) {
         if (!names.isEmpty()) {
-            List<Pattern> patterns = names.stream().map(Pattern::compile).collect(Collectors.toList());
+            Map<Pattern, Boolean> patterns = new HashMap<>();
+            var escapeList = List.of("\\[", "\"", "\\(");
+
+            for (String name : names) {
+                Pattern pattern = Pattern.compile(name, Pattern.CASE_INSENSITIVE);
+                boolean isNeedQuotes = Utils.stringContainsAnyItem(name, escapeList);
+                patterns.put(pattern, isNeedQuotes);
+            }
 
             db.getDescendants().flatMap(AbstractTable::columnAdder)
-            .filter(st -> find(patterns, st.getQualifiedName()))
-            .forEach(st ->  fillTree(st, START_LEVEL, new HashSet<>(), null, 0));
+            .filter(st -> find(patterns, st))
+            .forEach(st -> fillTree(st, START_LEVEL, new HashSet<>(), null, 0));
         } else {
             fillTree(db, START_LEVEL, new HashSet<>(), null, 0);
         }
@@ -77,9 +87,18 @@ public class DepcyWriter {
         }
     }
 
-    private boolean find(Collection<Pattern> patterns, String statement) {
-        for (Pattern pattern : patterns) {
-            if (pattern.matcher(statement).matches()) {
+    private boolean find(Map<Pattern, Boolean> patterns, PgStatement st) {
+        for (var entry : patterns.entrySet()) {
+            boolean isNeedQuotes = entry.getValue();
+            String objName;
+            if (isNeedQuotes) {
+                objName = st.getQualifiedName();
+            } else {
+                objName = StatementUtils.getFullBareName(st);
+            }
+
+            Pattern pattern = entry.getKey();
+            if (pattern.matcher(objName).matches()) {
                 return true;
             }
         }

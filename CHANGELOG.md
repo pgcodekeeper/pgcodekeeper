@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Parameters for filtering objects `--graph-name` and `--insert-name` are no longer case sensitive and do not require quotes, it is now possible to specify a function name without a signature.
+
 ### Fixed
 
 - Fixed a error when using `-R` and `--insert` parameters together.

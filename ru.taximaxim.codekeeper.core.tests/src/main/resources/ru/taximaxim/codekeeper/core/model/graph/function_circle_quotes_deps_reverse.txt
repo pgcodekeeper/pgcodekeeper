@@ -1,0 +1,5 @@
+FUNCTION public."Func1"()
+	SCHEMA public
+	FUNCTION public.f2()
+		SCHEMA public
+		FUNCTION public."Func1"() - cyclic dependency
