@@ -33,14 +33,31 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 public class DepcyWriterTest {
 
-
     @ParameterizedTest
     @CsvSource({
         "table, public.t1",
         "regex, public\\.t.",
+        //test searching deps of object "MyTable" by name without quotes and case insensitive mode for PG
+        "quotes, public.mytable",
+        //test searching deps of object "MyTable" by name with quotes for PG
+        "quotes, public.\"mytable\"",
         "view, public.v1",
+        // "ms_insert_name, public.sales5",
         "ms_procedure, \\[dbo\\].\\[test_poc\\]",
+        //same test searching deps of object by name without quotes for MS
+        "ms_procedure, dbo.test_poc",
+        //test searching deps of object by name without quotes and case insensitive mode for MS
+        "ms_UPPER_CASE, dbo.TEST_POC",
+        // test searching deps of function by full name
         "function_circle, public.f1\\(\\)",
+        //test searching deps of function by name with regex for PG
+        "function_circle, 'public\\.f1\\(.*'",
+        //test searching deps of function by name without parens for PG
+        "function_circle, 'public\\.f1'",
+        //test searching deps of function by name with quotes and without parens for PG
+        "function_circle_quotes, 'public\\.\"Func1\"\\(.*'",
+        //test searching deps of quoted function by name without quotes and parens for PG
+        "function_circle_quotes, 'public\\.func1'",
         "ch_dictionary, default.dict",
         "ch_view, default.revenue0",
         "ch_view_2, default.TestView",

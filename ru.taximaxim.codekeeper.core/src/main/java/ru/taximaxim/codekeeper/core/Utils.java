@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -119,6 +120,10 @@ public final class Utils {
 
     public static boolean isMsSystemSchema(String schema) {
         return Consts.SYS.equalsIgnoreCase(schema);
+    }
+
+    public static boolean stringContainsAnyItem(String inputStr, List<String> items) {
+        return items.stream().anyMatch(inputStr::contains);
     }
 
     private Utils() {
