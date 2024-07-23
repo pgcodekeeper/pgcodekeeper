@@ -11,6 +11,12 @@
 
 ### Изменено
 
+### Исправлено
+
+## [9.11.0] - 2024-07-23
+
+### Изменено
+
 - Параметры для фильтрации объектов `--graph-name` и `--insert-name` больше не зависят от регистра и не требуют квотирования, добавлена возможность указания имени функции без сигнатуры.
 
 ### Исправлено
@@ -1970,7 +1976,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...HEAD
+[9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
 [9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
 [9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
 [9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0

@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+### Fixed
+
+## [9.11.0] - 2024-07-23
+
+### Changed
+
 - Parameters for filtering objects `--graph-name` and `--insert-name` are no longer case sensitive and do not require quotes, it is now possible to specify a function name without a signature.
 
 ### Fixed
@@ -1969,7 +1975,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...HEAD
+[9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
 [9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
 [9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
 [9.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.7.0...v9.8.0
