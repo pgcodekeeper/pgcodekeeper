@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- In the `--insert` mode, added ignoring of columns with the `timestamp` type for MS SQL.
+
 ### Fixed
 
 ## [9.11.0] - 2024-07-23

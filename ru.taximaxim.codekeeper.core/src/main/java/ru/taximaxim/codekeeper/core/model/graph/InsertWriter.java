@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -60,6 +61,19 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 
 public final class InsertWriter {
+
+    private static final String GEOM_FROM_TEXT_MS_FUNC = "{0}::STGeomFromText(''{1}'', 4326)";
+    private static final String GEOM_FROM_TEXT_PG_FUNC = "ST_GeomFromText(''{0}'', 4326)";
+
+    private static final String BIT_TYPE = "bit";
+    private static final String GEOMETRY_TYPE = "[geometry]";
+    private static final String GEOGRAPHY_TYPE = "[geography]";
+    private static final String POSTGIS_GEOMETRY_TYPE = "postgis.geometry";
+    private static final String TIMESTAMP_TYPE = "[timestamp]";
+
+    private static final String PARENT_KEY = "parent";
+    private static final String NAME_KEY = "name";
+    private static final String FILTER_KEY = "filter";
 
     private final DatabaseType dbType;
 
@@ -147,8 +161,7 @@ public final class InsertWriter {
         }
 
         String qName = getQualifiedName(name, db);
-        var writer = new InsertWriter(db);
-        writer.generateScript(arguments.getNewSrc(), qName, filter, sb);
+        new InsertWriter(db).generateScript(arguments.getNewSrc(), qName, filter, sb);
 
         if (isTransaction) {
             switch (dbType) {
@@ -230,9 +243,9 @@ public final class InsertWriter {
 
         Map<String, Object> map = packData(null, rootName, rootFilter);
         do {
-            var parent = (RowData) map.get("parent");
-            var name = map.get("name").toString();
-            var filter = map.get("filter").toString();
+            var parent = (RowData) map.get(PARENT_KEY);
+            var name = map.get(NAME_KEY).toString();
+            var filter = map.get(FILTER_KEY).toString();
 
             var select = generateSelect(name, filter);
 
@@ -289,9 +302,9 @@ public final class InsertWriter {
      */
     private Map<String, Object> packData(RowData parent, String name, String filter) {
         Map<String, Object> map = new HashMap<>();
-        map.put("parent", parent);
-        map.put("name", name);
-        map.put("filter", filter);
+        map.put(PARENT_KEY, parent);
+        map.put(NAME_KEY, name);
+        map.put(FILTER_KEY, filter);
         return map;
     }
 
@@ -300,11 +313,12 @@ public final class InsertWriter {
         sb.append("SELECT ");
         for (var col : cols.get(name)) {
             var colName = col.getName();
-            if (col.getType() != null && col.getType().contains("binary]")) {
+            var colType = col.getType();
+            if (colType != null && colType.contains("binary]")) {
                 sb.append("CAST(").append(colName).append(" AS INT) AS ").append(colName);
-            } else if ("[geometry]".equals(col.getType()) || "[geography]".equals(col.getType())) {
+            } else if (GEOMETRY_TYPE.equals(colType) || GEOGRAPHY_TYPE.equals(colType)) {
                 sb.append(colName).append(".STAsText() AS ").append(colName);
-            } else if ("postgis.geometry".equals(col.getType())) {
+            } else if (POSTGIS_GEOMETRY_TYPE.equals(colType)) {
                 sb.append("ST_AsText(").append(colName).append(") AS ").append(colName);
             } else {
                 sb.append(colName);
@@ -335,7 +349,7 @@ public final class InsertWriter {
             var type = col.getType();
             Object rawValue = values.getObject(colName);
 
-            if (isNeedSkip(rawValue, col)) {
+            if (isNeedSkip(rawValue, col, type)) {
                 continue;
             }
 
@@ -357,10 +371,17 @@ public final class InsertWriter {
         return new RowData(tableName, parent, data, fkCols, pkCols);
     }
 
-    private boolean isNeedSkip(Object rawValue, AbstractColumn col) {
-        return rawValue == null
-                || (col instanceof MsColumn && ((MsColumn) col).getExpression() != null)
-                || (col instanceof PgColumn && ((PgColumn) col).isGenerated());
+    private boolean isNeedSkip(Object rawValue, AbstractColumn col, String colType) {
+        if (rawValue == null) {
+            return true;
+        }
+
+        if (col instanceof MsColumn) {
+            MsColumn msCol = (MsColumn) col;
+            return msCol.getExpression() != null || TIMESTAMP_TYPE.equals(colType);
+        }
+
+        return col instanceof PgColumn && ((PgColumn) col).isGenerated();
     }
 
     /**
@@ -372,21 +393,21 @@ public final class InsertWriter {
      * @return processed data
      */
     private String getValue(String type, Object rawValue) {
-        if ("bit".equals(type)) {
+        if (BIT_TYPE.equals(type)) {
             return rawValue.equals(true) ? "'1'" : "'0'";
         }
-        if ("[geometry]".equals(type) || "[geography]".equals(type)) {
-            return type + "::STGeomFromText('" + rawValue.toString() + "', 4326)";
+        if (GEOMETRY_TYPE.equals(type) || GEOGRAPHY_TYPE.equals(type)) {
+            return MessageFormat.format(GEOM_FROM_TEXT_MS_FUNC, type, rawValue.toString());
         }
-        if ("postgis.geometry".equals(type)) {
-            return "ST_GeomFromText('" + rawValue.toString() + "', 4326)";
+        if (POSTGIS_GEOMETRY_TYPE.equals(type)) {
+            return MessageFormat.format(GEOM_FROM_TEXT_PG_FUNC, rawValue.toString());
         }
         return isNeedQuotting(rawValue, type) ? PgDiffUtils.quoteString(rawValue.toString()) : rawValue.toString();
     }
 
     private boolean isNeedQuotting(Object rawValue, String type) {
         return rawValue instanceof String
-                || type.contains("bit")
+                || type.contains(BIT_TYPE)
                 || type.contains("time")
                 || type.contains("date")
                 || type.contains("json")
