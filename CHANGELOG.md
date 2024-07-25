@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - In the `--insert` mode, added ignoring of columns with the `timestamp` type for MS SQL.
+- Updated PostgreSQL JDBC driver version.
 
 ### Fixed
 
