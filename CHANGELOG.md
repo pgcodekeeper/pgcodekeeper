@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for UNLOGGED option for GENERATED SEQUENCE in PostgreSQL.
+
 ### Changed
 
 - In the `--insert` mode, added ignoring of columns with the `timestamp` type for MS SQL.

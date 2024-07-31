@@ -222,7 +222,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         checkLocation(child, QNameParser.getFirstNameCtx(ids).getStart());
     }
 
-    private void checkLocation(PgStatement statement, Token errToken) {
+    protected void checkLocation(PgStatement statement, Token errToken) {
         if (isRefMode() || fileName == null) {
             return;
         }

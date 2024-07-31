@@ -585,6 +585,8 @@ class PgDiffTest {
             "add_objects_with_quoted_name",
             // Test scenario where objects with quoted names is added.
             "compare_statistics",
+            // Test scenario where the option logged in sequences is changed
+            "modify_logged_generated_sequence",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

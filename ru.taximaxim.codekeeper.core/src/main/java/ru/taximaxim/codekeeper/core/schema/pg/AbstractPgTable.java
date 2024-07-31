@@ -156,8 +156,8 @@ public abstract class AbstractPgTable extends AbstractTable {
         });
     }
 
-    private void writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
-        AbstractSequence sequence = column.getSequence();
+    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
+        PgSequence sequence = column.getSequence();
         sbOption.append(getAlterTable(newLine, false))
         .append(ALTER_COLUMN)
         .append(PgDiffUtils.getQuotedName(column.getName()))
@@ -167,6 +167,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         sbOption.append("\n\tSEQUENCE NAME ").append(sequence.getQualifiedName());
         sequence.fillSequenceBody(sbOption);
         sbOption.append("\n);");
+        return sequence;
     }
 
     @Override

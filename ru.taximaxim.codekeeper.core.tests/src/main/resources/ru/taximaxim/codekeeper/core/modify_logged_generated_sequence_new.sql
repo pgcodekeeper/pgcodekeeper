@@ -1,0 +1,52 @@
+CREATE UNLOGGED TABLE public.t1 (
+	row_id bigint NOT NULL
+);
+
+ALTER TABLE public.t1 ALTER COLUMN row_id ADD GENERATED ALWAYS AS IDENTITY (
+	SEQUENCE NAME t1_row_id_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MAXVALUE
+	NO MINVALUE
+	CACHE 1
+);
+ALTER SEQUENCE public.t1_row_id_seq SET LOGGED;
+
+CREATE TABLE public.t2 (
+	row_id bigint NOT NULL
+);
+
+ALTER TABLE public.t2 ALTER COLUMN row_id ADD GENERATED ALWAYS AS IDENTITY (
+	SEQUENCE NAME t2_row_id_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MAXVALUE
+	NO MINVALUE
+	CACHE 1
+);
+ALTER SEQUENCE public.t2_row_id_seq SET UNLOGGED;
+
+CREATE FOREIGN DATA WRAPPER mywrapper OPTIONS (
+    debug 'true'
+);
+
+CREATE SERVER myserver FOREIGN DATA WRAPPER mywrapper OPTIONS (
+    host 'foo',
+    dbname 'foodb',
+    port '5432'
+);
+
+CREATE FOREIGN TABLE public.t3 (
+	row_id bigint NOT NULL
+)
+SERVER myserver;
+
+ALTER TABLE public.t3 ALTER COLUMN row_id ADD GENERATED ALWAYS AS IDENTITY (
+	SEQUENCE NAME t3_row_id_seq
+	START WITH 1
+	INCREMENT BY 1
+	NO MAXVALUE
+	NO MINVALUE
+	CACHE 1
+);
+ALTER SEQUENCE public.t3_row_id_seq SET UNLOGGED;
