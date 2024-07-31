@@ -38,7 +38,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_storage_parameterContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractRegularTable;
@@ -46,6 +45,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionGpTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 
@@ -77,8 +77,11 @@ public class CreateTable extends TableAbstract {
         addSafe(schema, table, ids);
 
         for (AbstractColumn col : table.getColumns()) {
-            AbstractSequence seq = ((PgColumn) col).getSequence();
+            PgSequence seq = ((PgColumn) col).getSequence();
             if (seq != null) {
+                if (table instanceof AbstractRegularTable) {
+                    seq.setLogged(((AbstractRegularTable) table).isLogged());
+                }
                 seq.setParent(schema);
             }
         }

@@ -294,6 +294,11 @@ public class AlterTable extends TableAbstract {
             sequence.setDataType(col.getType());
             CreateSequence.fillSequence(sequence, identity.sequence_body());
 
+            var table = col.getParent();
+            if (table instanceof AbstractRegularTable) {
+                sequence.setLogged(((AbstractRegularTable) table).isLogged());
+            }
+
             col.setSequence(sequence);
             sequence.setParent(schema);
             col.setIdentityType(identity.ALWAYS() != null ? "ALWAYS" : "BY DEFAULT");

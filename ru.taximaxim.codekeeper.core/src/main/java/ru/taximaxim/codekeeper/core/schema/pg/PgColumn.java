@@ -58,7 +58,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private String storage;
     private final Map<String, String> options = new LinkedHashMap<>(0);
     private final Map<String, String> fOptions = new LinkedHashMap<>(0);
-    private AbstractSequence sequence;
+    private PgSequence sequence;
     private String identityType;
     private String compression;
     private boolean isInherit;
@@ -656,11 +656,11 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         resetHash();
     }
 
-    public AbstractSequence getSequence() {
+    public PgSequence getSequence() {
         return sequence;
     }
 
-    public void setSequence(final AbstractSequence sequence) {
+    public void setSequence(final PgSequence sequence) {
         this.sequence = sequence;
         resetHash();
     }

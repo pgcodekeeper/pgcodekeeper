@@ -9,6 +9,8 @@
 
 ### Добавлено
 
+- Добавлена поддержка опции UNLOGGED для GENERATED SEQUENCE в PostgreSQL.
+
 ### Изменено
 
 - В режиме `--insert` добавлено игнорирование колонок с типом `timestamp` для MS SQL.

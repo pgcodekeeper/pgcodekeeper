@@ -245,6 +245,16 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
                 || !Objects.equals(getPartitionBy(), regTable.getPartitionBy());
     }
 
+    @Override
+    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
+        PgSequence sequence = super.writeSequences(column, sbOption, newLine);
+        if (isLogged != sequence.isLogged()) {
+            sbOption.append("\nALTER SEQUENCE ").append(sequence.getQualifiedName()).append(" SET ")
+                    .append(sequence.isLogged() ? "LOGGED;" : "UNLOGGED;");
+        }
+        return sequence;
+    }
+
     public boolean isLogged() {
         return isLogged;
     }
