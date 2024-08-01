@@ -58,7 +58,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
@@ -71,7 +71,6 @@ public final class DbStoreEditorDialog extends TrayDialog {
     private final String action;
 
     private static final String DEFAULT_HOST = "127.0.0.1"; //$NON-NLS-1$
-    private static final String DEFAULT_PORT = "5432"; //$NON-NLS-1$
     private static final String WARNING_IMAGE = "\u2757"; //$NON-NLS-1$
 
     private final DbInfo dbInitial;
@@ -128,8 +127,9 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 newShell.removeShellListener(this);
 
                 boolean generateEntryName = true;
+                DatabaseType dbType = DatabaseType.PG;
                 String dbHost = DEFAULT_HOST;
-                String dbPort = DEFAULT_PORT;
+                String dbPort = dbType.getDefaultPort();
                 String dbName = ""; //$NON-NLS-1$
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
@@ -137,7 +137,6 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 String dbConType = ""; //$NON-NLS-1$
                 String entryName = ""; //$NON-NLS-1$
                 String domain = ""; //$NON-NLS-1$
-                DatabaseType dbType = DatabaseType.PG;
                 List<String> ignoreList = null;
                 List<Entry<String, String>> properties = null;
 
@@ -208,10 +207,10 @@ public final class DbStoreEditorDialog extends TrayDialog {
         String dbHost = txtDbHost.getText();
         entryNameSb.append(dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
 
+        String defPort = getSelectedDbType().getDefaultPort();
         String dbPort = txtDbPort.getText();
-        String verifiedDbPort = dbPort.isEmpty() || "0".equals(dbPort) ? DEFAULT_PORT : dbPort; //$NON-NLS-1$
-        if (!DEFAULT_PORT.equals(verifiedDbPort)) {
-            entryNameSb.append(':').append(verifiedDbPort);
+        if (!dbPort.isEmpty() && !"0".equals(dbPort) && !defPort.equals(dbPort)) { //$NON-NLS-1$
+            entryNameSb.append(':').append(dbPort);
         }
 
         String dbName = txtDbName.getText();
@@ -526,30 +525,23 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        Button btnTestConnection = createButton(parent, IDialogConstants.CLIENT_ID, Messages.DbStoreEditorDialog_test_connection, true);
+        Button btnTestConnection = createButton(parent, IDialogConstants.CLIENT_ID,
+                Messages.DbStoreEditorDialog_test_connection, true);
         btnTestConnection.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
                 int style;
                 String message;
-                String port = txtDbPort.getText();
-
                 try {
-                    int dbport = port.isEmpty() ? 0 : Integer.parseInt(port);
-                    JdbcConnector connector = JdbcConnector.getJdbcConnector(getSelectedDbType(), txtDbHost.getText(),
-                            dbport, txtDbUser.getText(), txtDbPass.getText(), txtDbName.getText(),
-                            propertyListEditor.getList().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue)),
-                            btnReadOnly.getSelection(), Consts.UTC, isWinAuth(), txtDomain.getText());
-
+                    AbstractJdbcConnector connector = new DbInfoJdbcConnector(generateDbInfo());
                     try (Connection connection = connector.getConnection()) {
                         style = SWT.OK;
                         message = Messages.DbStoreEditorDialog_successfull_connection;
                     }
                 } catch (NumberFormatException ex) {
-                    message = MessageFormat.format(
-                            Messages.dbStoreEditorDialog_not_valid_port_number,
-                            port);
+                    message = MessageFormat.format(Messages.dbStoreEditorDialog_not_valid_port_number,
+                            txtDbPort.getText());
                     style = SWT.ICON_ERROR;
                 } catch (SQLException | IOException ex) {
                     Log.log(Log.LOG_INFO, "Connection test error", ex); //$NON-NLS-1$
@@ -558,7 +550,8 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 }
 
                 MessageBox mb = new MessageBox(getShell(), style);
-                mb.setText(style == SWT.ERROR ? Messages.DbStoreEditorDialog_failed_connection : Messages.DbStoreEditorDialog_success);
+                mb.setText(style == SWT.ERROR ? Messages.DbStoreEditorDialog_failed_connection
+                        : Messages.DbStoreEditorDialog_success);
                 mb.setMessage(message);
                 mb.open();
             }
@@ -569,22 +562,40 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
     @Override
     protected void okPressed() {
-        int dbport;
         String port = txtDbPort.getText();
-        if (txtDbPort.getText().isEmpty()) {
-            dbport = 0;
-        } else {
+        if (!port.isEmpty()) {
             try {
-                dbport = Integer.parseInt(port);
+                Integer.parseInt(port);
             } catch (NumberFormatException ex) {
                 MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
                 mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-                mb.setMessage(MessageFormat.format(
-                        Messages.dbStoreEditorDialog_not_valid_port_number,
-                        port));
+                mb.setMessage(MessageFormat.format(Messages.dbStoreEditorDialog_not_valid_port_number, port));
                 mb.open();
                 return;
             }
+        }
+
+        if (txtName.getText().isEmpty()) {
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
+            mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
+            mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
+            mb.open();
+        } else {
+            dbInfo = generateDbInfo();
+            super.okPressed();
+        }
+    }
+
+    private DbInfo generateDbInfo() {
+        String port = txtDbPort.getText();
+        int dbport = port.isEmpty() ? 0 : Integer.parseInt(port);
+
+        DatabaseType dbType = getSelectedDbType();
+
+        Map<String, String> properties = propertyListEditor.getList().stream()
+                .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+        if (dbType == DatabaseType.MS) {
+            properties.put(Consts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
         }
 
         String exePath;
@@ -594,29 +605,11 @@ public final class DbStoreEditorDialog extends TrayDialog {
             exePath = txtDumpFile.getText();
         }
 
-        if (txtName.getText().isEmpty()) {
-            MessageBox mb = new MessageBox(getShell(),
-                    SWT.ICON_WARNING);
-            mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-            mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
-            mb.open();
-        } else {
-            DatabaseType dbType = getSelectedDbType();
-            Map<String, String> properties = propertyListEditor.getList().stream()
-                    .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-            if (dbType == DatabaseType.MS) {
-                properties.put(Consts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
-            }
-
-            dbInfo = new DbInfo(txtName.getText(), txtDbName.getText(),
-                    txtDbUser.getText(), txtDbPass.getText(),
-                    txtDbHost.getText(), dbport, btnReadOnly.getSelection(),
-                    btnGenerateName.getSelection(), ignoreListEditor.getList(),
-                    properties, dbType, isWinAuth(), txtDomain.getText(),
-                    exePath, txtDumpParameters.getText(), btnUseDump.getSelection(),
-                    cmbGroups.getCombo().getText(), cmbConTypes.getCombo().getText());
-            super.okPressed();
-        }
+        return new DbInfo(txtName.getText(), txtDbName.getText(), txtDbUser.getText(), txtDbPass.getText(),
+                txtDbHost.getText(), dbport, btnReadOnly.getSelection(), btnGenerateName.getSelection(),
+                ignoreListEditor.getList(), properties, dbType, isWinAuth(), txtDomain.getText(), exePath,
+                txtDumpParameters.getText(), btnUseDump.getSelection(), cmbGroups.getCombo().getText(),
+                cmbConTypes.getCombo().getText());
     }
 
     public DatabaseType getSelectedDbType() {

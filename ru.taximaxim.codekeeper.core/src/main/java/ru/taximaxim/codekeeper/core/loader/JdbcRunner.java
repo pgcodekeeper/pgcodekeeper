@@ -80,7 +80,8 @@ public class JdbcRunner {
         runScript(new QueryCallable(st, script));
     }
 
-    public void run(JdbcConnector connector, String script) throws SQLException, IOException, InterruptedException {
+    public void run(AbstractJdbcConnector connector, String script)
+            throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {
             run(st, script);
@@ -97,7 +98,7 @@ public class JdbcRunner {
      * @throws IOException
      * @throws InterruptedException
      */
-    public void runBatches(JdbcConnector connector, List<PgObjLocation> batches,
+    public void runBatches(AbstractJdbcConnector connector, List<PgObjLocation> batches,
             IProgressReporter reporter) throws SQLException, IOException, InterruptedException {
         try (Connection connection = connector.getConnection();
                 Statement st = connection.createStatement()) {

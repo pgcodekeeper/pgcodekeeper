@@ -59,8 +59,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
     private static final String NAMESPACE_NAME = "nspname";
     private static final String NAME = "name";
 
-    public JdbcSystemLoader(JdbcConnector connector, SubMonitor monitor) {
+    private final String timezone;
+
+    public JdbcSystemLoader(AbstractJdbcConnector connector, String timezone, SubMonitor monitor) {
         super(connector, monitor, null, null);
+        this.timezone = timezone;
     }
 
     @Override
@@ -79,7 +82,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             this.statement = statement;
             connection.setAutoCommit(false);
             statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
-            statement.execute("SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
+            statement.execute("SET timezone = " + PgDiffUtils.quoteString(timezone));
 
             queryCheckVersion();
             queryCheckLastSysOid();

@@ -32,16 +32,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
-import org.eclipse.core.runtime.SubMonitor;
-
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
-import ru.taximaxim.codekeeper.core.loader.JdbcChLoader;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
-import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
 import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
+import ru.taximaxim.codekeeper.core.loader.LoaderFactory;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -209,23 +204,7 @@ public class PgDiff {
         } else if ("parsed".equals(format)) {
             loader = new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
         } else if ("db".equals(format)) {
-            String timezone = arguments.getTimeZone() == null ? Consts.UTC : arguments.getTimeZone();
-            switch (arguments.getDbType()) {
-            case MS:
-                loader = new JdbcMsLoader(JdbcConnector.fromUrl(srcPath, timezone),
-                        arguments, SubMonitor.convert(null), ignoreSchemaList);
-                break;
-            case PG:
-                loader = new JdbcLoader(JdbcConnector.fromUrl(srcPath, timezone),
-                        arguments, SubMonitor.convert(null), ignoreSchemaList);
-                break;
-            case CH:
-                loader = new JdbcChLoader(JdbcConnector.fromUrl(srcPath, timezone),
-                        arguments, SubMonitor.convert(null), ignoreSchemaList);
-                break;
-            default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-            }
+            loader = LoaderFactory.createJdbcLoader(arguments, srcPath, ignoreSchemaList);
         } else {
             throw new UnsupportedOperationException(MessageFormat.format(Messages.UnknownDBFormat, format));
         }
@@ -406,14 +385,6 @@ public class PgDiff {
         }
         if (additionalDepciesTarget != null) {
             depRes.addCustomDepciesToNew(additionalDepciesTarget);
-        }
-
-        List<String> dbNames = new ArrayList<>();
-        if ("db".equals(arguments.getNewSrcFormat())) {
-            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getNewSrc()));
-        }
-        if ("db".equals(arguments.getOldSrcFormat())) {
-            dbNames.add(JdbcConnector.dbNameFromUrl(arguments.getOldSrc()));
         }
 
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------

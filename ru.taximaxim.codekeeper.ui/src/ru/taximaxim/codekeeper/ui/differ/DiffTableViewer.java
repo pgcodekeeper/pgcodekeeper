@@ -109,7 +109,6 @@ import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
@@ -918,7 +917,7 @@ public class DiffTableViewer extends Composite {
             switch (PgLibrarySource.getSource(libName)) {
             case JDBC:
                 type = Messages.DiffTableViewer_database;
-                name = JdbcConnector.dbNameFromUrl(libName);
+                name = FileUtils.dbNameFromUrl(libName);
                 break;
             case URL:
                 type = Messages.DiffTableViewer_uri;

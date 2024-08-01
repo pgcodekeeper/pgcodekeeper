@@ -47,8 +47,8 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -217,7 +217,7 @@ public final class InsertWriter {
      */
     private void generateScript(String source, String name, String filter, StringBuilder sb)
             throws InterruptedException, IOException, SQLException {
-        try (Connection connection = JdbcConnector.fromUrl(source).getConnection()) {
+        try (Connection connection = new UrlJdbcConnector(source).getConnection()) {
             fillGraph(name, filter, connection);
         }
         removeCycles();

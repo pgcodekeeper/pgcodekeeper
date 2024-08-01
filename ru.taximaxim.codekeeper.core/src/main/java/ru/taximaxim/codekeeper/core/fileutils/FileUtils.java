@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.UncheckedIOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystemException;
 import java.nio.file.Files;
@@ -40,6 +41,7 @@ public final class FileUtils {
 
     private static final DateTimeFormatter FILE_DATE = DateTimeFormatter.ofPattern("yyyy-MM-dd HH''mm''ss");
     private static final Pattern INVALID_FILENAME = Pattern.compile("[\\\\/:*?\"<>|]");
+    private static final Pattern MS_DB_NAME_PATTERN = Pattern.compile("\\=[^;]+\\;");
 
     /**
      * Deletes folder and its contents recursively.
@@ -117,6 +119,22 @@ public final class FileUtils {
         String fileName = FileUtils.getValidFilename(Paths.get(path).getFileName().toString());
         String name = fileName + '_' + PgDiffUtils.md5(path).substring(0, 10);
         return metaPath.resolve(name);
+    }
+
+    public static String dbNameFromUrl(String url) {
+        if (url.startsWith("jdbc:sqlserver")) {
+            Matcher m = MS_DB_NAME_PATTERN.matcher(url);
+            if (m.find()) {
+                String s = m.group();
+                return s.substring(1, s.length() - 1).replace("{", "").replace("}", "");
+            }
+        }
+
+        try {
+            return getNameFromUri(new URI(url.substring(5)));
+        } catch (URISyntaxException e) {
+            return "";
+        }
     }
 
     public static String getNameFromUri(URI uri) {

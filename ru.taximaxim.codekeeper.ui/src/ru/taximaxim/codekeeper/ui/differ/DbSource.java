@@ -38,11 +38,9 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
-import ru.taximaxim.codekeeper.core.loader.JdbcChLoader;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcLoader;
-import ru.taximaxim.codekeeper.core.loader.JdbcMsLoader;
+import ru.taximaxim.codekeeper.core.loader.LoaderFactory;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
@@ -55,6 +53,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.formatter.Formatter;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
@@ -427,12 +426,13 @@ class DbSourceDb extends DbSource {
 
 class DbSourceJdbc extends DbSource {
 
-    private final JdbcConnector jdbcConnector;
+    private final AbstractJdbcConnector jdbcConnector;
     private final String dbName;
     private final boolean forceUnixNewlines;
     private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
+    private final String timezone;
 
     @Override
     public String getDbName() {
@@ -443,23 +443,13 @@ class DbSourceJdbc extends DbSource {
             IProject proj, Map<String, Boolean> oneTimePrefs) {
         super(dbinfo.getDbName());
 
-        String host = dbinfo.getDbHost();
-        int port = dbinfo.getDbPort();
-        String user = dbinfo.getDbUser();
-        String pass = dbinfo.getDbPass();
-        Map<String, String> properties = dbinfo.getProperties();
-        boolean readOnly = dbinfo.isReadOnly();
-        boolean winAuth = dbinfo.isWinAuth();
-
+        this.jdbcConnector = new DbInfoJdbcConnector(dbinfo);
         this.dbName = dbinfo.getDbName();
         this.forceUnixNewlines = forceUnixNewlines;
         this.dbType = dbinfo.getDbType();
-
-        jdbcConnector = JdbcConnector.getJdbcConnector(dbType, host, port, user, pass, dbName, properties, readOnly,
-                timezone, winAuth, dbinfo.getDomain());
-
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
+        this.timezone = timezone;
     }
 
     @Override
@@ -474,16 +464,8 @@ class DbSourceJdbc extends DbSource {
             Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
             ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
-        switch (dbType) {
-        case PG:
-            return load(new JdbcLoader(jdbcConnector, args, monitor, ignoreShemaList));
-        case MS:
-            return load(new JdbcMsLoader(jdbcConnector, args, monitor, ignoreShemaList));
-        case CH:
-            return load(new JdbcChLoader(jdbcConnector, args, monitor, ignoreShemaList));
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+
+        return load(LoaderFactory.createJdbcLoader(args, timezone, jdbcConnector, monitor, ignoreShemaList));
     }
 }
 class DbSourceFromDbObject extends DbSource {

@@ -172,14 +172,7 @@ public class LibraryLoader extends DatabaseLoader {
     }
 
     private AbstractDatabase loadJdbc(PgDiffArguments args, String path) throws IOException, InterruptedException {
-        String timezone = args.getTimeZone() == null ? Consts.UTC : args.getTimeZone();
-        DatabaseLoader loader;
-        if (path.startsWith("jdbc:sqlserver")) {
-            loader = new JdbcMsLoader(JdbcConnector.fromUrl(path, timezone), args);
-        } else {
-            loader = new JdbcLoader(JdbcConnector.fromUrl(path, timezone), args);
-        }
-
+        DatabaseLoader loader = LoaderFactory.createJdbcLoader(args, path, null);
         AbstractDatabase db;
         try {
             db = loader.load();

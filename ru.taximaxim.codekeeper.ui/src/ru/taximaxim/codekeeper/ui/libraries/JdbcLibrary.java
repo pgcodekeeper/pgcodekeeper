@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import org.eclipse.swt.graphics.Image;
 
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 
@@ -28,7 +28,7 @@ public class JdbcLibrary extends AbstractLibrary {
     private final String url;
 
     JdbcLibrary(AbstractLibrary parent, String url) {
-        super(parent, null, JdbcConnector.dbNameFromUrl(url));
+        super(parent, null, FileUtils.dbNameFromUrl(url));
         this.url = url;
     }
 

@@ -51,7 +51,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
@@ -64,6 +64,7 @@ import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -133,7 +134,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private final IFile file;
     private final PgDbProject proj;
-    private final DbInfo dbinfo;
+    private final DbInfo dbInfo;
     private final byte[] textSnapshot;
     private SubMonitor monitor;
 
@@ -141,7 +142,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         super(Messages.QuickUpdate_quick_update, editor, QuickUpdateJobTester.EVAL_PROP);
         this.file = file;
         this.proj = new PgDbProject(file.getProject());
-        this.dbinfo = dbInfo;
+        this.dbInfo = dbInfo;
         this.textSnapshot = textSnapshot;
     }
 
@@ -166,7 +167,7 @@ class QuickUpdateJob extends SingletonEditorJob {
     CoreException, PgCodekeeperUIException, InvocationTargetException {
         DatabaseType dbType = OpenProjectUtils.getDatabaseType(proj.getProject());
 
-        if (dbinfo.getDbType() != dbType) {
+        if (dbInfo.getDbType() != dbType) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
@@ -191,7 +192,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        DbSource dbRemote = DbSource.fromDbInfo(dbinfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+        DbSource dbRemote = DbSource.fromDbInfo(dbInfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
                 proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
@@ -214,9 +215,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
 
-        JdbcConnector connector = JdbcConnector.getJdbcConnector(dbType, dbinfo.getDbHost(), dbinfo.getDbPort(),
-                dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(), dbinfo.getProperties(),
-                dbinfo.isReadOnly(), Consts.UTC, dbinfo.isWinAuth(), dbinfo.getDomain());
+        AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
 
         try {
             ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), dbType);

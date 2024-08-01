@@ -22,6 +22,7 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public class StatementUtils {
 
@@ -108,7 +109,7 @@ public class StatementUtils {
             }
             break;
         default:
-            throw new IllegalStateException("Unsupported database type: " + dbType);
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
         sbSQL.setLength(sbSQL.length() - 2);
         sbSQL.append(')');
@@ -167,7 +168,7 @@ public class StatementUtils {
                     sbSQL.append(" = ").append(value);
                     break;
                 default:
-                    throw new IllegalStateException("Unsupported database type: " + dbType);
+                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
                 }
             }
             sbSQL.append(", ");
