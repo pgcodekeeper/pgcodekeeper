@@ -1,0 +1,68 @@
+/*******************************************************************************
+ * Copyright 2017-2024 TAXTELECOM, LLC
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *******************************************************************************/
+package ru.taximaxim.codekeeper.ui.dialogs;
+
+import java.util.Collection;
+import java.util.EnumSet;
+
+import org.eclipse.jface.viewers.ArrayContentProvider;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+
+public class ObjectTypeViewer {
+
+    private static final Object[] SORTED_TYPES = EnumSet
+            .complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN))
+            .stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
+
+    private CheckboxTableViewer objViewer;
+
+    public ObjectTypeViewer(Composite parent, String text, Collection<DbObjType> types) {
+        createTypesPart(parent, text, types);
+    }
+
+    private void createTypesPart(Composite parent, String text, Collection<DbObjType> types) {
+        new Label(parent, SWT.NONE).setText(text);
+
+        objViewer = CheckboxTableViewer.newCheckList(parent, SWT.BORDER);
+        objViewer.setContentProvider(ArrayContentProvider.getInstance());
+        objViewer.setLabelProvider(new LabelProvider() {
+
+            @Override
+            public String getText(Object element) {
+                return ((DbObjType) element).getTypeName();
+            }
+        });
+
+        objViewer.add(SORTED_TYPES);
+        objViewer.setCheckedElements(types.toArray());
+        objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+    }
+
+    public void setAllSelected(boolean isSelected) {
+        objViewer.setAllChecked(isSelected);
+    }
+
+    public Object[] getSelectedElements() {
+        return objViewer.getCheckedElements();
+    }
+}

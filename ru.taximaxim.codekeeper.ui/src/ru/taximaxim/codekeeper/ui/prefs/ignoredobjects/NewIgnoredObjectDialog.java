@@ -16,35 +16,33 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.util.EnumSet;
-import java.util.Iterator;
+import java.util.Set;
 
 import org.eclipse.jface.dialogs.InputDialog;
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.ui.dialogs.ObjectTypeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NewIgnoredObjectDialog extends InputDialog {
 
-    // TODO add possibility to select several types in GUI
-    // (in parsing logic it is already done)
     private final IgnoredObject objInitial;
     private IgnoredObject ignoredObject;
     private Button btnPattern;
     private Button btnContent;
     private Button btnQualified;
-    private ComboViewer comboType;
+    private ObjectTypeViewer objTypeViewer;
+    private Set<DbObjType> types;
     private final boolean isIgnoreSchemaList;
 
     public IgnoredObject getIgnoredObject() {
@@ -65,17 +63,9 @@ public class NewIgnoredObjectDialog extends InputDialog {
 
         Composite c = new Composite(composite, SWT.NONE);
         c.setLayout(new GridLayout());
-        c.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (!isIgnoreSchemaList) {
-            Label label = new Label(c, SWT.LEFT);
-            label.setText(Messages.ignoredObjectPrefListEditor_type);
-
-            comboType = new ComboViewer(c, SWT.READ_ONLY);
-            comboType.setContentProvider(ArrayContentProvider.getInstance());
-            comboType.setInput(TypesEditingSupport.comboTypes());
-            comboType.setContentProvider(ArrayContentProvider.getInstance());
-            comboType.setSelection(new StructuredSelection(TypesEditingSupport.COMBO_TYPE_ALL));
-        }
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = isIgnoreSchemaList ? 60 : 410;
+        c.setLayoutData(gd);
 
         btnPattern = new Button(c, SWT.CHECK);
         btnPattern.setText(Messages.IgnoredObjectPrefListEditor_pattern);
@@ -91,27 +81,55 @@ public class NewIgnoredObjectDialog extends InputDialog {
                 btnContent.setSelection(objInitial.isIgnoreContent());
                 btnContent.setSelection(objInitial.isQualified());
                 btnPattern.setSelection(objInitial.isRegular());
-
-                Iterator<DbObjType> iterator = objInitial.getObjTypes().iterator();
-                if (iterator.hasNext()) {
-                    comboType.setSelection(new StructuredSelection(iterator.next()));
-                }
             }
+
+            types = objInitial == null ? EnumSet.noneOf(DbObjType.class) : objInitial.getObjTypes();
+            objTypeViewer = new ObjectTypeViewer(c, Messages.ignoredObjectPrefListEditor_type, types);
+
+            Composite btnContainer = new Composite(c, SWT.NONE);
+            btnContainer.setLayout(new GridLayout(2, false));
+            btnContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+            Button btnSelectAll = new Button(btnContainer, SWT.BUTTON1);
+            btnSelectAll.setText(Messages.select_all);
+            btnSelectAll.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    objTypeViewer.setAllSelected(true);
+                }
+            });
+            Button btnClearAll = new Button(btnContainer, SWT.BUTTON1);
+            btnClearAll.setText(Messages.clear_all);
+            btnClearAll.addSelectionListener(new SelectionAdapter() {
+
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    objTypeViewer.setAllSelected(false);
+                }
+            });
         }
         return composite;
     }
 
     @Override
     protected void okPressed() {
-        String selectedType = isIgnoreSchemaList ? TypesEditingSupport.COMBO_TYPE_ALL
-                : (String) ((StructuredSelection) comboType.getSelection()).getFirstElement();
+        if (!isIgnoreSchemaList) {
+            types.clear();
+            for (Object obj : objTypeViewer.getSelectedElements()) {
+                types.add((DbObjType)obj);
+            }
+        }
 
         ignoredObject = new IgnoredObject(getValue(), btnPattern.getSelection(),
                 (!isIgnoreSchemaList && btnContent.getSelection()),
                 (!isIgnoreSchemaList && btnQualified.getSelection()),
-                TypesEditingSupport.COMBO_TYPE_ALL.equals(selectedType) ?
-                        EnumSet.noneOf(DbObjType.class) : EnumSet.of(DbObjType.valueOf(selectedType)));
+                isIgnoreSchemaList ? EnumSet.noneOf(DbObjType.class) : types);
         super.okPressed();
     }
-}
 
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
+}

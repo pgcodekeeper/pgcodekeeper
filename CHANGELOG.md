@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added support for UNLOGGED option for GENERATED SEQUENCE in PostgreSQL.
+- Added the ability to specify several types of objects in the list of ignored objects.
 
 ### Changed
 
