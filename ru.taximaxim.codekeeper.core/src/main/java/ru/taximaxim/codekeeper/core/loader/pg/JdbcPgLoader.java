@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.loader;
+package ru.taximaxim.codekeeper.core.loader.pg;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -27,6 +27,9 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
+import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.CastsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.CollationsReader;
@@ -56,17 +59,15 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class JdbcLoader extends JdbcLoaderBase {
+public class JdbcPgLoader extends JdbcLoaderBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(JdbcLoader.class);
+    private static final Logger LOG = LoggerFactory.getLogger(JdbcPgLoader.class);
+    private String timezone;
 
-    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments) {
-        this(connector, pgDiffArguments, SubMonitor.convert(null), null);
-    }
-
-    public JdbcLoader(JdbcConnector connector, PgDiffArguments pgDiffArguments,
+    public JdbcPgLoader(AbstractJdbcConnector connector, String timezone, PgDiffArguments pgDiffArguments,
             SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
         super(connector, monitor, pgDiffArguments, ignoreSchemaList);
+        this.timezone = timezone;
     }
 
     @Override
@@ -82,7 +83,7 @@ public class JdbcLoader extends JdbcLoaderBase {
             connection.setAutoCommit(false);
             getRunner().run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             getRunner().run(statement, "SET search_path TO pg_catalog;");
-            getRunner().run(statement, "SET timezone = " + PgDiffUtils.quoteString(connector.getTimezone()));
+            getRunner().run(statement, "SET timezone = " + PgDiffUtils.quoteString(timezone));
 
             queryCheckVersion();
             queryCheckGreenplumDb();

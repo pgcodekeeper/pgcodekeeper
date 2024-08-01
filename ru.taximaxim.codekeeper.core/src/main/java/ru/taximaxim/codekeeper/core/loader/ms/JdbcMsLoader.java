@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.loader;
+package ru.taximaxim.codekeeper.core.loader.ms;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsAssembliesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsCheckConstraintsReader;
@@ -47,11 +48,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcMsLoader.class);
 
-    public JdbcMsLoader(JdbcConnector connector, PgDiffArguments args) {
-        this(connector, args, SubMonitor.convert(null), null);
-    }
-
-    public JdbcMsLoader(JdbcConnector connector, PgDiffArguments args,
+    public JdbcMsLoader(AbstractJdbcConnector connector, PgDiffArguments args,
             SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
         super(connector, monitor, args, ignoreSchemaList);
     }

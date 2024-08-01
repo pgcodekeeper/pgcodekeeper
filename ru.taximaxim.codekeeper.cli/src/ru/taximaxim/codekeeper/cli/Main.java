@@ -43,8 +43,8 @@ import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyWriter;
 import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
@@ -142,8 +142,7 @@ public final class Main {
                 if (url == null) {
                     url = arguments.getOldSrc();
                 }
-                new JdbcRunner().runBatches(
-                        JdbcConnector.fromUrl(url), parser.batch(), null);
+                new JdbcRunner().runBatches(new UrlJdbcConnector(url), parser.batch(), null);
             } else if (encodedWriter == null) {
                 writer.println(text);
             }
@@ -194,7 +193,7 @@ public final class Main {
             }
             String url = arguments.getRunOnDb();
             if (url != null) {
-                new JdbcRunner().runBatches(JdbcConnector.fromUrl(url),
+                new JdbcRunner().runBatches(new UrlJdbcConnector(url),
                         new ScriptParser("CLI", script, arguments.getDbType()).batch(), null);
             } else if (pw == null) {
                 writer.println(script);

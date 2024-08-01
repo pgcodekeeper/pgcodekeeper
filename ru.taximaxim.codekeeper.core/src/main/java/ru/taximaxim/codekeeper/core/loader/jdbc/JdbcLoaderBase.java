@@ -38,8 +38,8 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
@@ -82,7 +82,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     private final PgDiffArguments args;
     private final IgnoreSchemaList ignorelistSchema;
     protected final Map<Object, AbstractSchema> schemaIds = new HashMap<>();
-    protected final JdbcConnector connector;
+    protected final AbstractJdbcConnector connector;
 
     private boolean isGreenplumDb;
     private int version;
@@ -97,7 +97,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     protected Connection connection;
     protected Statement statement;
 
-    protected JdbcLoaderBase(JdbcConnector connector, SubMonitor monitor, PgDiffArguments args,
+    protected JdbcLoaderBase(AbstractJdbcConnector connector, SubMonitor monitor, PgDiffArguments args,
             IgnoreSchemaList ignoreListSchema) {
         this.connector = connector;
         this.monitor = monitor;

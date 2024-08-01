@@ -61,7 +61,7 @@ import org.osgi.service.prefs.BackingStoreException;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -73,6 +73,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -469,20 +470,18 @@ class PageDb extends WizardPage {
 
     private static class TimeZoneProgress implements IRunnableWithProgress {
 
-        private final DbInfo dbinfo;
+        private final DbInfo dbInfo;
         private String timezone;
 
-        public TimeZoneProgress(DbInfo dbinfo) {
-            this.dbinfo = dbinfo;
+        public TimeZoneProgress(DbInfo dbInfo) {
+            this.dbInfo = dbInfo;
         }
 
         @Override
         public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException {
 
-            JdbcConnector connector = JdbcConnector.getJdbcConnector(DatabaseType.PG,
-                    dbinfo.getDbHost(), dbinfo.getDbPort(), dbinfo.getDbUser(), dbinfo.getDbPass(), dbinfo.getDbName(),
-                    dbinfo.getProperties(), dbinfo.isReadOnly(), Consts.UTC, false, null);
+            AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
 
             try (Connection connection = connector.getConnection();
                     Statement st = connection.createStatement();

@@ -43,7 +43,7 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
 /**
@@ -904,9 +904,9 @@ public class CliArgs extends PgDiffArguments {
 
     private DatabaseType getDatabaseTypeFromSource(String src) {
         if (src != null && src.startsWith(URL_START_JDBC)) {
-            return JdbcConnector.getDatabaseTypeFromUrl(src);
+            return UrlJdbcConnector.getDatabaseTypeFromUrl(src);
         }
-        return getDbType();
+        return dbType;
     }
 
     private String parsePath(String source) {

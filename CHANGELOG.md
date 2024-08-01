@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug when using special characters in the password in the CLI.
+
 ## [9.11.0] - 2024-07-23
 
 ### Changed

@@ -108,7 +108,7 @@ import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.fileutils.TempFile;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
@@ -129,6 +129,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
@@ -711,9 +712,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         private IStatus runInternal(IProgressMonitor monitor) {
             Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-            JdbcConnector connector = JdbcConnector.getJdbcConnector( dbInfo.getDbType(), dbInfo.getDbHost(),
-                    dbInfo.getDbPort(), dbInfo.getDbUser(),dbInfo.getDbPass(), dbInfo.getDbName(),
-                    dbInfo.getProperties(), dbInfo.isReadOnly(), Consts.UTC, dbInfo.isWinAuth(), dbInfo.getDomain());
+            AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset, dbInfo.getName());
             try (IProgressReporter toClose = reporter) {

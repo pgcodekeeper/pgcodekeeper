@@ -18,18 +18,26 @@ package ru.taximaxim.codekeeper.core;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public enum DatabaseType {
-    PG("PostgreSQL"),
-    MS("MS SQL"),
-    CH("ClickHouse");
+
+    PG("PostgreSQL", "5432"),
+    MS("MS SQL", "1433"),
+    CH("ClickHouse", "8123");
 
     private final String dbTypeName;
+    private final String defaultPort;
 
-    private DatabaseType(String dbTypeName) {
+    private DatabaseType(String dbTypeName, String defaultPort) {
         this.dbTypeName = dbTypeName;
+        this.defaultPort = defaultPort;
     }
 
     public final String getDbTypeName() {
         return dbTypeName;
+    }
+
+
+    public String getDefaultPort() {
+        return defaultPort;
     }
 
     /**

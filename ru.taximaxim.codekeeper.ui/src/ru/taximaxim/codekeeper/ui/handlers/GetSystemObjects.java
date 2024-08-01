@@ -33,10 +33,11 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.loader.JdbcConnector;
+import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcSystemLoader;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -56,11 +57,9 @@ public class GetSystemObjects extends AbstractHandler {
                 fd.setFileName(MetaStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$
                 String select = fd.open();
                 if (select != null) {
-                    JdbcConnector jdbcConnector = JdbcConnector.getJdbcConnector(DatabaseType.PG, info.getDbHost(),
-                            info.getDbPort(), info.getDbUser(), info.getDbPass(), info.getDbName(),
-                            info.getProperties(), info.isReadOnly(), Consts.UTC, false, null);
+                    AbstractJdbcConnector jdbcConnector = new DbInfoJdbcConnector(info);
                     try {
-                        Serializable storage = new JdbcSystemLoader(jdbcConnector,
+                        Serializable storage = new JdbcSystemLoader(jdbcConnector, Consts.UTC,
                                 SubMonitor.convert(new NullProgressMonitor())).getStorageFromJdbc();
 
                         Utils.serialize(select, storage);
