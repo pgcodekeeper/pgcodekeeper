@@ -16,9 +16,7 @@
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import java.text.MessageFormat;
-import java.util.Set;
 
-import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -31,25 +29,42 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.ISharedImages;
 
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
+import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
-import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.CheckEditingSupport.BooleanChangeValues;
 
 public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
+
+    private final boolean isIgnoreSchemaList;
+
+    private IgnoredObjectPrefListEditor(Composite parent, boolean isIgnoreSchemaList) {
+        super(parent);
+        this.isIgnoreSchemaList = isIgnoreSchemaList;
+        getViewer().addDoubleClickListener(event -> editObject());
+    }
 
     public static IgnoredObjectPrefListEditor create(Composite parent, IgnoreList ignoreList) {
         fillComposite(parent, ignoreList,
                 Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info,
                 Messages.IgnoredObjectsPrefPage_these_objects_are_ignored_info_white);
-        return new IgnoredObjectPrefListEditor(parent);
+        return new IgnoredObjectPrefListEditor(parent, false);
     }
 
-    protected static void fillComposite(Composite composite, IIgnoreList ignoreList,
+    public static IgnoredObjectPrefListEditor createIgnoreSchemaEditor(Composite parent, IgnoreSchemaList ignoreList) {
+        fillComposite(parent, ignoreList,
+                Messages.IgnoredSchemaPrefListEditor_black_list_schema_ignor,
+                Messages.IgnoredSchemaPrefListEditor_white_list_schema_ignor);
+        return new IgnoredObjectPrefListEditor(parent, true);
+    }
+
+    private static void fillComposite(Composite composite, IIgnoreList ignoreList,
             String blackDescripton, String whiteDescripton) {
         Label descriptionLabel = new Label(composite, SWT.NONE);
         descriptionLabel.setText(blackDescripton);
@@ -89,20 +104,22 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
         });
     }
 
-    protected IgnoredObjectPrefListEditor(Composite parent) {
-        super(parent);
+    @Override
+    protected void createButtonsForSideBar(Composite parent) {
+        createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
+        createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(ProjectIcon.EDIT));
+        createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
     }
 
     @Override
     protected IgnoredObject getNewObject(IgnoredObject oldObject) {
-        NewIgnoredObjectDialog d = new NewIgnoredObjectDialog(getShell(), oldObject, false);
+        NewIgnoredObjectDialog d = new NewIgnoredObjectDialog(getShell(), oldObject, isIgnoreSchemaList);
         return d.open() == Window.OK ? d.getIgnoredObject() : null;
     }
 
     @Override
     protected String errorAlreadyExists(IgnoredObject obj) {
-        return MessageFormat.format(
-                Messages.IgnoredObjectPrefListEditor_already_present, obj.getName());
+        return MessageFormat.format(Messages.IgnoredObjectPrefListEditor_already_present, obj.getName());
     }
 
     @Override
@@ -119,71 +136,5 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
                 return obj.getName();
             }
         });
-        name.setEditingSupport(new TxtNameEditingSupport(tableViewer, this));
-
-        String ballotBoxWithCheck = "\u2611"; //$NON-NLS-1$
-        String ballotBox = "\u2610"; //$NON-NLS-1$
-
-        TableViewerColumn isRegular = new TableViewerColumn(tableViewer, SWT.CENTER);
-        isRegular.getColumn().setResizable(true);
-        isRegular.getColumn().setText(Messages.ignoredObjectPrefListEditor_regular);
-        isRegular.getColumn().setMoveable(true);
-        isRegular.setLabelProvider(new ColumnLabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                return ((IgnoredObject)element).isRegular() ? ballotBoxWithCheck : ballotBox;
-            }
-        });
-        isRegular.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.REGULAR));
-
-        TableViewerColumn ignoreContents = new TableViewerColumn(tableViewer, SWT.CENTER);
-        ignoreContents.getColumn().setResizable(true);
-        ignoreContents.getColumn().setText(Messages.ignoredObjectPrefListEditor_ignore_contents);
-        ignoreContents.getColumn().setMoveable(true);
-        ignoreContents.setLabelProvider(new ColumnLabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                return ((IgnoredObject)element).isIgnoreContent() ? ballotBoxWithCheck : ballotBox;
-            }
-        });
-        ignoreContents.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.IGNORE_CONTENT));
-
-        TableViewerColumn isQualified = new TableViewerColumn(tableViewer, SWT.CENTER);
-        isQualified.getColumn().setResizable(true);
-        isQualified.getColumn().setText(Messages.IgnoredObjectPrefListEditor_qualified);
-        isQualified.getColumn().setMoveable(true);
-        isQualified.setLabelProvider(new ColumnLabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                return ((IgnoredObject) element).isQualified() ? ballotBoxWithCheck : ballotBox;
-            }
-        });
-        isQualified.setEditingSupport(new CheckEditingSupport(tableViewer, BooleanChangeValues.QUALIFIED));
-
-        TableViewerColumn objType = new TableViewerColumn(tableViewer, SWT.NONE);
-        objType.getColumn().setResizable(true);
-        objType.getColumn().setText(Messages.ignoredObjectPrefListEditor_type);
-        objType.getColumn().setMoveable(true);
-        objType.setLabelProvider(new ColumnLabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                IgnoredObject obj = (IgnoredObject) element;
-                Set<DbObjType> typesList = obj.getObjTypes();
-                return typesList.isEmpty() ? TypesEditingSupport.COMBO_TYPE_ALL
-                        : typesList.iterator().next().toString();
-            }
-        });
-        objType.setEditingSupport(new TypesEditingSupport(tableViewer));
-
-        PixelConverter pc = new PixelConverter(tableViewer.getControl());
-        name.getColumn().setWidth(150);
-        isRegular.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
-        ignoreContents.getColumn().setWidth(pc.convertWidthInCharsToPixels(28));
-        isQualified.getColumn().setWidth(pc.convertWidthInCharsToPixels(18));
-        objType.getColumn().setWidth(pc.convertWidthInCharsToPixels(10));
     }
 }

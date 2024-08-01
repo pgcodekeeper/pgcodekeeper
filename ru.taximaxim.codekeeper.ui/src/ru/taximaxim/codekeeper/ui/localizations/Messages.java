@@ -209,6 +209,8 @@ public final class Messages extends NLS {
     public static String remember_choice_toggle;
     public static String change_perspective_message;
     public static String change_perspective_title;
+
+    public static String clear_all;
     public static String prespective_change_status_always;
     public static String prespective_change_status_ask;
     public static String prespective_change_status_never;
@@ -727,7 +729,7 @@ public final class Messages extends NLS {
     public static String NewProjWizard_proj_init_src;
 
     public static String NewProjWizard_select_charset;
-    
+
     public static String NewProjWizard_select_project_type;
 
     public static String NewProjWizard_select_time_zone;

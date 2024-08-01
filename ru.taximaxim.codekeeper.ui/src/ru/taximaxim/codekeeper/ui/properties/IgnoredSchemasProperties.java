@@ -33,11 +33,12 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class IgnoredSchemasProperties extends PropertyPage {
 
-    private IgnoredSchemaListEditor listEditor;
+    private IgnoredObjectPrefListEditor listEditor;
     private IgnoreSchemaList ignoreSchemaList;
     private IProject proj;
 
@@ -52,7 +53,7 @@ public class IgnoredSchemasProperties extends PropertyPage {
         Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         ignoreSchemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
 
-        listEditor = IgnoredSchemaListEditor.create(parent, ignoreSchemaList);
+        listEditor = IgnoredObjectPrefListEditor.createIgnoreSchemaEditor(parent, ignoreSchemaList);
         listEditor.setInputList(new ArrayList<>(ignoreSchemaList.getList()));
 
         return listEditor;

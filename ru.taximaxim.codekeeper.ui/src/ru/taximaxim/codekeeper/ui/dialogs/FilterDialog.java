@@ -16,9 +16,7 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -36,7 +34,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -55,7 +52,7 @@ public class FilterDialog extends Dialog {
 
     private static final int START_HEIGHT_SIZE = 410;
 
-    private CheckboxTableViewer objViewer;
+    private ObjectTypeViewer objTypeViewer;
     private CheckboxTableViewer chgViewer;
     private final Collection<DbObjType> types;
     private final Collection<DiffSide> sides;
@@ -145,7 +142,7 @@ public class FilterDialog extends Dialog {
         Composite leftComposite = new Composite(container, SWT.NONE);
         leftComposite.setLayout(new GridLayout());
         leftComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        createTypesPart(leftComposite);
+        objTypeViewer = new ObjectTypeViewer(leftComposite, Messages.FilterDialog_show_object_types, types);
 
         Composite rightComposite = new Composite(container, SWT.NONE);
         rightComposite.setLayout(new GridLayout(2, false));
@@ -242,26 +239,6 @@ public class FilterDialog extends Dialog {
         return btnUseRegex;
     }
 
-
-    private void createTypesPart(Composite container) {
-        new Label(container, SWT.NONE).setText(Messages.FilterDialog_show_object_types);
-
-        objViewer = CheckboxTableViewer.newCheckList(container, SWT.BORDER);
-        objViewer.setContentProvider(ArrayContentProvider.getInstance());
-        objViewer.setLabelProvider(new LabelProvider() {
-
-            @Override
-            public String getText(Object element) {
-                return ((DbObjType) element).getTypeName();
-            }
-        });
-        EnumSet<DbObjType> typeList = EnumSet.complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN));
-        Object[] sortedTypeList = typeList.stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
-        objViewer.add(sortedTypeList);
-        objViewer.setCheckedElements(types.toArray());
-        objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-    }
-
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
@@ -282,7 +259,7 @@ public class FilterDialog extends Dialog {
                 btnDbUserRegEx.setSelection(false);
                 btnIsLocal.setSelection(false);
                 btnIsNonLibrary.setSelection(false);
-                objViewer.setAllChecked(false);
+                objTypeViewer.setAllSelected(false);
                 chgViewer.setAllChecked(false);
             }
         });
@@ -299,7 +276,7 @@ public class FilterDialog extends Dialog {
         types.clear();
         sides.clear();
 
-        for (Object obj : objViewer.getCheckedElements()) {
+        for (Object obj : objTypeViewer.getSelectedElements()) {
             types.add((DbObjType)obj);
         }
 

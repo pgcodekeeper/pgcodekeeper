@@ -122,6 +122,7 @@ public class IgnoreListProperties extends PropertyPage {
 
         public IgnoreListEditor(Composite parent) {
             super(parent);
+            getViewer().addDoubleClickListener(event -> editObject());
         }
 
         @Override
@@ -149,22 +150,7 @@ public class IgnoreListProperties extends PropertyPage {
 
         @Override
         protected void createButtonsForSideBar(Composite parent) {
-            super.createButtonsForSideBar(parent);
-
-            Button btnEdit = createButton(parent, CLIENT_ID, Messages.edit,
-                    Activator.getRegisteredImage(ProjectIcon.EDIT));
-            btnEdit.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent event) {
-                    IStructuredSelection sel = getViewer().getStructuredSelection();
-                    if (!sel.isEmpty()) {
-                        String path = (String) sel.getFirstElement();
-                        new IgnoreListEditorDialog(getShell(), Paths.get(path), IgnoreListEditor.this).open();
-                    }
-                }
-            });
-
+            createButton(parent, ADD_ID, Messages.add, Activator.getEclipseImage(ISharedImages.IMG_OBJ_ADD));
             Button btnNew = createButton(parent, CLIENT_ID, Messages.IgnoreListProperties_create_new_file,
                     Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE));
             btnNew.addSelectionListener(new SelectionAdapter() {
@@ -174,6 +160,17 @@ public class IgnoreListProperties extends PropertyPage {
                     new IgnoreListEditorDialog(getShell(), null, IgnoreListEditor.this).open();
                 }
             });
+            createButton(parent, EDIT_ID, Messages.edit, Activator.getRegisteredImage(ProjectIcon.EDIT));
+            createButton(parent, DELETE_ID, Messages.delete, Activator.getEclipseImage(ISharedImages.IMG_ETOOL_DELETE));
+        }
+
+        @Override
+        protected void editObject() {
+            IStructuredSelection sel = getViewer().getStructuredSelection();
+            if (!sel.isEmpty()) {
+                String path = (String) sel.getFirstElement();
+                new IgnoreListEditorDialog(getShell(), Paths.get(path), IgnoreListEditor.this).open();
+            }
         }
     }
 }
