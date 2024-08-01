@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - In the `--insert` mode, added ignoring of columns with the `timestamp` type for MS SQL.
 - Updated PostgreSQL JDBC driver version.
+- Updated pgpass library version.
 
 ### Fixed
 

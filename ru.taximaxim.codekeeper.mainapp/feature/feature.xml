@@ -50,7 +50,7 @@
          unpack="false"/>
 
    <plugin
-         id="wrapped.com.github.technology16.PgPass"
+         id="wrapped.com.github.technology16.pgpass"
          download-size="0"
          install-size="0"
          version="0.0.0"
