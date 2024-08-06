@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to build a dependency graph for an object for GUI version. To build a graph, you need to right-click on an object in the comparison editor and select “Build a dependency graph”.
+
 ### Changed
 
 ### Fixed

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.model.graph;
 
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -37,24 +36,22 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
-public class DepcyWriter {
+public class DepcyFinder {
 
     private static final int START_LEVEL = 0;
 
     private final AbstractDatabase db;
     private final Graph<PgStatement, DefaultEdge> graph;
     private final int depth;
-    private final PrintWriter writer;
     private final EnumSet<DbObjType> filterObjTypes;
     private final boolean isInvertFilter;
     private final List<PrintObj> printObjects = new ArrayList<>();
 
-    public DepcyWriter(AbstractDatabase db, int depth, PrintWriter writer, boolean isReverse,
+    private DepcyFinder(AbstractDatabase db, int depth, boolean isReverse,
             Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
         this.db = db;
         DepcyGraph dg = new DepcyGraph(db);
         this.graph = isReverse ? dg.getGraph() : dg.getReversedGraph();
-        this.writer = writer;
         this.depth = depth;
         if (filterObjTypes.isEmpty()) {
             this.filterObjTypes = EnumSet.noneOf(DbObjType.class);
@@ -64,7 +61,21 @@ public class DepcyWriter {
         this.isInvertFilter = isInvertFilter;
     }
 
-    public void write(Collection<String> names) {
+    public static final List<String> byPatterns(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
+            boolean isInvertFilter, AbstractDatabase db, Collection<String> names) {
+        DepcyFinder depcyFinder = new DepcyFinder(db, depth, isReverse, filterObjTypes, isInvertFilter);
+        depcyFinder.searchDeps(names);
+        return depcyFinder.getResult();
+    }
+
+    public static final List<String> byStatement(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
+            PgStatement st) {
+        DepcyFinder depcyFinder = new DepcyFinder(st.getDatabase(), depth, isReverse, filterObjTypes, false);
+        depcyFinder.fillTree(st, START_LEVEL, new HashSet<>(), null, 0);
+        return depcyFinder.getResult();
+    }
+
+    private void searchDeps(Collection<String> names) {
         if (!names.isEmpty()) {
             Map<Pattern, Boolean> patterns = new HashMap<>();
             var escapeList = List.of("\\[", "\"", "\\(");
@@ -80,10 +91,6 @@ public class DepcyWriter {
             .forEach(st -> fillTree(st, START_LEVEL, new HashSet<>(), null, 0));
         } else {
             fillTree(db, START_LEVEL, new HashSet<>(), null, 0);
-        }
-
-        for (PrintObj prObj : printObjects) {
-            writer.println(prObj);
         }
     }
 
@@ -145,5 +152,13 @@ public class DepcyWriter {
             return filterObjTypes.contains(type);
         }
         return !filterObjTypes.contains(type);
+    }
+
+    private List<String> getResult() {
+        List<String> result = new ArrayList<>();
+        for (PrintObj prObj : printObjects) {
+            result.add(prObj.toString());
+        }
+        return result;
     }
 }

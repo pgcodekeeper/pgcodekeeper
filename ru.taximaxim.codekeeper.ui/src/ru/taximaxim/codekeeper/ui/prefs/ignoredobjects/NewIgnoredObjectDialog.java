@@ -20,8 +20,6 @@ import java.util.Set;
 
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -84,30 +82,7 @@ public class NewIgnoredObjectDialog extends InputDialog {
             }
 
             types = objInitial == null ? EnumSet.noneOf(DbObjType.class) : objInitial.getObjTypes();
-            objTypeViewer = new ObjectTypeViewer(c, Messages.ignoredObjectPrefListEditor_type, types);
-
-            Composite btnContainer = new Composite(c, SWT.NONE);
-            btnContainer.setLayout(new GridLayout(2, false));
-            btnContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-            Button btnSelectAll = new Button(btnContainer, SWT.BUTTON1);
-            btnSelectAll.setText(Messages.select_all);
-            btnSelectAll.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    objTypeViewer.setAllSelected(true);
-                }
-            });
-            Button btnClearAll = new Button(btnContainer, SWT.BUTTON1);
-            btnClearAll.setText(Messages.clear_all);
-            btnClearAll.addSelectionListener(new SelectionAdapter() {
-
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    objTypeViewer.setAllSelected(false);
-                }
-            });
+            objTypeViewer = new ObjectTypeViewer(c, Messages.ignoredObjectPrefListEditor_type, true, false, types);
         }
         return composite;
     }
