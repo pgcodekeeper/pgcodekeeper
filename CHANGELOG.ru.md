@@ -9,13 +9,21 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.12.0] - 2024.08.06
+
+### Добавлено
+
 - Добавлена поддержка опции UNLOGGED для GENERATED SEQUENCE в PostgreSQL.
 - Добавлена возможность указания нескольких типов объектов в списке исключаемых объектов.
 
 ### Изменено
 
 - В режиме `--insert` добавлено игнорирование колонок с типом `timestamp` для MS SQL.
-- Обновлена ​​версия JDBC драйвера PostgreSQL.
+- Обновлена версия JDBC драйвера PostgreSQL.
 - Обновлена версия библиотеки pgpass.
 
 ### Исправлено
@@ -1985,7 +1993,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...HEAD
+[9.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...v9.12.0
 [9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
 [9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
 [9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
