@@ -22,25 +22,37 @@ import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ObjectTypeViewer {
 
-    private static final Object[] SORTED_TYPES = EnumSet
+    private static final Object[] TYPES_SORTED = EnumSet
             .complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN))
+            .stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
+    private static final Object[] ALL_TYPES_SORTED = EnumSet.allOf(DbObjType.class)
             .stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
 
     private CheckboxTableViewer objViewer;
 
-    public ObjectTypeViewer(Composite parent, String text, Collection<DbObjType> types) {
-        createTypesPart(parent, text, types);
+    public ObjectTypeViewer(Composite parent, String text, boolean needSelectButtons, boolean needAllTypes,
+            Collection<DbObjType> types) {
+        createTypesPart(parent, text, needAllTypes, types);
+        if (needSelectButtons) {
+            addSelectBtns(parent);
+        }
     }
 
-    private void createTypesPart(Composite parent, String text, Collection<DbObjType> types) {
+    private void createTypesPart(Composite parent, String text, boolean needAllTypes,
+            Collection<DbObjType> types) {
         new Label(parent, SWT.NONE).setText(text);
 
         objViewer = CheckboxTableViewer.newCheckList(parent, SWT.BORDER);
@@ -53,7 +65,7 @@ public class ObjectTypeViewer {
             }
         });
 
-        objViewer.add(SORTED_TYPES);
+        objViewer.add(needAllTypes ? ALL_TYPES_SORTED : TYPES_SORTED);
         objViewer.setCheckedElements(types.toArray());
         objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     }
@@ -64,5 +76,30 @@ public class ObjectTypeViewer {
 
     public Object[] getSelectedElements() {
         return objViewer.getCheckedElements();
+    }
+
+    private void addSelectBtns(Composite c) {
+        Composite btnContainer = new Composite(c, SWT.NONE);
+        btnContainer.setLayout(new GridLayout(2, false));
+        btnContainer.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+
+        Button btnSelectAll = new Button(btnContainer, SWT.BUTTON1);
+        btnSelectAll.setText(Messages.select_all);
+        btnSelectAll.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                objViewer.setAllChecked(true);
+            }
+        });
+        Button btnClearAll = new Button(btnContainer, SWT.BUTTON1);
+        btnClearAll.setText(Messages.clear_all);
+        btnClearAll.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                objViewer.setAllChecked(false);
+            }
+        });
     }
 }

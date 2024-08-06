@@ -27,6 +27,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -46,7 +47,7 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.model.graph.DepcyWriter;
+import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -213,11 +214,14 @@ public final class Main {
             return false;
         }
 
+        List<String> deps = DepcyFinder.byPatterns(arguments.getGraphDepth(), arguments.isGraphReverse(),
+                arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter(), d, arguments.getGraphNames());
+
         try (PrintWriter pw = getDiffWriter(arguments)) {
-            new DepcyWriter(d, arguments.getGraphDepth(),
-                    pw != null ?  pw : writer, arguments.isGraphReverse(),
-                            arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter())
-            .write(arguments.getGraphNames());
+            var w = pw != null ? pw : writer;
+            for (String dep : deps) {
+                w.println(dep);
+            }
         }
         return true;
     }

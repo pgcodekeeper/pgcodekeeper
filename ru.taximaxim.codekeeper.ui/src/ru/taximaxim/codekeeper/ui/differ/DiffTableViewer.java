@@ -14,7 +14,6 @@
  * limitations under the License.
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.differ;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -47,6 +46,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -116,6 +116,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
+import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -128,11 +129,14 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
+import ru.taximaxim.codekeeper.ui.dialogs.BuildDepsGraphDialog;
+import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
@@ -504,6 +508,15 @@ public class DiffTableViewer extends Composite {
             }
         });
 
+        menuMgr.add(new Separator());
+        menuMgr.add(new Action(Messages.DiffTableViewer_menu_build_graph) {
+
+            @Override
+            public void run() {
+                writeDeps((TreeElement) ((IStructuredSelection) viewer.getSelection()).getFirstElement());
+            }
+        });
+
         menuMgr.addMenuListener(manager -> {
             boolean enable = !viewer.getSelection().isEmpty();
             for (IContributionItem it : manager.getItems()) {
@@ -514,6 +527,28 @@ public class DiffTableViewer extends Composite {
         });
 
         return menuMgr;
+    }
+
+    protected void writeDeps(TreeElement el) {
+        String objName = el.getQualifiedName();
+        boolean isBothEnabled = el.getSide() == DiffSide.BOTH;
+        boolean isProject = el.getSide() == DiffSide.LEFT;
+
+        BuildDepsGraphDialog graphDlg = new BuildDepsGraphDialog(getShell(), objName, isProject, isBothEnabled);
+        if (graphDlg.open() != Window.OK) {
+            return;
+        }
+        AbstractDatabase source = graphDlg.isProject() ? dbProject.getDbObject() : dbRemote.getDbObject();
+        PgStatement st = el.getPgStatement(source);
+        List<String> deps = DepcyFinder.byStatement(graphDlg.getGraphDepth(), graphDlg.isReverse(),
+                graphDlg.getObjTypes(), st);
+
+        String content = String.join("\n", deps); //$NON-NLS-1$
+        try {
+            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, source.getArguments().getDbType()); //$NON-NLS-1$
+        } catch (IOException | CoreException ex) {
+            ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_creating_graph, ex);
+        }
     }
 
     private void copyObjectNamesToClipboard() {
@@ -1436,7 +1471,7 @@ public class DiffTableViewer extends Composite {
                 filterName = null;
                 regExPattern = null;
             } else {
-                isQualifiedName = !useRegEx && value.contains(".");
+                isQualifiedName = !useRegEx && value.contains("."); //$NON-NLS-1$
                 filterName = value.toLowerCase(Locale.ROOT);
                 try {
                     regExPattern = Pattern.compile(value, Pattern.CASE_INSENSITIVE);

@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Collections;
 import java.util.List;
 
@@ -84,14 +82,10 @@ public class DepcyWriterTest {
 
         AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), args);
 
-        StringWriter out = new StringWriter();
-        PrintWriter writer = new PrintWriter(out);
-
-        new DepcyWriter(db, 10, writer, isReverse, Collections.emptyList(), false).write(List.of(objectName));
-        writer.flush();
-
+        var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName));
+        String actual = String.join("\n", deps);
         String expected = TestUtils.readResource(fileName + expectedPostfix, getClass());
 
-        Assertions.assertEquals(expected.trim(), out.toString().trim());
+        Assertions.assertEquals(expected.trim(), actual);
     }
 }

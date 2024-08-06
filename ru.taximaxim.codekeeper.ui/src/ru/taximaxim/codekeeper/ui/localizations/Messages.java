@@ -526,6 +526,8 @@ public final class Messages extends NLS {
 
     public static String DiffTableViewer_file;
 
+    public static String DiffTableViewer_error_creating_graph;
+
     public static String DiffTableViewer_error_reading_git_history;
 
     public static String DiffTableViewer_expand_all;
@@ -535,6 +537,8 @@ public final class Messages extends NLS {
     public static String DiffTableViewer_get_changes_custom;
 
     public static String DiffTableViewer_library;
+
+    public static String DiffTableViewer_menu_build_graph;
 
     public static String DiffTableViewer_path;
 
@@ -965,6 +969,18 @@ public final class Messages extends NLS {
     public static String edit;
 
     public static String ApplyCustomDialog_constraint_not_valid;
+
+    public static String BuildDepsGraphDialog_build_dep_graph;
+
+    public static String BuildDepsGraphDialog_reverse;
+
+    public static String BuildDepsGraphDialog_schema_source;
+
+    public static String BuildDepsGraphDialog_search_dep;
+
+    public static String BuildDepsGraphDialog_select_obj_type;
+
+    public static String BuildDepsGraphDialog_select_source_type;
 
     public static String FilterDialog_cancel;
 

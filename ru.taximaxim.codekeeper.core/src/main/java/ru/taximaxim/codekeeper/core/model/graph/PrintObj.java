@@ -62,7 +62,7 @@ public class PrintObj {
 
         sb.append(statement.getStatementType()).append(" ").append(statement.getQualifiedName());
         if (hiddenObj > 0) {
-            sb.append(" (hidden").append(hiddenObj).append(" objects)");
+            sb.append(" (hidden ").append(hiddenObj).append(" objects)");
         }
         if (isCyclic) {
             sb.append(" - cyclic dependency");

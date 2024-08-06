@@ -142,7 +142,7 @@ public class FilterDialog extends Dialog {
         Composite leftComposite = new Composite(container, SWT.NONE);
         leftComposite.setLayout(new GridLayout());
         leftComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        objTypeViewer = new ObjectTypeViewer(leftComposite, Messages.FilterDialog_show_object_types, types);
+        objTypeViewer = new ObjectTypeViewer(leftComposite, Messages.FilterDialog_show_object_types, false, false, types);
 
         Composite rightComposite = new Composite(container, SWT.NONE);
         rightComposite.setLayout(new GridLayout(2, false));
