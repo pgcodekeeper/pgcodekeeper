@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.12.0] - 2024-08-06
+
+### Added
+
 - Added support for UNLOGGED option for GENERATED SEQUENCE in PostgreSQL.
 - Added the ability to specify several types of objects in the list of ignored objects.
 
@@ -1984,7 +1992,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...HEAD
+[9.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...v9.12.0
 [9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
 [9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
 [9.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.8.0...v9.9.0
