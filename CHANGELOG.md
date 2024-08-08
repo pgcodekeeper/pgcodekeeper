@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Changed the arguments for calling modes in the CLI version. Use `--mode DIFF` to compare data sources and get the migration script, `--mode PARSE` instead of the deprecated `--parse` option, `--mode GRAPH` instead of `--graph` and `--mode INSERT` instead of `--insert`.
+
 ### Fixed
 
 ## [9.12.0] - 2024-08-06

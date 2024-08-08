@@ -11,11 +11,25 @@ Usage
  --version                              : show version
  --list-charsets                        : show list of Java-supported charsets
  --clear-lib-cache                      : clear library cache
- --parse                                : run in parser mode to save database
+ --parse                                : deprecated option. Use --mode PARSE.
+                                          Run in parser mode to save database
                                           schema as a directory hierarchy
- --graph                                : run in graph mode to show objects
+ --graph                                : deprecated option. Use --mode GRAPH.
+                                          Run in graph mode to show objects
                                           dependencies
- --insert                               : run in insert mode to collect data
+ --insert                               : deprecated option. Use --mode INSERT.
+                                          Run in insert mode to collect data
+ --mode [DIFF | PARSE | GRAPH | INSERT] : specify mode:
+                                          DIFF - to compares the two sources
+                                          and generates a migration script;
+                                          PARSE - to save database schema as a
+                                          directory hierarchy;
+                                          GRAPH - to search for dependencies of
+                                          an object;
+                                          INSERT - to gathering data from the
+                                          source database taking into account
+                                          the FK dependencies;
+                                           (default: DIFF)
  -s (--source) <path or JDBC>           : source of schema changes
  -t (--target) <path or JDBC>           : destination for schema changes (diff
                                           mode only)
@@ -127,8 +141,8 @@ Usage
                                           objects loaded first have priority
  -m (--ignore-concurrent-modification)  : ignore concurrent modification errors
                                           of database objects
- --ms-sql                               : work with MS SQL. Deprecated option.
-                                          Use --db-type instead of this
+ --ms-sql                               : deprecated option. Use --db-type MS.
+                                          Work with MS SQL.
  --db-type [PG | MS | CH]               : specify database type for work: PG,
                                           MS, CH (default: PG)
  --update-project                       : update an existing project in parse

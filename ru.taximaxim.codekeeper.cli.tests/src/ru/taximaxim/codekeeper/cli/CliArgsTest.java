@@ -33,17 +33,20 @@ class CliArgsTest {
             "--parse -s filename -t filename -o filename;" +
                     "option \"-t (--target)\" cannot be used with the option(s) [--graph, --parse, --insert]",
 
-            "--graph --db-type MS jdbc:postgresql:q;" +
+            "--graph --graph-name public.test --db-type MS jdbc:postgresql:q;" +
                     "Cannot work with PG database as MS project.",
 
-            "--graph jdbc:sqlserver:f;"
+            "--graph --graph-name dbo.test jdbc:sqlserver:f;"
                     + "Cannot work with MS database as PG project.",
 
-            "--graph jdbc:postgresql:q jdbc:postgresql:q2;"
-                    + "DEST argument isn't required.",
+            "--graph --graph-name public.test jdbc:postgresql:q jdbc:postgresql:q2;"
+                    + "option \"-t (--target)\" cannot be used with mode: GRAPH",
 
-            "--graph;"
+            "--graph --graph-name test;"
                     + "Please specify SCHEMA.",
+
+            "--mode PARSE --graph-filter-object COLUMN jdbc:postgresql:q;"
+                    + "option \"--graph-filter-object\" cannot be used with mode: PARSE",
 
             "jdbc:postgresql:q;"
                     + "Please specify both SOURCE and DEST.",
@@ -138,11 +141,20 @@ class CliArgsTest {
             "filename filename --simplify-views --db-type MS;"
                     + "option \"--simplify-views\" cannot be used with dbType: MS",
 
-            "--insert 'jdbc:postgresql:q';"
-                    + "option \"--insert\" requires the option(s) [--insert-name, --insert-filter]",
-                    
-            "--insert-name table_name 'jdbc:postgresql:q';"
-                    + "option \"--insert-name\" requires the option(s) [--insert]",
+            "--insert jdbc:postgresql:q;"
+                    + "Please specify argument \"--insert-name\"",
+
+            "--insert-name table_name jdbc:postgresql:q;"
+                    + "Please specify both SOURCE and DEST.",
+
+            "--mode INSERT --insert-name table_name --db-type CH jdbc:ch:q;"
+                    + "option \"--mode INSERT\" cannot be used with dbType: CH",
+
+            "--mode INSERT filename;"
+                    + "Cannot run work with non-database source.",
+
+            "--parse --mode INSERT -o filename;"
+                    + "option \"--parse\" cannot be used with the option(s) [--mode]",
     })
     void badArgsTest(String arguments, String message) {
         String[] args = arguments.split(" ");

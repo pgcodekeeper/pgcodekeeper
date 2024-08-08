@@ -73,19 +73,20 @@ public final class Main {
             if (arguments.isClearLibCache()) {
                 clearCache();
             }
-            if (arguments.isInsertMode()) {
+
+            switch (arguments.getMode()) {
+            case INSERT:
                 return insert(writer, arguments);
-            }
-            if (arguments.isModeParse()) {
+            case PARSE:
                 return parse(arguments);
-            }
-            if (arguments.isModeGraph()) {
+            case GRAPH:
                 return graph(writer, arguments);
+            default:
+                if (arguments.getOldSrc() == null || arguments.getNewSrc() == null) {
+                    return true; // clear cache
+                }
+                return diff(writer, arguments);
             }
-            if (arguments.getOldSrc() == null || arguments.getNewSrc() == null) {
-                return true; // clear cache
-            }
-            return diff(writer, arguments);
         } catch (CmdLineException | NotAllowedObjectException ex) {
             System.err.println(ex.getLocalizedMessage());
             return false;
