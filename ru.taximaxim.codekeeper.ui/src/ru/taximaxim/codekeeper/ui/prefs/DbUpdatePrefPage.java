@@ -70,7 +70,7 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
                 Messages.dBUpdatePrefPage_set_warning_when_next_statements_present, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.dbUpdatePrefPage_script_add_transaction, getFieldEditorParent()));
+                Messages.DbUpdatePrefPage_script_add_transaction, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies, getFieldEditorParent()));

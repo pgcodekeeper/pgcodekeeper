@@ -99,7 +99,7 @@ public class DbUpdateProperties extends PropertyPage {
         });
 
         btnScriptAddTransact = createPropertyButton(panel, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.dbUpdatePrefPage_script_add_transaction, overridePref);
+                Messages.DbUpdatePrefPage_script_add_transaction, overridePref);
         btnCheckFuncBodies = createPropertyButton(panel, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies, overridePref);
         btnAlterColUsingExpr = createPropertyButton(panel, DB_UPDATE_PREF.USING_ON_OFF,
