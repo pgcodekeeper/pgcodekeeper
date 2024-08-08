@@ -63,7 +63,7 @@ public class PgIndex extends AbstractIndex {
         }
 
         sbSQL.append("INDEX ");
-        if (getDatabaseArguments().isConcurrentlyMode()) {
+        if (getDatabaseArguments().isConcurrentlyMode() && !getDatabaseArguments().isAddTransaction()) {
             sbSQL.append("CONCURRENTLY ");
         }
         if (inherit != null || getDatabaseArguments().isGenerateExists()) {

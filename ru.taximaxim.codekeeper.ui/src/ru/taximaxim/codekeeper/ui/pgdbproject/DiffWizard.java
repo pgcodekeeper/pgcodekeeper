@@ -323,7 +323,7 @@ class PageDiff extends WizardPage implements Listener {
         btnUseGlobalIgnoreList.setVisible(false);
 
         btnScriptAddTransact = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.dbUpdatePrefPage_script_add_transaction);
+                Messages.DbUpdatePrefPage_script_add_transaction);
 
         btnCheckFuncBodies = createBoooleanButton(container, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies);

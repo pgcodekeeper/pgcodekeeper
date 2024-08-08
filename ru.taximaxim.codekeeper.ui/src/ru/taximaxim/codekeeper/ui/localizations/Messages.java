@@ -296,7 +296,7 @@ public final class Messages extends NLS {
     public static String dbUpdatePrefPage_use_command_for_ddl_update;
     public static String dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script;
 
-    public static String dbUpdatePrefPage_script_add_transaction;
+    public static String DbUpdatePrefPage_script_add_transaction;
 
     public static String dbUpdatePrefPage_ignore_privileges;
 

@@ -83,7 +83,7 @@ public class ApplyCustomDialog extends Dialog {
                         Messages.DiffTableViewer_apply_to));
 
         btnScriptAddTransact = createCustomButton(panel, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.dbUpdatePrefPage_script_add_transaction);
+                Messages.DbUpdatePrefPage_script_add_transaction);
 
         btnCreateIdxConcurrent = createCustomButton(panel, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
                 Messages.DbUpdatePrefPage_print_index_with_concurrently);
