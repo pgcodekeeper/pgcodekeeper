@@ -53,8 +53,16 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
  */
 public class CliArgs extends PgDiffArguments {
 
+    enum CliMode {
+        DIFF,
+        PARSE,
+        GRAPH,
+        INSERT;
+    }
+
     private static final String URL_START_JDBC = "jdbc:";
 
+    private static final String MESSAGE_WRONG_MODE = "option \"{0}\" cannot be used with mode: {1}";
     private static final String MESSAGE_CANNOT_DATABASE_WITH_PROJECT = "Cannot work with %s database as %s project.";
     private static final String MESSAGE_DIFFERENT_TYPES = "Source (%s) and target (%s) are of different types, possibly missing --db-type parameter.";
     private static final int DEFAULT_DEPTH = 10;
@@ -78,6 +86,7 @@ public class CliArgs extends PgDiffArguments {
         this.outCharsetName = Consts.UTF_8;
         this.graphDepth = DEFAULT_DEPTH;
         this.dbType = DatabaseType.PG;
+        this.mode = CliMode.DIFF;
     }
     // SONAR-ON
 
@@ -99,17 +108,28 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--clear-lib-cache", help=true, usage="clear library cache")
     private boolean clearLibCache;
 
-    @Option(name="--parse", depends="-o",
-            usage="run in parser mode to save database schema as a directory hierarchy")
+    @Deprecated(forRemoval=true)
+    @Option(name="--parse", depends="-o", forbids="--mode",
+            usage="deprecated option. Use --mode PARSE. Run in parser mode to save database schema as a directory hierarchy")
     private boolean modeParse;
 
-    @Option(name="--graph",
-            usage="run in graph mode to show objects dependencies")
+    @Deprecated(forRemoval=true)
+    @Option(name="--graph", forbids="--mode",
+            usage="deprecated option. Use --mode GRAPH. Run in graph mode to show objects dependencies")
     private boolean modeGraph;
 
-    @Option(name="--insert", forbids={"--parse", "--graph"}, depends={"--insert-name", "--insert-filter"},
-            usage="run in insert mode to collect data")
+    @Deprecated(forRemoval=true)
+    @Option(name="--insert", forbids="--mode",
+            usage="deprecated option. Use --mode INSERT. Run in insert mode to collect data")
     private boolean isInsertMode;
+
+    @Option(name="--mode",
+            usage="specify mode:"
+                    + "\nDIFF - to compares the two sources and generates a migration script;"
+                    + "\nPARSE - to save database schema as a directory hierarchy;"
+                    + "\nGRAPH - to search for dependencies of an object;"
+                    + "\nINSERT - to gathering data from the source database taking into account the FK dependencies;\n")
+    private CliMode mode;
 
     @Option(name="-s", depends="-t", aliases="--source", metaVar="<path or JDBC>",
             usage="source of schema changes")
@@ -125,11 +145,11 @@ public class CliArgs extends PgDiffArguments {
             usage="script output file or parser output directory")
     private String outputTarget;
 
-    @Option(name="-r", aliases="--run-on-target", forbids={"--parse", "--graph", "--insert", "-R"},
+    @Option(name="-r", aliases="--run-on-target", forbids="-R",
             usage="run generated script on the target database")
     private boolean runOnTarget;
 
-    @Option(name="-R", aliases="--run-on", metaVar="<JDBC>", forbids={"--parse", "--graph", "-r"},
+    @Option(name="-R", aliases="--run-on", metaVar="<JDBC>", forbids="-r",
             usage="run generated script on the specified database")
     private String runOnDb;
 
@@ -155,98 +175,98 @@ public class CliArgs extends PgDiffArguments {
             usage="keep newline characters as is (don't convert to Unix newlines)")
     private boolean keepNewlines;
 
-    @Option(name="--simplify-views", forbids={"--graph", "--insert"},
+    @Option(name="--simplify-views",
             usage="simple formatting for VIEWs when reading via JDBC (not recomended by PostgreSQL)")
     private boolean simplifyView;
 
-    @Option(name="-X", aliases="--add-transaction", forbids={"--graph", "--parse"},
+    @Option(name="-X", aliases="--add-transaction",
             usage="wrap generated script with transaction statements")
     private boolean addTransaction;
 
-    @Option(name="-F", aliases="--no-check-function-bodies", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="-F", aliases="--no-check-function-bodies",
             usage="set check_function_bodies to false at the beginning of the script")
     private boolean disableCheckFunctionBodies;
 
-    @Option(name="-f", aliases="--enable-function-bodies-dependencies", forbids={"--parse"},
+    @Option(name="-f", aliases="--enable-function-bodies-dependencies",
             usage="enable dependencies from bodies of functions and procedures to other functions or procedures")
     private boolean enableFunctionBodiesDependencies;
 
-    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",forbids={"--graph", "--insert", "--ms-sql"},
+    @Option(name="-Z", aliases="--time-zone", metaVar="<timezone>",
             usage="use this timezone when working with database, also add SET TIMEZONE statement to the script")
     private String timeZone;
 
-    @Option(name="--pre-script", metaVar="<path>", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="--pre-script", metaVar="<path>",
             usage="PRE script file path or directory with PRE scripts"
                     + "\nnested directories are loaded recursively"
                     + "\nspecify multiple times to use several paths")
     private List<String> preFilePath = new ArrayList<>();
 
-    @Option(name="--post-script", metaVar="<path>", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="--post-script", metaVar="<path>",
             usage="POST script file path or directory with POST scripts"
                     + "\nnested directories are loaded recursively"
                     + "\nspecify multiple times to use several paths")
     private List<String> postFilePath = new ArrayList<>();
 
-    @Option(name="--ignore-column-order", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="--ignore-column-order",
             usage="ignore differences in table column order")
     private boolean ignoreColumnOrder;
 
-    @Option(name="-v", aliases="--generate-constraint-not-valid", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="-v", aliases="--generate-constraint-not-valid",
             usage="print CONSTRAINT NOT VALID for no partitioned tables")
     private boolean generateConstraintNotValid;
 
-    @Option(name="--using-off", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="--using-off",
             usage="do not print USING expression for ALTER COLUMN TYPE")
     private boolean usingTypeCastOff;
 
-    @Option(name="--migrate-data", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="--migrate-data",
             usage="migrate data when re-creating tables")
     private boolean dataMovementMode;
 
-    @Option(name="-C", aliases="--concurrently-mode", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="-C", aliases="--concurrently-mode",
             usage="print CREATE INDEX with CONCURRENTLY option for PostgreSQL and WITH ONLINE = ON for MS SQL")
     private boolean concurrentlyMode;
 
-    @Option(name="--generate-exist", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="--generate-exist",
             usage="print CREATE IF NOT EXISTS / DROP IF EXISTS")
     private boolean generateExists;
 
-    @Option(name="-do", aliases="--generate-exist-do-block", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="-do", aliases="--generate-exist-do-block",
             usage="print creation of CONSTRAINT and IDENTITY in DO block (PG only)")
     private boolean generateExistDoBlock;
 
-    @Option(name="--drop-before-create", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="--drop-before-create",
             usage="print DROP before CREATE statement")
     private boolean dropBeforeCreate;
 
-    @Option(name="--comments-to-end", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="--comments-to-end",
             usage="print comments at the end of the script")
     private boolean commentsToEnd;
 
-    @Option(name="-S", aliases="--safe-mode", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="-S", aliases="--safe-mode",
             usage="do not generate scripts containing dangerous statements\nsee: --allow-danger-ddl")
     private boolean safeMode;
 
-    @Option(name="-D", aliases="--allow-danger-ddl", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="-D", aliases="--allow-danger-ddl",
             handler=DangerStatementOptionHandler.class,
             usage="allows dangerous statements in safe-mode scripts")
     private List<DangerStatement> allowedDangers;
 
-    @Option(name="-O", aliases="--allowed-object", forbids={"--graph"},
+    @Option(name="-O", aliases="--allowed-object",
             handler=DbObjTypeOptionHandler.class,
             usage="build the script using these object types only, hide statements of other objects")
     private List<DbObjType> allowedTypes;
 
-    @Option(name="--stop-not-allowed", forbids={"--graph", "--parse", "--insert"},
+    @Option(name="--stop-not-allowed",
             usage="exit with an error when --allowed-object hides a dependency statement from the script")
     private boolean stopNotAllowed;
 
-    @Option(name="--selected-only", forbids={"--graph", "--insert"},
+    @Option(name="--selected-only",
             usage="build the script using 'selected' objects only, hide statements of other objects"
                     + "\nin CLI, selected means included by --allowed-object and ignore lists")
     private boolean selectedOnly;
 
-    @Option(name="-I", aliases="--ignore-list", metaVar="<path>", forbids={"--graph", "--insert"},
+    @Option(name="-I", aliases="--ignore-list", metaVar="<path>",
             usage="use an ignore list to include/exclude objects from diff"
                     + "\nspecify multiple times to use several lists")
     private List<String> ignoreLists;
@@ -270,17 +290,17 @@ public class CliArgs extends PgDiffArguments {
                     + "\nspecify multiple times to use several libraries")
     private List<String> targetLibsWithoutPriv;
 
-    @Option(name="--tgt-lib-xml", metaVar="<path>", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="--tgt-lib-xml", metaVar="<path>",
             usage="add xml with library dependencies to target"
                     + "\nspecify multiple times to use several library xml's")
     private List<String> sourceLibXmls;
 
-    @Option(name="--tgt-lib", metaVar="<path or JDBC>", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="--tgt-lib", metaVar="<path or JDBC>",
             usage="add library dependency to destination"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibs;
 
-    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>", forbids={"--parse", "--graph", "--insert"},
+    @Option(name="--tgt-lib-no-priv", metaVar="<path or JDBC>",
             usage="add library dependency to destination without privileges"
                     + "\nspecify multiple times to use several libraries")
     private List<String> sourceLibsWithoutPriv;
@@ -294,94 +314,62 @@ public class CliArgs extends PgDiffArguments {
             usage="ignore concurrent modification errors of database objects")
     private boolean ignoreConcurrentModification;
 
-    @Deprecated
-    @Option(name="--ms-sql", usage="work with MS SQL. Deprecated option. Use --db-type instead of this")
+    @Deprecated(forRemoval=true)
+    @Option(name="--ms-sql", forbids="--db-type", usage="deprecated option. Use --db-type MS. Work with MS SQL.")
     private boolean msSql;
 
     @Option(name="--db-type",
             usage="specify database type for work: PG, MS, CH")
     private DatabaseType dbType;
 
-    @Option(name="--update-project", depends={"--parse"}, forbids={"--graph", "--insert"},
+    @Option(name="--update-project",
             usage="update an existing project in parse mode")
     private boolean projUpdate;
 
-    @Option(name="--graph-depth", metaVar="<n>", forbids={"--parse", "--insert"}, depends={"--graph"},
+    @Option(name="--graph-depth", metaVar="<n>",
             usage="depth of displayed dependencies in graph mode")
     private int graphDepth;
 
-    @Option(name="--graph-reverse",  depends={"--graph-name", "--graph"},
+    @Option(name="--graph-reverse", depends="--graph-name",
             usage="reverse the direction of the graph to show objects on which the starting object depends")
     private boolean graphReverse;
 
-    @Option(name="--graph-name", metaVar="<name>", depends={"--graph"},
+    @Option(name="--graph-name", metaVar="<name>",
             usage="name of start object in graph mode"
                     + "\nspecify multiple times to use several names")
     private List<String> graphNames;
 
-    @Option(name="--graph-filter-object", depends={"--graph"},
+    @Option(name="--graph-filter-object",
             handler=DbObjTypeOptionHandler.class,
             usage="show these object types, hide  other objects types")
     private List<DbObjType> graphFilterTypes;
 
-    @Option(name="--graph-invert-filter", depends={"--graph", "--graph-filter-object"},
+    @Option(name="--graph-invert-filter", depends="--graph-filter-object",
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
 
-    @Option(name="--insert-name", metaVar="<name>", depends={"--insert"},
+    @Option(name="--insert-name", metaVar="<name>",
             usage="name of start object in data insert mode")
     private String insertName;
 
-    @Option(name="--insert-filter", metaVar="<filter>", depends={"--insert"},
+    @Option(name="--insert-filter", metaVar="<filter>", depends="--insert-name",
             usage="value of where for script of select for start object")
     private String insertFilter;
 
-    public void setInsertName(String insertName) {
-        this.insertName = insertName;
+    public CliMode getMode() {
+        return mode;
     }
 
     public String getInsertName() {
         return insertName;
     }
 
-    public void setInsertFilter(String insertFilter) {
-        this.insertFilter = insertFilter;
-    }
-
     public String getInsertFilter() {
         return insertFilter;
     }
 
-    public void setInsertMode(boolean isInsertMode) {
-        this.isInsertMode = isInsertMode;
-    }
-
-    public boolean isInsertMode() {
-        return isInsertMode;
-    }
-
     public boolean isClearLibCache() {
         return clearLibCache;
-    }
-
-    public void setClearLibCache(boolean clearLibCache) {
-        this.clearLibCache = clearLibCache;
-    }
-
-    public boolean isModeParse() {
-        return modeParse;
-    }
-
-    public void setModeParse(boolean modeParse) {
-        this.modeParse = modeParse;
-    }
-
-    public boolean isModeGraph() {
-        return modeGraph;
-    }
-
-    public void setModeGraph(boolean modeGraph) {
-        this.modeGraph = modeGraph;
     }
 
     @Override
@@ -396,7 +384,7 @@ public class CliArgs extends PgDiffArguments {
 
     @Override
     public String getOldSrc() {
-        return this.oldSrc;
+        return oldSrc;
     }
 
     @Override
@@ -405,11 +393,7 @@ public class CliArgs extends PgDiffArguments {
     }
 
     public String getOutputTarget() {
-        return this.outputTarget;
-    }
-
-    public void setOutputTarget(String outputTarget) {
-        this.outputTarget = outputTarget;
+        return outputTarget;
     }
 
     @Override
@@ -436,24 +420,12 @@ public class CliArgs extends PgDiffArguments {
         return safeMode;
     }
 
-    public void setSafeMode(boolean safeMode) {
-        this.safeMode = safeMode;
-    }
-
     public boolean isRunOnTarget() {
         return runOnTarget;
     }
 
-    public void setRunOnTarget(boolean runOnTarget) {
-        this.runOnTarget = runOnTarget;
-    }
-
     public String getRunOnDb() {
         return runOnDb;
-    }
-
-    public void setRunOnDb(String runOnDb) {
-        this.runOnDb = runOnDb;
     }
 
     public Collection<DangerStatement> getAllowedDangers() {
@@ -510,10 +482,6 @@ public class CliArgs extends PgDiffArguments {
         this.libSafeMode = libSafeMode;
     }
 
-    public boolean isMsSql() {
-        return msSql;
-    }
-
     @Override
     public DatabaseType getDbType() {
         return dbType;
@@ -531,10 +499,6 @@ public class CliArgs extends PgDiffArguments {
 
     public boolean isDebug() {
         return isDebug;
-    }
-
-    public void setDebug(boolean isDebug) {
-        this.isDebug = isDebug;
     }
 
     @Override
@@ -579,10 +543,6 @@ public class CliArgs extends PgDiffArguments {
 
     public String getOutCharsetName() {
         return outCharsetName;
-    }
-
-    public void setOutCharsetName(String outCharsetName) {
-        this.outCharsetName = outCharsetName;
     }
 
     @Override
@@ -746,14 +706,6 @@ public class CliArgs extends PgDiffArguments {
         return graphReverse;
     }
 
-    public void setGraphReverse(boolean graphReverse) {
-        this.graphReverse = graphReverse;
-    }
-
-    public void setGraphDepth(int graphDepth) {
-        this.graphDepth = graphDepth;
-    }
-
     @Override
     public boolean isProjUpdate() {
         return projUpdate;
@@ -788,10 +740,6 @@ public class CliArgs extends PgDiffArguments {
         this.postFilePath = postFilePath;
     }
 
-    private static void badArgs(String message) throws CmdLineException{
-        throw new CmdLineException(null, message, null);
-    }
-
     /**
      * Parses command line arguments or outputs instructions.
      *
@@ -803,8 +751,7 @@ public class CliArgs extends PgDiffArguments {
      */
     public boolean parse(PrintWriter writer, String[] args) throws CmdLineException {
         if (args.length != 0) {
-            CmdLineParser p = new CmdLineParser(this);
-            p.parseArgument(args);
+            new CmdLineParser(this).parseArgument(args);
         } else {
             // show help instead of failing for 0 args
             zhelp = true;
@@ -821,85 +768,156 @@ public class CliArgs extends PgDiffArguments {
             listCharsets(writer);
             return false;
         }
-        if (isMsSql()) {
-            //backwards compatibility
+
+        // backwards compatibility
+        convertDeprecatedArguments();
+
+        if (mode == CliMode.DIFF && (oldSrc == null || newSrc == null)) {
+            if (clearLibCache) {
+                return true;
+            }
+            badArgs("Please specify both SOURCE and DEST.");
+        }
+
+        checkModeParams();
+        checkDbTypesParam();
+        checkParams();
+
+        if (CliMode.DIFF == mode) {
+            setOldSrcFormat(parsePath(oldSrc));
+        } else if (CliMode.PARSE == mode && projUpdate) {
+            setOldSrc(outputTarget);
+            setOldSrcFormat(parsePath(oldSrc));
+        }
+
+        setNewSrcFormat(parsePath(newSrc));
+        return true;
+    }
+
+    private void convertDeprecatedArguments() {
+        if (msSql) {
             dbType = DatabaseType.MS;
         }
+        if (modeParse) {
+            mode = CliMode.PARSE;
+        } else if (modeGraph) {
+            mode = CliMode.GRAPH;
+        } else if (isInsertMode) {
+            mode = CliMode.INSERT;
+        }
+    }
 
-        if (isModeParse() && isProjUpdate()) {
-            setOldSrc(getOutputTarget());
-            setOldSrcFormat(parsePath(getOldSrc()));
+    private void checkParams() throws CmdLineException {
+        if (newSrc == null) {
+            badArgs("Please specify SCHEMA.");
         }
 
-        if (isModeParse() || isModeGraph() || isInsertMode()) {
-            if (getNewSrc() == null) {
-                badArgs("Please specify SCHEMA.");
-            }
-            if (getOldSrc() != null && !isProjUpdate()) {
-                badArgs("DEST argument isn't required.");
-            }
-
-            if (modeParse && dbType != DatabaseType.PG) {
-                if (timeZone != null) {
-                    badArgs("option \"-Z (--time-zone)\" cannot be used with dbType: " + dbType);
-                }
-                if (simplifyView) {
-                    badArgs("option \"--simplify-views\" cannot be used with dbType: " + dbType);
-                }
-            }
-
-            if (isInsertMode()) {
-                if (!getNewSrc().startsWith(URL_START_JDBC)) {
-                    badArgs("Cannot run work with non-database source.");
-                }
-                if (getDbType() == DatabaseType.CH) {
-                    badArgs("--insert cannot be used with ClickHouse database");
-                }
-                if (getRunOnDb() != null && !getRunOnDb().startsWith(URL_START_JDBC)) {
-                    badArgs("Option -R (--run-on) must specify JDBC connection string.");
-                }
-            }
-            DatabaseType typeNewSrc = getDatabaseTypeFromSource(getNewSrc());
-            if (getDbType() != typeNewSrc) {
-                badArgs(String.format(MESSAGE_CANNOT_DATABASE_WITH_PROJECT, typeNewSrc.toString(), getDbType().toString()));
-            }
-        } else {
-            if ((getOldSrc() == null || getNewSrc() == null)) {
-                if (clearLibCache) {
-                    return true;
-                }
-                badArgs("Please specify both SOURCE and DEST.");
-            }
-            if (dbType != DatabaseType.PG) {
-                if (generateExistDoBlock) {
-                    badArgs("option \"-do (--generate-exist-do-block)\" cannot be used with dbType: " + dbType);
-                }
-                if (simplifyView) {
-                    badArgs("option \"--simplify-views\" cannot be used with dbType: " + dbType);
-                }
-            }
-            if (commentsToEnd && dbType == DatabaseType.CH) {
-                badArgs("option \"--comments-to-end\" cannot be used with dbType " + dbType);
-            }
-            if (isAddTransaction() && isConcurrentlyMode() && getDbType() == DatabaseType.PG) {
+        if (CliMode.DIFF == mode) {
+            if (dbType == DatabaseType.PG && addTransaction && concurrentlyMode) {
                 badArgs("-C (--concurrently-mode) cannot be used with the option(s) -X (--add-transaction) for PostgreSQL.");
             }
-            DatabaseType typeNewSrc = getDatabaseTypeFromSource(getNewSrc());
-            DatabaseType typeOldSrc = getDatabaseTypeFromSource(getOldSrc());
+
+            DatabaseType typeNewSrc = getDatabaseTypeFromSource(newSrc);
+            DatabaseType typeOldSrc = getDatabaseTypeFromSource(oldSrc);
             if (typeOldSrc != typeNewSrc) {
                 badArgs(String.format(MESSAGE_DIFFERENT_TYPES, typeNewSrc.toString(), typeOldSrc.toString()));
             }
-            if (isRunOnTarget() && !getOldSrc().startsWith(URL_START_JDBC)) {
+            if (runOnTarget && !oldSrc.startsWith(URL_START_JDBC)) {
                 badArgs("Cannot run script on non-database target.");
             }
-            if (getRunOnDb() != null && !getRunOnDb().startsWith(URL_START_JDBC)) {
+            if (runOnDb != null && !runOnDb.startsWith(URL_START_JDBC)) {
                 badArgs("Option -R (--run-on) must specify JDBC connection string.");
             }
-            setOldSrcFormat(parsePath(getOldSrc()));
+        } else {
+            DatabaseType typeNewSrc = getDatabaseTypeFromSource(newSrc);
+            if (dbType != typeNewSrc) {
+                badArgs(String.format(MESSAGE_CANNOT_DATABASE_WITH_PROJECT, typeNewSrc.toString(), dbType.toString()));
+            }
+            if (CliMode.PARSE == mode && outputTarget == null) {
+                badArgs("Please specify argument \"-o (--output)\"");
+            }
+            if (CliMode.INSERT == mode) {
+                if (!newSrc.startsWith(URL_START_JDBC)) {
+                    badArgs("Cannot run work with non-database source.");
+                }
+                if (runOnDb != null && !runOnDb.startsWith(URL_START_JDBC)) {
+                    badArgs("Option -R (--run-on) must specify JDBC connection string.");
+                }
+                if (insertName == null) {
+                    badArgs("Please specify argument \"--insert-name\"");
+                }
+            }
         }
-        setNewSrcFormat(parsePath(getNewSrc()));
+    }
 
-        return true;
+    private void checkModeParams() throws CmdLineException {
+        badArgWithWrongModes(runOnDb != null, "-R (--run-on)", CliMode.PARSE, CliMode.GRAPH);
+        badArgWithWrongModes(addTransaction, "-X (--add-transaction)", CliMode.PARSE, CliMode.GRAPH);
+        badArgWithWrongModes(enableFunctionBodiesDependencies, "-f (--enable-function-bodies-dependencies)", CliMode.PARSE);
+        badArgWithWrongModes(simplifyView, "--simplify-views", CliMode.GRAPH, CliMode.INSERT);
+        badArgWithWrongModes(timeZone != null, "-Z (--time-zone)", CliMode.GRAPH, CliMode.INSERT);
+        badArgWithWrongModes(!allowedTypes.isEmpty(), "-O (--allowed-object)", CliMode.GRAPH);
+        badArgWithWrongModes(selectedOnly, "--selected-only", CliMode.GRAPH, CliMode.INSERT);
+        badArgWithWrongModes(!ignoreLists.isEmpty(), "-I (--ignore-list)", CliMode.GRAPH, CliMode.INSERT);
+
+        badArgWithCorrectModes(oldSrc != null, "-t (--target)", CliMode.DIFF);
+        badArgWithCorrectModes(runOnTarget, "-r (--run-on-target)", CliMode.DIFF);
+        badArgWithCorrectModes(disableCheckFunctionBodies, "-F (--no-check-function-bodies)", CliMode.DIFF);
+        badArgWithCorrectModes(!preFilePath.isEmpty(), "--pre-script", CliMode.DIFF);
+        badArgWithCorrectModes(!postFilePath.isEmpty(), "--post-script", CliMode.DIFF);
+        badArgWithCorrectModes(ignoreColumnOrder, "--ignore-column-order", CliMode.DIFF);
+        badArgWithCorrectModes(generateConstraintNotValid, "-v (--generate-constraint-not-valid)", CliMode.DIFF);
+        badArgWithCorrectModes(usingTypeCastOff, "--using-off", CliMode.DIFF);
+        badArgWithCorrectModes(dataMovementMode, "--migrate-data", CliMode.DIFF);
+        badArgWithCorrectModes(concurrentlyMode, "-C (--concurrently-mode)", CliMode.DIFF);
+        badArgWithCorrectModes(generateExists, "--generate-exist", CliMode.DIFF);
+        badArgWithCorrectModes(generateExistDoBlock, "-do (--generate-exist-do-block)", CliMode.DIFF);
+        badArgWithCorrectModes(dropBeforeCreate, "--drop-before-create", CliMode.DIFF);
+        badArgWithCorrectModes(commentsToEnd, "--comments-to-end", CliMode.DIFF);
+        badArgWithCorrectModes(safeMode, "-S (--safe-mode)", CliMode.DIFF);
+        badArgWithCorrectModes(!allowedDangers.isEmpty(), "-D (--allow-danger-ddl)", CliMode.DIFF);
+        badArgWithCorrectModes(stopNotAllowed, "--stop-not-allowed", CliMode.DIFF);
+        badArgWithCorrectModes(!sourceLibXmls.isEmpty(), "--tgt-lib-xml", CliMode.DIFF);
+        badArgWithCorrectModes(!sourceLibs.isEmpty(), "--tgt-lib", CliMode.DIFF);
+        badArgWithCorrectModes(!sourceLibsWithoutPriv.isEmpty(), "--tgt-lib-no-priv", CliMode.DIFF);
+        badArgWithCorrectModes(projUpdate, "--update-project", CliMode.PARSE);
+        badArgWithCorrectModes(!graphNames.isEmpty(), "--graph-name", CliMode.GRAPH);
+        badArgWithCorrectModes(DEFAULT_DEPTH != graphDepth, "--graph-depth", CliMode.GRAPH);
+        badArgWithCorrectModes(!graphFilterTypes.isEmpty(), "--graph-filter-object", CliMode.GRAPH);
+        badArgWithCorrectModes(insertName != null, "--insert-name", CliMode.INSERT);
+    }
+
+    private void checkDbTypesParam() throws CmdLineException {
+        badArgWithWrongDbType(simplifyView, "--simplify-views", DatabaseType.MS, DatabaseType.CH);
+        badArgWithWrongDbType(timeZone != null, "-Z (--time-zone)", DatabaseType.MS, DatabaseType.CH);
+        badArgWithWrongDbType(generateExistDoBlock, "-do (--generate-exist-do-block)", DatabaseType.MS,
+                DatabaseType.CH);
+        badArgWithWrongDbType(concurrentlyMode, "-C (--concurrently-mode)", DatabaseType.CH);
+        badArgWithWrongDbType(commentsToEnd, "--comments-to-end", DatabaseType.CH);
+        badArgWithWrongDbType(CliMode.INSERT == mode, "--mode INSERT", DatabaseType.CH);
+    }
+
+    private void badArgWithWrongModes(boolean condition, String param, CliMode... modes) throws CmdLineException {
+        if (condition && containsInArray(mode, modes)) {
+            badArgs(MessageFormat.format(MESSAGE_WRONG_MODE, param, mode));
+        }
+    }
+
+    private void badArgWithCorrectModes(boolean condition, String param, CliMode... modes) throws CmdLineException {
+        if (condition && !containsInArray(mode, modes)) {
+            badArgs(MessageFormat.format(MESSAGE_WRONG_MODE, param, mode));
+        }
+    }
+
+    private void badArgWithWrongDbType(boolean condition, String arg, DatabaseType... wrongDbTypes)
+            throws CmdLineException {
+        if (condition && containsInArray(dbType, wrongDbTypes)) {
+            badArgs(MessageFormat.format("option \"{0}\" cannot be used with dbType: {1}", arg, dbType));
+        }
+    }
+
+    private void badArgs(String message) throws CmdLineException {
+        throw new CmdLineException(null, message, null);
     }
 
     private DatabaseType getDatabaseTypeFromSource(String src) {
@@ -924,15 +942,12 @@ public class CliArgs extends PgDiffArguments {
         OptionHandlerRegistry.getRegistry().registerHandler(Boolean.class, BooleanNoDefOptionHandler.class);
         OptionHandlerRegistry.getRegistry().registerHandler(boolean.class, BooleanNoDefOptionHandler.class);
 
-        ParserProperties prop = ParserProperties.defaults()
-                .withUsageWidth(80)
-                .withOptionSorter(null);
+        ParserProperties prop = ParserProperties.defaults().withUsageWidth(80).withOptionSorter(null);
 
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
 
         // new args instance to get correct defaults
-        new CmdLineParser(new CliArgs(), prop)
-        .printUsage(new OutputStreamWriter(buf, StandardCharsets.UTF_8), null);
+        new CmdLineParser(new CliArgs(), prop).printUsage(new OutputStreamWriter(buf, StandardCharsets.UTF_8), null);
 
         writer.println(MessageFormat.format(Messages.UsageHelp.replace("${tab}", "\t"),
                 new String(buf.toByteArray(), StandardCharsets.UTF_8),
@@ -945,5 +960,15 @@ public class CliArgs extends PgDiffArguments {
 
     private void listCharsets(PrintWriter writer) {
         Charset.availableCharsets().keySet().forEach(writer::println);
+    }
+
+    private <T> boolean containsInArray(T element, T[] elements) {
+        for (T t : elements) {
+            if (t == element) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
