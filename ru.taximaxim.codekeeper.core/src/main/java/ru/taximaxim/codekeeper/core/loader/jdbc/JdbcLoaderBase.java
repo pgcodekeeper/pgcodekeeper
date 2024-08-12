@@ -355,7 +355,6 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         default:
             throw new IllegalStateException(type + " doesn't support privileges!");
         }
-        int possiblePrivilegeCount = order.length();
         if (stType == null) {
             stType = st.getStatementType().name();
         }
@@ -364,16 +363,15 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
                 : PgDiffUtils.getQuotedName(schemaName) + '.' + stSignature;
         String column = columnId != null ? "(" + columnId + ")" : "";
 
-        List<Privilege> grants = JdbcAclParser.parse(
-                aclItemsArrayAsString, possiblePrivilegeCount, order, owner);
+        List<JdbcPrivilege> grants = JdbcPrivilege.parse(aclItemsArrayAsString, order, owner);
 
         boolean metPublicRoleGrants = false;
         boolean metDefaultOwnersGrants = false;
-        for (Privilege p : grants) {
+        for (JdbcPrivilege p : grants) {
             if (p.isGrantAllToPublic()) {
                 metPublicRoleGrants = true;
             }
-            if (p.isDefault) {
+            if (p.isDefault()) {
                 metDefaultOwnersGrants = true;
             }
         }
@@ -393,7 +391,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
                     stType + " " + qualStSignature, PgDiffUtils.getQuotedName(owner), false, st.getDbType()));
         }
 
-        for (Privilege grant : grants) {
+        for (JdbcPrivilege grant : grants) {
             // Always add if statement type is COLUMN, because of the specific
             // relationship with table privileges.
             // The privileges of columns for role are not set lower than for the
@@ -401,14 +399,12 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             //
             // Skip if default owner's privileges
             // or if it is 'GRANT ALL ON FUNCTION/TYPE/DOMAIN schema.name TO PUBLIC'
-            if (column.isEmpty() && (grant.isDefault ||
+            if (column.isEmpty() && (grant.isDefault() ||
                     (isFunctionOrTypeOrDomain && grant.isGrantAllToPublic()))) {
                 continue;
             }
-            String grantString = grant.grantValues.stream()
-                    .collect(Collectors.joining(column + ',', "", column));
-            st.addPrivilege(new PgPrivilege("GRANT", grantString,
-                    stType + " " + qualStSignature, grant.grantee, grant.isGO, st.getDbType()));
+            st.addPrivilege(new PgPrivilege("GRANT", grant.getGrantString(column),
+                    stType + " " + qualStSignature, grant.getGrantee(), grant.isGO(), st.getDbType()));
         }
     }
 

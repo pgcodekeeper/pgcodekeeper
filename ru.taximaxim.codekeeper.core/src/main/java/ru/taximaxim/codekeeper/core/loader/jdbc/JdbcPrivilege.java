@@ -17,8 +17,10 @@ package ru.taximaxim.codekeeper.core.loader.jdbc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
@@ -31,23 +33,78 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.Pri
  *
  * @author ryabinin_av
  */
-final class JdbcAclParser {
+final class JdbcPrivilege {
 
-    public enum PrivilegeTypes {
-        // SONAR-OFF
-        a("INSERT"), r("SELECT"), w("UPDATE"), d("DELETE"), D("TRUNCATE"), x("REFERENCES"),
-        t("TRIGGER"), X("EXECUTE"), U("USAGE"), C("CREATE"), T("CREATE_TEMP"), c("CONNECT");
-        // SONAR-ON
-        private final String privilegeType;
+    enum PrivilegeTypes {
 
-        PrivilegeTypes(String privilegeType) {
-            this.privilegeType = privilegeType;
+        INSERT('a'),
+        SELECT('r'),
+        UPDATE('w'),
+        DELETE('d'),
+        TRUNCATE('D'),
+        REFERENCES('x'),
+        TRIGGER('t'),
+        EXECUTE('X'),
+        USAGE('U'),
+        CREATE('C'),
+        CREATE_TEMP('T'),
+        CONNECT('c');
+
+        private final char privilegeLetter;
+
+        PrivilegeTypes(char privilegeLetter) {
+            this.privilegeLetter = privilegeLetter;
         }
 
-        @Override
-        public String toString() {
-            return privilegeType;
+        static String valueOf(char letter) {
+            for (PrivilegeTypes type : values()) {
+                if (type.privilegeLetter == letter) {
+                    return type.toString();
+                }
+            }
+
+            throw new IllegalArgumentException(
+                    "No enum constant " + PrivilegeTypes.class.getCanonicalName() + "." + letter);
         }
+    }
+
+    private final String grantee;
+    private final List<String> grantValues;
+    private final boolean isGO;
+    /**
+     * Default value - if grantor = grantee = owner and isGO is true (WITH GRANT OPTION)
+     */
+    private final boolean isDefault;
+
+    private JdbcPrivilege(String grantee, List<String> grantValues, boolean isGO, boolean isDefault) {
+        this.grantee = grantee;
+        this.grantValues = grantValues;
+        this.isGO = isGO;
+        this.isDefault = isDefault;
+    }
+
+    public String getGrantee() {
+        return grantee;
+    }
+
+    public List<String> getGrantValues() {
+        return Collections.unmodifiableList(grantValues);
+    }
+
+    public boolean isGO() {
+        return isGO;
+    }
+
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public boolean isGrantAllToPublic() {
+        return "PUBLIC".equals(grantee) && "ALL".equals(grantValues.get(0));
+    }
+
+    public String getGrantString(String column) {
+        return grantValues.stream().collect(Collectors.joining(column + ',', "", column));
     }
 
     /**
@@ -55,24 +112,22 @@ final class JdbcAclParser {
      *
      * @param aclArrayAsString
      *            String representation of AclItem array
-     * @param maxTypes
-     *            Maximum available privilege bits for target DB object
      * @param order
      *            Target order for privileges inside the privilege string (not a result list sorting)
      * @param owner
      *            Owner name (owner's privileges go first)
      * @return list of privilege
      */
-    public static List<Privilege> parse(String aclArrayAsString, int maxTypes, String order, String owner){
-        List<Privilege> privileges = new ArrayList<>();
+    public static List<JdbcPrivilege> parse(String aclArrayAsString, String order, String owner) {
+        List<JdbcPrivilege> privileges = new ArrayList<>();
 
         // skip "empty" acl strings, such as "{}"
-        if (aclArrayAsString.length() <= "{}".length()){
+        if (aclArrayAsString.length() <= "{}".length()) {
             return privileges;
         }
 
-        PrivilegesContext ctx = AntlrParser.makeBasicParser(PrivilegesParser.class,
-                aclArrayAsString, "jdbc privileges").privileges();
+        PrivilegesContext ctx = AntlrParser.makeBasicParser(PrivilegesParser.class, aclArrayAsString, "jdbc privileges")
+                .privileges();
 
         for (PrivilegeContext acl : ctx.acls) {
             String grantor;
@@ -91,7 +146,7 @@ final class JdbcAclParser {
 
             String grantsString = acl.priv.getText();
 
-            Consumer<Privilege> adder = grantee.equals(owner) ? p -> privileges.add(0, p) : privileges::add;
+            Consumer<JdbcPrivilege> adder = grantee.equals(owner) ? p -> privileges.add(0, p) : privileges::add;
             grantee = PgDiffUtils.getQuotedName(grantee);
 
             if (grantee.isEmpty()) {
@@ -112,13 +167,13 @@ final class JdbcAclParser {
                 }
             }
 
+            int maxTypes = order.length();
             if (grantTypeCharsWithoutGo.size() == maxTypes) {
-                adder.accept(new Privilege(grantee, Arrays.asList("ALL"),
+                adder.accept(new JdbcPrivilege(grantee, Arrays.asList("ALL"),
                         false, grantee.equals(owner) && grantor.equals(owner)));
 
             } else if (grantTypeCharsWithGo.size() == maxTypes) {
-                adder.accept(new Privilege(grantee, Arrays.asList("ALL"),
-                        true, false));
+                adder.accept(new JdbcPrivilege(grantee, Arrays.asList("ALL"), true, false));
 
             } else if (grantTypeCharsWithoutGo.size() < maxTypes && grantTypeCharsWithGo.size() < maxTypes) {
                 // add all grants without grant option
@@ -132,38 +187,14 @@ final class JdbcAclParser {
     }
 
     private static void addAllGrants(boolean isGO, List<Character> grantTypeChars,
-            String grantee, Consumer<Privilege> adder) {
+            String grantee, Consumer<JdbcPrivilege> adder) {
         List<String> grantTypesParsed = new ArrayList<>();
         for (int i = 0; i < grantTypeChars.size(); i++) {
             char c = grantTypeChars.get(i);
-            grantTypesParsed.add(PrivilegeTypes.valueOf(String.valueOf(c)).toString());
+            grantTypesParsed.add(PrivilegeTypes.valueOf(c));
         }
         if (!grantTypesParsed.isEmpty()) {
-            adder.accept(new Privilege(grantee, grantTypesParsed, isGO, false));
+            adder.accept(new JdbcPrivilege(grantee, grantTypesParsed, isGO, false));
         }
-    }
-
-    private JdbcAclParser() {
-    }
-}
-
-class Privilege {
-    final String grantee;
-    final List<String> grantValues;
-    final boolean isGO;
-    /**
-     * Default value - if grantor = grantee = owner and isGO is true (WITH GRANT OPTION)
-     */
-    final boolean isDefault;
-
-    public Privilege(String grantee, List<String> grantValues, boolean isGO, boolean isDefault) {
-        this.grantee = grantee;
-        this.grantValues = grantValues;
-        this.isGO = isGO;
-        this.isDefault = isDefault;
-    }
-
-    public boolean isGrantAllToPublic() {
-        return "PUBLIC".equals(grantee) && "ALL".equals(grantValues.get(0));
     }
 }

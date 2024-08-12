@@ -169,10 +169,10 @@ public final class ChEngine implements Serializable, IHashable {
         if (options.equals(newOptions)) {
             return;
         }
-        
+
         Set<String> resetOptions = new HashSet<>();
         Map<String, String> modifyOptions = new HashMap<>();
-        
+
         String newValue;
         for (String option : options.keySet()) {
             // added to reset if in new condition havn't this option
@@ -201,30 +201,28 @@ public final class ChEngine implements Serializable, IHashable {
     private void appendAlterOptions(StringBuilder sb, Set<String> resetOptions,
             Map<String, String> modifyOptions, String prefix) {
         if (!resetOptions.isEmpty()) {
-            sb.append(prefix)
-              .append("\n\tRESET SETTING");
+            sb.append(prefix).append("\n\tRESET SETTING");
             for(String key : resetOptions) {
                 sb.append(' ').append(key).append(',');
             }
             sb.setLength(sb.length() - 1);
             sb.append(';');
         }
-        
+
         if (modifyOptions.isEmpty()) {
             return;
         }
-        
-        sb.append(prefix)
-          .append("\n\tMODIFY SETTING");
+
+        sb.append(prefix).append("\n\tMODIFY SETTING");
         for (Entry<String, String> option : modifyOptions.entrySet()) {
             sb.append(' ').append(option.getKey()).append('=').append(option.getValue()).append(',');
         }
         sb.setLength(sb.length() - 1);
         sb.append(';');
     }
-    
-    public boolean containsOption(String Key) {
-        return options.containsKey(Key);
+
+    public boolean containsOption(String key) {
+        return options.containsKey(key);
     }
 
     public boolean isModifybleSampleBy(String newSampleBy) {
@@ -255,11 +253,11 @@ public final class ChEngine implements Serializable, IHashable {
         if (this == obj) {
             return true;
         }
-        
+
         if (!(obj instanceof ChEngine)) {
             return false;
         }
-        
+
         final ChEngine engine = (ChEngine) obj;
         return compareUnalterable(engine)
                 && Objects.equals(sampleBy, engine.getSampleBy())

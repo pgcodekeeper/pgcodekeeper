@@ -29,6 +29,7 @@ import java.nio.file.Paths;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +50,7 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class LibraryLoader extends DatabaseLoader {
 
-    private static final Random RANDOM = new Random();
+    private static final Random RANDOM = new SecureRandom();
 
     private final AbstractDatabase database;
     private final Path metaPath;
