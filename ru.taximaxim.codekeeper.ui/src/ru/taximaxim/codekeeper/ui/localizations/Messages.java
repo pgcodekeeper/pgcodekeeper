@@ -978,10 +978,6 @@ public final class Messages extends NLS {
 
     public static String BuildDepsGraphDialog_search_dep;
 
-    public static String BuildDepsGraphDialog_select_obj_type;
-
-    public static String BuildDepsGraphDialog_select_source_type;
-
     public static String FilterDialog_cancel;
 
     public static String FilterDialog_db_user;

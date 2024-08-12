@@ -264,12 +264,11 @@ class IgnoreListsArgumentsProvider extends ArgumentsProvider {
     protected String[] args() throws URISyntaxException, IOException {
         Path black = TestUtils.getPathToResource(DiffTest.class, "black.ignore");
         Path white = TestUtils.getPathToResource(DiffTest.class, "white.ignore");
-        Path old = TestUtils.getPathToResource(DiffTest.class, "ignore_old.sql");
-        Path new_ = TestUtils.getPathToResource(DiffTest.class, "ignore_new.sql");
+        String oldPath = TestUtils.getPathToResource(DiffTest.class, "ignore_old.sql").toString();
+        String newPath = TestUtils.getPathToResource(DiffTest.class, "ignore_new.sql").toString();
 
-        return new String[] {"--ignore-list", black.toString(),
-                "-I", white.toString(), "-o", getDiffResultFile().toString(),
-                new_.toString(), old.toString()};
+        return new String[] {"--ignore-list", black.toString(), "-I", white.toString(), "-o",
+                getDiffResultFile().toString(), newPath, oldPath};
     }
 }
 

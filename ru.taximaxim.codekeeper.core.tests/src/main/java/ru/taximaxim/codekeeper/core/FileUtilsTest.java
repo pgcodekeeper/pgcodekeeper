@@ -27,8 +27,8 @@ public final class FileUtilsTest {
     @CsvSource({
             "jdbc:sqlserver://127.0.0.1;databaseName={master};integratedSecurity=true, master",
             "jdbc:sqlserver://127.0.0.1;databaseName=master;integratedSecurity=true, master",
-            "jdbc:postgresql://127.0.0.1:5432/test_1?user=test&password=test, test_1",
-            "jdbc:jkslauef/sdaf:135/test12&user=userName&password=pas{s,"
+            "jdbc:postgresql://127.0.0.1:5432/test_1?user=test&arg=test, test_1",
+            "jdbc:jkslauef/sdaf:135/test12&user=userName&arg2=pas{s,"
     })
     void testGetDbNameFromMsUrl(String url, String expected) {
         if (expected == null) {
