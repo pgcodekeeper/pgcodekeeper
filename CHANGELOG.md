@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Changed the arguments for calling modes in the CLI version. Use `--mode DIFF` to compare data sources and get the migration script, `--mode PARSE` instead of the deprecated `--parse` option, `--mode GRAPH` instead of `--graph` and `--mode INSERT` instead of `--insert`.
 - Disabled code generation for creating index without locks when using transactions for PostgreSQL.
 - Expanded usage of project setting `Use Unix-style newline characters`.
+- The clear cache button in global settings additionally deletes cache files for all projects. Also added deletion of the project cache file when deleting a project.
 
 ### Fixed
 

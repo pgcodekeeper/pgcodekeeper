@@ -1517,4 +1517,13 @@
              searchResultClass="ru.taximaxim.codekeeper.ui.search.ReferenceSearchResult">
        </viewPage>
     </extension>
+    <extension
+          point="org.eclipse.ltk.core.refactoring.deleteParticipants">
+       <deleteParticipant
+             class="ru.taximaxim.codekeeper.ui.pgdbproject.parser.ProjectDeleteParticipant"
+             id="ru.taximaxim.codekeeper.ui.ProjectDeleteParticipant"
+             name="name">
+          <enablement></enablement>
+       </deleteParticipant>
+    </extension>
 </plugin>
