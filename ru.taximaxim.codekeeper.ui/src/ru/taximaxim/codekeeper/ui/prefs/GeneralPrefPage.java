@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public class GeneralPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {
@@ -106,6 +107,7 @@ public class GeneralPrefPage extends FieldEditorPreferencePage
             public void widgetSelected(SelectionEvent e) {
                 AntlrParser.cleanCacheOfAllParsers();
                 System.gc();
+                PgDbParser.cleanAll();
             }
         });
     }

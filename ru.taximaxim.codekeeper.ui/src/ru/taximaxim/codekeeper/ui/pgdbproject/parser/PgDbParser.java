@@ -56,6 +56,7 @@ import org.eclipse.ui.ide.ResourceUtil;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.Utils;
+import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
@@ -93,6 +94,12 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         return getParserForBuilder(res.getProject(), null);
     }
 
+    public static void removeProject(IResource res) {
+        IProject proj = res.getProject();
+        PROJ_PARSERS.remove(proj);
+        clean(proj.getName());
+    }
+
     /**
      * @param buildType single element array; element may be altered to indicate
      *                  actual required build type
@@ -118,8 +125,11 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     }
 
     private static Path getPathToObject(String name) {
-        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                .append("projects").append(name + ".ser").toString()); //$NON-NLS-1$ //$NON-NLS-2$
+        return getPathToFolder().resolve(name + ".ser"); //$NON-NLS-1$
+    }
+
+    private static Path getPathToFolder() {
+        return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle()).toString(), "projects"); //$NON-NLS-1$
     }
 
     public void serialize(String name) {
@@ -133,29 +143,38 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
     }
 
     public boolean deserialize(String name) {
-        try {
-            Path path = getPathToObject(name);
-            if (Files.exists(path)) {
-                try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
-                    PgDbParser parser = (PgDbParser) oin.readObject();
-                    objReferences.clear();
-                    objReferences.putAll(parser.objReferences);
-                    objDefinitions.clear();
-                    objDefinitions.putAll(parser.objDefinitions);
-                    notifyListeners();
-                    return true;
-                }
-            }
+        Path path = getPathToObject(name);
+        if (Files.notExists(path)) {
+            return false;
+        }
+
+        try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
+            PgDbParser parser = (PgDbParser) oin.readObject();
+            objReferences.clear();
+            objReferences.putAll(parser.objReferences);
+            objDefinitions.clear();
+            objDefinitions.putAll(parser.objDefinitions);
+            notifyListeners();
+            return true;
         } catch (ClassNotFoundException | IOException | ClassCastException e) {
             Log.log(Log.LOG_DEBUG, "Error while deserialize parser!", e); //$NON-NLS-1$
+            return false;
         }
-        return false;
     }
 
     public static void clean(String name) {
         try {
             Path path = getPathToObject(name);
             Files.deleteIfExists(path);
+        } catch (IOException e) {
+            Log.log(Log.LOG_DEBUG, "Error while clean parser!", e); //$NON-NLS-1$
+        }
+    }
+
+    public static void cleanAll() {
+        try {
+            Path path = getPathToFolder();
+            FileUtils.deleteRecursive(path);
         } catch (IOException e) {
             Log.log(Log.LOG_DEBUG, "Error while clean parser!", e); //$NON-NLS-1$
         }
@@ -304,8 +323,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
         }
         if (in.exists() && in instanceof IURIEditorInput) {
             return Paths.get(((IURIEditorInput) in).getURI()).toString();
-        } else {
-            return null;
         }
+
+        return null;
     }
 }
