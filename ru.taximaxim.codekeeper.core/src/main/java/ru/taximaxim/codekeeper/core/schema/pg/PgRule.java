@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -95,18 +94,6 @@ public class PgRule extends PgStatement implements ISearchPath {
     public void setEnabledState(String enabledState) {
         this.enabledState = enabledState;
         resetHash();
-    }
-
-    /**
-     * Adds command with newlines as requested in arguments.
-     *
-     * @param args
-     *            database arguments
-     * @param command
-     *            rule command
-     */
-    public void addCommand(PgDiffArguments args, String command) {
-        addCommand(args.isKeepNewlines() ? command : command.replace("\r", ""));
     }
 
     public PgRule(String name) {

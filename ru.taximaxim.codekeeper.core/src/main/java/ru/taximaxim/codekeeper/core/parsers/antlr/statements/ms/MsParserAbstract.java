@@ -121,10 +121,10 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
         var isTableConstr = stmt instanceof MsTable;
         if (constraintCtx.DEFAULT() != null) {
             col.setDefaultName(constraintName);
-            ExpressionContext exp = constraintCtx.expression();
-            col.setDefaultValue(getFullCtxText(exp));
+            ExpressionContext expCtx = constraintCtx.expression();
+            col.setDefaultValue(getFullCtxTextWithCheckNewLines(expCtx));
             db.addAnalysisLauncher(
-                    new MsExpressionAnalysisLauncher(!isTableConstr ? (MsType) stmt : col, exp, fileName));
+                    new MsExpressionAnalysisLauncher(!isTableConstr ? (MsType) stmt : col, expCtx, fileName));
         } else if (constraintCtx.PRIMARY() != null || constraintCtx.UNIQUE() != null) {
             if (constraintName == null && isTableConstr) {
                 if (constraintCtx.PRIMARY() != null) {
@@ -208,7 +208,7 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
 
             var constrCheck = new MsConstraintCheck(constraintName);
             constrCheck.setNotForRepl(constraintCtx.not_for_replication() != null);
-            constrCheck.setExpression(getFullCtxText(constraintCtx.search_condition()));
+            constrCheck.setExpression(getFullCtxTextWithCheckNewLines(constraintCtx.search_condition()));
 
             stmt.addChild(constrCheck);
         }

@@ -353,7 +353,7 @@ public final class CreateFunction extends PgParserAbstract {
 
             VexContext def = argument.vex();
             if (def != null) {
-                arg.setDefaultExpression(getFullCtxText(def));
+                arg.setDefaultExpression(getFullCtxTextWithCheckNewLines(def));
                 db.addAnalysisLauncher(new VexAnalysisLauncher(function, def, fileName));
             }
 

@@ -105,7 +105,7 @@ public class AlterMsTable extends MsTableAbstract {
             if (constrBodyCtx.DEFAULT() != null) {
                 MsColumn col = (MsColumn) getSafe(AbstractTable::getColumn, table, constrBodyCtx.id());
                 ExpressionContext expCtx = constrBodyCtx.expression();
-                doSafe(MsColumn::setDefaultValue, col, getFullCtxText(expCtx));
+                doSafe(MsColumn::setDefaultValue, col, getFullCtxTextWithCheckNewLines(expCtx));
                 if (constrCtx.constraint != null) {
                     doSafe(MsColumn::setDefaultName, col, constrCtx.constraint.getText());
                 }

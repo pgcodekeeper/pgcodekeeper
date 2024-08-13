@@ -115,8 +115,9 @@ public class CreateMsTable extends MsTableAbstract {
                 addTypeDepcy(dt, col);
                 col.setType(getFullCtxText(dt));
             } else {
-                col.setExpression(getFullCtxText(colCtx.expression()));
-                db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, colCtx.expression(), fileName));
+                var expr = colCtx.expression();
+                col.setExpression(getFullCtxTextWithCheckNewLines(expr));
+                db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, expr, fileName));
             }
 
             for (Column_optionContext option : colCtx.column_option()) {
