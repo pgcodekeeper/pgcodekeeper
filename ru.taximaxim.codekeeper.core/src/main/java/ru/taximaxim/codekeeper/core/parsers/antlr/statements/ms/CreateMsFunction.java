@@ -79,9 +79,6 @@ public class CreateMsFunction extends BatchContextProcessor {
         Func_bodyContext bodyRet = ctx.func_body();
 
         AbstractFunction f;
-
-        String returns = getFullCtxText(ctx.func_return());
-
         if (bodyRet.EXTERNAL() != null) {
             Assembly_specifierContext assemblyCtx = bodyRet.assembly_specifier();
             String assembly = assemblyCtx.assembly_name.getText();
@@ -97,8 +94,7 @@ public class CreateMsFunction extends BatchContextProcessor {
                 func.addOption(getFullCtxText(option));
             }
 
-            boolean isKeepNewlines = db.getArguments().isKeepNewlines();
-            func.setReturns(isKeepNewlines ? returns : returns.replace("\r", ""));
+            func.setReturns(getFullCtxTextWithCheckNewLines(ctx.func_return()));
 
             Func_returnContext ret = ctx.func_return();
             if (ret.LOCAL_ID() != null) {
@@ -177,7 +173,7 @@ public class CreateMsFunction extends BatchContextProcessor {
                     argument.name.getText(), getFullCtxText(argument.data_type()));
             arg.setReadOnly(argument.READONLY() != null);
             if (argument.default_val != null) {
-                arg.setDefaultExpression(getFullCtxText(argument.default_val));
+                arg.setDefaultExpression(getFullCtxTextWithCheckNewLines(argument.default_val));
             }
 
             function.addArgument(arg);

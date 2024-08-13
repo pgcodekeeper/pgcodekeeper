@@ -587,6 +587,10 @@ class PgDiffTest {
             "compare_statistics",
             // Test scenario where the option logged in sequences is changed
             "modify_logged_generated_sequence",
+            // Test scenario where original saved in Unix and new saved in Windows lines ending
+            "test_encoding_table",
+            // Test scenario where original saved in Unix and new saved in Windows lines ending
+            "test_encoding_function",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

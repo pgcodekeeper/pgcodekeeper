@@ -80,7 +80,7 @@ public class CreateDomain extends PgParserAbstract {
     public static void parseDomainConstraint(PgDomain domain, PgConstraintCheck constr,
             Domain_constraintContext ctx, AbstractDatabase db, String location) {
         VexContext vexCtx = ctx.vex();
-        constr.setExpression(getFullCtxText(vexCtx));
+        constr.setExpression(checkNewLines(getFullCtxText(vexCtx), db.getArguments()));
         db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));
     }
 

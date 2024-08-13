@@ -67,7 +67,7 @@ public class CreateRule extends PgParserAbstract {
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
         for (Rewrite_commandContext cmd : ctx.rewrite_command()) {
-            rule.addCommand(db.getArguments(), getFullCtxText(cmd));
+            rule.addCommand(checkNewLines(getFullCtxText(cmd), db.getArguments()));
         }
 
         db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx, location));

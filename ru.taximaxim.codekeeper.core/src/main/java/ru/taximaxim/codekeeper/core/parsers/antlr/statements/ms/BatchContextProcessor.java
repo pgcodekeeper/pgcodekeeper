@@ -23,7 +23,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -46,16 +45,15 @@ public abstract class BatchContextProcessor extends MsParserAbstract {
     protected abstract ParserRuleContext getDelimiterCtx();
 
     protected void setSourceParts(SourceStatement st) {
-        boolean isKeepNewLines = db.getArguments().isKeepNewlines();
-        String first = ParserAbstract.getHiddenLeftCtxText(batchCtx, stream);
-        st.setFirstPart(isKeepNewLines ? first : first.replace("\r", ""));
+        String first = getHiddenLeftCtxText(batchCtx, stream);
+        st.setFirstPart(checkNewLines(first));
 
         List<Token> endTokens = stream.getHiddenTokensToRight(batchCtx.getStop().getTokenIndex());
         Token stopToken = endTokens != null ? endTokens.get(endTokens.size() - 1) : batchCtx.getStop();
         int stop = stopToken.getStopIndex();
         int start = getDelimiterCtx().getStop().getStopIndex() + 1;
         String second = stopToken.getInputStream().getText(Interval.of(start, stop));
-        st.setSecondPart(isKeepNewLines ? second : second.replace("\r", ""));
+        st.setSecondPart(checkNewLines(second));
     }
 
     @Override

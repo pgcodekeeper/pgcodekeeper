@@ -250,9 +250,9 @@ public class AlterTable extends TableAbstract {
         // column default
         Set_def_columnContext def = colAction.set_def_column();
         if (def != null) {
-            VexContext exp = def.vex();
-            col.setDefaultValue(getFullCtxText(exp));
-            db.addAnalysisLauncher(new VexAnalysisLauncher(col, exp, fileName));
+            VexContext expCtx = def.vex();
+            col.setDefaultValue(getFullCtxTextWithCheckNewLines(expCtx));
+            db.addAnalysisLauncher(new VexAnalysisLauncher(col, expCtx, fileName));
         }
 
         // column options

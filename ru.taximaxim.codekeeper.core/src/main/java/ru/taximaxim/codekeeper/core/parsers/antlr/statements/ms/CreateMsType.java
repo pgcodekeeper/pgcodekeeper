@@ -84,7 +84,7 @@ public class CreateMsType extends MsParserAbstract {
                 type.addChild(getMsPKConstraint(null, null, null, body));
             } else {
                 var constrCheck = new MsConstraintCheck(null);
-                constrCheck.setExpression(getFullCtxText(body.search_condition()));
+                constrCheck.setExpression(getFullCtxTextWithCheckNewLines(body.search_condition()));
                 type.addChild(constrCheck);
             }
         } else if (colCtx.table_index() != null) {
@@ -96,7 +96,7 @@ public class CreateMsType extends MsParserAbstract {
                 col.setType(getFullCtxText(colCtx.data_type()));
                 addTypeDepcy(colCtx.data_type(), type);
             } else {
-                col.setExpression(getFullCtxText(colCtx.expression()));
+                col.setExpression(getFullCtxTextWithCheckNewLines(colCtx.expression()));
             }
 
             for (Column_optionContext option : colCtx.column_option()) {

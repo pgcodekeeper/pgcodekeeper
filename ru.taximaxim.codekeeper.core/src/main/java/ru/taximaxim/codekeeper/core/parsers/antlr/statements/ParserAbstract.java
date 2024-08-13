@@ -34,6 +34,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
@@ -109,6 +110,19 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         return getFullCtxText(ctx, ctx);
     }
 
+    public String getFullCtxTextWithCheckNewLines(ParserRuleContext ctx) {
+        String text = getFullCtxText(ctx, ctx);
+        return checkNewLines(text);
+    }
+
+    protected String checkNewLines(String text) {
+        return checkNewLines(text, db.getArguments());
+    }
+
+    protected static String checkNewLines(String text, PgDiffArguments args) {
+        return args.isKeepNewlines() ? text : text.replace("\r", "");
+    }
+
     /**
      * Extracts raw text from list of IdentifierContext
      *
@@ -116,7 +130,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
      *            context
      * @return raw string
      */
-    public static String getFullCtxText(List<? extends ParserRuleContext> ids) {
+    protected String getFullCtxText(List<? extends ParserRuleContext> ids) {
         return getFullCtxText(ids.get(0), ids.get(ids.size() - 1));
     }
 
@@ -133,7 +147,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
                 Interval.of(start.getStartIndex(), end.getStopIndex()));
     }
 
-    public static String getHiddenLeftCtxText(ParserRuleContext ctx, CommonTokenStream stream) {
+    protected String getHiddenLeftCtxText(ParserRuleContext ctx, CommonTokenStream stream) {
         List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
         if (startTokens != null) {
             return ctx.getStart().getInputStream().getText(Interval.of(
@@ -144,7 +158,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         return "";
     }
 
-    public static String getFullCtxTextWithHidden(ParserRuleContext ctx, CommonTokenStream stream) {
+    protected String getFullCtxTextWithHidden(ParserRuleContext ctx, CommonTokenStream stream) {
         List<Token> startTokens = stream.getHiddenTokensToLeft(ctx.getStart().getTokenIndex());
         List<Token> stopTokens = stream.getHiddenTokensToRight(ctx.getStop().getTokenIndex());
         Token start = startTokens != null ? startTokens.get(0) : ctx.getStart();
@@ -152,8 +166,8 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         return getFullCtxText(start, stop);
     }
 
-    public static String getExpressionText(ParserRuleContext def, CommonTokenStream stream) {
-        String expression = getFullCtxText(def);
+    protected String getExpressionText(ParserRuleContext def, CommonTokenStream stream) {
+        String expression = checkNewLines(getFullCtxText(def));
         String whitespace = getHiddenLeftCtxText(def, stream);
         int newline = whitespace.indexOf('\n');
         return newline != -1 ? (whitespace.substring(newline) + expression) : expression;
@@ -395,7 +409,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
                 QNameParser.getFirstNameCtx(ids).start);
     }
 
-    public static void fillOptionParams(String[] options, BiConsumer <String, String> c,
+    public static void fillOptionParams(String[] options, BiConsumer<String, String> c,
             boolean isToast, boolean forceQuote, boolean isQuoted) {
         for (String pair : options) {
             int sep = pair.indexOf('=');
