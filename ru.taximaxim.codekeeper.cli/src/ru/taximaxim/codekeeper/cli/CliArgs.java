@@ -108,16 +108,25 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--clear-lib-cache", help=true, usage="clear library cache")
     private boolean clearLibCache;
 
+    /**
+     * @deprecated replaced by --mode PARSE
+     */
     @Deprecated(forRemoval=true)
     @Option(name="--parse", depends="-o", forbids="--mode",
             usage="deprecated option. Use --mode PARSE. Run in parser mode to save database schema as a directory hierarchy")
     private boolean modeParse;
 
+    /**
+     * @deprecated replaced by --mode GRAPH
+     */
     @Deprecated(forRemoval=true)
     @Option(name="--graph", forbids="--mode",
             usage="deprecated option. Use --mode GRAPH. Run in graph mode to show objects dependencies")
     private boolean modeGraph;
 
+    /**
+     * @deprecated replaced by --mode INSERT
+     */
     @Deprecated(forRemoval=true)
     @Option(name="--insert", forbids="--mode",
             usage="deprecated option. Use --mode INSERT. Run in insert mode to collect data")
