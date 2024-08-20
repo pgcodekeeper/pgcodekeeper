@@ -17,7 +17,9 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.pg;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 
+import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
@@ -146,51 +148,55 @@ public final class TypesReader extends JdbcReader {
         String name = res.getString("typname");
         loader.setCurrentObject(new GenericColumn(schemaName, name, DbObjType.TYPE));
         switch (typtype) {
-        case "b":
-            return getBaseType(res, name);
+        case "b": return getBaseType(res, name, schemaName);
         case "c": return getCompositeType(res, name);
         case "e": return getEnumType(res, name);
-        case "r":
-            return getRangeType(res, name);
+        case "r": return getRangeType(res, name, schemaName);
         default: return null;
         }
     }
 
-    private PgBaseType getBaseType(ResultSet res, String name) throws SQLException {
+    private PgBaseType getBaseType(ResultSet res, String name, String schemaName) throws SQLException {
         PgBaseType t = new PgBaseType(name);
+        // added dependency two times because can be one of two types signature
         String typinput = res.getString("typinput");
-        setFunctionWithDep(PgBaseType::setInputFunction, t, typinput);
-        setFunctionWithDep(PgBaseType::setOutputFunction, t, res.getString("typoutput"));
+        setFunctionWithDep(PgBaseType::setInputFunction, t, typinput, FUNC_SIGN.IN.getName());
+        setFunctionWithDep(PgBaseType::setInputFunction, t, typinput, FUNC_SIGN.IN_ADVANCED.getName());
 
+        setFunctionWithDep(PgBaseType::setOutputFunction, t, res.getString("typoutput"),
+                MessageFormat.format(FUNC_SIGN.TYPE_NAME.getName(), schemaName, name));
         String typreceive = res.getString("typreceive");
         if (!EMPTY_FUNCTION.equals(typreceive)) {
-            setFunctionWithDep(PgBaseType::setReceiveFunction, t, typreceive);
+            // added dependency two times because can be one of two types signature
+            setFunctionWithDep(PgBaseType::setReceiveFunction, t, typreceive, FUNC_SIGN.INTERNAL.getName());
+            setFunctionWithDep(PgBaseType::setReceiveFunction, t, typreceive, FUNC_SIGN.REC_ADVANCED.getName());
         }
 
         String typsend = res.getString("typsend");
         if (!EMPTY_FUNCTION.equals(typsend)) {
-            setFunctionWithDep(PgBaseType::setSendFunction, t, typsend);
+            setFunctionWithDep(PgBaseType::setSendFunction, t, typsend,
+                    MessageFormat.format(FUNC_SIGN.TYPE_NAME.getName(), schemaName, name));
         }
 
         String typmodin = res.getString("typmodin");
         if (!EMPTY_FUNCTION.equals(typmodin)) {
-            setFunctionWithDep(PgBaseType::setTypmodInputFunction, t, typmodin);
+            setFunctionWithDep(PgBaseType::setTypmodInputFunction, t, typmodin, FUNC_SIGN.TYPMOD_IN.getName());
         }
 
         String typmodout = res.getString("typmodout");
         if (!EMPTY_FUNCTION.equals(typmodout)) {
-            setFunctionWithDep(PgBaseType::setTypmodOutputFunction, t, typmodout);
+            setFunctionWithDep(PgBaseType::setTypmodOutputFunction, t, typmodout, FUNC_SIGN.TYPMOD_OUT.getName());
         }
 
         String typanalyzeset = res.getString("typanalyze");
         if (!EMPTY_FUNCTION.equals(typanalyzeset)) {
-            setFunctionWithDep(PgBaseType::setAnalyzeFunction, t, typanalyzeset);
+            setFunctionWithDep(PgBaseType::setAnalyzeFunction, t, typanalyzeset, FUNC_SIGN.INTERNAL.getName());
         }
 
         if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
             String typsubscript = res.getString("typsubscript");
             if (!EMPTY_FUNCTION.equals(typsubscript)) {
-                setFunctionWithDep(PgBaseType::setSubscriptFunction, t, typsubscript);
+                setFunctionWithDep(PgBaseType::setSubscriptFunction, t, typsubscript, FUNC_SIGN.INTERNAL.getName());
             }
         }
 
@@ -311,7 +317,7 @@ public final class TypesReader extends JdbcReader {
         return t;
     }
 
-    private PgRangeType getRangeType(ResultSet res, String name) throws SQLException {
+    private PgRangeType getRangeType(ResultSet res, String name, String schemaName) throws SQLException {
         PgRangeType t = new PgRangeType(name);
         JdbcType subtype = loader.getCachedTypeByOid(res.getLong("rngsubtype"));
         t.setSubtype(subtype.getFullName());
@@ -331,10 +337,12 @@ public final class TypesReader extends JdbcReader {
         }
 
         if (res.getBoolean("rngcanonicalset")) {
-            setFunctionWithDep(PgRangeType::setCanonical, t, res.getString("rngcanonical"));
+            setFunctionWithDep(PgRangeType::setCanonical, t, res.getString("rngcanonical"),
+                    MessageFormat.format(FUNC_SIGN.TYPE_NAME.getName(), schemaName, name));
         }
         if (res.getBoolean("rngsubdiffset")) {
-            setFunctionWithDep(PgRangeType::setSubtypeDiff, t, res.getString("rngsubdiff"));
+            setFunctionWithDep(PgRangeType::setSubtypeDiff, t, res.getString("rngsubdiff"),
+                    MessageFormat.format(FUNC_SIGN.SUBTYPE_DIFF.getName(), t.getSubtype()));
         }
 
         if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {

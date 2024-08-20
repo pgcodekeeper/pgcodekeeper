@@ -96,9 +96,10 @@ Reference: Object = t1 (TYPE), action = CREATE, offset = 4683, line number = 94,
 Reference: Object = public (SCHEMA), action = null, offset = 4785, line number = 96, charPositionInLine = 12
 Reference: Object = public.int111 (TYPE), action = CREATE, offset = 4792, line number = 96, charPositionInLine = 19
 Reference: Object = public (SCHEMA), action = null, offset = 4813, line number = 97, charPositionInLine = 12
-Reference: Object = public.int111_in (FUNCTION), action = null, offset = 4820, line number = 97, charPositionInLine = 19
+Reference: Object = public.int111_in(cstring) (FUNCTION), action = null, offset = 4820, line number = 97, charPositionInLine = 19
+Reference: Object = public.int111_in(cstring, oid, integer) (FUNCTION), action = null, offset = 4820, line number = 97, charPositionInLine = 19
 Reference: Object = public (SCHEMA), action = null, offset = 4844, line number = 98, charPositionInLine = 13
-Reference: Object = public.int111_out (FUNCTION), action = null, offset = 4851, line number = 98, charPositionInLine = 20
+Reference: Object = public.int111_out(public.int111) (FUNCTION), action = null, offset = 4851, line number = 98, charPositionInLine = 20
 Reference: Object = public (SCHEMA), action = null, offset = 4984, line number = 106, charPositionInLine = 11
 Reference: Object = public.int111 (TYPE), action = ALTER, offset = 4991, line number = 106, charPositionInLine = 18
 Reference: Object = public (SCHEMA), action = null, offset = 5036, line number = 108, charPositionInLine = 11
