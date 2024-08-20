@@ -280,6 +280,7 @@ class PgDiffDepciesTest {
             "add_func_with_regcast_usr_func_regprocedure",
             // user selected function with copying types (%TYPE) dependency
             "add_func_with_copying_type_usr_func_f2",
+            "add_type_usr_t1",
     })
     void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, true);

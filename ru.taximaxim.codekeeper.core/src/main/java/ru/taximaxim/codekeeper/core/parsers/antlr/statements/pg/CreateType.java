@@ -15,11 +15,13 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
+import java.text.MessageFormat;
 import java.util.List;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
@@ -53,13 +55,13 @@ public final class CreateType extends PgParserAbstract {
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractType type = null;
         if (ctx.RANGE() != null) {
-            type = createRangeType(name);
+            type = createRangeType(name, schema);
         } else if (ctx.ENUM() != null) {
             type = createEnumType(name);
         } else if (ctx.AS() != null) {
             type = createCompositeType(name);
         } else if (ctx.INPUT() != null) {
-            type = createBaseType(name);
+            type = createBaseType(name, schema);
         } else {
             type = new PgShellType(name);
         }
@@ -85,7 +87,7 @@ public final class CreateType extends PgParserAbstract {
         return type;
     }
 
-    private PgRangeType createRangeType(String name) {
+    private PgRangeType createRangeType(String name, AbstractSchema schema) {
         PgRangeType type = new PgRangeType(name);
         if (ctx.subtype_name != null) {
             type.setSubtype(getTypeName(ctx.subtype_name));
@@ -100,11 +102,13 @@ public final class CreateType extends PgParserAbstract {
         }
         if (ctx.canonical_function != null) {
             type.setCanonical(getFullCtxText(ctx.canonical_function));
-            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION);
+            addDepSafe(type, getIdentifiers(ctx.canonical_function), DbObjType.FUNCTION,
+                    MessageFormat.format(FUNC_SIGN.TYPE_NAME.getName(), schema, name));
         }
         if (ctx.subtype_diff_function != null) {
             type.setSubtypeDiff(getFullCtxText(ctx.subtype_diff_function));
-            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION);
+            addDepSafe(type, getIdentifiers(ctx.subtype_diff_function), DbObjType.FUNCTION,
+                    MessageFormat.format(FUNC_SIGN.SUBTYPE_DIFF.getName(), type.getSubtype()));
         }
         if (ctx.multirange_name != null) {
             type.setMultirange(ctx.multirange_name.getText());
@@ -114,40 +118,50 @@ public final class CreateType extends PgParserAbstract {
         return type;
     }
 
-    private PgBaseType createBaseType(String name) {
+    private PgBaseType createBaseType(String name, AbstractSchema schema) {
         PgBaseType type = new PgBaseType(name);
-        if (ctx.input_function != null) {
-            type.setInputFunction(getFullCtxText(ctx.input_function));
-            addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION);
-        }
-        if (ctx.output_function != null) {
-            type.setOutputFunction(getFullCtxText(ctx.output_function));
-            addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION);
-        }
-        if (ctx.receive_function != null) {
-            type.setReceiveFunction(getFullCtxText(ctx.receive_function));
-            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION);
-        }
-        if (ctx.send_function != null) {
-            type.setSendFunction(getFullCtxText(ctx.send_function));
-            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION);
-        }
-        if (ctx.type_modifier_input_function != null) {
-            type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
-            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION);
-        }
-        if (ctx.type_modifier_output_function != null) {
-            type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
-            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION);
+
+        // the order in which dependencies are installed from type to functions is important for generating the migration script
+        if (ctx.subscript_function != null) {
+            type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
+            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION, FUNC_SIGN.INTERNAL.getName());
         }
         if (ctx.analyze_function != null) {
             type.setAnalyzeFunction(getFullCtxText(ctx.analyze_function));
-            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION);
+            addDepSafe(type, getIdentifiers(ctx.analyze_function), DbObjType.FUNCTION, FUNC_SIGN.INTERNAL.getName());
         }
-        if (ctx.subscript_function != null) {
-            type.setSubscriptFunction(getFullCtxText(ctx.subscript_function));
-            addDepSafe(type, getIdentifiers(ctx.subscript_function), DbObjType.FUNCTION);
+        if (ctx.type_modifier_output_function != null) {
+            type.setTypmodOutputFunction(getFullCtxText(ctx.type_modifier_output_function));
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_output_function), DbObjType.FUNCTION,
+                    FUNC_SIGN.TYPMOD_OUT.getName());
         }
+        if (ctx.type_modifier_input_function != null) {
+            type.setTypmodInputFunction(getFullCtxText(ctx.type_modifier_input_function));
+            addDepSafe(type, getIdentifiers(ctx.type_modifier_input_function), DbObjType.FUNCTION,
+                    FUNC_SIGN.TYPMOD_IN.getName());
+        }
+        if (ctx.send_function != null) {
+            type.setSendFunction(getFullCtxText(ctx.send_function));
+            addDepSafe(type, getIdentifiers(ctx.send_function), DbObjType.FUNCTION,
+                    MessageFormat.format(FUNC_SIGN.TYPE_NAME.getName(), schema, name));
+        }
+        if (ctx.receive_function != null) {
+            type.setReceiveFunction(getFullCtxText(ctx.receive_function));
+            // added dependency two times because can be one of two types signature
+            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION, FUNC_SIGN.INTERNAL.getName());
+            addDepSafe(type, getIdentifiers(ctx.receive_function), DbObjType.FUNCTION,
+                    FUNC_SIGN.REC_ADVANCED.getName());
+        }
+
+        type.setOutputFunction(getFullCtxText(ctx.output_function));
+        addDepSafe(type, getIdentifiers(ctx.output_function), DbObjType.FUNCTION,
+                MessageFormat.format(FUNC_SIGN.TYPE_NAME.getName(), schema, name));
+
+        type.setInputFunction(getFullCtxText(ctx.input_function));
+        // added dependency two times because can be one of two types signature
+        addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, FUNC_SIGN.IN.getName());
+        addDepSafe(type, getIdentifiers(ctx.input_function), DbObjType.FUNCTION, FUNC_SIGN.IN_ADVANCED.getName());
+
         if (ctx.internallength != null) {
             type.setInternalLength(getFullCtxText(ctx.internallength));
         }

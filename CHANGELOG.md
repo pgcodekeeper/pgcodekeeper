@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Added missed dependencies in types.
+
 ## [9.13.0] - 2024-08-20
 
 ### Added
