@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [9.13.1] - 2024-08-21
+
+### Fixed
+
 - Added missed dependencies in types.
 
 ## [9.13.0] - 2024-08-20
@@ -2007,7 +2011,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...HEAD
+[9.13.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...v9.13.1
 [9.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...v9.13.0
 [9.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...v9.12.0
 [9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
