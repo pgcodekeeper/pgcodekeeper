@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [9.13.0] - 2024-08-20
+
+### Added
+
 - Added the ability to build a dependency graph for an object for GUI version. To build a graph, you need to right-click on an object in the comparison editor and select “Build a dependency graph”.
 
 ### Changed
@@ -17,8 +25,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Disabled code generation for creating index without locks when using transactions for PostgreSQL.
 - Expanded usage of project setting `Use Unix-style newline characters`.
 - The clear cache button in global settings additionally deletes cache files for all projects. Also added deletion of the project cache file when deleting a project.
-
-### Fixed
 
 ## [9.12.0] - 2024-08-06
 
@@ -1999,7 +2005,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...HEAD
+[9.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...v9.13.0
 [9.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...v9.12.0
 [9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
 [9.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.9.0...v9.10.0
