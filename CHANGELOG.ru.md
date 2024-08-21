@@ -13,6 +13,10 @@
 
 ### Исправлено
 
+## [9.13.1] - 2024-08-21
+
+### Исправлено
+
 - Добавленны пропущенные зависимости в типах.
 
 ## [9.13.0] - 2024-08-20
@@ -2008,7 +2012,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...HEAD
+[9.13.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...v9.13.1
 [9.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...v9.13.0
 [9.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...v9.12.0
 [9.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.10.0...v9.11.0
