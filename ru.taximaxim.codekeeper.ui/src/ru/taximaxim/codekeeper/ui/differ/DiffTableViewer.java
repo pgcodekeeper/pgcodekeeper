@@ -134,7 +134,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
-import ru.taximaxim.codekeeper.ui.differ.filters.SchemaFilter;
+import ru.taximaxim.codekeeper.ui.differ.filters.ContainerFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
@@ -282,7 +282,7 @@ public class DiffTableViewer extends Composite {
                 @Override
                 public void run() {
                     FilterDialog dialog = new FilterDialog(getShell(),
-                            viewerFilter.schemaFilter, viewerFilter.codeFilter,
+                            viewerFilter.containerFilter, viewerFilter.codeFilter,
                             viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
                             viewerFilter.types, viewerFilter.sides,
                             viewerFilter.isLocalChange, viewerFilter.isHideLibs,
@@ -1167,7 +1167,7 @@ public class DiffTableViewer extends Composite {
     }
 
     public static boolean isContainer(TreeElement el) {
-        return el.getType() == DbObjType.TABLE || el.getType() == DbObjType.VIEW;
+        return el.getType().in(DbObjType.TABLE, DbObjType.VIEW);
     }
 
     public static boolean isSubElement(TreeElement el) {
@@ -1454,7 +1454,7 @@ public class DiffTableViewer extends Composite {
         private final Collection<DiffSide> sides = EnumSet.noneOf(DiffSide.class);
 
         private final AbstractFilter codeFilter = new CodeFilter();
-        private final AbstractFilter schemaFilter = new SchemaFilter();
+        private final AbstractFilter containerFilter = new ContainerFilter();
         private final AbstractFilter gitUserFilter = new UserFilter(ElementMetaInfo::getGitUser);
         private final AbstractFilter dbUserFilter = new UserFilter(ElementMetaInfo::getDbUser);
 
@@ -1486,7 +1486,7 @@ public class DiffTableViewer extends Composite {
                     && codeFilter.isEmpty()
                     && dbUserFilter.isEmpty()
                     && gitUserFilter.isEmpty()
-                    && schemaFilter.isEmpty()
+                    && containerFilter.isEmpty()
                     && !isLocalChange.get()
                     && !isHideLibs.get();
         }
@@ -1499,13 +1499,14 @@ public class DiffTableViewer extends Composite {
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             TreeElement el = (TreeElement) element;
             boolean isSubElement = isSubElement(el);
+            boolean isContainer = isContainer(el);
 
             if (!checkType(el, isSubElement)) {
                 return false;
             }
 
             if (!sides.isEmpty() && !sides.contains(el.getSide())
-                    && (!isContainer(el) || el.getChildren().stream()
+                    && (!isContainer || el.getChildren().stream()
                             .noneMatch(e -> sides.contains(e.getSide())))) {
                 return false;
             }
@@ -1526,7 +1527,9 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            if (!schemaFilter.isEmpty() && !schemaFilter.checkElement(el, null, null, null)) {
+            if (!containerFilter.isEmpty() && !containerFilter.checkElement(el, null, null, null)
+                    && (!isContainer || el.getChildren().stream()
+                            .noneMatch(e -> containerFilter.checkElement(e, null, null, null)))) {
                 return false;
             }
 
