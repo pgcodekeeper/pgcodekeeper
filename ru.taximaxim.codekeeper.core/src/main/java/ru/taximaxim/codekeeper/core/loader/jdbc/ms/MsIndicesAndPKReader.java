@@ -63,6 +63,10 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
         if (type == DbObjType.CONSTRAINT) {
             var constrPk = new MsConstraintPk(name, isPrimaryKey);
+            Object isTracked = res.getObject("is_tracked");
+            if (null != isTracked) {
+                constrPk.setTracked((Boolean) isTracked);
+            }
             fillColumns(constrPk, XmlReader.readXML(res.getString("cols")), schema.getName(), parent);
             constrPk.setClustered(isClustered);
             constrPk.setDataSpace(dataSpace);
@@ -155,11 +159,13 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .column("res.fill_factor")
         .column("res.filter_definition")
         .column("d.name AS data_space")
+        .column("ctt.is_track_columns_updated_on AS is_tracked")
         .from("sys.indexes res WITH (NOLOCK)")
         .join("LEFT JOIN sys.filegroups f WITH (NOLOCK) ON res.data_space_id = f.data_space_id")
         .join("LEFT JOIN sys.data_spaces d WITH (NOLOCK) ON res.data_space_id = d.data_space_id")
         .join("JOIN sys.stats st WITH (NOLOCK) ON res.name = st.name AND res.object_id = st.object_id AND res.index_id = st.stats_id")
         .join("JOIN sys.tables o WITH (NOLOCK) ON res.object_id = o.object_id")
+        .join("LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = res.object_id")
         .join("JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = res.object_id AND sp.index_id = res.index_id AND sp.partition_number = 1")
         .where("o.type = 'U'")
         .where("res.type IN (1, 2)");

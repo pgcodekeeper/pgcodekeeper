@@ -48,7 +48,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     private List<AbstractConstraint> pkeys;
 
     private boolean ansiNulls;
-    private Boolean isTracked;
 
     private String textImage;
     private String fileStream;
@@ -64,7 +63,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
-        appendAlterOptions(sbSQL);
         appendOwnerSQL(sbSQL);
         appendPrivileges(sbSQL);
         appendColumnsPriliges(sbSQL);
@@ -85,16 +83,9 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
         compareOptions(newTable, sb);
         compareOwners(newTable, sb);
-        compareTableOptions(newTable, sb);
         alterPrivileges(newTable, sb);
 
         return sb.length() > startLength;
-    }
-
-    protected void appendAlterOptions(StringBuilder sbSQL) {
-        if (isTracked != null) {
-            enableTracking(sbSQL);
-        }
     }
 
     protected void appendName(StringBuilder sbSQL) {
@@ -205,28 +196,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return true;
     }
 
-    private void compareTableOptions(MsTable table, StringBuilder sb) {
-        MsTable newTable = table;
-        if (!Objects.equals(isTracked, newTable.isTracked())) {
-            if (newTable.isTracked() == null) {
-                sb.append(getAlterTable(true, false));
-                sb.append(" DISABLE CHANGE_TRACKING").append(GO);
-            } else if (isTracked == null) {
-                newTable.enableTracking(sb);
-            } else {
-                sb.append(getAlterTable(true, false));
-                sb.append(" DISABLE CHANGE_TRACKING").append(GO);
-                newTable.enableTracking(sb);
-            }
-        }
-    }
-
-    private void enableTracking(StringBuilder sb) {
-        sb.append(getAlterTable(true, false));
-        sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
-        sb.append(isTracked() ? "ON" : "OFF").append(')').append(GO);
-    }
-
     @Override
     public String getAlterTable(boolean nextLine, boolean only) {
         StringBuilder sb = new StringBuilder();
@@ -265,15 +234,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return ansiNulls;
     }
 
-    public Boolean isTracked() {
-        return isTracked;
-    }
-
-    public void setTracked(final Boolean isTracked) {
-        this.isTracked = isTracked;
-        resetHash();
-    }
-
     public String getTablespace() {
         return tablespace;
     }
@@ -296,7 +256,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             return ansiNulls == table.isAnsiNulls()
                     && Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())
-                    && Objects.equals(isTracked, table.isTracked())
                     && Objects.equals(tablespace, table.getTablespace())
                     && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
         }
@@ -310,7 +269,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         hasher.put(getTextImage());
         hasher.put(getFileStream());
         hasher.put(isAnsiNulls());
-        hasher.put(isTracked());
         hasher.put(getTablespace());
         hasher.putUnordered(getPkeys());
     }
@@ -321,7 +279,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         table.setFileStream(getFileStream());
         table.setTextImage(getTextImage());
         table.setAnsiNulls(isAnsiNulls());
-        table.setTracked(isTracked());
         table.setTablespace(getTablespace());
 
         if (pkeys != null) {

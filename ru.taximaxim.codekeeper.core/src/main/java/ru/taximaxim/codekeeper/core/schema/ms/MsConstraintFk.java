@@ -167,7 +167,6 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
         hasher.put(delAction);
         hasher.put(updAction);
         hasher.put(isNotForRepl);
-
     }
 
     @Override
