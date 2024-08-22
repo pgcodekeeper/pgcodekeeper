@@ -77,12 +77,14 @@ public class NewIgnoredObjectDialog extends InputDialog {
 
             if (objInitial != null) {
                 btnContent.setSelection(objInitial.isIgnoreContent());
-                btnContent.setSelection(objInitial.isQualified());
-                btnPattern.setSelection(objInitial.isRegular());
+                btnQualified.setSelection(objInitial.isQualified());
             }
 
             types = objInitial == null ? EnumSet.noneOf(DbObjType.class) : objInitial.getObjTypes();
             objTypeViewer = new ObjectTypeViewer(c, Messages.ignoredObjectPrefListEditor_type, true, false, types);
+        }
+        if (objInitial != null) {
+            btnPattern.setSelection(objInitial.isRegular());
         }
         return composite;
     }

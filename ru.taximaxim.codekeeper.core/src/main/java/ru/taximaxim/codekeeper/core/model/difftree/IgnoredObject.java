@@ -184,11 +184,13 @@ public class IgnoredObject {
 
     @Override
     public String toString() {
-        return appendRuleCode(new StringBuilder()).toString();
+        return appendRuleCode(new StringBuilder(), true).toString();
     }
 
-    StringBuilder appendRuleCode(StringBuilder sb) {
-        sb.append(isShow ? "SHOW " : "HIDE ");
+    public StringBuilder appendRuleCode(StringBuilder sb, boolean isAddType) {
+        if (isAddType) {
+            sb.append(isShow ? "SHOW " : "HIDE ");
+        }
         if (ignoreContent || isRegular || isQualified) {
             if (ignoreContent) {
                 sb.append("CONTENT").append(',');
@@ -200,11 +202,10 @@ public class IgnoredObject {
                 sb.append("QUALIFIED").append(',');
             }
             sb.setLength(sb.length() - 1);
-        } else {
-            sb.append("NONE");
+            sb.append(" ");
+        } else if (isAddType) {
+            sb.append("NONE ");
         }
-        sb.append(' ');
-
         sb.append(getValidId(name));
 
         if (dbRegex != null) {
