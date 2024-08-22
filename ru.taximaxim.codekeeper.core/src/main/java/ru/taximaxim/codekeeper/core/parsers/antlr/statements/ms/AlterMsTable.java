@@ -17,11 +17,16 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Queue;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CustomParserListener;
+import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
@@ -38,17 +43,21 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraint;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
-import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 
 public class AlterMsTable extends MsTableAbstract {
 
     private final Alter_tableContext ctx;
+    private final Queue<AntlrTask<?>> antlrTasks;
+    private List<Object> errors;
 
-    public AlterMsTable(Alter_tableContext ctx, MsDatabase db) {
+    public AlterMsTable(Alter_tableContext ctx, MsDatabase db, List<Object> errors, Queue<AntlrTask<?>> antlrTasks) {
         super(db);
         this.ctx = ctx;
+        this.errors = errors;
+        this.antlrTasks = antlrTasks;
     }
 
     @Override
@@ -88,9 +97,22 @@ public class AlterMsTable extends MsTableAbstract {
                 addObjReference(Arrays.asList(schemaCtx, nameCtx, trigger),
                         DbObjType.TRIGGER, ACTION_ALTER);
             }
-        } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null) {
-            doSafe(MsTable::setTracked, ((MsTable) table), ctx.on_off().ON() != null);
+        } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null && !isRefMode()) {
+            AntlrParser.submitAntlrTask(antlrTasks, () -> ctx, altTablCtx -> parseTracked(table, altTablCtx));
         }
+    }
+
+    private void parseTracked(AbstractTable table, Alter_tableContext altTablCtx) {
+        table.getConstraints().stream()
+        .filter(MsConstraintPk.class::isInstance)
+        .map(MsConstraintPk.class::cast)
+        .findFirst()
+        .ifPresentOrElse(e -> e.setTracked(altTablCtx.on_off().ON() != null), () -> {
+            var ex = new UnresolvedReferenceException(
+                        "To enable change tracking, a table must have a primary key.",
+                        altTablCtx.CHANGE_TRACKING().getSymbol());
+            errors.add(CustomParserListener.handleUnresolvedReference(ex, fileName));
+        });
     }
 
     private void addConstraint(Column_def_table_constraintsContext constrs, AbstractTable table, IdContext schemaCtx,

@@ -44,6 +44,11 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     private final List<SimpleColumn> columns = new ArrayList<>();
     private final Map<String, String> options = new HashMap<>();
 
+    /*
+     *  this is table option. It store in MsConstraintPk because can't use without Primary Key
+     */
+    private Boolean isTracked;
+
     public MsConstraintPk(String name, boolean isPrimaryKey) {
         super(name);
         this.isPrimaryKey = isPrimaryKey;
@@ -54,9 +59,18 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         return isPrimaryKey;
     }
 
+    public Boolean isTracked() {
+        return isTracked;
+    }
+
     @Override
     public boolean isClustered() {
         return isClustered;
+    }
+
+    public void setTracked(final Boolean isTracked) {
+        this.isTracked = isTracked;
+        resetHash();
     }
 
     public void setClustered(boolean isClustered) {
@@ -125,6 +139,10 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         if (dataSpace != null) {
             sbSQL.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
         }
+        if (isTracked != null) {
+            sbSQL.append(GO);
+            appendChangeTracking(sbSQL, isTracked);
+        }
         return sbSQL.toString();
     }
 
@@ -142,6 +160,43 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
+    protected void compareOptions(MsConstraint newConstr, StringBuilder sb) {
+        var newPk = (MsConstraintPk) newConstr;
+        if (Objects.equals(isTracked(), newPk.isTracked())) {
+            return;
+        }
+
+        if (isTracked() != null) {
+            appendChangeTracking(sb, null);
+            sb.append(GO);
+        }
+
+        if (newPk.isTracked() != null) {
+            appendChangeTracking(sb, newPk.isTracked());
+            sb.append(GO);
+        }
+    }
+
+    private void appendChangeTracking(StringBuilder sb, Boolean isTracked) {
+        appendAlterTable(sb, true);
+        if (isTracked == null) {
+            sb.append(" DISABLE CHANGE_TRACKING");
+        } else {
+            sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
+            sb.append(isTracked ? "ON" : "OFF").append(')');
+        }
+    }
+
+    @Override
+    protected void appendSpecialDropSQL(StringBuilder sb) {
+        if (isTracked != null) {
+            appendChangeTracking(sb, null);
+            sb.append(GO);
+            sb.append("\n\n");
+        }
+    }
+
+    @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
@@ -149,7 +204,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
 
         if (obj instanceof MsConstraintPk && super.compare(obj)) {
             var con = (MsConstraintPk) obj;
-            return compareUnalterable(con);
+            return Objects.equals(isTracked, con.isTracked())
+                    && compareUnalterable(con);
         }
 
         return false;
@@ -173,6 +229,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(isPrimaryKey);
+        hasher.put(isTracked());
         hasher.put(isClustered);
         hasher.put(dataSpace);
         hasher.putOrdered(columns);
@@ -182,6 +239,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new MsConstraintPk(name, isPrimaryKey);
+        con.setTracked(isTracked);
         con.setClustered(isClustered());
         con.setDataSpace(getDataSpace());
         con.columnNames.addAll(columnNames);

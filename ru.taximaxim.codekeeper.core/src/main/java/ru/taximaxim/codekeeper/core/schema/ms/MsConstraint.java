@@ -63,6 +63,7 @@ public abstract class MsConstraint extends AbstractConstraint {
     @Override
     public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
+        int startSize = sb.length();
         MsConstraint newConstr = (MsConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
@@ -70,6 +71,7 @@ public abstract class MsConstraint extends AbstractConstraint {
             return true;
         }
 
+        compareOptions(newConstr, sb);
         if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
             appendAlterTable(sb, true);
             sb.append(" WITH ");
@@ -82,10 +84,9 @@ public abstract class MsConstraint extends AbstractConstraint {
             }
             sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()))
             .append(GO);
-            return true;
         }
 
-        return false;
+        return startSize != sb.length();
     }
 
     protected abstract boolean compareUnalterable(MsConstraint newConstr);
@@ -93,6 +94,7 @@ public abstract class MsConstraint extends AbstractConstraint {
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
+        appendSpecialDropSQL(sbSQL);
         appendAlterTable(sbSQL, false);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
@@ -102,6 +104,14 @@ public abstract class MsConstraint extends AbstractConstraint {
         sbSQL.append(GO);
 
         return sbSQL.toString();
+    }
+
+    protected void compareOptions(MsConstraint newConstr, StringBuilder sb) {
+        // subclasses will override if needed
+    }
+
+    protected void appendSpecialDropSQL(StringBuilder sbSQL) {
+        // subclasses will override if needed
     }
 
     @Override

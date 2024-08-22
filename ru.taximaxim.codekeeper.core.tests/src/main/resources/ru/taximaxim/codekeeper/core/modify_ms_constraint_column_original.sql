@@ -15,3 +15,15 @@ GO
 ALTER TABLE [dbo].[table1]
     ADD CONSTRAINT [constraint_default_c2] DEFAULT 50 FOR c2
 GO
+
+CREATE TABLE [dbo].[table2](
+    [c1] [int] NOT NULL,
+    [c2] [varchar](100) NULL
+    CONSTRAINT [PK_table2] PRIMARY KEY CLUSTERED
+(
+	[c1] ASC
+))
+GO
+
+ALTER TABLE [dbo].[table2] ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)
+GO
