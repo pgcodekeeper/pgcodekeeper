@@ -72,7 +72,7 @@ public class IgnoreSchemaList implements IIgnoreList {
         StringBuilder sb = new StringBuilder();
         sb.append(isShow ? "SHOW ALL\n" : "HIDE ALL\n");
         for (IgnoredObject rule : rules) {
-            rule.appendRuleCode(sb).append('\n');
+            rule.appendRuleCode(sb, true).append('\n');
         }
         return sb.toString();
     }

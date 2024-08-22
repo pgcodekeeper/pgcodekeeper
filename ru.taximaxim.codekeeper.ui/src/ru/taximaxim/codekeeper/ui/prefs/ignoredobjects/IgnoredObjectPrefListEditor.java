@@ -133,7 +133,8 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
             @Override
             public String getText(Object element) {
                 IgnoredObject obj = (IgnoredObject) element;
-                return obj.getName();
+                StringBuilder sb = new StringBuilder();
+                return obj.appendRuleCode(sb, false).toString();
             }
         });
     }

@@ -11,7 +11,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Added text display of selected options in the window of ignored objects and schemas.
+
 ### Fixed
+
+- Fixed a bug in saving selected options in the ignored objects, schemas window.
 
 ## [9.13.1] - 2024-08-21
 
