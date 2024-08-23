@@ -11,6 +11,12 @@
 
 ### Изменено
 
+### Исправлено
+
+## [9.13.2] - 2024-08-23
+
+### Изменено
+
 - Добавлено текстовое отображение выбранных опций в окне исключенных объектов, схем.
 
 ### Исправлено
@@ -2020,7 +2026,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...HEAD
+[9.13.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...v9.13.2
 [9.13.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...v9.13.1
 [9.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...v9.13.0
 [9.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.11.0...v9.12.0
