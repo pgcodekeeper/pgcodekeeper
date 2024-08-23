@@ -17,9 +17,8 @@ package ru.taximaxim.codekeeper.core.model.exporter;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NotDirectoryException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,7 +30,6 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
-import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -49,7 +47,7 @@ public class OverridesModelExporter extends ModelExporter {
     }
 
     @Override
-    protected void createOutDir() throws IOException {
+    public void exportFull() throws IOException {
         throw new IllegalStateException();
     }
 
@@ -58,9 +56,10 @@ public class OverridesModelExporter extends ModelExporter {
         if (oldDb == null) {
             throw new PgCodekeeperException("Old database should not be null for partial export.");
         }
-        if (Files.notExists(outDir) || !Files.isDirectory(outDir)) {
-            throw new DirectoryException(
-                    MessageFormat.format("Output directory does not exist: {0}", outDir.toAbsolutePath()));
+        if (Files.notExists(outDir)) {
+            Files.createDirectories(outDir);
+        } else if (!Files.isDirectory(outDir)) {
+            throw new NotDirectoryException(outDir.toString());
         }
 
         List<PgStatement> list = oldDb.getDescendants().collect(Collectors.toList());
@@ -84,7 +83,7 @@ public class OverridesModelExporter extends ModelExporter {
                     PgStatement stInNew = el.getPgStatement(newDb);
                     PgStatement stInOld = el.getPgStatement(oldDb);
                     list.set(list.indexOf(stInOld), stInNew);
-                    paths.add(getRelativeFilePath(stInNew, Paths.get(WorkDirs.OVERRIDES)));
+                    paths.add(getRelativeFilePath(stInNew));
                     deleteStatementIfExists(stInNew);
                 }
             }
@@ -92,7 +91,7 @@ public class OverridesModelExporter extends ModelExporter {
 
         Map<Path, StringBuilder> dumps = new HashMap<>();
         list.stream()
-        .filter(st -> paths.contains(getRelativeFilePath(st, Paths.get(WorkDirs.OVERRIDES))))
+        .filter(st -> paths.contains(getRelativeFilePath(st)))
         .forEach(st -> dumpStatement(st, dumps));
 
         for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
