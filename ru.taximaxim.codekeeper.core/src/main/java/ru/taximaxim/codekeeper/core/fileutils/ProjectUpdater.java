@@ -109,7 +109,8 @@ public class ProjectUpdater {
     private void updatePartial(Path dirTmp) throws IOException, PgCodekeeperException {
         if (overridesOnly) {
             updateFolder(dirTmp, WorkDirs.OVERRIDES);
-            new OverridesModelExporter(dirExport, dbNew, dbOld, changedObjects, encoding, dbType).exportPartial();
+            new OverridesModelExporter(dirExport.resolve(WorkDirs.OVERRIDES),
+                    dbNew, dbOld, changedObjects, encoding, dbType).exportPartial();
             return;
         }
 

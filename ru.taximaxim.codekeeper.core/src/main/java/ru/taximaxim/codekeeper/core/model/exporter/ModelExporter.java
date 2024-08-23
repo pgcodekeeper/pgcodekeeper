@@ -137,7 +137,7 @@ public class ModelExporter {
         writeProjVersion(outDir.resolve(Consts.FILENAME_WORKING_DIR_MARKER));
     }
 
-    protected void createOutDir() throws IOException {
+    private void createOutDir() throws IOException {
         if (Files.exists(outDir)) {
             if (!Files.isDirectory(outDir)) {
                 throw new NotDirectoryException(outDir.toString());
@@ -269,14 +269,10 @@ public class ModelExporter {
     }
 
     public static Path getRelativeFilePath(PgStatement st) {
-        return getRelativeFilePath(st, Paths.get(""));
-    }
-
-    static Path getRelativeFilePath(PgStatement st, Path baseDir) {
         if (st.isSubElement()) {
             st = st.getParent();
         }
-        Path path = WorkDirs.getRelativeFolderPath(st, baseDir);
+        Path path = WorkDirs.getRelativeFolderPath(st, Paths.get(""));
 
         String fileName = getExportedFilenameSql(getExportedFilename(st));
         if (st.getDbType() == DatabaseType.MS && st instanceof ISearchPath) {
