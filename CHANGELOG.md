@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed code generation for `CHANGE_TRACKING` option in MS SQL tables.
 - Fixed a bug in the container filtering mechanism.
 - Fixed path to save overrides.
+- Fixed a bug when reading columns.
 
 ## [9.13.1] - 2024-08-21
 
