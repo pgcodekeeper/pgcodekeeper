@@ -579,6 +579,7 @@ public class TablesReader extends JdbcReader {
         .column("pg_catalog.array_agg(cl.collname ORDER BY a.attnum) AS col_collationname")
         .column("pg_catalog.array_agg(cl.nspname ORDER BY a.attnum) AS col_collationnspname")
         .from("pg_catalog.pg_attribute a")
+        .join("JOIN pg_catalog.pg_class cc ON a.attrelid = cc.oid AND cc.relkind IN ('f','r','p')")
         .join("LEFT JOIN pg_catalog.pg_attrdef attrdef ON attrdef.adnum = a.attnum AND a.attrelid = attrdef.adrelid")
         .join("LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass")
         .join("LEFT JOIN pg_catalog.pg_type t ON t.oid = a.atttypid")
