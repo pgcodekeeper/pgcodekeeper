@@ -192,9 +192,18 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         }
     }
 
-    private String getAlterColumn(boolean newLine, boolean only, String column) {
-        return ((AbstractTable) getParent()).getAlterTable(newLine, only) + ALTER_COLUMN +
-                PgDiffUtils.getQuotedName(column);
+    private String getAlterTableColumn(boolean newLine, boolean only, String column) {
+        return getAlterTableColumn(newLine, only, column, true);
+    }
+
+    private String getAlterTableColumn(boolean newLine, boolean only, String column,
+            boolean needAlterTable) {
+        StringBuilder sb = new StringBuilder();
+        if (needAlterTable) {
+            sb.append(((AbstractTable) getParent()).getAlterTable(newLine, only));
+        }
+        sb.append(ALTER_COLUMN + PgDiffUtils.getQuotedName(column));
+        return sb.toString();
     }
 
     @Override
@@ -259,7 +268,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             compareDefaults(getDefaultValue(), null, null, sb);
         }
 
-        compareTypes(this, newColumn, isNeedDepcies, sb);
+        compareTypes(this, newColumn, isNeedDepcies, sb, true, true);
 
         String oldDefault = isNeedDropDefault ? null : getDefaultValue();
         compareDefaults(oldDefault, newColumn.getDefaultValue(), isNeedDepcies, sb);
@@ -292,7 +301,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
      */
     private void writeOptions(boolean isCreate, StringBuilder sb) {
         if (!options.isEmpty()) {
-            sb.append(getAlterColumn(true, true, name));
+            sb.append(getAlterTableColumn(true, true, name));
             sb.append(isCreate ? " SET (" : " RESET (");
             for (Entry<String, String> option : options.entrySet()) {
                 sb.append(option.getKey());
@@ -318,7 +327,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void compareIdentity(String oldIdentityType, String newIdentityType,
             AbstractSequence oldSequence, AbstractSequence newSequence, StringBuilder sb) {
         if (!Objects.equals(oldIdentityType, newIdentityType)) {
-            sb.append(getAlterColumn(true, false, name));
+            sb.append(getAlterTableColumn(true, false, name));
 
             if (newIdentityType == null) {
                 sb.append(" DROP IDENTITY");
@@ -352,6 +361,20 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         }
     }
 
+    public boolean isJoinable(PgColumn newColumn) {
+        return newColumn.getType() != null
+                && (!Objects.equals(getType(), newColumn.getType())
+                        || !Objects.equals(getCollation(), newColumn.getCollation()))
+                && Objects.equals(getDefaultValue(), newColumn.getDefaultValue())
+                && getNullValue() == newColumn.getNullValue()
+                && compareColOptions(newColumn)
+                && Objects.equals(getComment(), newColumn.getComment());
+    }
+
+    public void joinAction(StringBuilder sb, PgColumn newColumn, boolean isNeedAlterTable, boolean isLastColumn) {
+        compareTypes(this, newColumn, new AtomicBoolean(), sb, isNeedAlterTable, isLastColumn);
+    }
+
     /**
      * Compares two columns types and collations and write difference to StringBuilder.
      * If the values ​​are not equal, then the column will be changed with dependencies.
@@ -361,30 +384,28 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
      * @param newColumn - new column
      * @param isNeedDepcies - if set true, column will be changed with dependencies
      * @param sb - StringBuilder for difference
+     * @param isNeedAlterTable - if true ALTER TABLE sentence added before ALTER COLUMN
+     * @param  isLastColumn -  if true will be added ";" in the end of ALTER COLUMN. If false then - ",".
      */
-    private void compareTypes(PgColumn oldColumn, PgColumn newColumn,
-            AtomicBoolean isNeedDepcies, StringBuilder sb) {
-
-        String oldCollation = oldColumn.getCollation();
-        String newCollation = newColumn.getCollation();
+    private void compareTypes(PgColumn oldColumn, PgColumn newColumn, AtomicBoolean isNeedDepcies, StringBuilder sb,
+            boolean isNeedAlterTable, boolean isLastColumn) {
         String oldType = oldColumn.getType();
         String newType = newColumn.getType();
-
         if (newType == null) {
             return;
         }
 
-        if (!Objects.equals(oldType, newType) ||
-                (newCollation != null && !newCollation.equals(oldCollation))) {
+        String oldCollation = oldColumn.getCollation();
+        String newCollation = newColumn.getCollation();
+
+        if (!Objects.equals(oldType, newType) || (newCollation != null && !newCollation.equals(oldCollation))) {
             isNeedDepcies.set(true);
 
-            sb.append(getAlterColumn(true, false, newColumn.getName()))
-            .append(" TYPE ")
-            .append(newType);
+            sb.append(getAlterTableColumn(true, false, newColumn.getName(), isNeedAlterTable));
+            sb.append(" TYPE ").append(newType);
 
             if (newCollation != null) {
-                sb.append(COLLATE)
-                .append(newCollation);
+                sb.append(COLLATE).append(newCollation);
             }
 
             if (!getDatabaseArguments().isUsingTypeCastOff()
@@ -393,7 +414,8 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newType);
             }
-            sb.append("; /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
+            sb.append(isLastColumn ? ";" :",");
+            sb.append(" /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
                     newColumn.getParent().getParent().getName() + '.' + newColumn.getParent().getName(),
                     oldType, newType) + " */");
         }
@@ -414,12 +436,12 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                     String newValue =  newForeignOptions.get(key);
                     if (!Objects.equals(value, newValue)) {
                         sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                                getAlterColumn(true, false, name),
+                                getAlterTableColumn(true, false, name),
                                 "SET", key, newValue));
                     }
                 } else {
                     sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getAlterColumn(true, false, name),
+                            getAlterTableColumn(true, false, name),
                             "DROP", key, ""));
                 }
             });
@@ -427,7 +449,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             newForeignOptions.forEach((key, value) -> {
                 if (!oldForeignOptions.containsKey(key)) {
                     sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getAlterColumn(true, false, name),
+                            getAlterTableColumn(true, false, name),
                             "ADD", key, value));
                 }
             });
@@ -446,7 +468,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void compareNullValues(boolean oldNull, boolean newNull, boolean hasDefault, StringBuilder sb) {
         if (oldNull != newNull) {
             if (newNull) {
-                sb.append(getAlterColumn(true, true, name));
+                sb.append(getAlterTableColumn(true, true, name));
                 sb.append(" DROP").append(NOT_NULL).append(';');
             } else {
                 if (hasDefault) {
@@ -455,7 +477,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                     .append(" = DEFAULT WHERE ").append(PgDiffUtils.getQuotedName(name))
                     .append(" IS").append(NULL).append(';');
                 }
-                sb.append(getAlterColumn(true, false, name));
+                sb.append(getAlterTableColumn(true, false, name));
                 sb.append(" SET").append(NOT_NULL).append(';');
             }
         }
@@ -474,7 +496,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void compareDefaults(String oldDefault, String newDefault,
             AtomicBoolean isNeedDepcies, StringBuilder sb) {
         if (!Objects.equals(oldDefault, newDefault)) {
-            sb.append(getAlterColumn(true, true, name));
+            sb.append(getAlterTableColumn(true, true, name));
             if (newDefault == null) {
                 sb.append(" DROP DEFAULT;");
             } else {
@@ -501,7 +523,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         }
 
         if (newStatValue != null) {
-            sb.append(getAlterColumn(true, true, name))
+            sb.append(getAlterTableColumn(true, true, name))
             .append(" SET STATISTICS ")
             .append(newStatValue)
             .append(';');
@@ -523,7 +545,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                     Messages.Storage_WarningUnableToDetermineStorageType,
                     getParent().getName(), getName()));
         } else if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
-            sb.append(getAlterColumn(true, true, name))
+            sb.append(getAlterTableColumn(true, true, name))
             .append(" SET STORAGE ")
             .append(newStorage)
             .append(';');
@@ -533,10 +555,10 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void compareCompression(String oldCompression, String newCompression,
             StringBuilder sb) {
         if (newCompression == null && oldCompression != null) {
-            sb.append(getAlterColumn(true, true, name))
+            sb.append(getAlterTableColumn(true, true, name))
             .append(" SET COMPRESSION DEFAULT; ");
         } else if (newCompression != null && !newCompression.equalsIgnoreCase(oldCompression)) {
-            sb.append(getAlterColumn(true, true, name))
+            sb.append(getAlterTableColumn(true, true, name))
             .append(" SET COMPRESSION ")
             .append(PgDiffUtils.getQuotedName(newCompression))
             .append(';');
@@ -688,19 +710,23 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     public boolean compare(PgStatement obj) {
         if (obj instanceof PgColumn && super.compare(obj)) {
             PgColumn col = (PgColumn) obj;
-            return Objects.equals(statistics, col.getStatistics())
-                    && Objects.equals(storage, col.getStorage())
-                    && Objects.equals(identityType, col.getIdentityType())
-                    && isInherit == col.isInherit()
-                    && isGenerated == col.isGenerated()
-                    && options.equals(col.options)
-                    && fOptions.equals(col.fOptions)
-                    && compareCompressOptions(col)
-                    && Objects.equals(sequence, col.getSequence())
-                    && Objects.equals(compression, col.getCompression());
+            return compareColOptions(col);
         }
 
         return false;
+    }
+
+    private boolean compareColOptions(PgColumn col) {
+        return Objects.equals(statistics, col.getStatistics())
+                && Objects.equals(storage, col.getStorage())
+                && Objects.equals(identityType, col.getIdentityType())
+                && isInherit == col.isInherit()
+                && isGenerated == col.isGenerated()
+                && options.equals(col.options)
+                && fOptions.equals(col.fOptions)
+                && compareCompressOptions(col)
+                && Objects.equals(sequence, col.getSequence())
+                && Objects.equals(compression, col.getCompression());
     }
 
     @Override

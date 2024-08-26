@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Added concatenation of sequential column type change commands for PostgreSQL.
+
 ### Fixed
 
 ## [9.13.2] - 2024-08-23
@@ -31,7 +33,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Added missed dependencies in types.
+- Added missing dependencies in types.
 
 ## [9.13.0] - 2024-08-20
 

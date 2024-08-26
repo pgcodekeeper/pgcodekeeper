@@ -81,6 +81,9 @@ public class ActionsToScriptConverter {
 
     private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
     private final List<String> postComments = new ArrayList<>();
+
+    private final Map<ActionContainer, List<ActionContainer>> joinableTableActions = new HashMap<>();
+    private final Set<ActionContainer> toSkip = new HashSet<>();
     /**
      * renamed table qualified names and their temporary (simple) names
      */
@@ -134,7 +137,12 @@ public class ActionsToScriptConverter {
             fillPartitionTables();
         }
 
+        fillJoinableTableActions();
         for (ActionContainer action : actions) {
+            if (toSkip.contains(action)) {
+                continue;
+            }
+
             PgStatement obj = action.getOldObj();
 
             if (toRefresh.contains(obj)) {
@@ -146,10 +154,7 @@ public class ActionsToScriptConverter {
                             PgDiffUtils.quoteString(obj.getQualifiedName())));
                     refreshed.add(obj);
                 }
-                continue;
-            }
-
-            if (!hideAction(action, selected)) {
+            } else if (!hideAction(action, selected)) {
                 processSequence(action);
                 printAction(action, obj);
                 proccessComment(action, obj);
@@ -176,6 +181,49 @@ public class ActionsToScriptConverter {
         for (int i = orphanRefreshes.length - 1; i >= 0; --i) {
             script.addStatement(MessageFormat.format(REFRESH_MODULE,
                     PgDiffUtils.quoteString(orphanRefreshes[i].getQualifiedName())));
+        }
+    }
+
+    /**
+     * collects joinable table actions
+     */
+    private void fillJoinableTableActions() {
+        List<List<ActionContainer>> changedColumnTables = new ArrayList<>();
+        String previousParent = null;
+        List<ActionContainer> currentList = null;
+        for (ActionContainer action : actions) {
+            var oldObj = action.getOldObj();
+            if (action.getAction() == StatementActions.ALTER && oldObj instanceof PgColumn
+                    && ((PgColumn) oldObj).isJoinable((PgColumn) action.getNewObj())) {
+                String parent = oldObj.getParent().getQualifiedName();
+                if (!parent.equals(previousParent)) {
+                    currentList = new ArrayList<>();
+                    changedColumnTables.add(currentList);
+                    previousParent = parent;
+                }
+
+                currentList.add(action);
+            } else {
+                previousParent = null;
+            }
+        }
+
+        // filling joinableTableActions map where:
+        //   key - first action
+        //   value - all joinable actions for table
+        for (List<ActionContainer> tableChanges : changedColumnTables) {
+            if (tableChanges.size() == 1) {
+                continue;
+            }
+            boolean isFirst = true;
+            for (ActionContainer action : tableChanges) {
+                if (isFirst) {
+                    joinableTableActions.put(action, tableChanges);
+                    isFirst = false;
+                } else {
+                    toSkip.add(action);
+                }
+            }
         }
     }
 
@@ -247,6 +295,11 @@ public class ActionsToScriptConverter {
             }
             break;
         case ALTER:
+            var joinableActions = joinableTableActions.get(action);
+            if (joinableActions != null) {
+                script.addStatement(getAlterTableScript(joinableActions));
+                return;
+            }
             StringBuilder sb = new StringBuilder();
             obj.appendAlterSQL(action.getNewObj(), sb, new AtomicBoolean());
             if (sb.length() > 0) {
@@ -260,6 +313,21 @@ public class ActionsToScriptConverter {
         case NONE:
             throw new IllegalStateException("Not implemented action");
         }
+    }
+
+    /**
+     * get ALTER TABLE script with all joinable changes
+     */
+    private String getAlterTableScript(List<ActionContainer> actionsList) {
+        StringBuilder sb = new StringBuilder();
+        int i = 1;
+        for (var colAction : actionsList) {
+            PgColumn oldNextCol = (PgColumn) colAction.getOldObj();
+            PgColumn newNextCol = (PgColumn) colAction.getNewObj();
+            oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size());
+            i++;
+        }
+        return sb.toString();
     }
 
     private boolean isPartitionTable(PgStatement obj) {
