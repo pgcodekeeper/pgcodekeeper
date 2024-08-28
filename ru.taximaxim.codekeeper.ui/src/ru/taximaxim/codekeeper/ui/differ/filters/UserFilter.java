@@ -20,7 +20,6 @@ import java.util.function.Function;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 public class UserFilter extends AbstractFilter {
@@ -41,14 +40,14 @@ public class UserFilter extends AbstractFilter {
                 return true;
             }
 
-            if (DiffTableViewer.isSubElement(el)) {
+            if (el.isSubElement()) {
                 ElementMetaInfo parent = elementInfoMap.get(el.getParent());
                 if (parent != null) {
                     return searchMatches(getter.apply(parent));
                 }
             }
 
-            if (DiffTableViewer.isContainer(el)) {
+            if (el.isContainer()) {
                 return el.getChildren().stream().filter(elementInfoMap::containsKey)
                         .map(elementInfoMap::get)
                         .anyMatch(s -> s != null && searchMatches(getter.apply(s)));

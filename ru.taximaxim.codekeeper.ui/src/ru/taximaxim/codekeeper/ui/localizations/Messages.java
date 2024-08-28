@@ -494,6 +494,7 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_select_directory;
 
+    public static String DiffPaneViewer_btn_switch;
     public static String DiffPaneViewer_project;
 
     public static String DiffPresentationPane_any_file_filter;
