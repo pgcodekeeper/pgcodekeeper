@@ -20,6 +20,8 @@ import java.util.Collection;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -31,48 +33,88 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareItem;
 import ru.taximaxim.codekeeper.ui.comparetools.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PrefChangeAction;
 
-public class DiffPaneViewer extends Composite {
+public final class DiffPaneViewer extends Composite {
+
+    // see ComparePreferencePage.SWAPPED
+    private static final String PREF_SWAP = "org.eclipse.compare.Swapped";
 
     private final TextMergeViewer diffPane;
     private DbSource dbProject;
     private DbSource dbRemote;
+
+    private TreeElement currentEl;
     private Collection<TreeElement> availableElements;
+
+    private final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+
+    private final PrefChangeAction swapAction;
+    private final PrefChangeAction showFullCodeAction;
 
     public void setDbSources(DbSource dbProject, DbSource dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
     }
 
-    public DiffPaneViewer(Composite parent, int style) {
-        super(parent, style);
+    public DiffPaneViewer(Composite parent) {
+        super(parent, SWT.BORDER);
 
         setLayoutData(new GridData(GridData.FILL_BOTH));
         GridLayout filterLayout = new GridLayout();
         filterLayout.marginWidth = filterLayout.marginHeight = 0;
         setLayout(filterLayout);
 
-        CompareConfiguration conf = new CompareConfiguration() {
-
-            @Override
-            public boolean isMirrored() {
-                return false;
-            }
-        };
-
+        CompareConfiguration conf = new CompareConfiguration();
         conf.setLeftLabel(Messages.database);
         conf.setRightLabel(Messages.DiffPaneViewer_project);
 
-        diffPane = new SqlMergeViewer(this, SWT.BORDER, conf);
+        Composite container = new Composite(this, SWT.NONE);
+        var gl = new GridLayout();
+        gl.marginWidth = gl.marginHeight = 0;
+        gl.marginBottom = -3;
+        container.setLayout(gl);
+        container.setLayoutData(new GridData(SWT.RIGHT, SWT.TOP, true, false));
+
+        swapAction = new PrefChangeAction(Messages.DiffPaneViewer_btn_switch,
+                PREF_SWAP, conf.getPreferenceStore(), container, ProjectIcon.SWITCH);
+
+        showFullCodeAction = new PrefChangeAction(Messages.GeneralPrefPage_show_full_code,
+                PG_EDIT_PREF.SHOW_FULL_CODE, store, container, ProjectIcon.SHOW_CHILDREN) {
+
+            @Override
+            public void refresh() {
+                if (currentEl != null && currentEl.isContainer()) {
+                    setInput(currentEl, availableElements);
+                }
+            }
+        };
+
+        var toolBar = new ToolBarManager();
+        toolBar.add(swapAction);
+        toolBar.add(showFullCodeAction);
+        toolBar.createControl(container);
+
+        diffPane = new SqlMergeViewer(this, SWT.NONE, conf);
         diffPane.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        diffPane.refresh(); // load labels
+    }
+
+    @Override
+    public void dispose() {
+        swapAction.dispose();
+        showFullCodeAction.dispose();
+        super.dispose();
     }
 
     public void setInput(TreeElement el, Collection<TreeElement> availableElements) {
+        this.currentEl = el;
         this.availableElements = availableElements;
         if (el != null) {
             String contentsLeft = getSql(el, false, true);
@@ -91,8 +133,8 @@ public class DiffPaneViewer extends Composite {
 
     private String getSql(TreeElement el, boolean project, boolean format) {
         String elSql = getElementSql(el, project, format);
-        if (elSql == null || availableElements == null || !el.hasChildren() || !DiffTableViewer.isContainer(el)
-                || Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
+        if (elSql == null || availableElements == null || !el.hasChildren() || !el.isContainer()
+                || store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return elSql;
         }
 
@@ -121,8 +163,7 @@ public class DiffPaneViewer extends Composite {
         }
 
         String result = isFormatted ? st.getFullFormattedSQL() : st.getFullSQL();
-        if (!DiffTableViewer.isContainer(el)
-                || !Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
+        if (!el.isContainer() || !store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return result;
         }
 

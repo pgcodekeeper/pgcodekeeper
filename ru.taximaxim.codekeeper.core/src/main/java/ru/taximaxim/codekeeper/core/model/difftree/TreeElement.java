@@ -248,6 +248,14 @@ public class TreeElement {
         return isSelected();
     }
 
+    public boolean isContainer() {
+        return type.in(DbObjType.TABLE, DbObjType.VIEW);
+    }
+
+    public boolean isSubElement() {
+        return parent != null && parent.isContainer();
+    }
+
     @Override
     public int hashCode() {
         if (hashcode == 0) {

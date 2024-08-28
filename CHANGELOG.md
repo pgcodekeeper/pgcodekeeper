@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added toolbar to comparison panel.
+
 ### Changed
 
 - Added concatenation of sequential column type change commands for PostgreSQL.

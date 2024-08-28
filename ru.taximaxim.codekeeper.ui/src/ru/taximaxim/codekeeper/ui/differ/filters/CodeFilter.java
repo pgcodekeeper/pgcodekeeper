@@ -22,7 +22,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
@@ -57,14 +56,14 @@ public class CodeFilter extends AbstractFilter {
                 return true;
             }
 
-            if (DiffTableViewer.isSubElement(el)) {
+            if (el.isSubElement()) {
                 PgStatement parent = statement.getParent();
                 if (parent != null) {
                     return searchMatches(parent.getCreationSQL());
                 }
             }
 
-            if (DiffTableViewer.isContainer(el)) {
+            if (el.isContainer()) {
                 return el.getChildren().stream().filter(elements::contains)
                         .map(e -> e.getPgStatement(db))
                         .anyMatch(s -> s != null && searchMatches(s.getCreationSQL()));

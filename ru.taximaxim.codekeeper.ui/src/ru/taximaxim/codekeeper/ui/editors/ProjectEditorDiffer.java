@@ -267,7 +267,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         diffTable.getViewer().addPostSelectionChangedListener(
                 e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
-        diffPane = new DiffPaneViewer(sashOuter, SWT.NONE);
+        diffPane = new DiffPaneViewer(sashOuter);
 
         // notifications container
         // simplified for 1 static notification
@@ -398,6 +398,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         dbStorePicker.dispose();
+        diffPane.dispose();
         super.dispose();
     }
 

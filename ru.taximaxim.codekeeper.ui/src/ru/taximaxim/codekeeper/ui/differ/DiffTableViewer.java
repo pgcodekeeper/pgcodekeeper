@@ -1056,11 +1056,11 @@ public class DiffTableViewer extends Composite {
             // меняем состояние только элементов в наборе
             el.setSelected(checked);
         }
-        if (isContainer(el)) {
+        if (el.isContainer()) {
             setCheckedGrayed(el, null);
         } else {
             viewer.setChecked(el, checked);
-            if (isSubElement(el)) {
+            if (el.isSubElement()) {
                 setCheckedGrayed(el.getParent(), null);
             }
         }
@@ -1166,15 +1166,6 @@ public class DiffTableViewer extends Composite {
         updateSortIndexes();
     }
 
-    public static boolean isContainer(TreeElement el) {
-        return el.getType().in(DbObjType.TABLE, DbObjType.VIEW);
-    }
-
-    public static boolean isSubElement(TreeElement el) {
-        TreeElement parent = el.getParent();
-        return parent != null && isContainer(parent);
-    }
-
     private class DiffContentProvider implements ITreeContentProvider {
 
         @Override
@@ -1183,7 +1174,7 @@ public class DiffTableViewer extends Composite {
             Set<TreeElement> rootTableEntries = new HashSet<>(input.size());
             for (Object o : input) {
                 TreeElement el = (TreeElement) o;
-                rootTableEntries.add(isSubElement(el) ? el.getParent() : el);
+                rootTableEntries.add(el.isSubElement() ? el.getParent() : el);
             }
             return rootTableEntries.toArray();
         }
@@ -1195,7 +1186,7 @@ public class DiffTableViewer extends Composite {
                 return getElements(parentElement);
             }
             TreeElement el = (TreeElement) parentElement;
-            if (isContainer(el) && el.hasChildren()) {
+            if (el.isContainer() && el.hasChildren()) {
                 List<TreeElement> children = el.getChildren();
                 List<TreeElement> childrenInInput = new ArrayList<>(children.size());
                 for (TreeElement child : children) {
@@ -1212,13 +1203,13 @@ public class DiffTableViewer extends Composite {
         @Override
         public Object getParent(Object element) {
             TreeElement el = (TreeElement) element;
-            return isSubElement(el) ? el.getParent() : null;
+            return el.isSubElement() ? el.getParent() : null;
         }
 
         @Override
         public boolean hasChildren(Object element) {
             TreeElement el = (TreeElement) element;
-            if (isContainer(el) && el.hasChildren()) {
+            if (el.isContainer() && el.hasChildren()) {
                 for (TreeElement child : el.getChildren()) {
                     if (elements.contains(child)) {
                         return true;
@@ -1252,7 +1243,7 @@ public class DiffTableViewer extends Composite {
 
         private void setChecked(Object element, boolean checked) {
             TreeElement el = (TreeElement) element;
-            if (isContainer(el)) {
+            if (el.isContainer()) {
                 setSubTreeChecked(el, checked, true);
             }
             // explicitly check root even when using setSubTreeChecked
@@ -1287,7 +1278,7 @@ public class DiffTableViewer extends Composite {
          * @param providedExpandedState element's expanded state, if null viewer is queried
          */
         private boolean contGraySelected(TreeElement el, Boolean providedExpandedState) {
-            if (!isContainer(el) || !el.hasChildren() ||
+            if (!el.isContainer() || !el.hasChildren() ||
                     (providedExpandedState != null ? providedExpandedState : viewer.getExpandedState(el))) {
                 return false;
             }
@@ -1498,8 +1489,8 @@ public class DiffTableViewer extends Composite {
         @Override
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             TreeElement el = (TreeElement) element;
-            boolean isSubElement = isSubElement(el);
-            boolean isContainer = isContainer(el);
+            boolean isSubElement = el.isSubElement();
+            boolean isContainer = el.isContainer();
 
             if (!checkType(el, isSubElement)) {
                 return false;
@@ -1555,7 +1546,7 @@ public class DiffTableViewer extends Composite {
                 return true;
             }
 
-            if (isContainer(el) && el.getChildren().stream().anyMatch(e -> types.contains(e.getType()))) {
+            if (el.isContainer() && el.getChildren().stream().anyMatch(e -> types.contains(e.getType()))) {
                 return true;
             }
 
@@ -1574,7 +1565,7 @@ public class DiffTableViewer extends Composite {
             boolean found = getMatchingLocation(getName(el), filterName, filterRegex) != null;
 
             // also show containers that have content matching current filter
-            if (!found && isContainer(el)) {
+            if (!found && el.isContainer()) {
                 Iterator<TreeElement> it = el.getChildren().iterator();
                 while (!found && it.hasNext()) {
                     TreeElement child = it.next();
@@ -1619,12 +1610,12 @@ public class DiffTableViewer extends Composite {
                     return true;
                 }
 
-                if (isSubElement(el)) {
+                if (el.isSubElement()) {
                     ElementMetaInfo parent = elementInfoMap.get(el.getParent());
                     return parent != null && parent.isChanged();
                 }
 
-                return isContainer(el) && el.getChildren().stream().filter(elementInfoMap::containsKey)
+                return el.isContainer() && el.getChildren().stream().filter(elementInfoMap::containsKey)
                         .map(elementInfoMap::get).anyMatch(m -> m != null && m.isChanged());
             }
 

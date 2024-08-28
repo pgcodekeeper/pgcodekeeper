@@ -17,13 +17,11 @@ package ru.taximaxim.codekeeper.ui.consoles;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -39,11 +37,12 @@ import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PrefChangeAction;
 
 public class ShowConsoleParticipant implements IConsolePageParticipant {
 
     private final IPreferenceStore prefs = Activator.getDefault().getPreferenceStore();
-    private ShowConsoleAction action;
+    private PrefChangeAction showConsoleAction;
     private Control pageControl;
     private CodekeeperConsole console;
 
@@ -54,12 +53,12 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
 
     @Override
     public void init(IPageBookViewPage page, IConsole console) {
-        action = new ShowConsoleAction();
+        pageControl = page.getControl();
+        showConsoleAction = new PrefChangeAction(Messages.generalPrefPage_show_console_when_program_write_to_console,
+                PREF.FORCE_SHOW_CONSOLE, prefs, pageControl, ProjectIcon.WRITEOUT_CONSOLE);
         this.console = (CodekeeperConsole) console;
         IToolBarManager toolBarMgr = page.getSite().getActionBars().getToolBarManager();
-        toolBarMgr.appendToGroup(IConsoleConstants.OUTPUT_GROUP, action);
-        pageControl = page.getControl();
-        prefs.addPropertyChangeListener(action);
+        toolBarMgr.appendToGroup(IConsoleConstants.OUTPUT_GROUP, showConsoleAction);
 
         toolBarMgr.appendToGroup(IConsoleConstants.LAUNCH_GROUP, new TerminateAction());
 
@@ -70,7 +69,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
 
     @Override
     public void dispose() {
-        prefs.removePropertyChangeListener(action);
+        showConsoleAction.dispose();
     }
 
     @Override
@@ -81,34 +80,6 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
     @Override
     public void deactivated() {
         // no imp
-    }
-
-    private class ShowConsoleAction extends Action implements IPropertyChangeListener {
-
-        public ShowConsoleAction() {
-            super(Messages.generalPrefPage_show_console_when_program_write_to_console);
-
-            setImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.WRITEOUT_CONSOLE));
-            setChecked(prefs.getBoolean(PREF.FORCE_SHOW_CONSOLE));
-        }
-
-        @Override
-        public void propertyChange(final PropertyChangeEvent event) {
-            if (event.getNewValue() != null
-                    && PREF.FORCE_SHOW_CONSOLE.equals(event.getProperty())
-                    && !Objects.equals(event.getOldValue(), event.getNewValue())) {
-                UiSync.exec(pageControl, (Runnable) () -> {
-                    if (!pageControl.isDisposed()) {
-                        setChecked((boolean) event.getNewValue());
-                    }
-                });
-            }
-        }
-
-        @Override
-        public void run() {
-            prefs.setValue(PREF.FORCE_SHOW_CONSOLE, isChecked());
-        }
     }
 
     private class TerminateAction extends Action {
