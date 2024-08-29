@@ -15,14 +15,8 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.formatter;
 
+import java.util.Collections;
 import java.util.List;
-
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.text.edits.MalformedTreeException;
-import org.eclipse.text.edits.MultiTextEdit;
-import org.eclipse.text.edits.ReplaceEdit;
-import org.eclipse.text.edits.TextEdit;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.formatter.ch.ChFormatter;
@@ -34,7 +28,6 @@ public class FileFormatter {
 
     private final String source;
     private final int start;
-    private final int length;
     private final int stop;
     private final DatabaseType dbType;
 
@@ -44,30 +37,30 @@ public class FileFormatter {
         this.source = source;
         this.start = offset;
         this.stop = offset + length;
-        this.length = length;
         this.config = config;
         this.dbType = dbType;
     }
 
-    public String formatText() throws FormatterException {
-        Document doc = new Document(source);
-
-        TextEdit edit = getFormatEdit();
-        if (edit == null) {
+    public String formatText() {
+        List<FormatItem> list = getFormatItems();
+        if (list.isEmpty()) {
             return source;
         }
-        try {
-            edit.apply(doc);
-        } catch (MalformedTreeException | BadLocationException e) {
-            throw new FormatterException(e.getLocalizedMessage(), e);
+
+        Collections.reverse(list);
+        var sb = new StringBuilder(source);
+        for (var item : list) {
+            var itemStart = item.getStart();
+            sb.replace(itemStart, itemStart + item.getLength(), item.getText());
         }
-        return doc.get();
+
+        return sb.toString();
     }
 
     /**
-     * @return edit operation or null if no formatting required
+     * @return list of formatting operations
      */
-    public TextEdit getFormatEdit() {
+    public List<FormatItem> getFormatItems() {
         AbstractFormatter formatter;
         switch (dbType) {
         case CH:
@@ -83,17 +76,6 @@ public class FileFormatter {
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         }
 
-        List<FormatItem> list = formatter.getFormatItems();
-        if (list.isEmpty()) {
-            return null;
-        }
-
-        TextEdit edit = new MultiTextEdit(start, length);
-
-        for (FormatItem item : list) {
-            edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));
-        }
-
-        return edit;
+        return formatter.getFormatItems();
     }
 }
