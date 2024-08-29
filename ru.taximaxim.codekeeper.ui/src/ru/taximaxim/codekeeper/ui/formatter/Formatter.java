@@ -16,12 +16,15 @@
 package ru.taximaxim.codekeeper.ui.formatter;
 
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.text.edits.MultiTextEdit;
+import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
+import ru.taximaxim.codekeeper.core.formatter.FormatItem;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
 
@@ -50,7 +53,16 @@ public class Formatter {
 
     public static TextEdit formatDoc(int offset, int length, String source, DatabaseType dbType) {
         FileFormatter formatter = new FileFormatter(source, offset, length, getFormatterConfig(), dbType);
-        return formatter.getFormatEdit();
+        var list = formatter.getFormatItems();
+        if (list.isEmpty()) {
+            return null;
+        }
+
+        TextEdit edit = new MultiTextEdit(offset, length);
+        for (FormatItem item : list) {
+            edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));
+        }
+        return edit;
     }
 
     private Formatter() {
