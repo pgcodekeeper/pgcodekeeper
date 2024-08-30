@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added concatenation of sequential column type change commands for PostgreSQL.
 - Reduced size of CLI version.
+- Improved text in dependency graph building settings window.
 
 ### Fixed
 
