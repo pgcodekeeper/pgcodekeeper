@@ -973,11 +973,15 @@ public final class Messages extends NLS {
 
     public static String BuildDepsGraphDialog_build_dep_graph;
 
-    public static String BuildDepsGraphDialog_reverse;
+    public static String BuildDepsGraphDialog_calls;
+
+    public static String BuildDepsGraphDialog_dependencies;
 
     public static String BuildDepsGraphDialog_schema_source;
 
     public static String BuildDepsGraphDialog_search_dep;
+
+    public static String BuildDepsGraphDialog_show;
 
     public static String FilterDialog_cancel;
 
