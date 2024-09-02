@@ -57,6 +57,7 @@ public class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.MIGRATION_COMMAND, UIConsts.DDL_DEFAULT_CMD);
 
         store.setDefault(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS, MessageDialogWithToggle.PROMPT);
+        store.setDefault(PG_EDIT_PREF.SHOW_FULL_CODE, true);
 
         store.setDefault(USAGE_REPORT_PREF.USAGEREPORT_ENABLED_ID, true);
         store.setDefault(USAGE_REPORT_PREF.ASK_USER_USAGEREPORT_ID, true);

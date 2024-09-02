@@ -28,6 +28,7 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
@@ -43,7 +44,6 @@ public class BuildDepsGraphDialog extends Dialog {
 
     private ObjectTypeViewer objTypeViewer;
     private Text txtDepth;
-    private Button btnReverse;
     private String sourceType;
     private int graphDepth;
     private boolean isReverse;
@@ -67,12 +67,12 @@ public class BuildDepsGraphDialog extends Dialog {
         Composite composite = (Composite) super.createDialogArea(parent);
 
         GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-        gd.minimumWidth = 550;
+        gd.minimumWidth = 350;
         composite.setLayoutData(gd);
         composite.setLayout(new GridLayout(2, false));
 
-        // source type
-        createSourceGroup(composite);
+        // source type and reverse
+        createGroups(composite);
 
         // graph depth
         new Label(composite, SWT.NONE).setText(Messages.BuildDepsGraphDialog_search_dep);
@@ -90,11 +90,6 @@ public class BuildDepsGraphDialog extends Dialog {
             }
         });
 
-        // graph reverse
-        btnReverse = new Button(composite, SWT.CHECK | SWT.LEFT);
-        btnReverse.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
-        btnReverse.setText(Messages.BuildDepsGraphDialog_reverse);
-
         //object types
         Composite container = new Composite(composite, SWT.NONE);
         container.setLayout(new GridLayout());
@@ -106,43 +101,43 @@ public class BuildDepsGraphDialog extends Dialog {
         return composite;
     }
 
-    private void createSourceGroup(Composite composite) {
-        Composite group = new Composite(composite, SWT.NONE);
-        group.setLayout(new RowLayout());
-        group.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-
-        new Label(group, SWT.NONE).setText(Messages.BuildDepsGraphDialog_schema_source);
-
-        Button btnProject = new Button(group, SWT.RADIO);
-        btnProject.setText(Messages.DepcyGraphView_project);
-        btnProject.setSelection(isProject);
-        btnProject.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                isProject = true;
-            }
-        });
-
-        Button btnRemote = new Button(group, SWT.RADIO);
-        btnRemote.setText(Messages.DepcyGraphView_remote);
-        btnRemote.setSelection(!isProject);
-        btnRemote.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                isProject = false;
-            }
-        });
-
+    private void createGroups(Composite composite) {
+        var sourceGroup = createGroup(Messages.BuildDepsGraphDialog_schema_source, composite);
+        var btnProject = createButton(Messages.DepcyGraphView_project, sourceGroup, isProject, () -> isProject = true);
+        var btnRemote = createButton(Messages.DepcyGraphView_remote, sourceGroup, !isProject, () -> isProject = false);
         btnProject.setEnabled(isBothEnabled || isProject);
         btnRemote.setEnabled(isBothEnabled || !isProject);
+
+        var reverseGroup = createGroup(Messages.BuildDepsGraphDialog_show, composite);
+        createButton(Messages.BuildDepsGraphDialog_calls, reverseGroup, !isReverse, () -> isReverse = false);
+        createButton(Messages.BuildDepsGraphDialog_dependencies, reverseGroup, isReverse, () -> isReverse = true);
+    }
+
+    private Composite createGroup(String text, Composite parent) {
+        var group = new Group(parent, SWT.NONE);
+        group.setText(text);
+        group.setLayout(new RowLayout());
+        group.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+        return group;
+    }
+
+    private Button createButton(String text, Composite parent, boolean parameter, Runnable setValue) {
+        var btn = new Button(parent, SWT.RADIO);
+        btn.setText(text);
+        btn.setSelection(parameter);
+        btn.addSelectionListener(new SelectionAdapter() {
+
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                setValue.run();
+            }
+        });
+        return btn;
     }
 
     @Override
     protected void okPressed() {
         graphDepth = Integer.parseInt(txtDepth.getText());
-        isReverse = btnReverse.getSelection();
 
         types.clear();
         for (Object obj : objTypeViewer.getSelectedElements()) {

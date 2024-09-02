@@ -52,7 +52,9 @@ public enum ProjectIcon {
     LIB("/icons/lib.gif"), //$NON-NLS-1$
     CLOUD("/icons/cloud.png"), //$NON-NLS-1$
     IMPORT("/icons/import_wiz.png"), //$NON-NLS-1$
-    EXPORT("/icons/export_wiz.png"); //$NON-NLS-1$
+    EXPORT("/icons/export_wiz.png"), //$NON-NLS-1$
+    SWITCH("/icons/switch.png"), //$NON-NLS-1$
+    SHOW_CHILDREN("/icons/show_children.png"); //$NON-NLS-1$
 
     public static final String PG_ADMIN_ICON_FOLDER = "/icons/pgadmin/"; //$NON-NLS-1$
 

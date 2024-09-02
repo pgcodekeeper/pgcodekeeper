@@ -27,9 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -37,7 +34,6 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
-import ru.taximaxim.codekeeper.core.formatter.FormatterException;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
@@ -54,8 +50,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationExcept
  * @author Alexander Levsha
  */
 public abstract class PgStatement implements IStatement, IHashable {
-
-    private static final Logger LOG = LoggerFactory.getLogger(PgStatement.class);
 
     protected static final String IF_EXISTS = "IF EXISTS ";
 
@@ -449,12 +443,7 @@ public abstract class PgStatement implements IStatement, IHashable {
             return sql;
         }
         FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), getDbType());
-        try {
-            return fileForm.formatText();
-        } catch (FormatterException e) {
-            LOG.error(e.getLocalizedMessage(), e);
-            return sql;
-        }
+        return fileForm.formatText();
     }
 
     public final String getDropSQL() {
