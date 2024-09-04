@@ -9,6 +9,14 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [9.14.0] - 2024-09-04
+
+### Добавлено
+
 - Добавлена панель инструментов в панель сравнения.
 
 ### Изменено
@@ -16,8 +24,6 @@
 - Добавлено объединение последовательных команд изменения типов столбцов для PostgreSQL.
 - Уменьшен размер CLI-версии.
 - Улучшен текст в окне настроек построения графа зависимостей.
-
-### Исправлено
 
 ## [9.13.2] - 2024-08-23
 
@@ -2032,7 +2038,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...HEAD
+[9.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...v9.14.0
 [9.13.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...v9.13.2
 [9.13.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...v9.13.1
 [9.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...v9.13.0
