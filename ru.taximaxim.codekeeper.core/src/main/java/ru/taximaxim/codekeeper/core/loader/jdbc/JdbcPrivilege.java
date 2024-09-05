@@ -48,7 +48,8 @@ final class JdbcPrivilege {
         USAGE('U'),
         CREATE('C'),
         CREATE_TEMP('T'),
-        CONNECT('c');
+        CONNECT('c'),
+        MAINTAIN('m');
 
         private final char privilegeLetter;
 
