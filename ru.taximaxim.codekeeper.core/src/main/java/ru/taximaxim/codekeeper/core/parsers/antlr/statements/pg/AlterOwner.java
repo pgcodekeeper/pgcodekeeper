@@ -58,66 +58,70 @@ public class AlterOwner extends PgParserAbstract {
             return;
         }
 
+        var objCtx = ctx.owner_member_object();
+
         List<ParserRuleContext> ids;
-        if (ctx.OPERATOR() != null) {
-            ids = getIdentifiers(ctx.target_operator().name);
+        if (objCtx.name != null) {
+            ids = getIdentifiers(objCtx.name);
+        } else if (objCtx.OPERATOR() != null) {
+            ids = getIdentifiers(objCtx.target_operator().name);
         } else {
-            ids = getIdentifiers(ctx.name);
+            return;
         }
 
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         DbObjType type = null;
         PgStatement st = null;
-        if (ctx.SCHEMA() != null) {
+        if (objCtx.SCHEMA() != null) {
             st = getSafe(PgDatabase::getSchema, db, nameCtx);
             type = DbObjType.SCHEMA;
-        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null) {
+        } else if (objCtx.WRAPPER() != null) {
             st = getSafe(PgDatabase::getForeignDW, db, nameCtx);
             type = DbObjType.FOREIGN_DATA_WRAPPER;
-        } else if (ctx.SERVER() != null) {
+        } else if (objCtx.SERVER() != null) {
             st = getSafe(PgDatabase::getServer, db, nameCtx);
             type = DbObjType.SERVER;
-        } else if (ctx.EVENT() != null) {
+        } else if (objCtx.EVENT() != null) {
             st = getSafe(PgDatabase::getEventTrigger, db, nameCtx);
             type = DbObjType.EVENT_TRIGGER;
         } else {
             PgSchema schema = getSchemaSafe(ids);
-            if (ctx.DOMAIN() != null) {
+            if (objCtx.DOMAIN() != null) {
                 st = getSafe(PgSchema::getDomain, schema, nameCtx);
                 type = DbObjType.DOMAIN;
-            } else if (ctx.VIEW() != null) {
+            } else if (objCtx.VIEW() != null) {
                 st = getSafe(PgSchema::getView, schema, nameCtx);
                 type = DbObjType.VIEW;
-            } else if (ctx.STATISTICS() != null) {
+            } else if (objCtx.STATISTICS() != null) {
                 st = getSafe(PgSchema::getStatistics, schema, nameCtx);
                 type = DbObjType.STATISTICS;
-            } else if (ctx.DICTIONARY() != null) {
+            } else if (objCtx.DICTIONARY() != null) {
                 st = getSafe(PgSchema::getFtsDictionary, schema, nameCtx);
                 type = DbObjType.FTS_DICTIONARY;
-            } else if (ctx.CONFIGURATION() != null) {
+            } else if (objCtx.CONFIGURATION() != null) {
                 st = getSafe(PgSchema::getFtsConfiguration, schema, nameCtx);
                 type = DbObjType.FTS_CONFIGURATION;
-            } else if (ctx.SEQUENCE() != null) {
+            } else if (objCtx.SEQUENCE() != null) {
                 st = getSafe(PgSchema::getSequence, schema, nameCtx);
                 type = DbObjType.SEQUENCE;
-            } else if (ctx.TYPE() != null) {
+            } else if (objCtx.TYPE() != null) {
                 st = getSafe(PgSchema::getType, schema, nameCtx);
                 type = DbObjType.TYPE;
-            } else if (ctx.COLLATION() != null) {
+            } else if (objCtx.COLLATION() != null) {
                 st = getSafe(PgSchema::getCollation, schema, nameCtx);
                 type = DbObjType.COLLATION;
-            } else if (ctx.OPERATOR() != null) {
+            } else if (objCtx.OPERATOR() != null) {
                 st = getSafe(PgSchema::getOperator, schema,
-                        parseOperatorSignature(nameCtx.getText(), ctx.target_operator().operator_args()),
+                        parseOperatorSignature(nameCtx.getText(), objCtx.target_operator().operator_args()),
                         nameCtx.getStart());
                 type = DbObjType.OPERATOR;
-            } else if (ctx.PROCEDURE() != null || ctx.FUNCTION() != null || ctx.AGGREGATE() != null) {
+            } else if (objCtx.PROCEDURE() != null || objCtx.FUNCTION() != null || objCtx.AGGREGATE() != null) {
                 st = getSafe(PgSchema::getFunction, schema, parseSignature(nameCtx.getText(),
-                        ctx.function_args()), nameCtx.getStart());
-                if (ctx.FUNCTION() != null) {
+                        objCtx.function_args()), nameCtx.getStart());
+                if (objCtx.FUNCTION() != null) {
                     type = DbObjType.FUNCTION;
-                } else if (ctx.PROCEDURE() != null) {
+                } else if (objCtx.PROCEDURE() != null) {
                     type = DbObjType.PROCEDURE;
                 } else {
                     type = DbObjType.AGGREGATE;
@@ -126,16 +130,15 @@ public class AlterOwner extends PgParserAbstract {
         }
 
         if (type != null) {
-            if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
-                addObjReference(ids, type, ACTION_ALTER, parseArguments(ctx.function_args()));
+            if (type.in(DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.AGGREGATE)) {
+                addObjReference(ids, type, ACTION_ALTER, parseArguments(objCtx.function_args()));
             } else {
                 addObjReference(ids, type, ACTION_ALTER);
             }
         }
 
         if (st == null || (type == DbObjType.SCHEMA
-                && Consts.PUBLIC.equals(nameCtx.getText())
-                && "postgres".equals(name.getText()))) {
+                && Consts.PUBLIC.equals(nameCtx.getText()) && "postgres".equals(name.getText()))) {
             return;
         }
 
@@ -153,35 +156,36 @@ public class AlterOwner extends PgParserAbstract {
     @Override
     protected String getStmtAction() {
         DbObjType type = null;
-        if (ctx.SCHEMA() != null) {
+        var objCtx = ctx.owner_member_object();
+        if (objCtx.SCHEMA() != null) {
             type = DbObjType.SCHEMA;
-        } else if (ctx.FOREIGN() != null && ctx.DATA() != null && ctx.WRAPPER() != null) {
+        } else if (objCtx.WRAPPER() != null) {
             type = DbObjType.FOREIGN_DATA_WRAPPER;
-        } else if (ctx.SERVER() != null) {
+        } else if (objCtx.SERVER() != null) {
             type = DbObjType.SERVER;
-        } else if (ctx.EVENT() != null) {
+        } else if (objCtx.EVENT() != null) {
             type = DbObjType.EVENT_TRIGGER;
-        } else if (ctx.DOMAIN() != null) {
+        } else if (objCtx.DOMAIN() != null) {
             type = DbObjType.DOMAIN;
-        } else if (ctx.VIEW() != null) {
+        } else if (objCtx.VIEW() != null) {
             type = DbObjType.VIEW;
-        } else if (ctx.DICTIONARY() != null) {
+        } else if (objCtx.DICTIONARY() != null) {
             type = DbObjType.FTS_DICTIONARY;
-        } else if (ctx.CONFIGURATION() != null) {
+        } else if (objCtx.CONFIGURATION() != null) {
             type = DbObjType.FTS_CONFIGURATION;
-        } else if (ctx.SEQUENCE() != null) {
+        } else if (objCtx.SEQUENCE() != null) {
             type = DbObjType.SEQUENCE;
-        } else if (ctx.TYPE() != null) {
+        } else if (objCtx.TYPE() != null) {
             type = DbObjType.TYPE;
-        } else if (ctx.FUNCTION() != null) {
+        } else if (objCtx.FUNCTION() != null) {
             type = DbObjType.FUNCTION;
-        } else if (ctx.PROCEDURE() != null) {
+        } else if (objCtx.PROCEDURE() != null) {
             type = DbObjType.PROCEDURE;
-        } else if (ctx.AGGREGATE() != null) {
+        } else if (objCtx.AGGREGATE() != null) {
             type = DbObjType.AGGREGATE;
-        } else if (ctx.OPERATOR() != null) {
+        } else if (objCtx.OPERATOR() != null) {
             type = DbObjType.OPERATOR;
-        } else if (ctx.COLLATION() != null) {
+        } else if (objCtx.COLLATION() != null) {
             type = DbObjType.COLLATION;
         } else {
             return null;
@@ -189,9 +193,9 @@ public class AlterOwner extends PgParserAbstract {
 
         Target_operatorContext targetOperCtx;
         List<ParserRuleContext> ids;
-        if (ctx.name != null) {
-            ids = getIdentifiers(ctx.name);
-        } else if ((targetOperCtx = ctx.target_operator()) != null) {
+        if (objCtx.name != null) {
+            ids = getIdentifiers(objCtx.name);
+        } else if ((targetOperCtx = objCtx.target_operator()) != null) {
             ids = getIdentifiers(targetOperCtx.name);
         } else {
             return null;

@@ -29,6 +29,28 @@ COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(b), FORCE_N
 COPY forcetest (a, b, c, d) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(c,d), FORCE_NULL(c,d));
 COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NULL(b), FORCE_NOT_NULL(c));
 COPY forcetest (d, e) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL(b));
+
+-- redundant options
+COPY x from stdin (format CSV, FORMAT CSV);
+COPY x from stdin (freeze off, freeze on);
+COPY x from stdin (delimiter ',', delimiter ',');
+COPY x from stdin (null ' ', null ' ');
+COPY x from stdin (header off, header on);
+COPY x from stdin (quote ':', quote ':');
+COPY x from stdin (escape ':', escape ':');
+COPY x from stdin (force_quote (a), force_quote *);
+COPY x from stdin (force_not_null (a), force_not_null (b));
+COPY x from stdin (force_null (a), force_null (b));
+COPY x from stdin (encoding 'sql_ascii', encoding 'sql_ascii');
+COPY x from stdin (on_error ignore, on_error ignore);
+COPY x from stdin (log_verbosity default, log_verbosity verbose);
+COPY forcetest (a, b, c) FROM STDIN WITH (FORMAT csv, FORCE_NOT_NULL *, FORCE_NULL(c));
+COPY forcetest (a, b, c) FROM STDIN WITH (FORCE_NULL *);
+
+-- tests for on_error option
+COPY check_ign_err FROM STDIN WITH (on_error stop);
+COPY check_ign_err FROM STDIN WITH (on_error ignore, log_verbosity verbose);
+
 COPY forcetest (d, e) FROM STDIN WITH (FORMAT csv, FORCE_NULL(b));
 copy check_con_tbl from stdin;
 copy (insert into copydml_test (t) values ('f') returning id) to stdout;

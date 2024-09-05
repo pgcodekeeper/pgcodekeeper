@@ -110,3 +110,20 @@ Reference: Object = measurement (TABLE), action = MERGE, offset = 7223, line num
 Reference: Object = measurement (TABLE), action = MERGE, offset = 7651, line number = 329, charPositionInLine = 11
 Reference: Object = request_app_names (TABLE), action = MERGE, offset = 8099, line number = 339, charPositionInLine = 11
 Reference: Object = request_app_names (TABLE), action = MERGE, offset = 8306, line number = 346, charPositionInLine = 11
+Reference: action = BEGIN, offset = 8536, line number = 354, charPositionInLine = 0
+Reference: Object = target (TABLE), action = MERGE, offset = 8554, line number = 355, charPositionInLine = 11
+Reference: action = SELECT, offset = 8733, line number = 363, charPositionInLine = 0
+Reference: action = BEGIN, offset = 8825, line number = 366, charPositionInLine = 0
+Reference: Object = "SOURCE" (TABLE), action = DELETE, offset = 8844, line number = 367, charPositionInLine = 12
+Reference: Object = target (TABLE), action = MERGE, offset = 8877, line number = 368, charPositionInLine = 11
+Reference: Object = merge_actions (TABLE), action = CREATE, offset = 9273, line number = 384, charPositionInLine = 13
+Reference: Object = merge_actions (TABLE), action = INSERT, offset = 9326, line number = 385, charPositionInLine = 12
+Reference: Object = sq_target (TABLE), action = MERGE, offset = 9415, line number = 386, charPositionInLine = 11
+Reference: Object = sq_target_merge_log (TABLE), action = CREATE, offset = 10018, line number = 405, charPositionInLine = 13
+Reference: Object = sq_target_merge_log (TABLE), action = INSERT, offset = 10092, line number = 406, charPositionInLine = 12
+Reference: action = BEGIN, offset = 10142, line number = 407, charPositionInLine = 0
+Reference: action = SELECT, offset = 10149, line number = 408, charPositionInLine = 0
+Reference: action = SELECT, offset = 11020, line number = 435, charPositionInLine = 0
+Reference: action = COPY, offset = 11106, line number = 438, charPositionInLine = 0
+Reference: Object = pa_target (TABLE), action = MERGE, offset = 11475, line number = 452, charPositionInLine = 11
+Reference: Object = pg_class (TABLE), action = MERGE, offset = 11842, line number = 462, charPositionInLine = 11

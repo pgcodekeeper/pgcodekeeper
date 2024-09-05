@@ -2604,6 +2604,10 @@ ALTER TABLE public.t2 ADD EXCLUDE USING gist (i public.gist__int_ops (numranges=
 ALTER TABLE public.t1 ALTER COLUMN c1 DROP EXPRESSION;
 ALTER TABLE public.t1 ALTER COLUMN c1 DROP EXPRESSION if exists;
 ALTER TABLE public.t1 ALTER COLUMN c1 SET STATISTICS 465;
+ALTER TABLE public.t1 ALTER COLUMN c1 SET STATISTICS DEFAULT;
+
+--PG 17. SET EXPRESSION
+ALTER TABLE gtest23b ALTER COLUMN b SET EXPRESSION AS (a * 1);
 
 ALTER TABLE cmdata ALTER COLUMN f1 SET COMPRESSION lz4;
 ALTER TABLE cmdata2 ALTER COLUMN f1 SET COMPRESSION default;
@@ -2613,6 +2617,9 @@ ALTER TABLE cmpart2 ALTER COLUMN f1 SET COMPRESSION lz4;
 -- ALTER TABLE SET ACCESS METHOD
 ALTER TABLE ONLY public.employees SET ACCESS METHOD my_method;
 ALTER TABLE ONLY public.measurement_ym_y2016m12 SET ACCESS METHOD heap;
+
+-- DEFAULT access method
+ALTER TABLE heaptable SET ACCESS METHOD DEFAULT;
 
 --ALTER TABLE ADD FK CONSTRAINT
 ALTER TABLE public.t8 ADD CONSTRAINT fk FOREIGN KEY (quantity, kolvo) REFERENCES public.testtable(value3, value1) ON DELETE SET NULL(quantity);
@@ -2665,3 +2672,21 @@ ALTER TABLE part_b DROP CONSTRAINT check_b;
 ALTER TABLE parted DROP CONSTRAINT check_a, DROP CONSTRAINT check_b;
 
 alter table nv_parent add constraint c check(c1 > 0) no inherit not valid;
+
+--Test PG 17 feature SPLIT PARTITION
+ALTER TABLE sales_range SPLIT PARTITION sales_feb_mar_apr2023 INTO
+   (PARTITION sales_feb2023 FOR VALUES FROM ('2023-02-01') TO ('2023-03-01'),
+    PARTITION sales_mar2023 FOR VALUES FROM ('2023-03-01') TO ('2023-04-01'),
+    PARTITION sales_apr2023 FOR VALUES FROM ('2023-04-01') TO ('2023-05-01'));
+
+ALTER TABLE sales_list SPLIT PARTITION sales_all INTO
+   (PARTITION sales_west FOR VALUES IN ('Lisbon', 'New York', 'Madrid'),
+    PARTITION sales_east FOR VALUES IN ('Bejing', 'Delhi', 'Vladivostok'),
+    PARTITION sales_central FOR VALUES IN ('Warsaw', 'Berlin', 'Kyiv')); 
+
+ALTER TABLE sales_list2 SPLIT PARTITION sales_all INTO
+   (PARTITION sales_west DEFAULT);
+
+--Test PG 17 feature MERGE PARTITIONS
+ALTER TABLE sales_list MERGE PARTITIONS (sales_west, sales_east, sales_central)
+    INTO sales_all;
