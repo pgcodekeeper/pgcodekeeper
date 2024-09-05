@@ -62,13 +62,16 @@ public class CollationsReader extends JdbcReader {
                 break;
             case "i":
                 coll.setProvider("icu");
-                if (SupportedVersion.VERSION_15.isLE(loader.getVersion())) {
-                    String locale = res.getString("colliculocale");
-                    if (locale != null) {
-                        String quotedLocale = PgDiffUtils.quoteString(locale);
-                        coll.setLcCollate(quotedLocale);
-                        coll.setLcCtype(quotedLocale);
-                    }
+                String locale = null;
+                if (SupportedVersion.VERSION_17.isLE(loader.getVersion())) {
+                    locale = res.getString("colllocale");
+                } else if (SupportedVersion.VERSION_15.isLE(loader.getVersion())) {
+                    locale = res.getString("colliculocale");
+                }
+                if (locale != null) {
+                    String quotedLocale = PgDiffUtils.quoteString(locale);
+                    coll.setLcCollate(quotedLocale);
+                    coll.setLcCtype(quotedLocale);
                 }
                 break;
             case "d":
@@ -123,7 +126,9 @@ public class CollationsReader extends JdbcReader {
             builder.column("res.collisdeterministic");
         }
 
-        if (SupportedVersion.VERSION_15.isLE(loader.getVersion())) {
+        if (SupportedVersion.VERSION_17.isLE(loader.getVersion())) {
+            builder.column("res.colllocale");
+        } else if (SupportedVersion.VERSION_15.isLE(loader.getVersion())) {
             builder.column("res.colliculocale");
         }
 

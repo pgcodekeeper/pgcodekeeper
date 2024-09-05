@@ -198,3 +198,21 @@ CREATE SERVER test_server2 FOREIGN DATA WRAPPER fdw11;
 CREATE SERVER test_server3 FOREIGN DATA WRAPPER fdw11;
 GRANT ALL ON FOREIGN SERVER test_server3 TO testuser;
 
+ -- add MAINTAIN privileges for table
+CREATE TABLE public.lock_table2 (
+	a integer
+);
+ALTER TABLE public.lock_table2 OWNER TO khazieva_gr;
+
+GRANT DELETE ON TABLE public.lock_table2 TO user1;
+GRANT SELECT ON TABLE public.lock_table2 TO user1;
+
+ -- revoke MAINTAIN privileges for table
+CREATE TABLE public.lock_table3 (
+	a integer
+);
+ALTER TABLE public.lock_table3 OWNER TO khazieva_gr;
+
+GRANT DELETE ON TABLE public.lock_table3 TO khazieva_gr;
+GRANT SELECT ON TABLE public.lock_table3 TO khazieva_gr;
+GRANT MAINTAIN ON TABLE public.lock_table3 TO user1;

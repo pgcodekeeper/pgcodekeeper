@@ -54,6 +54,22 @@ GRANT ALL ON TABLE public.test TO botov_av;
 
 GRANT ALL ON TABLE public.test TO maindb;
 
+REVOKE ALL ON TABLE public.lock_table2 FROM PUBLIC;
+REVOKE ALL ON TABLE public.lock_table2 FROM khazieva_gr;
+GRANT ALL ON TABLE public.lock_table2 TO khazieva_gr;
+
+GRANT MAINTAIN ON TABLE public.lock_table2 TO user1;
+GRANT DELETE ON TABLE public.lock_table2 TO user1;
+GRANT SELECT ON TABLE public.lock_table2 TO user1;
+
+REVOKE MAINTAIN ON TABLE public.lock_table3 FROM user1;
+REVOKE ALL ON TABLE public.lock_table3 FROM PUBLIC;
+REVOKE ALL ON TABLE public.lock_table3 FROM khazieva_gr;
+GRANT ALL ON TABLE public.lock_table3 TO khazieva_gr;
+
+GRANT DELETE ON TABLE public.lock_table3 TO khazieva_gr;
+GRANT SELECT ON TABLE public.lock_table3 TO khazieva_gr;
+
 GRANT ALL(id) ON TABLE public.test TO maindb;
 
 GRANT ALL ON FUNCTION public.test_fnc(arg character varying) TO PUBLIC;

@@ -309,10 +309,12 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         case VIEW:
         case COLUMN:
             stType = "TABLE";
-            if (columnId == null) {
-                order = "raxdtDw";
-            } else {
+            if (columnId != null) {
                 order = "raxw";
+            } else if (SupportedVersion.VERSION_17.isLE(version)) {
+                order = "raxdtDwm";
+            } else {
+                order = "raxdtDw";
             }
             break;
 

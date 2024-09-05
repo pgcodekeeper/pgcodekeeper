@@ -19,7 +19,7 @@ QUOTE_CHAR : '"';
 
 // consume terminator chars to distinct this token from an Indentifier
 // strip terminators for getText()
-Privileges : '=' ([acdrtxwCDTUX] '*'?)+ '/'
+Privileges : '=' ([acdmrtxwCDTUX] '*'?)+ '/'
     {
         String __tx = getText();
         setText(__tx.substring(1, __tx.length() - 1));
