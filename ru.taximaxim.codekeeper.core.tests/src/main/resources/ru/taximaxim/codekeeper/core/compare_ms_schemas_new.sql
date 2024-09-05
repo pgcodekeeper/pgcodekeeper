@@ -1,0 +1,8 @@
+ALTER AUTHORIZATION ON SCHEMA::[dbo] TO [botov_av]
+GO
+
+CREATE SCHEMA [test_authorization] AUTHORIZATION [botov_av]
+GO
+
+CREATE SCHEMA [new]
+GO

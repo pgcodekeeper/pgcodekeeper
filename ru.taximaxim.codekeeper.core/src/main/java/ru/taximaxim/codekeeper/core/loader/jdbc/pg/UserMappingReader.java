@@ -44,7 +44,7 @@ public class UserMappingReader extends AbstractStatementReader {
         if (user == null) {
             // https://www.postgresql.org/docs/current/catalog-pg-user-mapping.html
             // zero if the user mapping is public
-            user = "PUBLIC";
+            user = "public";
         }
 
         PgUserMapping usm = new PgUserMapping(user, server);

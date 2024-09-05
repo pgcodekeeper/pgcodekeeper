@@ -1,3 +1,0 @@
-CREATE SCHEMA [test]
-AUTHORIZATION [test_user]
-GO

@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed error when explicitly specifying default schema in dump.
+
 ## [9.14.0] - 2024-09-04
 
 ### Added

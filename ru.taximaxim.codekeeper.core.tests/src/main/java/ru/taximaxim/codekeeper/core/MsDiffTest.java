@@ -65,17 +65,6 @@ class MsDiffTest {
             // Tests scenario where MS "COMMENT" is modified.
             // "modify_ms_comment",
 
-            // Tests scenario where MS SCHEMA is added.
-            "add_ms_schema",
-            // Tests scenario where MS SCHEMA is dropped.
-            "drop_ms_schema",
-            // Tests scenario where name of MS SCHEMA is modified.
-            "modify_ms_schema_name",
-            // Tests scenario where MS SCHEMA is modified.
-            "modify_ms_schema",
-            // Tests scenario where MS SCHEMA owner is modified.
-            "modify_ms_schema_owner",
-
             // Tests scenario where MS ASSEMBLY is added.
             "add_ms_assembly",
             // Tests scenario where MS ASSEMBLY is droped.
@@ -317,6 +306,8 @@ class MsDiffTest {
             "modify_ms_view_xmlnamespace",
             // Tests scenario where MS TABLE on which MS VIEW depends with SCHEMABINDING is changed..
             "modify_ms_table_schemabinding",
+            // Tests scenario where MS SCHEMAS is compared.
+            "compare_ms_schemas",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);

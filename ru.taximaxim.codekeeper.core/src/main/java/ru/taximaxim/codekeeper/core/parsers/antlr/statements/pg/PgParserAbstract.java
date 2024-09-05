@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mapping_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICast;
@@ -386,5 +387,10 @@ public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
     @Override
     protected PgSchema getSchemaSafe(List<? extends ParserRuleContext> ids) {
         return (PgSchema) super.getSchemaSafe(ids);
+    }
+
+    @Override
+    protected AbstractSchema createSchema(String name) {
+        return new PgSchema(name);
     }
 }
