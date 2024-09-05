@@ -10,6 +10,7 @@ ALTER STATISTICS alt_stat2 OWNER TO regress_alter_generic_user2;
 ALTER STATISTICS alt_stat2 SET SCHEMA alt_nsp2;
 ALTER STATISTICS alt_stat2 SET STATISTICS -1;
 ALTER STATISTICS alt_stat2 SET STATISTICS 2048;
+ALTER STATISTICS alt_stat2 SET STATISTICS DEFAULT;
 ALTER TEXT SEARCH CONFIGURATION alt_ts_conf2 SET SCHEMA alt_nsp2;
 ALTER TEXT SEARCH CONFIGURATION alt_ts_conf3 RENAME TO alt_ts_conf4;
 ALTER TEXT SEARCH DICTIONARY alt_ts_dict1 RENAME TO alt_ts_dict2;
@@ -83,6 +84,23 @@ EXPLAIN (COSTS OFF) EXECUTE p1(2);
 EXPLAIN (COSTS OFF) SELECT * FROM t1;
 explain (verbose, costs off, analyze on, timing off, summary off) create table t1 as select 1;
 EXPLAIN SELECT 1;
+EXPLAIN (SERIALIZE BINARY) select 1;
+EXPLAIN (MEMORY 'true') select 1;
+
+-- Test SERIALIZE option
+explain (analyze, serialize) select * from int8_tbl i8;
+explain (analyze, serialize text,buffers,timing off) select * from int8_tbl i8;
+explain (analyze, serialize binary,buffers,timing) select * from int8_tbl i8;
+-- this tests an edge case where we have no data to return
+explain (analyze, serialize) create temp table explain_temp as select * from int8_tbl i8;
+
+-- MEMORY option
+explain (memory) select * from int8_tbl i8;
+explain (memory, analyze) select * from int8_tbl i8;
+explain (memory, summary, format yaml) select * from int8_tbl i8;
+explain (memory, analyze, format json) select * from int8_tbl i8;
+explain (memory) execute int8_query;
+
 LISTEN notify_async2;
 LOCK lock_tbl1 IN ROW SHARE MODE;
 LOCK lock_tbl1 IN SHARE ROW EXCLUSIVE MODE;

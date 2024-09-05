@@ -8,5 +8,5 @@ CREATE TABLE [dbo].[table1](
 )
 GO
 
-GRANT UPDATE ON [dbo].[table1] TO [test_user]
+GRANT update ON [dbo].[table1] TO [test_user]
 GO

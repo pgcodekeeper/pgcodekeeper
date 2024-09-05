@@ -84,3 +84,8 @@ Reference: action = ALTER OPERATOR FAMILY, offset = 6820, line number = 149, cha
 Reference: action = DROP OPERATOR FAMILY, offset = 6894, line number = 150, charPositionInLine = 0
 Reference: action = CREATE OPERATOR CLASS, offset = 6938, line number = 151, charPositionInLine = 0
 Reference: Object = "|@|" (OPERATOR), action = CREATE, offset = 7665, line number = 173, charPositionInLine = 16
+Reference: Object = "===" (OPERATOR), action = ALTER, offset = 7762, line number = 176, charPositionInLine = 15
+Reference: Object = "===" (OPERATOR), action = ALTER, offset = 7811, line number = 177, charPositionInLine = 15
+Reference: Object = "===" (OPERATOR), action = ALTER, offset = 7888, line number = 180, charPositionInLine = 15
+Reference: Object = "@=" (OPERATOR), action = ALTER, offset = 7949, line number = 182, charPositionInLine = 15
+Reference: Object = "@!=" (OPERATOR), action = ALTER, offset = 8006, line number = 183, charPositionInLine = 15

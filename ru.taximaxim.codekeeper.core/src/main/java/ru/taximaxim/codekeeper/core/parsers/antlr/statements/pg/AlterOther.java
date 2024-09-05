@@ -165,7 +165,7 @@ public class AlterOther extends PgParserAbstract {
         PgStatistics stat = getSafe(PgSchema::getStatistics, getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
         var statCtx = ctx.set_statistics();
-        if (statCtx != null) {
+        if (statCtx != null && statCtx.DEFAULT() == null) {
             doSafe(PgStatistics::setStatistics, stat, Integer.parseInt(statCtx.signed_number_literal().getText()));
         }
     }

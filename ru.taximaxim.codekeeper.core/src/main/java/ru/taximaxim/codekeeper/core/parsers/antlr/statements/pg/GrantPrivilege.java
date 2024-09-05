@@ -19,6 +19,7 @@ import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -69,8 +70,7 @@ public class GrantPrivilege extends PgParserAbstract {
     public void parseObject() {
         Rule_member_objectContext obj = ctx.rule_member_object();
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
-        if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null
-                || obj.ALL() != null) {
+        if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null || obj.ALL() != null) {
             addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
@@ -87,7 +87,9 @@ public class GrantPrivilege extends PgParserAbstract {
             return;
         }
 
-        String permissions = ctx.permissions().permission().stream().map(ParserAbstract::getFullCtxText)
+        String permissions = ctx.permissions().permission().stream()
+                .map(ParserAbstract::getFullCtxText)
+                .map(e -> e.toUpperCase(Locale.ROOT))
                 .collect(Collectors.joining(","));
 
         if (obj.FUNCTION() != null || obj.PROCEDURE() != null) {
@@ -112,21 +114,17 @@ public class GrantPrivilege extends PgParserAbstract {
             } else if (obj.WRAPPER() != null) {
                 type = DbObjType.FOREIGN_DATA_WRAPPER;
             }
-        } else {
+        }
+
+        if (type == null) {
             addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
 
-        List<Schema_qualified_nameContext> objName = obj.names_references().schema_qualified_name();
+        for (Schema_qualified_nameContext name : obj.names_references().schema_qualified_name()) {
+            addObjReference(getIdentifiers(name), type, state);
 
-        if (type != null) {
-            for (Schema_qualified_nameContext name : objName) {
-                addObjReference(getIdentifiers(name), type, state);
-
-                if (isRefMode()) {
-                    continue;
-                }
-
+            if (!isRefMode()) {
                 addToDB(name, type, state, permissions, roles, isGO);
             }
         }
@@ -161,8 +159,7 @@ public class GrantPrivilege extends PgParserAbstract {
                     functNameCtx.getStart());
 
             StringBuilder sb = new StringBuilder();
-            DbObjType type = obj.PROCEDURE() == null ?
-                    DbObjType.FUNCTION : DbObjType.PROCEDURE;
+            DbObjType type = obj.PROCEDURE() == null ? DbObjType.FUNCTION : DbObjType.PROCEDURE;
             addObjReference(funcIds, type, state, parseArguments(funct.function_args()));
 
             if (isRefMode()) {
@@ -187,8 +184,8 @@ public class GrantPrivilege extends PgParserAbstract {
         // collect information about column privileges
         Map<String, Entry<IdentifierContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
-            String privName = getFullCtxText(priv.table_column_privilege());
-            for (IdentifierContext col : priv.identifier_list().identifier()) {
+            String privName = getFullCtxText(priv.table_column_privilege()).toUpperCase(Locale.ROOT);
+            for (IdentifierContext col : priv.identifier_list_in_paren().identifier_list().identifier()) {
                 colPriv.computeIfAbsent(col.getText(),
                         k -> new SimpleEntry<>(col, new ArrayList<>())).getValue().add(privName);
             }

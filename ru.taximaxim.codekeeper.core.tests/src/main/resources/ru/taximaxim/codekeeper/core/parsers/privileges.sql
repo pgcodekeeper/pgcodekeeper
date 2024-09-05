@@ -144,6 +144,7 @@ CREATE OPERATOR <<< (procedure = leak, leftarg = integer, rightarg = integer,
 CREATE VIEW atest12v AS
   SELECT * FROM atest12 WHERE b <<< 5;
 GRANT SELECT ON atest12v TO PUBLIC;
+GRANT MAINTAIN ON atest12v TO PUBLIC;
 
 -- This plan should use nestloop, knowing that few rows will be selected.
 EXPLAIN (COSTS OFF) SELECT * FROM atest12v x, atest12v y WHERE x.a = y.b;

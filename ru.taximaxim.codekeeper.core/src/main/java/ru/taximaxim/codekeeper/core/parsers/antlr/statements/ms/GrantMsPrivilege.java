@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -78,7 +79,9 @@ public class GrantMsPrivilege extends MsParserAbstract {
         }
 
         List<String> roles = ctx.name_list().id().stream()
-                .map(ParserRuleContext::getText).map(MsDiffUtils::quoteName).collect(Collectors.toList());
+                .map(ParserRuleContext::getText)
+                .map(MsDiffUtils::quoteName)
+                .collect(Collectors.toList());
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
         if (columnsCtx != null) {
@@ -87,7 +90,9 @@ public class GrantMsPrivilege extends MsParserAbstract {
         }
 
         List<String> permissions = ctx.permissions().permission().stream()
-                .map(ParserAbstract::getFullCtxText).collect(Collectors.toList());
+                .map(ParserAbstract::getFullCtxText)
+                .map(e -> e.toUpperCase(Locale.ROOT))
+                .collect(Collectors.toList());
 
         PgStatement st = getStatement(nameCtx);
 
@@ -161,7 +166,7 @@ public class GrantMsPrivilege extends MsParserAbstract {
         // collect information about column privileges
         Map<String, Entry<IdContext, List<String>>> colPriv = new HashMap<>();
         for (Table_column_privilegesContext priv : columnsCtx.table_column_privileges()) {
-            String privName = getFullCtxText(priv.permission());
+            String privName = getFullCtxText(priv.permission()).toUpperCase(Locale.ROOT);
             for (IdContext col : priv.name_list_in_brackets().id()) {
                 colPriv.computeIfAbsent(col.getText(),
                         k -> new SimpleEntry<>(col, new ArrayList<>())).getValue().add(privName);

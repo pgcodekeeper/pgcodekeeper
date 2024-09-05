@@ -223,7 +223,7 @@ public class AlterTable extends TableAbstract {
         PartitionTemplateContainer template = new PartitionTemplateContainer(partitionName);
 
         // SET SUBPARTITION TEMPLATE clause
-        var partitionAction = alterPartition.partition_action();
+        var partitionAction = alterPartition.partition_gp_action();
         var subpartitions = partitionAction.template_spec().subpartition_element();
         for (var subpartElem : subpartitions) {
             template.setSubElems(getFullCtxText(subpartElem),

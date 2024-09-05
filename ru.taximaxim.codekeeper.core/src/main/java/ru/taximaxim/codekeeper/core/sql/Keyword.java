@@ -66,6 +66,7 @@ public class Keyword {
      */
     private static void addKeywords(Map<String, Keyword> map) {
         addKw(map, "abort", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "absent", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "absolute", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "access", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "action", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -132,6 +133,7 @@ public class Keyword {
         addKw(map, "committed", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "compression", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "concurrently", TYPE_FUNC_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "conditional", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "configuration", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "conflict", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "connection", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -186,11 +188,13 @@ public class Keyword {
         addKw(map, "drop", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "each", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "else", RESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "empty", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "enable", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "encoding", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "encrypted", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "end", RESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "enum", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "error", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "escape", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "event", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "except", RESERVED_KEYWORD, AS_LABEL);
@@ -215,6 +219,7 @@ public class Keyword {
         addKw(map, "for", RESERVED_KEYWORD, AS_LABEL);
         addKw(map, "force", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "foreign", RESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "format", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "forward", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "freeze", TYPE_FUNC_NAME_KEYWORD, BARE_LABEL);
         addKw(map, "from", RESERVED_KEYWORD, AS_LABEL);
@@ -245,6 +250,7 @@ public class Keyword {
         addKw(map, "include", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "including", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "increment", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "indent", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "index", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "indexes", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "inherit", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -267,7 +273,20 @@ public class Keyword {
         addKw(map, "isnull", TYPE_FUNC_NAME_KEYWORD, AS_LABEL);
         addKw(map, "isolation", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "join", TYPE_FUNC_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json", UNRESERVED_KEYWORD, BARE_LABEL); // FIXME COL_NAME_KEYWORD
+        addKw(map, "json_array", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_arrayagg", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_exists", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_object", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_objectagg", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_query", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_scalar", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_serialize", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_table", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "json_value", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "keep", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "key", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "keys", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "label", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "language", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "large", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -295,6 +314,7 @@ public class Keyword {
         addKw(map, "materialized", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "maxvalue", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "merge", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "merge_action", COL_NAME_KEYWORD, BARE_LABEL);
         addKw(map, "method", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "minute", UNRESERVED_KEYWORD, AS_LABEL);
         addKw(map, "minvalue", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -306,6 +326,7 @@ public class Keyword {
         addKw(map, "national", COL_NAME_KEYWORD, BARE_LABEL);
         addKw(map, "natural", TYPE_FUNC_NAME_KEYWORD, BARE_LABEL);
         addKw(map, "nchar", COL_NAME_KEYWORD, BARE_LABEL);
+        addKw(map, "nested", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "new", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "next", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "nfc", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -331,6 +352,7 @@ public class Keyword {
         addKw(map, "offset", RESERVED_KEYWORD, AS_LABEL);
         addKw(map, "oids", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "old", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "omit", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "on", RESERVED_KEYWORD, AS_LABEL);
         addKw(map, "only", RESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "operator", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -355,7 +377,9 @@ public class Keyword {
         addKw(map, "partition", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "passing", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "password", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "path", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "placing", RESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "plan", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "plans", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "policy", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "position", COL_NAME_KEYWORD, BARE_LABEL);
@@ -373,6 +397,7 @@ public class Keyword {
         addKw(map, "program", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "publication", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "quote", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "quotes", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "range", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "read", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "real", COL_NAME_KEYWORD, BARE_LABEL);
@@ -407,6 +432,7 @@ public class Keyword {
         addKw(map, "rows", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "rule", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "savepoint", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "scalar", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "schema", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "schemas", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "scroll", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -431,6 +457,7 @@ public class Keyword {
         addKw(map, "smallint", COL_NAME_KEYWORD, BARE_LABEL);
         addKw(map, "snapshot", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "some", RESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "source", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "sql", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "stable", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "standalone", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -442,6 +469,7 @@ public class Keyword {
         addKw(map, "storage", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "stored", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "strict", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "string", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "strip", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "subscription", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "substring", COL_NAME_KEYWORD, BARE_LABEL);
@@ -449,10 +477,12 @@ public class Keyword {
         addKw(map, "symmetric", RESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "sysid", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "system", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "system_user", RESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "table", RESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "tables", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "tablesample", TYPE_FUNC_NAME_KEYWORD, BARE_LABEL);
         addKw(map, "tablespace", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "target", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "temp", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "template", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "temporary", UNRESERVED_KEYWORD, BARE_LABEL);
@@ -476,6 +506,7 @@ public class Keyword {
         addKw(map, "uescape", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "unbounded", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "uncommitted", UNRESERVED_KEYWORD, BARE_LABEL);
+        addKw(map, "unconditional", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "unencrypted", UNRESERVED_KEYWORD, BARE_LABEL);
         addKw(map, "union", RESERVED_KEYWORD, AS_LABEL);
         addKw(map, "unique", RESERVED_KEYWORD, BARE_LABEL);

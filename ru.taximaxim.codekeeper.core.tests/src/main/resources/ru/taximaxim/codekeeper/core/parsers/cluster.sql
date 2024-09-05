@@ -128,6 +128,12 @@ SELECT * FROM clstr_1 UNION ALL
   SELECT * FROM clstr_2 UNION ALL
   SELECT * FROM clstr_3;
 
+-- "postgresql 17 support
+CLUSTER VERBOSE employees USING employees_ind;
+CLUSTER (VERBOSE 'true');
+CLUSTER (VERBOSE TRUE, VERBOSE FALSE);
+CLUSTER (VERBOSE TRUE, VERBOSE FALSE) employees USING employees_ind;
+
 -- revert to the original state
 DELETE FROM clstr_1;
 DELETE FROM clstr_2;
