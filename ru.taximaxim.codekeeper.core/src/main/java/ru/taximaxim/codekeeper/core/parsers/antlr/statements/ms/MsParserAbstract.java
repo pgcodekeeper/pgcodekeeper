@@ -41,6 +41,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_con
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
@@ -54,6 +55,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
+import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 
@@ -297,6 +299,11 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
         }
         ids.add(qNameCtx.name);
         return ids;
+    }
+
+    @Override
+    protected AbstractSchema createSchema(String name) {
+        return new MsSchema(name);
     }
 
 }

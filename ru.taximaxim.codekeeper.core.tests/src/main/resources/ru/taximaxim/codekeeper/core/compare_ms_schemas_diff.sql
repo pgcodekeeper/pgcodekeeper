@@ -1,0 +1,11 @@
+DROP SCHEMA [old]
+GO
+
+CREATE SCHEMA [new]
+GO
+
+ALTER AUTHORIZATION ON SCHEMA::[dbo] TO [botov_av]
+GO
+
+ALTER AUTHORIZATION ON SCHEMA::[test_authorization] TO [botov_av]
+GO

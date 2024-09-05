@@ -1,3 +1,5 @@
+CREATE DATABASE default;
+
 CREATE DATABASE `db_comment`
 ENGINE = Memory
 COMMENT 'The temporary database';

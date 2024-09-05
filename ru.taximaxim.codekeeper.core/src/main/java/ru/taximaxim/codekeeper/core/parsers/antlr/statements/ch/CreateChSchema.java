@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch;
 
-import java.util.Arrays;
-
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_database_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Engine_exprContext;
@@ -34,8 +32,8 @@ public class CreateChSchema extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        var nameCtx = ctx.name_with_cluster().identifier();
-        var schema = new ChSchema(nameCtx.getText());
+        ChSchema schema = (ChSchema) createAndAddSchemaWithCheck(ctx.name_with_cluster().identifier());
+
         var engine = ctx.engine_expr();
         if (engine != null) {
             schema.setEngine(getEngine(engine));
@@ -44,7 +42,6 @@ public class CreateChSchema extends ChParserAbstract {
         if (commCtx != null) {
             schema.setComment(commCtx.STRING_LITERAL().getText());
         }
-        addSafe(db, schema, Arrays.asList(nameCtx));
     }
 
     private String getEngine(Engine_exprContext engine) {

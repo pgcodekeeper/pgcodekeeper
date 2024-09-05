@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_index
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.UsersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
@@ -47,6 +48,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChConstraint;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChEngine;
 import ru.taximaxim.codekeeper.core.schema.ch.ChIndex;
+import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 
 public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
@@ -235,5 +237,10 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
                 addDepSafe(stmt, Arrays.asList(exceptCtx), DbObjType.ROLE);
             }
         }
+    }
+
+    @Override
+    protected AbstractSchema createSchema(String name) {
+        return new ChSchema(name);
     }
 }
