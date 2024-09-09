@@ -122,20 +122,19 @@ public class ProjectLoader extends DatabaseLoader {
             if (WorkDirs.CH_DATABASE.equals(dirName)) {
                 loadPgChStructure(dir, db, dirName);
             } else {
-                loadSubdir(dir, dirName, db, this::checkIgnoreSchemaList);
+                loadSubdir(dir, dirName, db);
             }
         }
     }
 
     private void loadPgStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
-        // step 1
-        // read files in schema folder, add schemas to db
         for (String dirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
-            // legacy schemas
-            loadSubdir(dir, dirName, db, this::checkIgnoreSchemaList);
+            if (WorkDirs.PG_SCHEMA.equals(dirName)) {
+                loadPgChStructure(dir, db, dirName);
+            } else {
+                loadSubdir(dir, dirName, db);
+            }
         }
-
-        loadPgChStructure(dir, db, WorkDirs.PG_SCHEMA);
     }
 
     private void loadPgChStructure(Path baseDir, AbstractDatabase db, String commonDir)

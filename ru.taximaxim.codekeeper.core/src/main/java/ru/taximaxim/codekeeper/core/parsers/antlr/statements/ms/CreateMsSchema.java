@@ -15,14 +15,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms;
 
-import java.util.Arrays;
-
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_schemaContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
-import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 
 public class CreateMsSchema extends MsParserAbstract {
 
@@ -35,13 +31,10 @@ public class CreateMsSchema extends MsParserAbstract {
 
     @Override
     public void parseObject() {
-        IdContext nameCtx = ctx.schema_name;
-        AbstractSchema schema = new MsSchema(nameCtx.getText());
+        AbstractSchema schema = createAndAddSchemaWithCheck(ctx.schema_name);
         if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());
         }
-
-        addSafe(db, schema, Arrays.asList(nameCtx));
     }
 
     @Override

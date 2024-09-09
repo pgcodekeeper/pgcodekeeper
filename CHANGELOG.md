@@ -10,6 +10,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added support for PostgreSQL 17.
+
+### Changed
+
+- Increased minimum JAVA version to 17.
+- Standalone pgCodeKeeper packages now use latest version of Eclipse again.
+
+### Fixed
+
+- Fixed error when explicitly specifying default schema in dump.
+
+### Removed
+
+- Removed deprecated `--ms-sql` parameter.
+- Removed support for old version of project structure (pgCodeKeeper versions < 4.0.0).
+
+## [9.14.0] - 2024-09-04
+
+### Added
+
 - Added toolbar to comparison panel.
 
 ### Changed
@@ -17,8 +36,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added concatenation of sequential column type change commands for PostgreSQL.
 - Reduced size of CLI version.
 - Improved text in dependency graph building settings window.
-
-### Fixed
 
 ## [9.13.2] - 2024-08-23
 
@@ -2032,7 +2049,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...HEAD
+[9.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...v9.14.0
 [9.13.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...v9.13.2
 [9.13.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...v9.13.1
 [9.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.12.0...v9.13.0

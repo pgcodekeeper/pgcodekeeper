@@ -290,10 +290,6 @@ class PgDiffTest {
             "delete_view_option",
             // Tests scenario where VIEW is modified by changing of an option.
             "modify_view_option",
-            // Tests scenario where multiple schemas are in the dumps.
-            "multiple_schemas",
-            // Tests scenario where --add-transaction is specified.
-            "multiple_schemas",
             // Tests dropping view default value
             "alter_view_drop_default",
             // Tests adding view default value
@@ -377,8 +373,6 @@ class PgDiffTest {
             // Test table domain depcy
             "create_dom_tbl",
             "drop_dom_tbl",
-            // Test authorization schema
-            "authorization_schema",
             // Test column privilege
             "col_priv",
             "col_revoke_priv",
@@ -587,10 +581,11 @@ class PgDiffTest {
             "compare_statistics",
             // Test scenario where the option logged in sequences is changed
             "modify_logged_generated_sequence",
-            // Test scenario where original saved in Unix and new saved in Windows lines ending
+            // Test scenarios where original saved in Unix and new saved in Windows lines ending
             "test_encoding_table",
-            // Test scenario where original saved in Unix and new saved in Windows lines ending
             "test_encoding_function",
+            // Tests scenario where SCHEMAS is compared.
+            "compare_schemas",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

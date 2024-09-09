@@ -115,9 +115,6 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     private void loadChStructure(IContainer baseDir, AbstractDatabase db) throws InterruptedException, CoreException {
-        if (!baseDir.exists()) {
-            return;
-        }
         for (String dir : WorkDirs.getDirectoryNames(DatabaseType.CH)) {
             if (WorkDirs.CH_DATABASE.equals(dir)) {
                 loadPgChStructure(baseDir, db, dir);
@@ -127,18 +124,14 @@ public class UIProjectLoader extends ProjectLoader {
         }
     }
 
-    private void loadPgStructure(IContainer baseDir, AbstractDatabase db)
-            throws InterruptedException, CoreException {
-        if (!baseDir.exists()) {
-            return;
+    private void loadPgStructure(IContainer baseDir, AbstractDatabase db) throws InterruptedException, CoreException {
+        for (String dir : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
+            if (WorkDirs.PG_SCHEMA.equals(dir)) {
+                loadPgChStructure(baseDir, db, dir);
+            } else {
+                loadSubdir(baseDir.getFolder(new Path(dir)), db);
+            }
         }
-
-        for (String workDirName : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
-            // legacy schemas
-            loadSubdir(baseDir.getFolder(new Path(workDirName)), db, this::checkIgnoreSchemaList);
-        }
-
-        loadPgChStructure(baseDir, db, WorkDirs.PG_SCHEMA);
     }
 
     private void loadPgChStructure(IContainer baseDir, AbstractDatabase db, String commonDir)
@@ -169,10 +162,6 @@ public class UIProjectLoader extends ProjectLoader {
 
     private void loadMsStructure(IContainer baseDir, AbstractDatabase db)
             throws InterruptedException, IOException, CoreException {
-        if (!baseDir.exists()) {
-            return;
-        }
-
         IFolder securityFolder = baseDir.getFolder(new Path(WorkDirs.MS_SECURITY));
 
         loadSubdir(securityFolder.getFolder(WorkDirs.MS_SCHEMAS), db, this::checkIgnoreSchemaList);
@@ -310,9 +299,8 @@ public class UIProjectLoader extends ProjectLoader {
             if (schemasPath.isPrefixOf(filePath)) {
                 IPath relSchemasPath = filePath.makeRelativeTo(schemasPath);
                 String schemaDirname;
-                // 1 = [SCHEMA/]x.sql, legacy
-                // 2 = [SCHEMA/]x/x.sql, new schema location
-                boolean schemaDefSql = relSchemasPath.segmentCount() <= 2;
+                // 2 = [SCHEMA/]x/x.sql
+                boolean schemaDefSql = relSchemasPath.segmentCount() == 2;
                 if (schemaDefSql) {
                     // schema definition SQL-file
                     schemaDirname = relSchemasPath.removeFileExtension().lastSegment();
@@ -335,11 +323,6 @@ public class UIProjectLoader extends ProjectLoader {
                     String schemaFilename = schemaDirname + ".sql"; //$NON-NLS-1$
                     IProject proj = file.getProject();
                     IPath schemaPath = schemasPath.append(schemaDirname).append(schemaFilename);
-                    if (!proj.exists(schemaPath)) {
-                        // new schema location not found, use legacy
-                        schemaPath = schemasPath.append(schemaFilename);
-                    }
-
                     loadFile(proj.getFile(schemaPath), null, db);
                 }
             }
@@ -376,18 +359,20 @@ public class UIProjectLoader extends ProjectLoader {
 
     private void loadDbStructure(IContainer dir, AbstractDatabase db)
             throws InterruptedException, IOException, CoreException {
-        switch (arguments.getDbType()) {
-        case PG:
-            loadPgStructure(dir, db);
-            break;
-        case MS:
-            loadMsStructure(dir, db);
-            break;
-        case CH:
-            loadChStructure(dir, db);
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        if (dir.exists()) {
+            switch (arguments.getDbType()) {
+            case PG:
+                loadPgStructure(dir, db);
+                break;
+            case MS:
+                loadMsStructure(dir, db);
+                break;
+            case CH:
+                loadChStructure(dir, db);
+                break;
+            default:
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+            }
         }
         AntlrParser.finishAntlr(antlrTasks);
     }
@@ -515,11 +500,11 @@ public class UIProjectLoader extends ProjectLoader {
     /**
      * @param path project relative path
      * @return whether the path corresponds to a schema sql file
-     *     like this: /SCHEMA/schema_name.sql or /SCHEMA/schema_name/schema_name.sql
+     *  like this: /SCHEMA/schema_name/schema_name.sql
      */
     private static boolean isPgSchemaFile(IPath path) {
         int c = path.segmentCount();
-        return (c == 2 || c == 3) // legacy or new schemas
+        return c == 3
                 && path.segment(0).equals(WorkDirs.PG_SCHEMA)
                 && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
     }

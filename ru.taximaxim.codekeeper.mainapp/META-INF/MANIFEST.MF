@@ -2,11 +2,11 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.mainapp;singleton:=true
-Bundle-Version: 9.13.2.qualifier
+Bundle-Version: 10.0.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.mainapp.Activator
 Require-Bundle: org.eclipse.core.runtime;bundle-version="[3.18.0,4.0.0)",
- ru.taximaxim.codekeeper.core;bundle-version="[9.0.0,10.0.0)"
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+ ru.taximaxim.codekeeper.core;bundle-version="[10.0.0,11.0.0)"
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: %Bundle-Vendor
 Export-Package: ru.taximaxim.codekeeper.mainapp

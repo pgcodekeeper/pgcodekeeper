@@ -26,7 +26,7 @@ If you already have Eclipse IDE installed you can [install](https://pgcodekeeper
 
 ## Build
 
-Build requires Java (JDK) 11+ and Apache Maven 3.6+.
+Build requires Java (JDK) 17+ and Apache Maven 3.9+.
 
 ```sh
 git clone https://github.com/pgcodekeeper/pgcodekeeper.git

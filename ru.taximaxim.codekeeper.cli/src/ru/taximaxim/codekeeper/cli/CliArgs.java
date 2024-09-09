@@ -323,10 +323,6 @@ public class CliArgs extends PgDiffArguments {
             usage="ignore concurrent modification errors of database objects")
     private boolean ignoreConcurrentModification;
 
-    @Deprecated(forRemoval=true)
-    @Option(name="--ms-sql", forbids="--db-type", usage="deprecated option. Use --db-type MS. Work with MS SQL.")
-    private boolean msSql;
-
     @Option(name="--db-type",
             usage="specify database type for work: PG, MS, CH")
     private DatabaseType dbType;
@@ -804,9 +800,6 @@ public class CliArgs extends PgDiffArguments {
     }
 
     private void convertDeprecatedArguments() {
-        if (msSql) {
-            dbType = DatabaseType.MS;
-        }
         if (modeParse) {
             mode = CliMode.PARSE;
         } else if (modeGraph) {

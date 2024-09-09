@@ -77,13 +77,11 @@ public final class WorkDirs {
             CH_POLICY, CH_ROLE);
 
     /**
-     * Loading order and directory names of the objects in exported DB schemas. NOTE: constraints, triggers and indexes
-     * are now stored in tables, those directories are here for backward compatibility only
+     * Loading order and directory names of the objects in exported DB schemas.
      */
     private static final EnumSet<DbObjType> DIR_LOAD_ORDER = EnumSet.of(DbObjType.COLLATION, DbObjType.TYPE,
-            DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.PROCEDURE,
-            DbObjType.AGGREGATE, DbObjType.OPERATOR, DbObjType.TABLE, DbObjType.CONSTRAINT,
-            DbObjType.INDEX, DbObjType.TRIGGER, DbObjType.VIEW, DbObjType.STATISTICS, DbObjType.DICTIONARY,
+            DbObjType.DOMAIN, DbObjType.SEQUENCE, DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.AGGREGATE,
+            DbObjType.OPERATOR, DbObjType.TABLE, DbObjType.VIEW, DbObjType.STATISTICS, DbObjType.DICTIONARY,
             DbObjType.FTS_PARSER, DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {

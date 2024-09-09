@@ -283,8 +283,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         Label lblNotification = new Label(contNotifications, SWT.NONE);
         lblNotification.setText(Messages.DiffPresentationPane_attention);
-        lblNotification.setFont(lrm.createFont(FontDescriptor.createFrom(
-                lblNotification.getFont()).withStyle(SWT.BOLD)));
+        lblNotification.setFont(lrm.create(FontDescriptor.createFrom(lblNotification.getFont()).withStyle(SWT.BOLD)));
 
         lblNotificationText = new Label(contNotifications, SWT.NONE);
 
@@ -507,7 +506,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         if (!OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
-        OpenProjectUtils.checkLegacySchemas(getProject(), parent.getShell());
 
         Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
 

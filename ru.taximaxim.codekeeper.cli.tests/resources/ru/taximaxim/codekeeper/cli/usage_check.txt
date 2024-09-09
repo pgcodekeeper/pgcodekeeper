@@ -141,8 +141,6 @@ Usage
                                           objects loaded first have priority
  -m (--ignore-concurrent-modification)  : ignore concurrent modification errors
                                           of database objects
- --ms-sql                               : deprecated option. Use --db-type MS.
-                                          Work with MS SQL.
  --db-type [PG | MS | CH]               : specify database type for work: PG,
                                           MS, CH (default: PG)
  --update-project                       : update an existing project in parse

@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
-import java.util.Arrays;
-
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_schema_statementContext;
@@ -24,7 +22,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public class CreateSchema extends PgParserAbstract {
 
@@ -38,19 +35,18 @@ public class CreateSchema extends PgParserAbstract {
     @Override
     public void parseObject() {
         IdentifierContext nameCtx = ctx.name;
-        String name = nameCtx.getText();
-        if (name == null) {
+        if (nameCtx == null) {
             return;
         }
-        AbstractSchema schema = new PgSchema(name);
+
+        AbstractSchema schema = createAndAddSchemaWithCheck(nameCtx);
+
         User_nameContext user = ctx.user_name();
         IdentifierContext userName = user == null ? null : user.identifier();
         if (userName != null && !db.getArguments().isIgnorePrivileges()
-                && (!name.equals(Consts.PUBLIC) || !"postgres".equals(userName.getText()))) {
+                && (!nameCtx.getText().equals(Consts.PUBLIC) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
         }
-
-        addSafe(db, schema, Arrays.asList(nameCtx));
     }
 
     @Override

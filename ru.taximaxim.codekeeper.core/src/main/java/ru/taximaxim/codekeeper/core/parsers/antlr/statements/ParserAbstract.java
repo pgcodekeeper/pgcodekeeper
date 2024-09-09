@@ -489,4 +489,23 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
      * in 'Outline' and in 'outline of Project explorer files'.
      */
     protected abstract String getStmtAction();
+
+    protected AbstractSchema createAndAddSchemaWithCheck(ParserRuleContext nameCtx) {
+        String name = nameCtx.getText();
+        var defaultSchema = db.getDefaultSchema();
+        // override the default schema location if we created it
+        if (defaultSchema != null && defaultSchema.getBareName().equals(name)
+                && defaultSchema.getLocation().getFilePath() == null) {
+            var location = getLocation(Arrays.asList(nameCtx), DbObjType.SCHEMA, ACTION_CREATE, false, null,
+                    LocationType.DEFINITION);
+            defaultSchema.setLocation(location);
+            return defaultSchema;
+        }
+
+        AbstractSchema schema = createSchema(name);
+        addSafe(db, schema, Arrays.asList(nameCtx));
+        return schema;
+    }
+
+    protected abstract AbstractSchema createSchema(String name);
 }

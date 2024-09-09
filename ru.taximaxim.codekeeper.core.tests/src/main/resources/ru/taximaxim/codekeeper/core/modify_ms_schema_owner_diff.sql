@@ -1,2 +1,0 @@
-ALTER AUTHORIZATION ON SCHEMA::[test] TO [dbo]
-GO

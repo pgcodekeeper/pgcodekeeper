@@ -19,25 +19,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -48,12 +35,9 @@ import org.osgi.framework.Version;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -189,103 +173,6 @@ public final class OpenProjectUtils {
             Messages.OpenProjectUtils_proj_version_warn;
         mb.setMessage(msg + error);
         mb.open();
-    }
-
-    public static void checkLegacySchemas(IProject proj, Shell shell) {
-        try {
-            doCheckLegacySchemas(proj, shell);
-        } catch (CoreException ex) {
-            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.OpenProjectUtils_schema_convert_error, ex.getLocalizedMessage()), ex);
-        }
-    }
-
-    /**
-     * @throws CoreException only when user chose to convert project and the following process failed
-     */
-    private static void doCheckLegacySchemas(IProject proj, Shell shell) throws CoreException {
-        IFolder schemasDir = proj.getFolder(WorkDirs.getDirectoryNameForType(DatabaseType.PG, DbObjType.SCHEMA));
-        if (!schemasDir.exists()) {
-            return;
-        }
-
-        List<IFile> schemas;
-        try {
-            schemas = Arrays.stream(schemasDir.members())
-                    .filter(r -> r.getType() == IResource.FILE && "sql".equals(r.getFileExtension())) //$NON-NLS-1$
-                    .map(IFile.class::cast)
-                    .filter(OpenProjectUtils::checkLegacySchemaFile)
-                    .collect(Collectors.toList());
-        } catch (CoreException ex) {
-            Log.log(ex);
-            // we don't know whether user actually wants to convert
-            // or even whether there's anything to convert
-            // fail silently, this shouldn't happen anyway
-            return;
-        }
-
-        if (!schemas.isEmpty()) {
-            MessageBox mb = new MessageBox(shell, SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-            mb.setText(Messages.OpenProjectUtils_update_format);
-            mb.setMessage(MessageFormat.format(
-                    Messages.OpenProjectUtils_update_warning,
-                    proj.getName()));
-            if (mb.open() != SWT.YES) {
-                return;
-            }
-        } else {
-            return;
-        }
-
-        IRunnableWithProgress runnable = monitor -> {
-            SubMonitor m = SubMonitor.convert(monitor, Messages.OpenProjectUtils_updating_project, schemas.size() + 1);
-            try {
-                proj.refreshLocal(IResource.DEPTH_INFINITE, m.newChild(1));
-                for (IResource r : schemas) {
-                    SubMonitor sm = m.newChild(1);
-                    IPath schemaPath = r.getProjectRelativePath().removeFileExtension();
-                    if (!proj.exists(schemaPath)) {
-                        proj.getFolder(schemaPath).create(false, true, sm.newChild(1));
-                    }
-                    // move relative to original
-                    IPath newPath = schemaPath
-                            .removeFirstSegments(schemaPath.segmentCount() - 1)
-                            .append(r.getName());
-                    r.move(newPath, false, sm.newChild(1));
-                }
-            } catch (CoreException e) {
-                throw new InvocationTargetException(e, e.getLocalizedMessage());
-            } finally {
-                monitor.done();
-            }
-        };
-        try {
-            new ProgressMonitorDialog(shell).run(true, false, runnable);
-        } catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof CoreException) {
-                throw (CoreException) t;
-            } else {
-                throw new IllegalStateException(t.getLocalizedMessage(), e);
-            }
-        } catch (InterruptedException e) {
-            // can't be cancelled
-        }
-    }
-
-    private static boolean checkLegacySchemaFile(IFile f) {
-        try (InputStream stream = f.getContents()) {
-            byte[] bb = new byte[512];
-            int size = stream.read(bb);
-            // we check for an ASCII string so we don't care about real encoding
-            // this won't work with UTF-16+, but at least it will work with UTF-8
-            // and all single-byte/ASCII compatible encodings
-            String s = new String(bb, 0, size, StandardCharsets.US_ASCII);
-            return s.contains("CREATE SCHEMA"); //$NON-NLS-1$
-        } catch(CoreException | IOException ex) {
-            Log.log(ex);
-            return false;
-        }
     }
 
     private OpenProjectUtils() {
