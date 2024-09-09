@@ -37,11 +37,11 @@ import org.junit.jupiter.api.Test;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UiTestUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -58,13 +58,11 @@ public class ProjectUpdaterTest {
     public void before() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
-        dbOld = TestUtils.loadTestDump(
-                "old.sql", ProjectUpdaterTest.class, args);
+        dbOld = UiTestUtils.loadTestDump("old.sql", ProjectUpdaterTest.class, args);
 
         args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
-        dbNew = TestUtils.loadTestDump(
-                "new.sql", ProjectUpdaterTest.class, args);
+        dbNew = UiTestUtils.loadTestDump("new.sql", ProjectUpdaterTest.class, args);
 
         workingDir = new TempDir("test_new"); //$NON-NLS-1$
         referenceDir = new TempDir("test_old"); //$NON-NLS-1$

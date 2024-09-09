@@ -21,7 +21,6 @@ package ru.taximaxim.codekeeper.core;
 
 import java.io.IOException;
 
-import org.junit.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -55,7 +54,6 @@ class MoveDataDiffTest {
             //implementation for partition table data movement test in PG with identity columns(dropped, changed identity col)
             "move_data_change_col_identity"
     })
-
     void runPgDiff(String fileNameTemplate) throws IOException, InterruptedException {
         runDiff(fileNameTemplate, DatabaseType.PG);
     }
@@ -67,12 +65,10 @@ class MoveDataDiffTest {
             "move_data_ms",
             "move_data_ms_identity"
     })
-
     void runMsDiff(String fileNameTemplate) throws IOException, InterruptedException {
         runDiff(fileNameTemplate, DatabaseType.MS);
     }
 
-    @Test
     void runDiff(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setDataMovementMode(true);

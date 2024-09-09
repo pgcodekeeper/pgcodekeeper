@@ -41,11 +41,11 @@ import org.junit.jupiter.api.Test;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.ui.UiTestUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -59,7 +59,7 @@ public class DbSourceTest {
     public static void initDb() throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(Consts.UTF_8);
-        dbPredefined = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, args);
+        dbPredefined = UiTestUtils.loadTestDump(UiTestUtils.RESOURCE_DUMP, UiTestUtils.class, args);
 
         workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
         workspacePath = workspaceRoot.getLocation().toFile();
@@ -79,7 +79,7 @@ public class DbSourceTest {
 
     @Test
     void testFile() throws IOException, URISyntaxException, InterruptedException, CoreException {
-        Path path = TestUtils.getPathToResource(TestUtils.RESOURCE_DUMP, TestUtils.class);
+        Path path = UiTestUtils.getPathToResource(UiTestUtils.RESOURCE_DUMP, UiTestUtils.class);
         performTest(DbSource.fromFile(true, path, Consts.UTF_8, DatabaseType.PG, null));
     }
 
@@ -118,13 +118,13 @@ public class DbSourceTest {
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
-            TestUtils.createIgnoredSchemaFile(dir);
+            UiTestUtils.createIgnoredSchemaFile(dir);
 
             DbSource dbSourceProj = DbSource.fromProject(new PgDbProject(project));
             AbstractDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
-                if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                if (UiTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assertions.fail("Ignored Schema loaded " + dbSchema.getName());
                 }
 
@@ -146,18 +146,18 @@ public class DbSourceTest {
             IProject project = createProjectInWorkspace(dir.getFileName().toString(), DatabaseType.MS);
 
             // populate project with data
-            AbstractDatabase msDb = TestUtils.loadTestDump(TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
+            AbstractDatabase msDb = UiTestUtils.loadTestDump(UiTestUtils.RESOURCE_MS_DUMP, UiTestUtils.class, args);
             new ModelExporter(dir, msDb, DatabaseType.MS, Consts.UTF_8).exportFull();
             project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
             // create .pgcodekeeperignoreschema file with black list rule in tempDir
-            TestUtils.createIgnoredSchemaFile(dir);
+            UiTestUtils.createIgnoredSchemaFile(dir);
 
             DbSource dbSourceProj = DbSource.fromProject(new PgDbProject(project));
             AbstractDatabase db = dbSourceProj.get(SubMonitor.convert(null, "", 1));
 
             for (AbstractSchema dbSchema : db.getSchemas()) {
-                if (TestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
+                if (UiTestUtils.IGNORED_SCHEMAS_LIST.contains(dbSchema.getName())) {
                     Assertions.fail("Ignored Schema loaded " + dbSchema.getName());
                 } else {
                     Assertions.assertEquals(msDb.getSchema(dbSchema.getName()), dbSchema,

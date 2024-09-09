@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.core;singleton:=true
-Bundle-Version: 9.14.0.qualifier
+Bundle-Version: 10.0.0.qualifier
 Export-Package: ru.taximaxim.codekeeper.core,
  ru.taximaxim.codekeeper.core.fileutils,
  ru.taximaxim.codekeeper.core.formatter,
@@ -22,18 +22,15 @@ Export-Package: ru.taximaxim.codekeeper.core,
  ru.taximaxim.codekeeper.core.utils,
  ru.taximaxim.codekeeper.core.xmlstore
 x-core-comment: ru.taximaxim.codekeeper.core.utils - hidden use in deserialization
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: .,
  libs/clickhouse-jdbc-0.4.6.jar
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: ru.taximaxim.codekeeper.core.Activator
 Import-Package: org.eclipse.core.runtime;version="[3.5.0,4.0.0)",
- org.eclipse.equinox.log;version="[1.1.0,2.0.0)",
  org.eclipse.osgi.util;version="[1.1.0,2.0.0)",
  org.osgi.framework;version="[1.9.0,2.0.0)",
- org.osgi.service.log;version="[1.4.0,2.0.0)",
- org.osgi.util.tracker;version="[1.5.0,2.0.0)",
- org.slf4j;version="[1.7.0,2.0.0)"
+ org.slf4j;version="[2.0.0,3.0.0)"
 Require-Bundle: wrapped.com.github.technology16.pgpass;bundle-version="2.0.1",
  org.postgresql.jdbc;bundle-version="42.7.3",
  com.microsoft.sqlserver.mssql-jdbc;bundle-version="12.4.2",
