@@ -123,12 +123,6 @@
                 </plugins>
             </build>
         </profile>
-        <profile>
-            <id>compat_check</id>
-            <properties>
-                <target.definition.file>app</target.definition.file>
-            </properties>
-        </profile>
     </profiles>
 
     <build>
