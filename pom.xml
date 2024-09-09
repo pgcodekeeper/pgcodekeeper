@@ -31,8 +31,8 @@
     </modules>
 
     <properties>
-        <revision>9.14.0-SNAPSHOT</revision>
-        <ui.revision>4.18.0-SNAPSHOT</ui.revision>
+        <revision>10.0.0-SNAPSHOT</revision>
+        <ui.revision>5.0.0-SNAPSHOT</ui.revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -46,11 +46,11 @@
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
         <sonar.exclusions>**/*.sql, **/generated/**, **/Messages.java</sonar.exclusions>
 
-        <java.version>11</java.version>
-        <tycho.version>2.7.5</tycho.version>
-        <jacoco.version>0.8.11</jacoco.version>
+        <java.version>17</java.version>
+        <tycho.version>4.0.7</tycho.version>
+        <jacoco.version>0.8.12</jacoco.version>
         <antlr.version>4.13.1</antlr.version>
-        <maven.surefire.version>3.2.2</maven.surefire.version>
+        <maven.surefire.version>3.2.5</maven.surefire.version>
         <maven.enforcer.version>3.4.1</maven.enforcer.version>
         <maven.jarsigner.version>3.0.0</maven.jarsigner.version>
 
@@ -61,7 +61,7 @@
         <profile>
             <id>jenkins</id>
             <properties>
-                <target.definition.file>app_202103</target.definition.file>
+                <target.definition.file>app</target.definition.file>
             </properties>
             <build>
                 <plugins>
@@ -126,7 +126,7 @@
         <profile>
             <id>compat_check</id>
             <properties>
-                <target.definition.file>app_202103</target.definition.file>
+                <target.definition.file>app</target.definition.file>
             </properties>
         </profile>
     </profiles>
@@ -147,7 +147,7 @@
                 <configuration>
                     <rules>
                         <requireMavenVersion>
-                            <version>3.6</version>
+                            <version>3.9</version>
                         </requireMavenVersion>
                     </rules>
                 </configuration>
@@ -173,7 +173,6 @@
                 <artifactId>target-platform-configuration</artifactId>
                 <version>${tycho.version}</version>
                 <configuration>
-                    <resolver>p2</resolver>
                     <target>
                         <artifact>
                             <groupId>ru.taximaxim.codeKeeper</groupId>

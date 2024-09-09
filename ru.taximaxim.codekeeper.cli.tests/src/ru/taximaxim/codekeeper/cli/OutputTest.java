@@ -74,7 +74,6 @@ class OutputTest {
                 Arguments.of(new FailGraphNameArgumentsProvider()),
                 Arguments.of(new FailGraphArgumentsProvider()),
                 Arguments.of(new IgnoreColumnOrderArgumentsProvider()),
-                Arguments.of(new MsDeprecatedOption()),
                 Arguments.of(new FailGenerateExistDoBlock()));
     }
 
@@ -296,7 +295,7 @@ class FailDangerAlterColArgumentsProvider extends ArgumentsProvider {
 class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
 
     public FailDangerRestartArgumentsProvider() {
-        super("modify_sequence_start_ignore_off");
+        super("modify_ms_sequence_start_ignore_off");
     }
 
     @Override
@@ -304,15 +303,13 @@ class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[] { "--safe-mode", "-o", getDiffResultFile().toString(),
+        return new String[] { "--safe-mode", "--db-type", "MS", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString() };
     }
 
     @Override
     public String output() {
-        // return "Script contains dangerous statements: RESTART_WITH. Use --allow-danger-ddl to override.\n";
-        // TODO we do not generate RESTART anymore
-        return "";
+        return "Script contains dangerous statements: RESTART_WITH. Use --allow-danger-ddl to override.\n";
     }
 }
 
@@ -322,7 +319,7 @@ class FailDangerRestartArgumentsProvider extends ArgumentsProvider {
 class DangerRestartArgumentsProvider extends ArgumentsProvider {
 
     public DangerRestartArgumentsProvider() {
-        super("modify_sequence_start_ignore_off");
+        super("modify_ms_sequence_start_ignore_off");
     }
 
     @Override
@@ -330,7 +327,7 @@ class DangerRestartArgumentsProvider extends ArgumentsProvider {
         Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
         Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
 
-        return new String[] { "--safe-mode", "--allow-danger-ddl",
+        return new String[] { "--safe-mode", "--db-type", "MS", "--allow-danger-ddl",
                 "RESTART_WITH", "-o", getDiffResultFile().toString(),
                 fNew.toString(), fOriginal.toString() };
     }
@@ -825,36 +822,11 @@ class IgnoreColumnOrderArgumentsProvider extends ArgumentsProvider {
     }
 }
 
-/**
- * {@link ArgumentsProvider} implementation testing  with deprecated --ms-sql option
- */
-class MsDeprecatedOption extends ArgumentsProvider {
-
-    public MsDeprecatedOption() {
-        super("drop_ms_table");
-    }
-
-    @Override
-    public String[] args() throws URISyntaxException, IOException {
-        Path fNew = getFile(FILES_POSTFIX.NEW_SQL);
-        Path fOriginal = getFile(FILES_POSTFIX.ORIGINAL_SQL);
-
-        return new String[] { "--safe-mode", "--ms-sql", "--allow-danger-ddl", "DROP_TABLE",
-                "--output", getDiffResultFile().toString(),
-                "-s", fNew.toString(), fOriginal.toString() };
-    }
-
-    @Override
-    public String output() {
-        return "option \"-s (--source)\" requires the option(s) [-t]\n";
-    }
-}
-
 class FailGenerateExistDoBlock extends ArgumentsProvider {
 
     @Override
     protected String[] args() throws URISyntaxException, IOException {
-        return new String[] { "-do", "--ms-sql", "tgt", "src" };
+        return new String[] { "-do", "--db-type", "MS", "tgt", "src" };
     }
 
     @Override

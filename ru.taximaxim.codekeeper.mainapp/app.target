@@ -3,22 +3,21 @@
 <target includeMode="feature" name="app" sequenceNumber="128">
 	<locations>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20220830213456/repository"/>
-			<unit id="org.kohsuke.args4j" version="2.33.0.v20160323-2218"/>
-			<unit id="org.junit.jupiter.api" version="5.8.2.v20220624-2009"/>
-			<unit id="org.junit.jupiter.engine" version="5.8.2.v20220624-2009"/>
-			<unit id="org.junit.jupiter.params" version="5.8.2.v20220624-2009"/>
-			<unit id="org.junit" version="4.13.2.v20211018-1956"/>
-			<unit id="org.junit.platform.commons" version="1.8.2.v20220624-2009"/>
-			<unit id="org.slf4j.api" version="1.7.30.v20200204-2150"/>
-			<unit id="ch.qos.logback.slf4j" version="1.2.3.v20200428-2012"/>
+			<repository location="https://download.eclipse.org/tools/orbit/simrel/maven-osgi/release/4.32.0"/>
+			<unit id="org.kohsuke.args4j" version="2.37.0"/>
+			<unit id="junit-jupiter-api" version="5.10.2"/>
+			<unit id="junit-jupiter-engine" version="5.10.2"/>
+			<unit id="junit-jupiter-params" version="5.10.2"/>
+			<unit id="slf4j.api" version="2.0.13"/>
+			<unit id="ch.qos.logback.classic" version="1.5.6"/>
+			<unit id="ch.qos.logback.core" version="1.5.6"/>
 		</location>
 		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/releases/2022-09"/>
-			<unit id="org.eclipse.egit.feature.group" version="6.3.0.202209071007-r"/>
-			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.23.500.v20220826-1025"/>
-			<unit id="org.eclipse.platform.feature.group" version="4.25.0.v20220831-1800"/>
-			<unit id="org.eclipse.zest.feature.group" version="3.14.0.202206170857"/>
+			<repository location="https://download.eclipse.org/releases/2024-06"/>
+			<unit id="org.eclipse.egit.feature.group" version="6.10.0.202406032230-r"/>
+			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.23.1200.v20240524-2033"/>
+			<unit id="org.eclipse.platform.feature.group" version="4.32.0.v20240601-0610"/>
+			<unit id="org.eclipse.zest.feature.group" version="3.20.0.202405290843"/>
 		</location>
 		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
 			<dependencies>
@@ -28,84 +27,46 @@
 					<version>2.0.1</version>
 					<type>jar</type>
 				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
-				<dependency>
-					<groupId>org.postgresql</groupId>
-					<artifactId>postgresql</artifactId>
-					<version>42.7.3</version>
-					<type>jar</type>
-				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
 				<dependency>
 					<groupId>com.microsoft.sqlserver</groupId>
 					<artifactId>mssql-jdbc</artifactId>
 					<version>12.4.2.jre11</version>
 					<type>jar</type>
 				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
-				<dependency>
-					<groupId>org.osgi</groupId>
-					<artifactId>org.osgi.service.jdbc</artifactId>
-					<version>1.1.0</version>
-					<type>jar</type>
-				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
 				<dependency>
 					<groupId>org.antlr</groupId>
 					<artifactId>antlr4-runtime</artifactId>
 					<version>4.13.1</version>
 					<type>jar</type>
 				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
 				<dependency>
 					<groupId>org.jgrapht</groupId>
 					<artifactId>jgrapht-core</artifactId>
 					<version>1.5.1</version>
 					<type>jar</type>
 				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
 				<dependency>
 					<groupId>org.jheaps</groupId>
 					<artifactId>jheaps</artifactId>
 					<version>0.14</version>
 					<type>jar</type>
 				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
-				<dependency>
-					<groupId>org.javers</groupId>
-					<artifactId>javers-core</artifactId>
-					<version>7.3.3</version>
-					<type>jar</type>
-				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-			<dependencies>
 				<dependency>
 					<groupId>org.lz4</groupId>
 					<artifactId>lz4-java</artifactId>
 					<version>1.8.0</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+					<groupId>org.osgi</groupId>
+					<artifactId>org.osgi.service.jdbc</artifactId>
+					<version>1.1.0</version>
+					<type>jar</type>
+				</dependency>
+				<dependency>
+					<groupId>org.postgresql</groupId>
+					<artifactId>postgresql</artifactId>
+					<version>42.7.3</version>
 					<type>jar</type>
 				</dependency>
 			</dependencies>

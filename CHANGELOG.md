@@ -11,9 +11,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Increased minimum JAVA version to 17.
+- Standalone pgCodeKeeper packages now use latest version of Eclipse again.
+
 ### Fixed
 
 - Fixed error when explicitly specifying default schema in dump.
+
+### Removed
+
+- Removed deprecated `--ms-sql` parameter.
+- Removed support for old version of project structure (pgCodeKeeper versions < 4.0.0).
 
 ## [9.14.0] - 2024-09-04
 

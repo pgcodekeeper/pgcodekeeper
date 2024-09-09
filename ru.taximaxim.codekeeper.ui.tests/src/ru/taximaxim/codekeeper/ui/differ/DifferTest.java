@@ -32,7 +32,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -41,6 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.ui.UiTestUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.tests.ProjectUpdaterTest;
 
@@ -58,8 +58,8 @@ public class DifferTest {
     @ParameterizedTest
     @MethodSource("generator")
     void testDiffer(DifferData differData) throws Exception {
-        Path sourceFile = TestUtils.getPathToResource("old.sql", ProjectUpdaterTest.class);
-        Path targetFile = TestUtils.getPathToResource("new.sql", ProjectUpdaterTest.class);
+        Path sourceFile = UiTestUtils.getPathToResource("old.sql", ProjectUpdaterTest.class);
+        Path targetFile = UiTestUtils.getPathToResource("new.sql", ProjectUpdaterTest.class);
 
         Map<String, Boolean> oneTimePrefs = Map.of(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, true);
 
@@ -91,8 +91,8 @@ public class DifferTest {
         job.schedule();
         job.join();
 
-        TestUtils.compareResult(differ.getDiffDirect(), differData.getCaseNumber() + "_direct", DifferTest.class);
-        TestUtils.compareResult(differ.getDiffReverse(), differData.getCaseNumber() + "_reverse", DifferTest.class);
+        UiTestUtils.compareResult(differ.getDiffDirect(), differData.getCaseNumber() + "_direct", DifferTest.class);
+        UiTestUtils.compareResult(differ.getDiffReverse(), differData.getCaseNumber() + "_reverse", DifferTest.class);
     }
 }
 
