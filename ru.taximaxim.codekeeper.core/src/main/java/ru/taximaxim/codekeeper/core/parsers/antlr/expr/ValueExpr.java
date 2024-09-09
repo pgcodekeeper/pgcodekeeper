@@ -58,6 +58,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirectio
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_varContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_return_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_support_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.OpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Orderby_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Partition_by_columnsContext;
@@ -601,6 +602,7 @@ public class ValueExpr extends AbstractExpr {
         Xml_functionContext xml;
         Json_functionContext json;
         Function_constructContext con;
+        Merge_support_functionContext mer;
 
         if ((extract = function.extract_function()) != null) {
             analyze(new Vex(extract.vex()));
@@ -714,6 +716,9 @@ public class ValueExpr extends AbstractExpr {
             }
 
             ret = new ModPair<>(colname, coltype);
+        } else if ((mer = function.merge_support_function()) != null) {
+            String colname = mer.getChild(0).getText().toLowerCase(Locale.ROOT);
+            ret = new ModPair<>(colname, TypesSetManually.TEXT);
         } else if ((con = function.function_construct()) != null) {
             args = con.vex();
 
