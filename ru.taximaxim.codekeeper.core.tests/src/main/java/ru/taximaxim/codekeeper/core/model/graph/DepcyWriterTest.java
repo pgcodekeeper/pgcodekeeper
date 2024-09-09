@@ -63,7 +63,9 @@ public class DepcyWriterTest {
         "ch_view_4, default.view_join_inner_table",
         "ch_view_5, default.view_aaa_bbb",
         "ch_view_6, default.view_columns_transformers",
-        "ch_view_7, default.ch_view_7"
+        "ch_view_7, default.ch_view_7",
+        // test analysis work on merge statement
+        "view_merge, public.f1",
     })
     void compareGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, FILES_POSTFIX.DEPS_TXT, objectName, false);

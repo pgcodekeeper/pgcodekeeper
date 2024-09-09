@@ -1,0 +1,4 @@
+FUNCTION public.f1(integer)
+	SCHEMA public
+	FUNCTION public.f2(text)
+		SCHEMA public
