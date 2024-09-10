@@ -95,7 +95,7 @@ implements IRelation, IStatementContainer, ISearchPath {
         }
 
         for (AbstractConstraint constr : getConstraints()) {
-            if (constr instanceof IConstraintPk && ((IConstraintPk) constr).isClustered()) {
+            if (constr instanceof IConstraintPk pk && pk.isClustered()) {
                 return true;
             }
         }
@@ -214,8 +214,7 @@ implements IRelation, IStatementContainer, ISearchPath {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof PgStatementContainer) {
-            PgStatementContainer table = (PgStatementContainer) obj;
+        if (obj instanceof PgStatementContainer table) {
             return indexes.equals(table.indexes)
                     && triggers.equals(table.triggers)
                     && rules.equals(table.rules)

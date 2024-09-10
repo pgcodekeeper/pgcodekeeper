@@ -88,8 +88,8 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
             @Override
             public void treeExpanded(TreeExpansionEvent event) {
                 Widget item = findItem(event.getElement());
-                if (item instanceof TreeItem) {
-                    initializeItem((TreeItem) item);
+                if (item instanceof TreeItem treeItem) {
+                    initializeItem(treeItem);
                 }
             }
         });
@@ -101,8 +101,7 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
      */
     protected void doCheckStateChanged(Object element) {
         Widget item = findItem(element);
-        if (item instanceof TreeItem) {
-            TreeItem treeItem = (TreeItem) item;
+        if (item instanceof TreeItem treeItem) {
             treeItem.setGrayed(false);
             updateChildrenItems(treeItem);
             updateParentItems(treeItem.getParentItem());
@@ -191,8 +190,8 @@ public class CheckedTreeViewer extends CheckboxTreeViewer {
     @Override
     protected void setExpanded(Item item, boolean expand) {
         super.setExpanded(item, expand);
-        if (expand && item instanceof TreeItem) {
-            initializeItem((TreeItem) item);
+        if (expand && item instanceof TreeItem treeItem) {
+            initializeItem(treeItem);
         }
     }
 

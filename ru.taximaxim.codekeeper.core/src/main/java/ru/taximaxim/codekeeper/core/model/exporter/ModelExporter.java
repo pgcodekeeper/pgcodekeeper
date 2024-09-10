@@ -275,8 +275,8 @@ public class ModelExporter {
         Path path = WorkDirs.getRelativeFolderPath(st, Paths.get(""));
 
         String fileName = getExportedFilenameSql(getExportedFilename(st));
-        if (st.getDbType() == DatabaseType.MS && st instanceof ISearchPath) {
-            fileName = FileUtils.getValidFilename(((ISearchPath) st).getSchemaName()) + '.' + fileName;
+        if (st.getDbType() == DatabaseType.MS && st instanceof ISearchPath sp) {
+            fileName = FileUtils.getValidFilename(sp.getSchemaName()) + '.' + fileName;
         }
 
         return path.resolve(fileName);

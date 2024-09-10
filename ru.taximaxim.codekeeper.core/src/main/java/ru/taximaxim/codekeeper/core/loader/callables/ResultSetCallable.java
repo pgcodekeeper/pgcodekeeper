@@ -31,10 +31,10 @@ public class ResultSetCallable extends StatementCallable<ResultSet> {
 
     @Override
     public ResultSet call() throws Exception {
-        if (st instanceof PreparedStatement) {
-            return ((PreparedStatement)st).executeQuery();
-        } else {
-            return st.executeQuery(script);
+        if (st instanceof PreparedStatement ps) {
+            return ps.executeQuery();
         }
+
+        return st.executeQuery(script);
     }
 }

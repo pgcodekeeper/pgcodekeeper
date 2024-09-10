@@ -112,9 +112,9 @@ public class DiffTreeViewer extends Composite {
         });
         menuMgr.addMenuListener(manager -> {
             boolean enable = !viewer.getSelection().isEmpty();
-            for(IContributionItem item : manager.getItems()) {
-                if(item instanceof ActionContributionItem) {
-                    ((ActionContributionItem) item).getAction().setEnabled(enable);
+            for (IContributionItem item : manager.getItems()) {
+                if (item instanceof ActionContributionItem actionItem) {
+                    actionItem.getAction().setEnabled(enable);
                 }
             }
         });

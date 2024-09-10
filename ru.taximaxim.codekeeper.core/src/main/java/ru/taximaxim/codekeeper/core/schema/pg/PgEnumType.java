@@ -111,9 +111,8 @@ public final class PgEnumType extends AbstractType{
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgEnumType) {
-            PgEnumType type = (PgEnumType) obj;
-            return super.compare(type) && enums.equals(type.enums);
+        if (obj instanceof PgEnumType type && super.compare(type)) {
+            return enums.equals(type.enums);
         }
         return false;
     }

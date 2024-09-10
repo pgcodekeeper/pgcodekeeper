@@ -104,8 +104,7 @@ public class UIProjectLoader extends ProjectLoader {
 
     static void markErrors(List<Object> errors) {
         for (Object error : errors) {
-            if (error instanceof AntlrError) {
-                AntlrError antlrError = (AntlrError) error;
+            if (error instanceof AntlrError antlrError) {
                 IFile file = FileUtilsUi.getFileForLocation(antlrError);
                 if (file != null) {
                     PgUIDumpLoader.addMarker(file, antlrError);

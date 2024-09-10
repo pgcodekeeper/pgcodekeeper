@@ -115,8 +115,7 @@ public final class ChPolicy extends AbstractPolicy {
             return true;
         }
 
-        if (obj instanceof ChPolicy && super.compare(obj)) {
-            ChPolicy police = (ChPolicy) obj;
+        if (obj instanceof ChPolicy police && super.compare(obj)) {
             return Objects.equals(excepts, police.excepts);
         }
 

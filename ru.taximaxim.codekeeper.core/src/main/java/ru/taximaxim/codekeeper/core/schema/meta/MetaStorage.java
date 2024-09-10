@@ -54,8 +54,7 @@ public class MetaStorage implements Serializable {
         InputStream inputStream = MetaStorage.class.getResourceAsStream(FILE_NAME + ver + ".ser");
 
         Object object = Utils.deserialize(inputStream);
-        if (object instanceof MetaStorage) {
-            MetaStorage storage = (MetaStorage) object;
+        if (object instanceof MetaStorage storage) {
             MetaStorage other = STORAGE_CACHE.putIfAbsent(ver, storage);
             return other == null ? storage : other;
         }

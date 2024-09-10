@@ -43,7 +43,7 @@ import org.eclipse.ui.editors.text.EditorsUI;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorInformationControl extends AbstractInformationControl
-        implements IInformationControlExtension2 {
+implements IInformationControlExtension2 {
 
     private Composite parent;
     private SQLHoverInfo input;
@@ -110,7 +110,7 @@ public class SQLEditorInformationControl extends AbstractInformationControl
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append(input.pgObjLocation.getQualifiedName())
-                .append(" (").append(input.pgObjLocation.getType()).append(')'); //$NON-NLS-1$
+            .append(" (").append(input.pgObjLocation.getType()).append(')'); //$NON-NLS-1$
             if (!input.comment.isBlank()) {
                 sb.append(" - ").append(input.comment); //$NON-NLS-1$
             }
@@ -247,8 +247,8 @@ public class SQLEditorInformationControl extends AbstractInformationControl
         control.setBackground(background);
         control.setFont(font);
 
-        if (control instanceof Composite) {
-            for (Control child : ((Composite) control).getChildren()) {
+        if (control instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
                 setColorAndFont(child, foreground, background, font);
             }
         }

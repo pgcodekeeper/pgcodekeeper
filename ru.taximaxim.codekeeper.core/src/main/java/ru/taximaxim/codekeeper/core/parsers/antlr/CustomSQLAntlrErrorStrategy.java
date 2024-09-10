@@ -42,15 +42,11 @@ class CustomSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
         switch (token) {
         case SQLLexer.OP_CHARS:
             return OPERATOR;
-        case SQLLexer.DOLLAR_NUMBER:
-        case SQLLexer.Identifier:
-        case SQLLexer.QuotedIdentifier:
+        case SQLLexer.DOLLAR_NUMBER, SQLLexer.Identifier, SQLLexer.QuotedIdentifier:
             return IDENTIFIER;
-        case SQLLexer.Character_String_Literal:
-        case SQLLexer.BeginDollarStringConstant:
+        case SQLLexer.Character_String_Literal, SQLLexer.BeginDollarStringConstant:
             return STRING;
-        case SQLLexer.NUMBER_LITERAL:
-        case SQLLexer.REAL_NUMBER:
+        case SQLLexer.NUMBER_LITERAL, SQLLexer.REAL_NUMBER:
             return NUMBER;
         default:
             return vocabulary.getDisplayName(token);

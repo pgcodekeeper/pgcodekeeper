@@ -38,26 +38,28 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         String project;
         SQLEditor editor = getAdapter(SQLEditor.class);
         IEditorInput input = editor.getEditorInput();
-        if (input instanceof SQLEditorInput) {
-            SQLEditorInput sqlInput = (SQLEditorInput) input;
+        if (input instanceof SQLEditorInput sqlInput) {
             if (sqlInput.isReadOnly()) {
                 return new IHyperlink[0];
-            } else {
-                project = sqlInput.getProject();
             }
+            project = sqlInput.getProject();
         } else {
             IResource res = ResourceUtil.getResource(input);
             project = res == null ? null : res.getProject().getName();
         }
 
-        PgDbParser parser = editor.getParser();
+        Stream<IHyperlink> links = getLinks(project, editor, region.getOffset());
+        IHyperlink[] result = links.toArray(IHyperlink[]::new);
+        return result.length == 0 ? null : result;
+    }
 
-        int offset = region.getOffset();
+    private Stream<IHyperlink> getLinks(String project, SQLEditor editor, int offset) {
         Stream<IHyperlink> links = Stream.empty();
 
+        PgDbParser parser = editor.getParser();
+
         for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
-            if (offset >= obj.getOffset()
-                    && offset < (obj.getOffset() + obj.getObjLength())) {
+            if (offset >= obj.getOffset() && offset < (obj.getOffset() + obj.getObjLength())) {
                 Stream<IHyperlink> stream = parser.getAllObjReferences()
                         .filter(obj::compare)
                         .filter(def -> {
@@ -80,8 +82,6 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                 links = Stream.concat(links, stream);
             }
         }
-
-        IHyperlink[] result = links.toArray(IHyperlink[]::new);
-        return result.length == 0 ? null : result;
+        return links;
     }
 }

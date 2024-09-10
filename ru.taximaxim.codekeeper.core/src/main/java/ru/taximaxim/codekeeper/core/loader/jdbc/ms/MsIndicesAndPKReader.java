@@ -172,19 +172,20 @@ public class MsIndicesAndPKReader extends JdbcReader {
     }
 
     protected void addMsColsPart(QueryBuilder builder) {
-        String cols = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT\n"
-                + "      c.index_column_id AS id,\n"
-                + "      sc.name,\n"
-                + "      c.is_descending_key AS is_desc,\n"
-                + "      c.is_included_column AS is_inc\n"
-                + "    FROM sys.index_columns c WITH (NOLOCK)\n"
-                + "    JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id\n"
-                + "    WHERE c.object_id = res.object_id AND c.index_id = res.index_id\n"
-                + "  ) cc ORDER BY cc.id\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") cc (cols)";
+        String cols = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT
+                      c.index_column_id AS id,
+                      sc.name,
+                      c.is_descending_key AS is_desc,
+                      c.is_included_column AS is_inc
+                    FROM sys.index_columns c WITH (NOLOCK)
+                    JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
+                    WHERE c.object_id = res.object_id AND c.index_id = res.index_id
+                  ) cc ORDER BY cc.id
+                  FOR XML RAW, ROOT
+                ) cc (cols)""";
 
         builder.column("cc.cols");
         builder.join(cols);

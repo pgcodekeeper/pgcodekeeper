@@ -63,8 +63,8 @@ public class TypedPgTable extends AbstractRegularTable {
 
     @Override
     protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
-        if (newTable instanceof TypedPgTable) {
-            String newType  = ((TypedPgTable)newTable).getOfType();
+        if (newTable instanceof TypedPgTable typedTable) {
+            String newType = typedTable.getOfType();
             if (!Objects.equals(ofType, newType)) {
                 sb.append(getAlterTable(true, false))
                 .append(" OF ")
@@ -76,8 +76,8 @@ public class TypedPgTable extends AbstractRegularTable {
             .append(" NOT OF")
             .append(';');
 
-            if (newTable instanceof AbstractRegularTable) {
-                ((AbstractRegularTable)newTable).convertTable(sb);
+            if (newTable instanceof AbstractRegularTable regTable) {
+                regTable.convertTable(sb);
             }
         }
     }
@@ -94,8 +94,7 @@ public class TypedPgTable extends AbstractRegularTable {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof TypedPgTable && super.compare(obj)) {
-            TypedPgTable table = (TypedPgTable) obj;
+        if (obj instanceof TypedPgTable table && super.compare(obj)) {
             return Objects.equals(ofType, table.getOfType());
         }
 

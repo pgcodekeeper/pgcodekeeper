@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.chexpr;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
@@ -192,7 +191,7 @@ public final class ChValueExpr extends ChAbstractExpr {
         List<ExprContext> exprs = argList.arg_expr().stream()
                 .map(Arg_exprContext::expr)
                 .filter(e -> e != null)
-                .collect(Collectors.toList());
+                .toList();
         analyzeExprs(exprs);
         GenericColumn depcy = new GenericColumn(funcName.getText(), DbObjType.FUNCTION);
         addDepcy(depcy, funcName);

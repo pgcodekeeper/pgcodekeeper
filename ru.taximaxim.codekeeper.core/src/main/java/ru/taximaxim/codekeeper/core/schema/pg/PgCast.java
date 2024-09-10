@@ -157,8 +157,8 @@ public class PgCast extends PgStatement implements ICast {
             return true;
         }
 
-        if (obj instanceof PgCast && super.compare(obj)) {
-            return compareUnalterable((PgCast) obj);
+        if (obj instanceof PgCast cast && super.compare(obj)) {
+            return compareUnalterable(cast);
         }
 
         return false;

@@ -108,21 +108,22 @@ public class FtsConfigurationsReader extends JdbcReader {
     }
 
     private void addWordsPart(QueryBuilder builder) {
-        String words = "LEFT JOIN LATERAL (\n"
-                + "  SELECT\n"
-                + "    m.mapcfg,\n"
-                + "    pg_catalog.array_agg(\n"
-                + "    (SELECT alias \n"
-                + "      FROM pg_catalog.ts_token_type(res.cfgparser::pg_catalog.oid) AS t\n"
-                + "      WHERE t.tokid = m.maptokentype) \n"
-                + "      ORDER BY m.mapseqno) AS tokennames,\n"
-                + "    pg_catalog.array_agg(nsp.nspname ORDER BY m.mapseqno) AS dictschemas,\n"
-                + "    pg_catalog.array_agg(dict.dictname ORDER BY m.mapseqno) AS dictnames\n"
-                + "  FROM pg_catalog.pg_ts_config_map m\n"
-                + "  LEFT JOIN pg_catalog.pg_ts_dict dict ON m.mapdict = dict.oid\n"
-                + "  LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid\n"
-                + "  GROUP BY m.mapcfg\n"
-                + ") words ON words.mapcfg = res.oid";
+        String words = """
+                LEFT JOIN LATERAL (
+                  SELECT
+                    m.mapcfg,
+                    pg_catalog.array_agg(
+                    (SELECT alias\s
+                      FROM pg_catalog.ts_token_type(res.cfgparser::pg_catalog.oid) AS t
+                      WHERE t.tokid = m.maptokentype)\s
+                      ORDER BY m.mapseqno) AS tokennames,
+                    pg_catalog.array_agg(nsp.nspname ORDER BY m.mapseqno) AS dictschemas,
+                    pg_catalog.array_agg(dict.dictname ORDER BY m.mapseqno) AS dictnames
+                  FROM pg_catalog.pg_ts_config_map m
+                  LEFT JOIN pg_catalog.pg_ts_dict dict ON m.mapdict = dict.oid
+                  LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid
+                  GROUP BY m.mapcfg
+                ) words ON words.mapcfg = res.oid""";
 
         builder.column("words.tokennames");
         builder.column("words.dictschemas");

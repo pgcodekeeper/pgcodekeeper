@@ -62,7 +62,7 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
             return null;
         }
 
-        if (element instanceof SQLEditorInput && ((SQLEditorInput) element).isTemp()) {
+        if (element instanceof SQLEditorInput sqlEditorInput && sqlEditorInput.isTemp()) {
             info.fTextFileBuffer.setDirty(true);
         }
 
@@ -75,8 +75,7 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
     }
 
     private void setupDocument(IDocument document) {
-        if (document instanceof IDocumentExtension3) {
-            IDocumentExtension3 ext = (IDocumentExtension3) document;
+        if (document instanceof IDocumentExtension3 ext) {
             IDocumentPartitioner partitioner= createRecipePartitioner();
             partitioner.connect(document);
             ext.setDocumentPartitioner(SQL_PARTITIONING, partitioner);
@@ -85,8 +84,8 @@ public class SQLEditorCommonDocumentProvider extends TextFileDocumentProvider {
 
     @Override
     public boolean isReadOnly(Object element) {
-        if (element instanceof SQLEditorInput) {
-            return ((SQLEditorInput) element).isReadOnly();
+        if (element instanceof SQLEditorInput sqlEditorInput) {
+            return sqlEditorInput.isReadOnly();
         }
 
         return super.isReadOnly(element);

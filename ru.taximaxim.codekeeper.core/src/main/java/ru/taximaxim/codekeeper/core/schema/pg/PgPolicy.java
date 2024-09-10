@@ -137,8 +137,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
             return true;
         }
 
-        if (obj instanceof PgPolicy && super.compare(obj)) {
-            PgPolicy police = (PgPolicy) obj;
+        if (obj instanceof PgPolicy police && super.compare(obj)) {
             return Objects.equals(getCheck(), police.getCheck());
         }
 

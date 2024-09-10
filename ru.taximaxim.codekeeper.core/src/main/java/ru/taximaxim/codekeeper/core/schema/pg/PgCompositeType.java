@@ -175,8 +175,7 @@ public final class PgCompositeType extends AbstractType{
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgCompositeType) {
-            PgCompositeType type = (PgCompositeType) obj;
+        if (obj instanceof PgCompositeType type) {
             return super.compare(type) && attrs.equals(type.attrs);
         }
         return false;

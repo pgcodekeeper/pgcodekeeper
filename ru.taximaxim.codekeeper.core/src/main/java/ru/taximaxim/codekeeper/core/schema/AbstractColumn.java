@@ -111,9 +111,7 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
             return true;
         }
 
-        if (obj instanceof AbstractColumn && super.compare(obj)) {
-            AbstractColumn col = (AbstractColumn) obj;
-
+        if (obj instanceof AbstractColumn col && super.compare(obj)) {
             return  Objects.equals(type, col.getType())
                     && Objects.equals(collation, col.getCollation())
                     && nullValue == col.getNullValue()

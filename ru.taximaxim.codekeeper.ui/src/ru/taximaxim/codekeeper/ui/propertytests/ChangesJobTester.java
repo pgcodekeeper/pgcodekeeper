@@ -35,8 +35,8 @@ public class ChangesJobTester extends SingletonJobTester {
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
         Object editor = receiver;
-        if (editor instanceof SQLEditor) {
-            editor = findProjectEditor((SQLEditor) editor);
+        if (editor instanceof SQLEditor sqlEditor) {
+            editor = findProjectEditor(sqlEditor);
         }
         return editor != null && super.test(editor, property, args, expectedValue);
     }

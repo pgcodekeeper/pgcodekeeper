@@ -42,11 +42,10 @@ public class GetChanges extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         IEditorPart part = HandlerUtil.getActiveEditor(event);
 
-        if (part instanceof ProjectEditorDiffer){
-            ((ProjectEditorDiffer) part).getChanges();
-        } else if (part instanceof SQLEditor && part.getEditorInput() instanceof IFileEditorInput) {
+        if (part instanceof ProjectEditorDiffer projEditor) {
+            projEditor.getChanges();
+        } else if (part instanceof SQLEditor sqlEditor && part.getEditorInput() instanceof IFileEditorInput) {
             try {
-                SQLEditor sqlEditor = (SQLEditor) part;
                 IProject proj = ((IFileEditorInput) sqlEditor.getEditorInput()).getFile().getProject();
 
                 DbInfo remote = sqlEditor.getCurrentDb();

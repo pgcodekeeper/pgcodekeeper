@@ -47,11 +47,9 @@ public class GetSystemObjects extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
-        if (part instanceof ProjectEditorDiffer){
-            ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
+        if (part instanceof ProjectEditorDiffer differ) {
             Object db = differ.getCurrentDb();
-            if (db instanceof DbInfo && ((DbInfo) db).getDbType() == DatabaseType.PG) {
-                DbInfo info = ((DbInfo) db);
+            if (db instanceof DbInfo info && info.getDbType() == DatabaseType.PG) {
                 FileDialog fd = new FileDialog(HandlerUtil.getActiveShell(event), SWT.SAVE);
                 fd.setText(Messages.GetSystemObjects_save_dialog_title);
                 fd.setFileName(MetaStorage.FILE_NAME + info.getDbName() + ".ser"); //$NON-NLS-1$

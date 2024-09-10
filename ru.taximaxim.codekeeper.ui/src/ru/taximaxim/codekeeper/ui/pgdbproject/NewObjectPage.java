@@ -131,8 +131,7 @@ public final class NewObjectPage extends WizardPage {
         fillAllowedTypes();
 
         Object element = selection.getFirstElement();
-        if (element instanceof IResource) {
-            IResource resource = (IResource) element;
+        if (element instanceof IResource resource) {
             if (resource.getType() == IResource.FILE && UIProjectLoader.isInProject(resource)) {
                 parseFile(resource);
             } else if (resource.getType() == IResource.FOLDER) {
@@ -179,8 +178,8 @@ public final class NewObjectPage extends WizardPage {
             PgStatement st = UIProjectLoader.parseStatement((IFile) resource, types);
             if (st != null) {
                 type = st.getStatementType();
-                if (st instanceof ISearchPath) {
-                    schema = ((ISearchPath) st).getSchemaName();
+                if (st instanceof ISearchPath path) {
+                    schema = path.getSchemaName();
                 }
 
                 if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
@@ -230,8 +229,8 @@ public final class NewObjectPage extends WizardPage {
 
             @Override
             public String getText(Object element) {
-                if (element instanceof IProject) {
-                    return ((IProject) element).getName();
+                if (element instanceof IProject project) {
+                    return project.getName();
                 }
                 return super.getText(element);
             }

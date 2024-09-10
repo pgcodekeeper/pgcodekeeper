@@ -68,8 +68,7 @@ public final class MetaContainer {
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
-            if (st instanceof ChFunction) {
-                ChFunction f = (ChFunction) st;
+            if (st instanceof ChFunction f) {
                 chFunctions.put(f.getName(), f);
                 break;
             }

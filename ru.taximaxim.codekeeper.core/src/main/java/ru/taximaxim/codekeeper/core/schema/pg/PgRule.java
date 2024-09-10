@@ -202,8 +202,7 @@ public class PgRule extends PgStatement implements ISearchPath {
             return true;
         }
 
-        if (obj instanceof PgRule && super.compare(obj)) {
-            PgRule rule = (PgRule) obj;
+        if (obj instanceof PgRule rule && super.compare(obj)) {
             return compareUnalterable(rule)
                     && Objects.equals(enabledState, rule.getEnabledState());
         }

@@ -100,10 +100,10 @@ public class TablesReader extends JdbcReader {
             t = new SimplePgTable(tableName);
         }
 
-        if (SupportedVersion.VERSION_12.isLE(loader.getVersion()) && t instanceof AbstractRegularTable) {
+        if (SupportedVersion.VERSION_12.isLE(loader.getVersion()) && t instanceof AbstractRegularTable regTable) {
             String accessMethod = res.getString("access_method");
             if (accessMethod != null) {
-                ((AbstractRegularTable) t).setMethod(accessMethod);
+                regTable.setMethod(accessMethod);
             }
         }
 
@@ -339,14 +339,12 @@ public class TablesReader extends JdbcReader {
                 column.setGenerated(true);
             }
 
-            if (colCompression != null && !colCompression[i].isEmpty()) {
-                switch (colCompression[i]) {
-                case "p":
+            if (colCompression != null) {
+                String comp = colCompression[i];
+                if ("p".equals(comp)) {
                     column.setCompression("pglz");
-                    break;
-                case "l":
+                } else if ("i".equals(comp)) {
                     column.setCompression("lz4");
-                    break;
                 }
             }
 
@@ -559,18 +557,19 @@ public class TablesReader extends JdbcReader {
         .column("pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS col_type_ids")
         .column("pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_type_name")
         // skips not null for column, if parents have not null
-        .column("pg_catalog.array_agg(\n"
-                + "      (CASE WHEN a.attnotnull THEN \n"
-                + "        NOT EXISTS (\n"
-                + "          SELECT 1 FROM pg_catalog.pg_inherits inh \n"
-                + "          LEFT JOIN pg_catalog.pg_attribute attr ON attr.attrelid = inh.inhparent\n"
-                + "          WHERE inh.inhrelid = a.attrelid \n"
-                + "          AND attr.attnotnull\n"
-                + "          AND attr.attname = a.attname)\n"
-                + "        ELSE FALSE\n"
-                + "        END\n"
-                + "      ) ORDER BY a.attnum\n"
-                + "    ) AS col_notnull")
+        .column("""
+                pg_catalog.array_agg(
+                      (CASE WHEN a.attnotnull THEN\s
+                        NOT EXISTS (
+                          SELECT 1 FROM pg_catalog.pg_inherits inh\s
+                          LEFT JOIN pg_catalog.pg_attribute attr ON attr.attrelid = inh.inhparent
+                          WHERE inh.inhrelid = a.attrelid\s
+                          AND attr.attnotnull
+                          AND attr.attname = a.attname)
+                        ELSE FALSE
+                        END
+                      ) ORDER BY a.attnum
+                    ) AS col_notnull""")
         .column("pg_catalog.array_agg(a.attstattarget ORDER BY a.attnum) AS col_statictics")
         .column("pg_catalog.array_agg(a.attislocal ORDER BY a.attnum) AS col_local")
         .column("pg_catalog.array_agg(a.attacl::text ORDER BY a.attnum) AS col_acl")
@@ -629,16 +628,17 @@ public class TablesReader extends JdbcReader {
     }
 
     private void addParentsPart(QueryBuilder builder) {
-        String parents = "LEFT JOIN (\n"
-                + "  SELECT\n"
-                + "    inh.inhrelid,\n"
-                + "    pg_catalog.array_agg(inhrel.relname ORDER BY inh.inhrelid, inh.inhseqno) AS inhrelnames,\n"
-                + "    pg_catalog.array_agg(inhns.nspname ORDER BY inh.inhrelid, inh.inhseqno) AS inhnspnames\n"
-                + "  FROM pg_catalog.pg_inherits inh\n"
-                + "  LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid\n"
-                + "  LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid\n"
-                + "  GROUP BY inh.inhrelid\n"
-                + ") parents ON parents.inhrelid = res.oid";
+        String parents = """
+                LEFT JOIN (
+                  SELECT
+                    inh.inhrelid,
+                    pg_catalog.array_agg(inhrel.relname ORDER BY inh.inhrelid, inh.inhseqno) AS inhrelnames,
+                    pg_catalog.array_agg(inhns.nspname ORDER BY inh.inhrelid, inh.inhseqno) AS inhnspnames
+                  FROM pg_catalog.pg_inherits inh
+                  LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid
+                  LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
+                  GROUP BY inh.inhrelid
+                ) parents ON parents.inhrelid = res.oid""";
 
         builder.column("parents.inhrelnames");
         builder.column("parents.inhnspnames");

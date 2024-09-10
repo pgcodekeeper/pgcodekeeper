@@ -26,6 +26,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgFtsParser extends PgStatement implements ISearchPath {
 
+    private static final String NEW_LINE = ",\n\t";
+
     private String startFunction;
     private String getTokenFunction;
     private String endFunction;
@@ -51,11 +53,11 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH PARSER ")
         .append(getQualifiedName()).append(" (\n\t")
-        .append("START = ").append(startFunction).append(",\n\t")
-        .append("GETTOKEN = ").append(getTokenFunction).append(",\n\t")
-        .append("END = ").append(endFunction).append(",\n\t");
+        .append("START = ").append(startFunction).append(NEW_LINE)
+        .append("GETTOKEN = ").append(getTokenFunction).append(NEW_LINE)
+        .append("END = ").append(endFunction).append(NEW_LINE);
         if (headLineFunction != null) {
-            sbSql.append("HEADLINE = ").append(headLineFunction).append(",\n\t");
+            sbSql.append("HEADLINE = ").append(headLineFunction).append(NEW_LINE);
         }
         sbSql.append("LEXTYPES = ").append(lexTypesFunction);
 
@@ -96,8 +98,11 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
             return true;
         }
 
-        return obj instanceof PgFtsParser && super.compare(obj)
-                && compareUnalterable((PgFtsParser) obj);
+        if (obj instanceof PgFtsParser parser && super.compare(obj)) {
+            return compareUnalterable(parser);
+        }
+
+        return false;
     }
 
     private boolean compareUnalterable(PgFtsParser parser) {

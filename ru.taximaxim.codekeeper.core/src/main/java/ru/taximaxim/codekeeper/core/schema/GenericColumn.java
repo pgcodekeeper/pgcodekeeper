@@ -74,19 +74,18 @@ public class GenericColumn implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof GenericColumn) {
-            GenericColumn col = (GenericColumn) obj;
-            eq = Objects.equals(schema, col.schema)
+            return true;
+        }
+
+        if (obj instanceof GenericColumn col) {
+            return Objects.equals(schema, col.schema)
                     && Objects.equals(table, col.table)
                     && Objects.equals(column, col.column)
                     && type == col.type;
         }
 
-        return eq;
+        return false;
     }
 
     public String getQualifiedName() {

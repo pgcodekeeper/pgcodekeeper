@@ -170,8 +170,7 @@ public class MsDatabase extends AbstractDatabase {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof MsDatabase && super.compareChildren(obj)) {
-            MsDatabase db = (MsDatabase) obj;
+        if (obj instanceof MsDatabase db && super.compareChildren(obj)) {
             return assemblies.equals(db.assemblies)
                     && roles.equals(db.roles)
                     && users.equals(db.users);

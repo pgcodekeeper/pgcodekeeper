@@ -70,33 +70,35 @@ public class MsRolesReader extends AbstractStatementReader {
 
     @Override
     protected void addMsPriviligesPart(QueryBuilder builder) {
-        String acl = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT\n"
-                + "      perm.state_desc AS sd,\n"
-                + "      perm.permission_name AS pn,\n"
-                + "      roleprinc.name AS r\n"
-                + "    FROM sys.database_principals roleprinc WITH (NOLOCK)\n"
-                + "    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id\n"
-                + "    WHERE major_id = res.principal_id AND perm.class = 4\n"
-                + "  ) cc \n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") aa (acl)";
+        String acl = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT
+                      perm.state_desc AS sd,
+                      perm.permission_name AS pn,
+                      roleprinc.name AS r
+                    FROM sys.database_principals roleprinc WITH (NOLOCK)
+                    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+                    WHERE major_id = res.principal_id AND perm.class = 4
+                  ) cc\s
+                  FOR XML RAW, ROOT
+                ) aa (acl)""";
 
         builder.column("aa.acl");
         builder.join(acl);
     }
 
     private void addMsGroupsPart(QueryBuilder builder) {
-        String groups = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT p1.name AS m\n"
-                + "    FROM sys.database_role_members AS rm WITH (NOLOCK)\n"
-                + "    INNER JOIN sys.database_principals p1 WITH (NOLOCK) ON rm.member_principal_id=p1.principal_id\n"
-                + "    WHERE rm.role_principal_id=res.principal_id\n"
-                + "  ) cc\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") cc (groups)";
+        String groups = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT p1.name AS m
+                    FROM sys.database_role_members AS rm WITH (NOLOCK)
+                    INNER JOIN sys.database_principals p1 WITH (NOLOCK) ON rm.member_principal_id=p1.principal_id
+                    WHERE rm.role_principal_id=res.principal_id
+                  ) cc
+                  FOR XML RAW, ROOT
+                ) cc (groups)""";
 
         builder.column("cc.groups");
         builder.join(groups);

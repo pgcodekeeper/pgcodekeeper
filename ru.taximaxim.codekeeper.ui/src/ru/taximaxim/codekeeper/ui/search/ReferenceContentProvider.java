@@ -44,8 +44,8 @@ public class ReferenceContentProvider implements ITreeContentProvider {
 
     @Override
     public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-        if (newInput instanceof AbstractTextSearchResult) {
-            this.result = (AbstractTextSearchResult) newInput;
+        if (newInput instanceof AbstractTextSearchResult res) {
+            this.result = res;
             children = new HashMap<>();
 
             Object[] elements = result.getElements();
@@ -100,13 +100,10 @@ public class ReferenceContentProvider implements ITreeContentProvider {
         if (element instanceof IProject) {
             return null;
         }
-        if (element instanceof IResource) {
-            IResource resource = (IResource) element;
+        if (element instanceof IResource resource) {
             return resource.getParent();
         }
-
-        if (element instanceof PgObjLocation) {
-            PgObjLocation loc = (PgObjLocation) element;
+        if (element instanceof PgObjLocation loc) {
             return ResourcesPlugin.getWorkspace().getRoot()
                     .getFileForLocation(new Path(loc.getFilePath()));
         }

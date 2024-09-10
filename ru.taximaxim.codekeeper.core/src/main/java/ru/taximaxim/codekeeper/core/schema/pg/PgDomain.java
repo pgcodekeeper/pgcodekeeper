@@ -253,8 +253,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
             return true;
         }
 
-        if (obj instanceof PgDomain && super.compare(obj)) {
-            PgDomain dom = (PgDomain) obj;
+        if (obj instanceof PgDomain dom && super.compare(obj)) {
             return Objects.equals(dataType, dom.getDataType())
                     && Objects.equals(collation, dom.getCollation())
                     && Objects.equals(defaultValue, dom.getDefaultValue())

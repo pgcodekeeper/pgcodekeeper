@@ -52,22 +52,21 @@ class PgDiffStatement {
 
     @Override
     public boolean equals(Object obj) {
-        boolean eq = false;
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgDiffStatement) {
-            PgDiffStatement st = (PgDiffStatement) obj;
-
-            if (st.type == DiffStatementType.OTHER) {
-                eq = statement.equals(st.statement);
-            } else {
-                eq = type == st.type
-                        && objname.equals(st.objname)
-                        && statementType == st.statementType;
-            }
+            return true;
         }
 
-        return eq;
+        if (obj instanceof PgDiffStatement st) {
+            if (st.type == DiffStatementType.OTHER) {
+                return statement.equals(st.statement);
+            }
+
+            return type == st.type
+                    && objname.equals(st.objname)
+                    && statementType == st.statementType;
+        }
+
+        return false;
     }
 
     @Override

@@ -75,8 +75,11 @@ public final class ChRole extends PgStatement {
             return true;
         }
 
-        return obj instanceof ChRole && super.compare(obj)
-                && Objects.equals(storageType, ((ChRole) obj).storageType);
+        if (obj instanceof ChRole role && super.compare(obj)) {
+            return Objects.equals(storageType, role.storageType);
+        }
+
+        return false;
     }
 
     @Override

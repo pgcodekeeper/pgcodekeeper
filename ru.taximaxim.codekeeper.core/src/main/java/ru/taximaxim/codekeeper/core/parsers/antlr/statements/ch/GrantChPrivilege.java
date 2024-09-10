@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -69,7 +68,7 @@ public class GrantChPrivilege extends ChParserAbstract {
             }
 
             List<String> permissions = priv.permissions().permission().stream()
-                    .map(ParserAbstract::getFullCtxText).collect(Collectors.toList());
+                    .map(ParserAbstract::getFullCtxText).toList();
 
             // 1 privilege for each user or role
             for (var user : usersOrRoles) {

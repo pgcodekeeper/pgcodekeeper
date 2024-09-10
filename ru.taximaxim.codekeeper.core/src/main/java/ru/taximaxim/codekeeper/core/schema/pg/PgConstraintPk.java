@@ -175,9 +175,8 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgConstraintPk) {
-            var con = (PgConstraintPk) obj;
-            return super.compare(con) && compareUnalterable(con)
+        if (obj instanceof PgConstraintPk con && super.compare(con)) {
+            return compareUnalterable(con)
                     && isClustered() == con.isClustered();
         }
         return false;

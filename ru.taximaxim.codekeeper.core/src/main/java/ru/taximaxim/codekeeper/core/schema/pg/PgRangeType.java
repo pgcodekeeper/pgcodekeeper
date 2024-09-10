@@ -115,9 +115,8 @@ public final class PgRangeType extends AbstractType {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgRangeType) {
-            PgRangeType type = (PgRangeType) obj;
-            return super.compare(type) && compareUnalterable(type);
+        if (obj instanceof PgRangeType type && super.compare(type)) {
+            return compareUnalterable(type);
         }
         return false;
     }

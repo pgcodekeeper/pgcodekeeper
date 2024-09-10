@@ -107,6 +107,8 @@ public class FunctionsReader extends JdbcReader {
             case "i":
                 function.setExecuteOn("INITPLAN");
                 break;
+            default:
+                break;
             }
         }
 

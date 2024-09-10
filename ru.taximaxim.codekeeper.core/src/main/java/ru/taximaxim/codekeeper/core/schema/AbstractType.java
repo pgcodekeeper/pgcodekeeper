@@ -95,11 +95,7 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof AbstractType) {
-            AbstractType type = (AbstractType) obj;
-            return super.compare(type);
-        }
-        return false;
+        return obj instanceof AbstractType && super.compare(obj);
     }
 
     protected abstract AbstractType getTypeCopy();

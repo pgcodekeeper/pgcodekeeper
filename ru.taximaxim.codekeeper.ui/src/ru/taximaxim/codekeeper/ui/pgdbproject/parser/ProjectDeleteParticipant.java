@@ -28,8 +28,7 @@ public class ProjectDeleteParticipant extends DeleteParticipant {
 
     @Override
     protected boolean initialize(Object element) {
-        if (element instanceof IProject) {
-            IProject proj = (IProject) element;
+        if (element instanceof IProject proj) {
             PgDbParser.removeProject(proj);
         }
 

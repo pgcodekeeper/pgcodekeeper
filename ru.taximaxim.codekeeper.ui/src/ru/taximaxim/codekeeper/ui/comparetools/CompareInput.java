@@ -36,6 +36,7 @@ public class CompareInput extends CompareEditorInput {
     private CompareItem left;
     private CompareItem right;
     private final DiffNode diffNode ;
+
     public CompareInput(PgOverride override) {
         super(new CompareConfiguration());
 
@@ -87,24 +88,20 @@ public class CompareInput extends CompareEditorInput {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((left == null) ? 0 : left.hashCode());
-        result = prime * result + ((right == null) ? 0 : right.hashCode());
-        return result;
+        return Objects.hash(left, right);
     }
 
     @Override
     public boolean equals(Object obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof CompareInput) {
-            CompareInput val = (CompareInput) obj;
-            eq = left.equals(val.left) && right.equals(val.right);
+            return true;
         }
 
-        return eq;
+        if (obj instanceof CompareInput val) {
+            return left.equals(val.left)
+                    && right.equals(val.right);
+        }
+
+        return false;
     }
 }

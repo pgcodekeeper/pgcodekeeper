@@ -79,54 +79,54 @@ public class PgFormatParseTreeListener extends FormatParseTreeListener {
 
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
-        if (ctx instanceof VexContext) {
-            formatOperators(new Vex((VexContext) ctx));
-        } else if (ctx instanceof Vex_bContext) {
-            formatOperators(new Vex((Vex_bContext) ctx));
-        } else if (ctx instanceof Function_blockContext) {
-            formatFunctionBlock((Function_blockContext) ctx);
-        } else if (ctx instanceof Function_bodyContext) {
-            formatFunctionBody((Function_bodyContext) ctx);
-        } else if (ctx instanceof If_statementContext) {
-            formatIfStatement((If_statementContext) ctx);
-        } else if (ctx instanceof Loop_statementContext) {
-            formatLoopStatement((Loop_statementContext) ctx);
-        } else if (ctx instanceof Case_statementContext) {
-            formatCaseStatement((Case_statementContext) ctx);
-        } else if (ctx instanceof Function_statementsContext) {
-            formatFunctionStatements((Function_statementsContext) ctx);
-        } else if (ctx instanceof Select_primaryContext) {
-            formatSelectPrimary((Select_primaryContext) ctx);
-        } else if (ctx instanceof Delete_stmt_for_psqlContext) {
-            formatDeleteStatement((Delete_stmt_for_psqlContext) ctx);
-        } else if (ctx instanceof Update_stmt_for_psqlContext) {
-            formatUpdateStatement((Update_stmt_for_psqlContext) ctx);
-        } else if (ctx instanceof Insert_stmt_for_psqlContext) {
-            formatInsertStatement((Insert_stmt_for_psqlContext) ctx);
-        } else if (ctx instanceof Merge_stmt_for_psqlContext) {
-            formatMergeStatement((Merge_stmt_for_psqlContext) ctx);
-        } else if (ctx instanceof Case_expressionContext) {
-            formatCaseExpression((Case_expressionContext) ctx);
-        } else if (ctx instanceof Exception_statementContext) {
-            formatExceptionStatement((Exception_statementContext) ctx);
-        } else if (ctx instanceof Select_stmt_no_parensContext) {
-            formatSubselect(new SelectStmt((Select_stmt_no_parensContext) ctx));
-        } else if (ctx instanceof Select_stmtContext
+        if (ctx instanceof VexContext vexCtx) {
+            formatOperators(new Vex(vexCtx));
+        } else if (ctx instanceof Vex_bContext vexbCtx) {
+            formatOperators(new Vex(vexbCtx));
+        } else if (ctx instanceof Function_blockContext funcBlockCtx) {
+            formatFunctionBlock(funcBlockCtx);
+        } else if (ctx instanceof Function_bodyContext funcBodyCtx) {
+            formatFunctionBody(funcBodyCtx);
+        } else if (ctx instanceof If_statementContext ifCtx) {
+            formatIfStatement(ifCtx);
+        } else if (ctx instanceof Loop_statementContext loopCtx) {
+            formatLoopStatement(loopCtx);
+        } else if (ctx instanceof Case_statementContext caseCtx) {
+            formatCaseStatement(caseCtx);
+        } else if (ctx instanceof Function_statementsContext funcStmtCtx) {
+            formatFunctionStatements(funcStmtCtx);
+        } else if (ctx instanceof Select_primaryContext selectPrimaryCtx) {
+            formatSelectPrimary(selectPrimaryCtx);
+        } else if (ctx instanceof Delete_stmt_for_psqlContext deleteCtx) {
+            formatDeleteStatement(deleteCtx);
+        } else if (ctx instanceof Update_stmt_for_psqlContext updateCtx) {
+            formatUpdateStatement(updateCtx);
+        } else if (ctx instanceof Insert_stmt_for_psqlContext insertCtx) {
+            formatInsertStatement(insertCtx);
+        } else if (ctx instanceof Merge_stmt_for_psqlContext mergeCtx) {
+            formatMergeStatement(mergeCtx);
+        } else if (ctx instanceof Case_expressionContext caseEprCtx) {
+            formatCaseExpression(caseEprCtx);
+        } else if (ctx instanceof Exception_statementContext excCtx) {
+            formatExceptionStatement(excCtx);
+        } else if (ctx instanceof Select_stmt_no_parensContext selectNoParensCtx) {
+            formatSubselect(new SelectStmt(selectNoParensCtx));
+        } else if (ctx instanceof Select_stmtContext selectCtx
                 && !(ctx.parent.parent.parent instanceof Function_statementContext)) {
             // non-top-level select, assume subselect
-            formatSubselect(new SelectStmt((Select_stmtContext) ctx));
-        } else if (ctx instanceof Select_opsContext) {
-            formatSelectOps(new SelectOps((Select_opsContext) ctx));
-        } else if (ctx instanceof Select_ops_no_parensContext) {
-            formatSelectOps(new SelectOps((Select_ops_no_parensContext) ctx));
+            formatSubselect(new SelectStmt(selectCtx));
+        } else if (ctx instanceof Select_opsContext selectOpsCtx) {
+            formatSelectOps(new SelectOps(selectOpsCtx));
+        } else if (ctx instanceof Select_ops_no_parensContext selectOpsNoParensCtx) {
+            formatSelectOps(new SelectOps(selectOpsNoParensCtx));
         } else if (ctx instanceof After_opsContext) {
             putIndent(ctx.getStart(), IndentDirection.BLOCK_LINE);
-        } else if (ctx instanceof StatementContext) {
-            formatSql((StatementContext) ctx);
-        } else if (ctx instanceof Start_labelContext) {
-            formatNonOpToken((Start_labelContext) ctx);
-        } else if (ctx instanceof Comp_optionsContext) {
-            formatNonOpToken((Comp_optionsContext) ctx);
+        } else if (ctx instanceof StatementContext stCtx) {
+            formatSql(stCtx);
+        } else if (ctx instanceof Start_labelContext startCtx) {
+            formatNonOpToken(startCtx);
+        } else if (ctx instanceof Comp_optionsContext compOptCtx) {
+            formatNonOpToken(compOptCtx);
         }
     }
 
@@ -141,8 +141,8 @@ public class PgFormatParseTreeListener extends FormatParseTreeListener {
                 Op_charsContext opChars = op.op_chars();
                 if (opChars != null) {
                     ParseTree opNode = opChars.children.get(0);
-                    if (opNode instanceof TerminalNode) {
-                        node = (TerminalNode) opNode;
+                    if (opNode instanceof TerminalNode terNode) {
+                        node = terNode;
                     }
                 }
             }
@@ -423,10 +423,7 @@ public class PgFormatParseTreeListener extends FormatParseTreeListener {
         if (fromList.size() > 1) {
             return true;
         }
-        if (!fromList.isEmpty() && fromList.get(0).from_primary() == null) {
-            // top level from_item is not from_primary, it must be a join
-            return true;
-        }
-        return false;
+        // top level from_item is not from_primary, it must be a join
+        return !fromList.isEmpty() && fromList.get(0).from_primary() == null;
     }
 }

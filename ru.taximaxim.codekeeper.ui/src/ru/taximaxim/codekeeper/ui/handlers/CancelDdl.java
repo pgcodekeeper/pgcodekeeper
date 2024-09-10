@@ -30,8 +30,7 @@ public class CancelDdl extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
 
-        if (part instanceof SQLEditor){
-            SQLEditor sqlEditor = (SQLEditor) part;
+        if (part instanceof SQLEditor sqlEditor) {
             sqlEditor.cancelDdl();
         }
 

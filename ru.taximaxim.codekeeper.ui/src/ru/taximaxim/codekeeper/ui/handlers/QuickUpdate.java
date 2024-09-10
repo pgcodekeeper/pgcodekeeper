@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -177,7 +176,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         AbstractDatabase dbProjectFragment = UIProjectLoader
                 .buildFiles(Arrays.asList(file), dbType, monitor.newChild(1));
-        Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().collect(Collectors.toList());
+        Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().toList();
 
         long schemaCount = dbProjectFragment.getSchemas().size();
         if (schemaCount > 1) {
@@ -288,13 +287,12 @@ class QuickUpdateJob extends SingletonEditorJob {
             case FUNCTION:
                 markFunctions((AbstractFunction) st, el, checked, left, right);
                 break;
-            case TABLE:
-            case VIEW:
+            case TABLE, VIEW:
                 el.getChildren().forEach(child -> {
                     child.setSelected(true);
                     checked.add(child);
                 });
-                break;
+            break;
             default:
                 break;
             }

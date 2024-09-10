@@ -298,11 +298,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof AbstractDatabase) {
-            AbstractDatabase db = (AbstractDatabase) obj;
-            return schemas.equals(db.schemas);
-        }
-        return false;
+        return obj instanceof AbstractDatabase db && schemas.equals(db.schemas);
     }
 
     @Override

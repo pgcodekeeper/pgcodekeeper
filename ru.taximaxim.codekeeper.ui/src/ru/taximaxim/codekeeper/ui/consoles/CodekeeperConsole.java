@@ -64,10 +64,9 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
         int c = 0;
         List<IConsole> toRemove = new ArrayList<>();
         for (int i = consoles.length - 1; i >= 0; --i) {
-            if (consoles[i] instanceof CodekeeperConsole
-                    && ((CodekeeperConsole) consoles[i]).isTerminated()
-                    && c++ > MAX_OLD_INSTANCES) {
-                toRemove.add(consoles[i]);
+            var console = consoles[i];
+            if (console instanceof CodekeeperConsole cc && cc.isTerminated() && c++ > MAX_OLD_INSTANCES) {
+                toRemove.add(cc);
             }
         }
         if (!toRemove.isEmpty()) {

@@ -102,8 +102,7 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
             return true;
         }
 
-        if (obj instanceof FileLibrary && super.equals(obj)) {
-            FileLibrary lib = (FileLibrary) obj;
+        if (obj instanceof FileLibrary lib && super.equals(obj)) {
             return dbType == lib.getDbType()
                     && Objects.equals(project, lib.project);
         }

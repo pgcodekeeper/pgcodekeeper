@@ -55,8 +55,7 @@ public abstract class ContextLocation implements Serializable {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ContextLocation) {
-            ContextLocation loc = (ContextLocation) obj;
+        if (obj instanceof ContextLocation loc) {
             return Objects.equals(loc.getFilePath(), getFilePath())
                     && getOffset() == loc.getOffset()
                     && getLineNumber() == loc.getLineNumber()

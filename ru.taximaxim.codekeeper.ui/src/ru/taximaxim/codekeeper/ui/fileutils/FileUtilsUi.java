@@ -59,10 +59,10 @@ public final class FileUtilsUi {
 
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage()
                 .openEditor(input, EDITOR.SQL);
-        if (part instanceof ITextEditor) {
-            IDocumentProvider prov = ((ITextEditor) part).getDocumentProvider();
-            if (prov instanceof TextFileDocumentProvider) {
-                ((TextFileDocumentProvider) prov).setEncoding(input, Consts.UTF_8);
+        if (part instanceof ITextEditor editor) {
+            IDocumentProvider prov = editor.getDocumentProvider();
+            if (prov instanceof TextFileDocumentProvider textProv) {
+                textProv.setEncoding(input, Consts.UTF_8);
                 prov.resetDocument(input);
             }
         }
@@ -73,8 +73,8 @@ public final class FileUtilsUi {
         if (loc != null && loc.getFilePath() != null) {
             IEditorPart part = openFileInSqlEditor(
                     Paths.get(loc.getFilePath()), project, dbType, isReadOnly);
-            if (part instanceof ITextEditor) {
-                ((ITextEditor) part).selectAndReveal(loc.getOffset(), loc.getObjLength());
+            if (part instanceof ITextEditor editor) {
+                editor.selectAndReveal(loc.getOffset(), loc.getObjLength());
             }
         }
     }

@@ -91,8 +91,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable implements IPa
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PartitionForeignPgTable && super.compare(obj)) {
-            PartitionForeignPgTable table = (PartitionForeignPgTable) obj;
+        if (obj instanceof PartitionForeignPgTable table && super.compare(obj)) {
             return Objects.equals(partitionBounds, table.getPartitionBounds());
         }
 

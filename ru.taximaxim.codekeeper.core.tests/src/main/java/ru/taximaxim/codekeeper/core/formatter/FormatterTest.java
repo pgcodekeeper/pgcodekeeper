@@ -31,7 +31,7 @@ class FormatterTest {
      * Testing default parameters
      */
     @Test
-    void testDefault() throws IOException, FormatterException {
+    void testDefault() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setAddWhitespaceAfterOp(true);
         config.setAddWhitespaceBeforeOp(true);
@@ -45,7 +45,7 @@ class FormatterTest {
     }
 
     @Test
-    void testRemoveTrailingWhitespace() throws IOException, FormatterException {
+    void testRemoveTrailingWhitespace() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setRemoveTrailingWhitespace(true);
 
@@ -55,7 +55,7 @@ class FormatterTest {
     }
 
     @Test
-    void testAddWhitespaceAfterOp() throws IOException, FormatterException {
+    void testAddWhitespaceAfterOp() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setAddWhitespaceAfterOp(true);
 
@@ -65,7 +65,7 @@ class FormatterTest {
     }
 
     @Test
-    void testAddWhitespaceBeforeOp() throws IOException, FormatterException {
+    void testAddWhitespaceBeforeOp() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setAddWhitespaceBeforeOp(true);
 
@@ -75,7 +75,7 @@ class FormatterTest {
     }
 
     @Test
-    void testAddSpacesForTabs() throws IOException, FormatterException {
+    void testAddSpacesForTabs() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setIndentType(IndentType.WHITESPACE);
         config.setIndentSize(8);
@@ -86,7 +86,7 @@ class FormatterTest {
     }
 
     @Test
-    void testIndentSize() throws IOException, FormatterException {
+    void testIndentSize() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setIndentType(IndentType.WHITESPACE);
         config.setIndentSize(8);
@@ -97,7 +97,7 @@ class FormatterTest {
     }
 
     @Test
-    void testIndentType() throws IOException, FormatterException {
+    void testIndentType() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setIndentType(IndentType.TAB);
         config.setIndentSize(1);
@@ -108,7 +108,7 @@ class FormatterTest {
     }
 
     @Test
-    void testIndentTypeTab() throws IOException, FormatterException {
+    void testIndentTypeTab() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setIndentType(IndentType.TAB);
         config.setIndentSize(2);
@@ -119,7 +119,7 @@ class FormatterTest {
     }
 
     @Test
-    void testCh() throws IOException, FormatterException {
+    void testCh() throws IOException {
         FormatConfiguration config = new FormatConfiguration();
         config.setIndentSize(2);
         config.setAddWhitespaceAfterOp(true);
@@ -133,7 +133,7 @@ class FormatterTest {
     }
 
     private void testFormatter(String oldFileName, String newFileName, FormatConfiguration config, DatabaseType dbType)
-            throws FormatterException, IOException {
+            throws IOException {
         String newFile = getFileContent(newFileName + FILES_POSTFIX.SQL);
         String oldFile = getFileContent(oldFileName + FILES_POSTFIX.SQL);
         FileFormatter fileform = new FileFormatter(oldFile, 0, oldFile.length(), config, dbType);

@@ -64,10 +64,10 @@ public class Vex {
         }
         List<Vex> vex = new ArrayList<>();
         for (ParseTree node : children) {
-            if (node instanceof VexContext) {
-                vex.add(new Vex((VexContext) node));
-            } else if (node instanceof Vex_bContext) {
-                vex.add(new Vex((Vex_bContext) node));
+            if (node instanceof VexContext vexCtx) {
+                vex.add(new Vex(vexCtx));
+            } else if (node instanceof Vex_bContext vexbCtx) {
+                vex.add(new Vex(vexbCtx));
             }
         }
         return vex;

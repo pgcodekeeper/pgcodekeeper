@@ -320,8 +320,7 @@ public class EventRegister {
             if (this == obj) {
                 return true;
             }
-            if (obj instanceof EventTypeKey) {
-                EventTypeKey key = (EventTypeKey)obj;
+            if (obj instanceof EventTypeKey key) {
                 return type.equals(key.type) && label.equals(key.label);
             }
             return false;

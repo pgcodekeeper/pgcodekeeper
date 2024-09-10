@@ -249,8 +249,7 @@ public class PgSchema extends AbstractSchema {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof PgSchema) {
-            PgSchema schema = (PgSchema) obj;
+        if (obj instanceof PgSchema schema) {
             return super.compareChildren(obj)
                     && domains.equals(schema.domains)
                     && collations.equals(schema.collations)

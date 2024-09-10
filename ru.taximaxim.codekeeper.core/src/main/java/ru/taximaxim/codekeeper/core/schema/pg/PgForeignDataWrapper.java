@@ -89,8 +89,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             return true;
         }
 
-        if (obj instanceof PgForeignDataWrapper && super.compare(obj)) {
-            PgForeignDataWrapper fdw = (PgForeignDataWrapper) obj;
+        if (obj instanceof PgForeignDataWrapper fdw && super.compare(obj)) {
             return Objects.equals(handler, fdw.getHandler())
                     && Objects.equals(validator, fdw.getValidator())
                     && Objects.equals(options, fdw.getOptions());

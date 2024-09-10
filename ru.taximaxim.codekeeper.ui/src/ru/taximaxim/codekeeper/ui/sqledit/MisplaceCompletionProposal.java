@@ -37,8 +37,7 @@ public class MisplaceCompletionProposal implements ICompletionProposal{
     private final PgObjLocation pgObjLocation;
 
     public static boolean isMisplaceError(Annotation annotation) {
-        if (annotation instanceof MarkerAnnotation) {
-            MarkerAnnotation markerAnnotation = (MarkerAnnotation) annotation;
+        if (annotation instanceof MarkerAnnotation markerAnnotation) {
             IMarker marker = markerAnnotation.getMarker();
             try {
                 return (marker.getType().equals(MARKER.ERROR) &&

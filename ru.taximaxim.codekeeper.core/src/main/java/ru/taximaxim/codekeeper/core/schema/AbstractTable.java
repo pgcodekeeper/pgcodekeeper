@@ -184,8 +184,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
             return true;
         }
 
-        if (obj instanceof AbstractTable && super.compare(obj)) {
-            AbstractTable table = (AbstractTable) obj;
+        if (obj instanceof AbstractTable table && super.compare(obj)) {
             boolean isColumnsEqual;
             if (getDatabaseArguments().isIgnoreColumnOrder()) {
                 isColumnsEqual = PgDiffUtils.setlikeEquals(columns, table.columns);
@@ -203,8 +202,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof AbstractTable && super.compareChildren(obj)) {
-            AbstractTable table = (AbstractTable) obj;
+        if (obj instanceof AbstractTable table && super.compareChildren(obj)) {
             return constraints.equals(table.constraints);
         }
         return false;

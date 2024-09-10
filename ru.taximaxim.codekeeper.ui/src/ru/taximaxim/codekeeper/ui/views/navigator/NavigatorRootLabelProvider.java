@@ -43,8 +43,8 @@ public class NavigatorRootLabelProvider extends LabelProvider implements IDescri
 
     @Override
     public String getDescription(Object anElement) {
-        if (anElement instanceof OpenProjectFromNavigator) {
-            return ((OpenProjectFromNavigator) anElement).getProject().getName();
+        if (anElement instanceof OpenProjectFromNavigator project) {
+            return project.getProject().getName();
         }
         return null;
     }

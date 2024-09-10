@@ -217,8 +217,9 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             // Because of impossible inherit from partitioned tables, this
             // condition will also be true for cases when a partitioned table
             // does not have sections.
-            if (getParent() instanceof AbstractRegularTable) {
-                addOnly = ((AbstractRegularTable) getParent()).getPartitionBy() == null;
+            PgStatement parent = getParent();
+            if (parent instanceof AbstractRegularTable regTable) {
+                addOnly = regTable.getPartitionBy() == null;
             }
             StringBuilder dropSb = new StringBuilder();
             dropSb.append(getAlterTable(false, addOnly))
@@ -708,8 +709,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgColumn && super.compare(obj)) {
-            PgColumn col = (PgColumn) obj;
+        if (obj instanceof PgColumn col && super.compare(obj)) {
             return compareColOptions(col);
         }
 

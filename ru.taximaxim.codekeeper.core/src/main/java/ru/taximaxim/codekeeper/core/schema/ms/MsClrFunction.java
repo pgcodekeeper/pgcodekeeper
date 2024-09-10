@@ -114,15 +114,15 @@ public class MsClrFunction extends AbstractMsClrFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction func) {
-        return func instanceof MsClrFunction && super.compareUnalterable(func)
+        return func instanceof MsClrFunction clrFunc && super.compareUnalterable(func)
                 && Objects.equals(returns, func.getReturns())
-                && Objects.equals(getFuncType(), ((MsClrFunction) func).getFuncType());
+                && Objects.equals(getFuncType(), clrFunc.getFuncType());
     }
 
     @Override
     public boolean needDrop(AbstractFunction newFunction) {
-        if (newFunction instanceof MsClrFunction) {
-            return getFuncType() != ((MsClrFunction) newFunction).getFuncType();
+        if (newFunction instanceof MsClrFunction clrFunc) {
+            return getFuncType() != clrFunc.getFuncType();
         }
 
         return true;
