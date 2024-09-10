@@ -303,8 +303,7 @@ public class ChView extends AbstractView {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof ChView && super.compare(obj)) {
-            ChView view = (ChView) obj;
+        if (obj instanceof ChView view && super.compare(obj)) {
             return Objects.equals(type, view.type)
                     && Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && Objects.equals(destination, view.destination)

@@ -78,8 +78,8 @@ public abstract class AbstractAnalysisLauncher {
     }
 
     public String getSchemaName() {
-        if (stmt instanceof ISearchPath) {
-            return ((ISearchPath) stmt).getSchemaName();
+        if (stmt instanceof ISearchPath path) {
+            return path.getSchemaName();
         }
 
         return null;

@@ -166,8 +166,7 @@ public class AlterTable extends TableAbstract {
                 createRule(tabl, tablAction);
             }
 
-            if (tablAction.SECURITY() != null && tabl instanceof AbstractRegularTable) {
-                AbstractRegularTable regTable = (AbstractRegularTable) tabl;
+            if (tablAction.SECURITY() != null && tabl instanceof AbstractRegularTable regTable) {
                 // since 9.5 PostgreSQL
                 if (tablAction.FORCE() != null) {
                     regTable.setForceSecurity(tablAction.NO() == null);
@@ -186,21 +185,19 @@ public class AlterTable extends TableAbstract {
     private void fillRelationAction(AbstractSchema schema, ParserRuleContext nameCtx, Table_actionContext tablAction) {
         IRelation r = getSafe(AbstractSchema::getRelation, schema, nameCtx);
         if (tablAction.owner_to() != null) {
-            if (r instanceof PgStatement) {
-                fillOwnerTo(tablAction.owner_to().user_name().identifier(), (PgStatement) r);
+            if (r instanceof PgStatement st) {
+                fillOwnerTo(tablAction.owner_to().user_name().identifier(), st);
             }
             return;
         }
 
-        if (r instanceof PgStatementContainer) {
+        if (r instanceof PgStatementContainer cont) {
             var indexNameCtx = tablAction.index_name;
-            PgStatementContainer cont = (PgStatementContainer) r;
-
             ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(indexNameCtx));
             AbstractConstraint constr = cont.getConstraint(indexName.getText());
             if (constr != null) {
-                if (constr instanceof PgConstraintPk) {
-                    doSafe(PgConstraintPk::setClustered, (PgConstraintPk) constr, true);
+                if (constr instanceof PgConstraintPk pk) {
+                    doSafe(PgConstraintPk::setClustered, pk, true);
                 } else if (!isRefMode()) {
                     throw new IllegalArgumentException(Messages.Constraint_WarningMismatchedConstraintTypeForClusterOn);
                 }
@@ -295,8 +292,8 @@ public class AlterTable extends TableAbstract {
             CreateSequence.fillSequence(sequence, identity.sequence_body());
 
             var table = col.getParent();
-            if (table instanceof AbstractRegularTable) {
-                sequence.setLogged(((AbstractRegularTable) table).isLogged());
+            if (table instanceof AbstractRegularTable regTable) {
+                sequence.setLogged(regTable.isLogged());
             }
 
             col.setSequence(sequence);

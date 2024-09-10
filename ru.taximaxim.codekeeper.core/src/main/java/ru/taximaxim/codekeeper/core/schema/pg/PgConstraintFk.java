@@ -164,9 +164,8 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgConstraintFk) {
-            var con = (PgConstraintFk) obj;
-            return super.compare(con) && compareCommonFields(con)
+        if (obj instanceof PgConstraintFk con && super.compare(con)) {
+            return compareCommonFields(con)
                     && compareUnalterable(con);
         }
         return false;

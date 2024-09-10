@@ -94,8 +94,8 @@ public class PgUIDumpLoader extends PgDumpLoader {
             Log.log(ex);
         }
         for (Object error : getErrors()) {
-            if (error instanceof AntlrError) {
-                addMarker(file, (AntlrError) error);
+            if (error instanceof AntlrError antlrError) {
+                addMarker(file, antlrError);
             }
         }
     }

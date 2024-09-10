@@ -66,6 +66,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
  */
 class PgAntlrLoaderTest {
 
+    private static final String POSTGRES = "postgres";
     private static final String BIGINT = "bigint";
     private static final String BOOLEAN = "boolean";
     private static final String CHARACTER_VARYING_40 = "character varying(40)";
@@ -140,7 +141,7 @@ class PgAntlrLoaderTest {
         constraintPK.addInclude("name");
         table.addConstraint(constraintPK);
 
-        table.setOwner("postgres");
+        table.setOwner(POSTGRES);
 
         table = new SimplePgTable("faxes");
         schema.addTable(table);
@@ -446,8 +447,8 @@ class PgAntlrLoaderTest {
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", POSTGRES, false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", POSTGRES, false, dbType));
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
 
         AbstractTable table = new SimplePgTable("test_table");
@@ -461,7 +462,7 @@ class PgAntlrLoaderTest {
         col.setType("timestamp without time zone");
         table.addColumn(col);
 
-        table.setOwner("postgres");
+        table.setOwner(POSTGRES);
 
         PgIndex idx = new PgIndex("test_table_deleted");
         idx.setMethod("btree");
@@ -586,7 +587,7 @@ class PgAntlrLoaderTest {
         col.setType("timestamp with time zone");
         col.setDefaultValue("now()");
         table.addColumn(col);
-        table.setOwner("postgres");
+        table.setOwner(POSTGRES);
 
         PgRule rule = new PgRule("on_select");
         rule.setEvent(EventType.SELECT);
@@ -599,7 +600,7 @@ class PgAntlrLoaderTest {
         seq.setCache("1");
         seq.setOwnedBy(new GenericColumn("public", "user_data" ,"id", DbObjType.COLUMN));
         schema.addSequence(seq);
-        seq.setOwner("postgres");
+        seq.setOwner(POSTGRES);
 
         table = new SimplePgTable("t1");
         schema.addTable(table);
@@ -614,7 +615,7 @@ class PgAntlrLoaderTest {
         view.addColumnDefaultValue("created", "now()");
         schema.addView(view);
 
-        view.setOwner("postgres");
+        view.setOwner(POSTGRES);
 
         rule = new PgRule("on_delete");
         rule.setEvent(EventType.DELETE);
@@ -649,7 +650,7 @@ class PgAntlrLoaderTest {
         d.addSchema(schema);
         d.setDefaultSchema("admin");
 
-        schema.setOwner("postgres");
+        schema.setOwner(POSTGRES);
 
         AbstractTable table = new SimplePgTable("acl_role");
         schema.addTable(table);
@@ -663,7 +664,7 @@ class PgAntlrLoaderTest {
         constraintPK.addColumn("id");
         table.addConstraint(constraintPK);
 
-        table.setOwner("postgres");
+        table.setOwner(POSTGRES);
 
         table = new SimplePgTable("user");
         schema.addTable(table);
@@ -729,7 +730,7 @@ class PgAntlrLoaderTest {
         constraintFk.addForeignColumn("id");
         table.addConstraint(constraintFk);
 
-        table.setOwner("postgres");
+        table.setOwner(POSTGRES);
 
         testDatabase("schema_10.sql", d);
     }
@@ -782,8 +783,8 @@ class PgAntlrLoaderTest {
         AbstractSchema schema = d.getDefaultSchema();
 
         schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", "postgres", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "postgres", false, dbType));
+        schema.addPrivilege(new PgPrivilege("REVOKE", "ALL", "SCHEMA public", POSTGRES, false, dbType));
+        schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", POSTGRES, false, dbType));
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
 
         // d.setComment("'comments database'")
@@ -953,15 +954,18 @@ class PgAntlrLoaderTest {
 
         // view
         PgView view = new PgView("v_subselect");
-        view.setQuery("SELECT c.id, t.id AS second, t.name\n" +
-                "   FROM (( SELECT w.id, m.name FROM (( SELECT t_work.id FROM public.t_work) w\n" +
-                "             JOIN public.t_memo m ON (((w.id)::text = m.name)))) t\n" +
-                "     JOIN public.t_chart c ON ((t.id = c.id)))",
+        view.setQuery("""
+            SELECT c.id, t.id AS second, t.name
+              FROM (( SELECT w.id, m.name
+                FROM (( SELECT t_work.id FROM public.t_work) w
+                 JOIN public.t_memo m ON (((w.id)::text = m.name)))) t
+                  JOIN public.t_chart c ON ((t.id = c.id)))""",
 
-                "SELECT c.id, t.id AS second, t.name "
-                        + "FROM ((SELECT w.id, m.name FROM ((SELECT t_work.id FROM public.t_work) w "
-                        + "JOIN public.t_memo m ON (((w.id) :: text = m.name)))) t "
-                        + "JOIN public.t_chart c ON ((t.id = c.id)))");
+                  """
+                  SELECT c.id, t.id AS second, t.name \
+                  FROM ((SELECT w.id, m.name FROM ((SELECT t_work.id FROM public.t_work) w \
+                  JOIN public.t_memo m ON (((w.id) :: text = m.name)))) t \
+                  JOIN public.t_chart c ON ((t.id = c.id)))""");
         schema.addView(view);
 
         testDatabase("schema_17.sql", d);

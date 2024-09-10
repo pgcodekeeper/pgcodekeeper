@@ -404,10 +404,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
         switch (event.getType()) {
-        case IResourceChangeEvent.PRE_CLOSE:
-        case IResourceChangeEvent.PRE_DELETE:
+        case IResourceChangeEvent.PRE_CLOSE, IResourceChangeEvent.PRE_DELETE:
             handlerCloseProject(event);
-            break;
+        break;
         case IResourceChangeEvent.POST_CHANGE:
             handleChangeProject(event.getDelta());
             break;
@@ -766,8 +765,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             InternalIgnoreList.readAppendList(
                     proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
 
-            if (loadedRemote instanceof DbInfo) {
-                ((DbInfo) loadedRemote).appendIgnoreFiles(ignoreList);
+            if (loadedRemote instanceof DbInfo info) {
+                info.appendIgnoreFiles(ignoreList);
             }
 
             try {
@@ -818,8 +817,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             String filename = generateScriptName();
             if (inProj) {
                 IEditorInput file = createProjectScriptFile(content, filename);
-                if (loadedRemote instanceof DbInfo) {
-                    SQLEditor.saveLastDb((DbInfo) loadedRemote, file);
+                if (loadedRemote instanceof DbInfo info) {
+                    SQLEditor.saveLastDb(info, file);
                 }
                 getSite().getPage().openEditor(file, EDITOR.SQL);
             } else {
@@ -909,12 +908,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                                 Messages.ProjectEditorDiffer_override_objects,
                                 Messages.ProjectEditorDiffer_override_cancel }, 0);
                 int override = mb.open();
-                switch (override) {
-                case 0:
-                case 1:
-                    saveOverrides = override == 0;
-                    break;
-                default:
+                if (Window.OK == override || Window.CANCEL == override) {
+                    saveOverrides = override == Window.OK;
+                } else {
                     // cancelled
                     return;
                 }
@@ -996,8 +992,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             for (IWorkbenchPage page : wnd.getPages()) {
                 for (IEditorReference ref : page.getEditorReferences()) {
                     IEditorPart ed = ref.getEditor(false);
-                    if (ed instanceof ProjectEditorDiffer) {
-                        notifyDbChanged(dbinfo, (ProjectEditorDiffer) ed, action.equals(PG_EDIT_PREF.UPDATE));
+                    if (ed instanceof ProjectEditorDiffer differ) {
+                        notifyDbChanged(dbinfo, differ, action.equals(PG_EDIT_PREF.UPDATE));
                     }
                 }
             }
@@ -1017,11 +1013,11 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     private static String getRemoteName(Object remote) {
-        if (remote instanceof DbInfo) {
-            return ((DbInfo) remote).getName();
+        if (remote instanceof DbInfo info) {
+            return info.getName();
         }
-        if (remote instanceof File) {
-            return ((File) remote).getName();
+        if (remote instanceof File file) {
+            return file.getName();
         }
         throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
     }

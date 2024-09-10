@@ -99,11 +99,11 @@ public abstract class AbstractLibrary {
             return true;
         }
 
-        if (obj instanceof AbstractLibrary) {
-            AbstractLibrary lib = (AbstractLibrary) obj;
+        if (obj instanceof AbstractLibrary lib) {
             return Objects.equals(path, lib.path)
                     && Objects.equals(name, lib.name);
         }
+
         return false;
     }
 

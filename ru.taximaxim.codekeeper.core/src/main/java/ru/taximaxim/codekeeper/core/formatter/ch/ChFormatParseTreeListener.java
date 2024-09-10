@@ -44,16 +44,16 @@ public class ChFormatParseTreeListener extends FormatParseTreeListener {
 
     @Override
     public void exitEveryRule(ParserRuleContext ctx) {
-        if (ctx instanceof Select_primaryContext) {
-            formatSelectPrimary((Select_primaryContext) ctx);
-        } else if (ctx instanceof From_itemContext) {
-            formatFromItem((From_itemContext) ctx);
-        } else if (ctx instanceof Select_opsContext) {
-            formatSelectOps(new ChSelectOps((Select_opsContext) ctx));
-        } else if (ctx instanceof Select_ops_no_parensContext) {
-            formatSelectOps(new ChSelectOps((Select_ops_no_parensContext) ctx));
-        } else if (ctx instanceof ExprContext) {
-            formatExpr((ExprContext) ctx);
+        if (ctx instanceof Select_primaryContext selectCtx) {
+            formatSelectPrimary(selectCtx);
+        } else if (ctx instanceof From_itemContext fromCtx) {
+            formatFromItem(fromCtx);
+        } else if (ctx instanceof Select_opsContext selectOpsCtx) {
+            formatSelectOps(new ChSelectOps(selectOpsCtx));
+        } else if (ctx instanceof Select_ops_no_parensContext selectOpsNoParensCtx) {
+            formatSelectOps(new ChSelectOps(selectOpsNoParensCtx));
+        } else if (ctx instanceof ExprContext expr) {
+            formatExpr(expr);
         }
     }
 

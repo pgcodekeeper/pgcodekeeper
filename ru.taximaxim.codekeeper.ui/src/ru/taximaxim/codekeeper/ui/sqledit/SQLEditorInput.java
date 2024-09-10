@@ -128,8 +128,7 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
             return true;
         }
 
-        if (o instanceof SQLEditorInput) {
-            SQLEditorInput input = (SQLEditorInput) o;
+        if (o instanceof SQLEditorInput input) {
             return Objects.equals(path, input.path)
                     && Objects.equals(project, input.project)
                     && dbType == input.getDbType()
@@ -161,15 +160,15 @@ public class SQLEditorInput extends PlatformObject implements IURIEditorInput, I
 
     private URI getNullFileStoreUri() {
         try {
-            String path = this.path.toString();
+            String result = this.path.toString();
             // fix Windows paths for URI (otherwise leading \ is treated as relative path)
-            if (!path.startsWith("/")) { //$NON-NLS-1$
-                path = path.replace(File.separatorChar, '/');
+            if (!result.startsWith("/")) { //$NON-NLS-1$
+                result = result.replace(File.separatorChar, '/');
             }
-            if (!path.startsWith("/")) { //$NON-NLS-1$
-                path = '/' + path;
+            if (!result.startsWith("/")) { //$NON-NLS-1$
+                result = '/' + result;
             }
-            return new URI(EFS.SCHEME_NULL, null, path, null);
+            return new URI(EFS.SCHEME_NULL, null, result, null);
         } catch (URISyntaxException e) {
             //should never happen
             throw new IllegalStateException(e.getLocalizedMessage(), e);

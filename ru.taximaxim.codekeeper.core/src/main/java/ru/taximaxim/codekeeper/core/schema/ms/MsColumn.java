@@ -407,8 +407,7 @@ public class MsColumn extends AbstractColumn {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsColumn && super.compare(obj)) {
-            MsColumn col = (MsColumn) obj;
+        if (obj instanceof MsColumn col && super.compare(obj)) {
             return isSparse == col.isSparse()
                     && isRowGuidCol ==  col.isRowGuidCol()
                     && isPersisted == col.isPersisted()

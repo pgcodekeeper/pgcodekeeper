@@ -32,8 +32,8 @@ public class QueryCallable extends StatementCallable<String> {
 
     @Override
     public String call() throws Exception {
-        if (st instanceof PreparedStatement) {
-            ((PreparedStatement)st).execute();
+        if (st instanceof PreparedStatement ps) {
+            ps.execute();
         } else {
             st.execute(script);
         }

@@ -119,8 +119,8 @@ public class PgFunction extends AbstractPgFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction function) {
-        if (function instanceof PgFunction && super.compareUnalterable(function)) {
-            return Objects.equals(returns, ((PgFunction) function).getReturns());
+        if (function instanceof PgFunction pgFunc && super.compareUnalterable(function)) {
+            return Objects.equals(returns, pgFunc.getReturns());
         }
         return false;
     }

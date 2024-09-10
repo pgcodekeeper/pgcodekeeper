@@ -61,16 +61,15 @@ public final class PgConstraintCheck extends PgConstraint {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgConstraintCheck && super.compare(obj)) {
-            return compareUnalterable((PgConstraintCheck) obj);
+        if (obj instanceof PgConstraintCheck check && super.compare(obj)) {
+            return compareUnalterable(check);
         }
         return false;
     }
 
     @Override
     protected boolean compareUnalterable(PgConstraint newConstr) {
-        if (newConstr instanceof PgConstraintCheck) {
-            var con = (PgConstraintCheck) newConstr;
+        if (newConstr instanceof PgConstraintCheck con) {
             return super.compareUnalterable(con)
                     && isInherit() == con.isInherit()
                     && Objects.equals(getExpression(), con.getExpression());

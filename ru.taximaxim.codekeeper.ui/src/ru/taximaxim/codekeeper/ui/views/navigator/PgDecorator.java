@@ -35,8 +35,7 @@ public class PgDecorator extends LabelProvider implements ILightweightLabelDecor
 
     @Override
     public void decorate(Object element, IDecoration decoration) {
-        if (element instanceof IResource) {
-            IResource res = (IResource) element;
+        if (element instanceof IResource res) {
             IProject proj = res.getProject();
             try {
                 if (res.exists() && proj != null && proj.isAccessible() && proj.hasNature(NATURE.ID)) {

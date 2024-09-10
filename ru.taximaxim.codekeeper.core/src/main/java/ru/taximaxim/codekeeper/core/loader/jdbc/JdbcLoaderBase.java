@@ -242,22 +242,16 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     }
 
     public void setPrivileges(PgStatement st, String aclItemsArrayAsString, String columnName, String schemaName) {
+        DbObjType type = st.getStatementType();
         String signature;
-        switch (st.getStatementType()) {
-        case FUNCTION:
-        case PROCEDURE:
-        case AGGREGATE:
-            signature = ((AbstractPgFunction) st).appendFunctionSignature(
-                    new StringBuilder(), false, true).toString();
-            break;
-        default:
+        if (type.in(DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.AGGREGATE)) {
+            signature = ((AbstractPgFunction) st).appendFunctionSignature(new StringBuilder(), false, true).toString();
+        } else {
             signature = PgDiffUtils.getQuotedName(st.getName());
-            break;
         }
 
         String owner = st.getOwner();
-        if (owner == null && st.getStatementType() == DbObjType.SCHEMA
-                && Consts.PUBLIC.equals(st.getName())) {
+        if (owner == null && type == DbObjType.SCHEMA && Consts.PUBLIC.equals(st.getName())) {
             owner = "postgres";
         }
 
@@ -444,8 +438,8 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             PgPrivilege priv = new PgPrivilege(state, permission, sb.toString(),
                     MsDiffUtils.quoteName(role), isWithGrantOption, st.getDbType());
 
-            if (col != null && st instanceof AbstractTable) {
-                ((AbstractTable) st).getColumn(col).addPrivilege(priv);
+            if (col != null && st instanceof AbstractTable table) {
+                table.getColumn(col).addPrivilege(priv);
             } else {
                 st.addPrivilege(priv);
             }

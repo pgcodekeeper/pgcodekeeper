@@ -34,8 +34,7 @@ public class UpdateDdl extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
 
-        if (part instanceof SQLEditor){
-            SQLEditor sqlEditor = (SQLEditor) part;
+        if (part instanceof SQLEditor sqlEditor) {
             DbInfo dbInfo = sqlEditor.getCurrentDb();
             if (dbInfo == null) {
                 MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);

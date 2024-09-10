@@ -76,8 +76,8 @@ public final class QNameParser<T extends ParserRuleContext> {
         while (children != null) {
             if (children.size() == 1) {
                 ParseTree tree = children.get(0);
-                if (tree instanceof ParserRuleContext) {
-                    children = ((ParserRuleContext) tree).children;
+                if (tree instanceof ParserRuleContext ruleCtx) {
+                    children = ruleCtx.children;
                 } else if (tree instanceof TerminalNode) {
                     return tree.getText();
                 } else {

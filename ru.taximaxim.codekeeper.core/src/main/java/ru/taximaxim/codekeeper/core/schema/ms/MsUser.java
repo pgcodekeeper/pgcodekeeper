@@ -181,8 +181,7 @@ public class MsUser extends PgStatement {
             return true;
         }
 
-        if (obj instanceof MsUser && super.compare(obj)) {
-            MsUser user = (MsUser) obj;
+        if (obj instanceof MsUser user && super.compare(obj)) {
             return Objects.equals(schema, user.getSchema())
                     && Objects.equals(login, user.getLogin())
                     && Objects.equals(language, user.getLanguage())

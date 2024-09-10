@@ -27,8 +27,8 @@ implements IDescriptionProvider {
 
     @Override
     public String getDescription(Object element) {
-        if (element instanceof AbstractLibrary) {
-            return ((AbstractLibrary) element).getDescription();
+        if (element instanceof AbstractLibrary lib) {
+            return lib.getDescription();
         }
 
         return null;
@@ -44,8 +44,8 @@ implements IDescriptionProvider {
 
     @Override
     public Image getImage(Object element) {
-        if (element instanceof AbstractLibrary) {
-            return ((AbstractLibrary) element).getImage();
+        if (element instanceof AbstractLibrary lib) {
+            return lib.getImage();
         }
 
         return null;

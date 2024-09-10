@@ -75,8 +75,8 @@ public class NavigatorOutlineActionProvider extends CommonActionProvider {
             ISelection selection = provider.getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                if (sel instanceof SegmentsWithParent) {
-                    segment = (SegmentsWithParent) sel;
+                if (sel instanceof SegmentsWithParent seg) {
+                    segment = seg;
                     return true;
                 }
             }
@@ -85,17 +85,19 @@ public class NavigatorOutlineActionProvider extends CommonActionProvider {
 
         @Override
         public void run() {
-            if (isEnabled()) {
-                try {
-                    ITextEditor editor = (ITextEditor) IDE.openEditor(
-                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
-                            segment.getParentFile(), EDITOR.SQL, true);
-                    editor.setHighlightRange(segment.offset, segment.length, true);
-                    editor.selectAndReveal(segment.offset, segment.length);
-                } catch (PartInitException e) {
-                    Log.log(e);
-                    ExceptionNotifier.notifyDefault(Messages.PgNavigatorActionProvider_failed_to_open_editor, e);
-                }
+            if (!isEnabled()) {
+                return;
+            }
+
+            try {
+                ITextEditor editor = (ITextEditor) IDE.openEditor(
+                        PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
+                        segment.getParentFile(), EDITOR.SQL, true);
+                editor.setHighlightRange(segment.offset, segment.length, true);
+                editor.selectAndReveal(segment.offset, segment.length);
+            } catch (PartInitException e) {
+                Log.log(e);
+                ExceptionNotifier.notifyDefault(Messages.PgNavigatorActionProvider_failed_to_open_editor, e);
             }
         }
     }

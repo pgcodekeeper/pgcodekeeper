@@ -27,7 +27,7 @@ public abstract class MsConstraint extends AbstractConstraint {
 
     private boolean isDisabled;
 
-    public MsConstraint(String name) {
+    protected MsConstraint(String name) {
         super(name);
     }
 
@@ -116,8 +116,10 @@ public abstract class MsConstraint extends AbstractConstraint {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return obj instanceof MsConstraint && super.compare(obj)
-                && isDisabled == ((MsConstraint) obj).isDisabled();
+        if (obj instanceof MsConstraint con && super.compare(obj)) {
+            return isDisabled == con.isDisabled();
+        }
+        return false;
     }
 
     public boolean isDisabled() {

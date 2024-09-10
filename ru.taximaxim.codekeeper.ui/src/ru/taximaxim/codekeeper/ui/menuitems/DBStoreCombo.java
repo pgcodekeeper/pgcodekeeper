@@ -77,14 +77,14 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         storePicker.addSelectionListener(() -> {
             IEditorPart editor = getWorkbenchWindow().getActivePage().getActiveEditor();
 
-            if (editor instanceof SQLEditor) {
-                ((SQLEditor) editor).setCurrentDb(storePicker.getDbInfo());
-            } else if (editor instanceof ProjectEditorDiffer) {
+            if (editor instanceof SQLEditor sqlEditor) {
+                sqlEditor.setCurrentDb(storePicker.getDbInfo());
+            } else if (editor instanceof ProjectEditorDiffer differ) {
                 Object selection = storePicker.getDbInfo();
                 if (selection == null) {
                     selection = storePicker.getPathOfFile();
                 }
-                ((ProjectEditorDiffer) editor).setCurrentDb(selection);
+                differ.setCurrentDb(selection);
             }
         });
 
@@ -116,17 +116,15 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         Object lastDb = null;
         IProject proj = null;
 
-        if (part instanceof SQLEditor) {
-            SQLEditor editor = (SQLEditor) part;
+        if (part instanceof SQLEditor editor) {
             lastDb = editor.getCurrentDb();
             storePicker.setUseFileSources(false);
             IEditorInput input = editor.getEditorInput();
-            if (input instanceof FileEditorInput) {
-                proj = ((FileEditorInput) input).getFile().getProject();
+            if (input instanceof FileEditorInput fileEditorInput) {
+                proj = fileEditorInput.getFile().getProject();
             }
             setDbComboEnableState(editor.getProjDbBindPrefs());
-        } else if (part instanceof ProjectEditorDiffer) {
-            ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
+        } else if (part instanceof ProjectEditorDiffer differ) {
             lastDb = differ.getCurrentDb();
             storePicker.setUseFileSources(true);
             proj = differ.getProject();

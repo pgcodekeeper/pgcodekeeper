@@ -111,10 +111,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     private KeySequence getIterationBinding() {
         final IBindingService bindingSvc = PlatformUI.getWorkbench().getService(IBindingService.class);
         TriggerSequence binding = bindingSvc.getBestActiveBindingFor(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
-        if (binding instanceof KeySequence) {
-            return (KeySequence) binding;
-        }
-        return null;
+        return binding instanceof KeySequence key ? key : null;
     }
 
     @Override

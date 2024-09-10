@@ -697,8 +697,7 @@ public class MockDataPage extends WizardPage {
      */
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
-        if (source instanceof IFile && UIProjectLoader.isInProject((IFile)source)) {
-            IFile file = (IFile)source;
+        if (source instanceof IFile file && UIProjectLoader.isInProject(file)) {
             AbstractTable table = null;
             try {
                 table = (AbstractTable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));

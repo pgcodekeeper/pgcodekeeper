@@ -31,23 +31,13 @@ public enum ArgMode {
 
     public static ArgMode of(String string) {
         String s = string.toLowerCase(Locale.ROOT);
-        switch (s) {
-        case "in":
-        case "i":
-            return IN;
-        case "out":
-        case "o":
-            return OUT;
-        case "inout":
-        case "b":
-            return INOUT;
-        case "variadic":
-        case "v":
-            return VARIADIC;
-        case "output":
-            return OUTPUT;
-        default:
-            return valueOf(string);
-        }
+        return switch (s) {
+        case "in", "i" -> IN;
+        case "out", "o" -> OUT;
+        case "inout", "b" -> INOUT;
+        case "variadic", "v" -> VARIADIC;
+        case "output" -> OUTPUT;
+        default -> valueOf(string);
+        };
     }
 }

@@ -74,8 +74,8 @@ public class PgProcedure extends AbstractPgFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction function) {
-        if (function instanceof PgProcedure && super.compareUnalterable(function)) {
-            return Objects.equals(returns, ((PgProcedure)function).getReturns());
+        if (function instanceof PgProcedure proc && super.compareUnalterable(function)) {
+            return Objects.equals(returns, proc.getReturns());
         }
         return false;
     }

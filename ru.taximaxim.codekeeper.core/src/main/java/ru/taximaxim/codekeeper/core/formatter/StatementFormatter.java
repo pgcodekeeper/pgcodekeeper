@@ -81,7 +81,7 @@ public abstract class StatementFormatter {
      */
     private final List<FormatItem> changes = new ArrayList<>();
 
-    public StatementFormatter(int start, int stop, int defOffset, int lastTokenOffset, FormatConfiguration config) {
+    protected StatementFormatter(int start, int stop, int defOffset, int lastTokenOffset, FormatConfiguration config) {
         this.start = start;
         this.stop = stop;
         this.defOffset = defOffset;

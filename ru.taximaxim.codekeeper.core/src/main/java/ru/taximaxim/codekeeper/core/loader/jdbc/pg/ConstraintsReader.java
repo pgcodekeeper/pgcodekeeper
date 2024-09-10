@@ -67,8 +67,7 @@ public class ConstraintsReader extends JdbcReader {
 
         String type = res.getString("contype");
         switch (type) {
-        case "p":
-        case "u":
+        case "p", "u":
             constr = new PgConstraintPk(constraintName, "p".equals(type));
             ((PgConstraintPk) constr).setClustered(res.getBoolean("isclustered"));
             break;

@@ -121,8 +121,7 @@ public class AlterOther extends PgParserAbstract {
         ParserRuleContext nameCtx = QNameParser.getFirstNameCtx(ids);
 
         AbstractType type = getSafe(AbstractSchema::getType, schema, nameCtx);
-        if (type instanceof PgBaseType) {
-            PgBaseType baseType = (PgBaseType) type;
+        if (type instanceof PgBaseType baseType) {
             for (Storage_directiveContext storDirCtx : encodingCtx.storage_directive()) {
                 if (storDirCtx.compress_type != null) {
                     doSafe(PgBaseType::setCompressType, baseType, storDirCtx.compress_type.getText());

@@ -154,7 +154,7 @@ public class ShowConsoleParticipant implements IConsolePageParticipant {
             IConsoleManager conMan = ConsolePlugin.getDefault().getConsoleManager();
             List<IConsole> toDelete = new ArrayList<>();
             for (IConsole c : conMan.getConsoles()) {
-                if (c instanceof CodekeeperConsole && ((CodekeeperConsole) c).isTerminated())  {
+                if (c instanceof CodekeeperConsole cc && cc.isTerminated()) {
                     toDelete.add(c);
                 }
             }

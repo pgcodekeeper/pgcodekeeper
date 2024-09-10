@@ -27,20 +27,21 @@ public abstract class AbstractStatementReader {
 
     private static final String PG_CATALOG = "pg_catalog.";
 
-    private static final String MS_PRIVILIGES_JOIN = "CROSS APPLY (\n"
-            + "  SELECT * FROM (\n"
-            + "    SELECT\n"
-            + "      perm.state_desc AS sd,\n"
-            + "      perm.permission_name AS pn,\n"
-            + "      roleprinc.name AS r,\n"
-            + "      col.name AS c\n"
-            + "    FROM sys.database_principals roleprinc  WITH (NOLOCK)\n"
-            + "    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id\n"
-            + "    LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id AND col.column_id = perm.minor_id\n"
-            + "    WHERE major_id = res.object_id AND perm.class = 1\n"
-            + "  ) cc\n"
-            + "  FOR XML RAW, ROOT\n"
-            + ") aa (acl)";
+    private static final String MS_PRIVILIGES_JOIN = """
+            CROSS APPLY (
+              SELECT * FROM (
+                SELECT
+                  perm.state_desc AS sd,
+                  perm.permission_name AS pn,
+                  roleprinc.name AS r,
+                  col.name AS c
+                FROM sys.database_principals roleprinc  WITH (NOLOCK)
+                JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+                LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id AND col.column_id = perm.minor_id
+                WHERE major_id = res.object_id AND perm.class = 1
+              ) cc
+              FOR XML RAW, ROOT
+            ) aa (acl)""";
 
 
     private static final String EXTENSION_DEPS_CTE =

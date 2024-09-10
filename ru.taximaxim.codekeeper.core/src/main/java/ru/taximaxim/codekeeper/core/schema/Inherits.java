@@ -60,8 +60,7 @@ public class Inherits implements IHashable {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Inherits) {
-            Inherits other = (Inherits) obj;
+        if (obj instanceof Inherits other) {
             return Objects.equals(key, other.key)
                     && Objects.equals(value, other.value);
         }

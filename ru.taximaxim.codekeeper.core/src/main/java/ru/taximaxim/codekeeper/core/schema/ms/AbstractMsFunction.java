@@ -85,8 +85,7 @@ implements SourceStatement {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction func) {
-        if (func instanceof AbstractMsFunction && super.compareUnalterable(func)) {
-            AbstractMsFunction newFunction = (AbstractMsFunction) func;
+        if (func instanceof AbstractMsFunction newFunction && super.compareUnalterable(func)) {
             return isAnsiNulls() == newFunction.isAnsiNulls()
                     && isQuotedIdentified() == newFunction.isQuotedIdentified()
                     && Objects.equals(getFirstPart(), newFunction.getFirstPart())

@@ -180,53 +180,55 @@ public class MsExtendedObjectsReader extends JdbcReader {
     }
 
     private void addMsColumnsPart(QueryBuilder builder) {
-        String cols = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT\n"
-                + "      c.name,\n"
-                + "      c.column_id AS id,\n"
-                + "      t.name AS type,\n"
-                + "      SCHEMA_NAME(t.schema_id) AS st,\n"
-                + "      CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,\n"
-                + "      c.precision AS pr,\n"
-                + "      c.scale AS sc,\n"
-                + "      c.collation_name AS cn,\n"
-                + "      t.is_user_defined AS ud\n"
-                + "    FROM sys.columns as c WITH (NOLOCK)\n"
-                + "    JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id\n"
-                + "    WHERE c.object_id = res.object_id\n"
-                + "  ) ccc ORDER BY ccc.id\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") ccc (cols)";
+        String cols = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT
+                      c.name,
+                      c.column_id AS id,
+                      t.name AS type,
+                      SCHEMA_NAME(t.schema_id) AS st,
+                      CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
+                      c.precision AS pr,
+                      c.scale AS sc,
+                      c.collation_name AS cn,
+                      t.is_user_defined AS ud
+                    FROM sys.columns as c WITH (NOLOCK)
+                    JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
+                    WHERE c.object_id = res.object_id
+                  ) ccc ORDER BY ccc.id
+                  FOR XML RAW, ROOT
+                ) ccc (cols)""";
 
         builder.column("ccc.cols");
         builder.join(cols);
     }
 
     private void addMsArgsPart(QueryBuilder builder) {
-        String args = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT \n"
-                + "      p.name,\n"
-                + "      t.name AS type,\n"
-                + "      SCHEMA_NAME(t.schema_id) AS st,\n"
-                + "      TYPE_NAME(t.system_type_id) AS bt,\n"
-                + "      CASE WHEN p.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN p.max_length/2 ELSE p.max_length END AS size,\n"
-                + "      p.parameter_id AS id,\n"
-                + "      p.precision AS pr,\n"
-                + "      p.scale AS sc,\n"
-                + "      t.is_user_defined AS ud,\n"
-                + "      p.is_output AS ou,\n"
-                + "      p.has_default_value AS hd,\n"
-                + "      p.default_value AS dv,\n"
-                + "      p.is_readonly AS ro\n"
-                + "      FROM sys.objects so WITH (NOLOCK)\n"
-                + "      JOIN sys.parameters p WITH (NOLOCK) ON so.object_id = p.object_id\n"
-                + "      JOIN sys.types t WITH (NOLOCK) ON p.user_type_id = t.user_type_id\n"
-                + "      WHERE p.parameter_id > 0 AND so.object_id = res.object_id \n"
-                + "  ) cc ORDER BY cc.id\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") cc (args)";
+        String args = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT\s
+                      p.name,
+                      t.name AS type,
+                      SCHEMA_NAME(t.schema_id) AS st,
+                      TYPE_NAME(t.system_type_id) AS bt,
+                      CASE WHEN p.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN p.max_length/2 ELSE p.max_length END AS size,
+                      p.parameter_id AS id,
+                      p.precision AS pr,
+                      p.scale AS sc,
+                      t.is_user_defined AS ud,
+                      p.is_output AS ou,
+                      p.has_default_value AS hd,
+                      p.default_value AS dv,
+                      p.is_readonly AS ro
+                      FROM sys.objects so WITH (NOLOCK)
+                      JOIN sys.parameters p WITH (NOLOCK) ON so.object_id = p.object_id
+                      JOIN sys.types t WITH (NOLOCK) ON p.user_type_id = t.user_type_id
+                      WHERE p.parameter_id > 0 AND so.object_id = res.object_id\s
+                  ) cc ORDER BY cc.id
+                  FOR XML RAW, ROOT
+                ) cc (args)""";
 
         builder.column("cc.args");
         builder.join(args);

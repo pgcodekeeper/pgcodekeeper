@@ -66,8 +66,7 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction function) {
-        if (function instanceof AbstractMsClrFunction && super.compareUnalterable(function)) {
-            AbstractMsClrFunction func = (AbstractMsClrFunction) function;
+        if (function instanceof AbstractMsClrFunction func && super.compareUnalterable(function)) {
             return Objects.equals(assembly, func.getAssembly())
                     && Objects.equals(assemblyClass, func.getAssemblyClass())
                     && Objects.equals(assemblyMethod, func.getAssemblyMethod())

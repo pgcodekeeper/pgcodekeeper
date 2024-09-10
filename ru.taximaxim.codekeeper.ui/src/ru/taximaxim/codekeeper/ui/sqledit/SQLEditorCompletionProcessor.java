@@ -19,7 +19,6 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.stream.Collectors;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -64,7 +63,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         keywords = Keyword.KEYWORDS.keySet().stream()
                 .sorted()
                 .map(s -> s.toUpperCase(Locale.ROOT))
-                .collect(Collectors.toList());
+                .toList();
 
         tmplMsg = MessageFormat.format(Messages.SQLEditorCompletionProcessor_show_templates, hotKey);
         keyMsg = MessageFormat.format(Messages.SQLEditorCompletionProcessor_show_keywords, hotKey);

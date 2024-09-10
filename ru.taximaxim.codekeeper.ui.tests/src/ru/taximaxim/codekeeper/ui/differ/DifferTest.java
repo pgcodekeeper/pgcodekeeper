@@ -40,11 +40,11 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.ui.UiTestUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
+import ru.taximaxim.codekeeper.ui.UiTestUtils;
 import ru.taximaxim.codekeeper.ui.tests.ProjectUpdaterTest;
 
-public class DifferTest {
+class DifferTest {
 
     private static Stream<Arguments> generator() {
         return Stream.of(

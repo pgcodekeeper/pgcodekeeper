@@ -144,8 +144,8 @@ public class TreeElement {
         if (type == DbObjType.COLUMN) {
             return ((AbstractTable) stParent).getColumn(name);
         }
-        if (stParent instanceof IStatementContainer) {
-            return ((IStatementContainer) stParent).getChild(name, type);
+        if (stParent instanceof IStatementContainer cont) {
+            return cont.getChild(name, type);
         }
 
         return null;
@@ -156,8 +156,7 @@ public class TreeElement {
      */
     public PgStatement getPgStatementSide(AbstractDatabase left, AbstractDatabase right) {
         switch (side) {
-        case LEFT:
-        case BOTH:
+        case LEFT, BOTH:
             return getPgStatement(left);
         case RIGHT:
             return getPgStatement(right);
@@ -279,13 +278,15 @@ public class TreeElement {
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
-        }else if(obj instanceof TreeElement) {
-            TreeElement other = (TreeElement) obj;
+        }
+
+        if (obj instanceof TreeElement other) {
             return Objects.equals(name, other.getName())
                     && Objects.equals(type, other.getType())
                     && Objects.equals(side, other.getSide())
                     && getContainerQName().equals(other.getContainerQName());
         }
+
         return false;
     }
 

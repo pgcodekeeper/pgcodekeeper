@@ -146,8 +146,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
             return true;
         }
 
-        if (obj instanceof PgCollation && super.compare(obj)) {
-            PgCollation coll = (PgCollation) obj;
+        if (obj instanceof PgCollation coll && super.compare(obj)) {
             return compareUnalterable(coll);
         }
         return false;

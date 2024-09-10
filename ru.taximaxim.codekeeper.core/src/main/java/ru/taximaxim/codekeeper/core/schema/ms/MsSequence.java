@@ -193,10 +193,8 @@ public class MsSequence extends AbstractSequence {
             long precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
-        this.maxValue = Long.toString(max == null ?
-                getBoundaryTypeVal(type, true, precision) : max);
-        this.minValue = Long.toString(min == null ?
-                getBoundaryTypeVal(type, false, precision) : min);
+        this.maxValue = Long.toString(max == null ? getBoundaryTypeVal(type, true, precision) : max);
+        this.minValue = Long.toString(min == null ? getBoundaryTypeVal(type, false, precision) : min);
         resetHash();
     }
 
@@ -211,8 +209,11 @@ public class MsSequence extends AbstractSequence {
 
     @Override
     public boolean compare(PgStatement obj) {
-        return obj instanceof MsSequence && super.compare(obj)
-                && isCached == ((MsSequence) obj).isCached();
+        if (obj instanceof MsSequence seq && super.compare(obj)) {
+            return isCached == seq.isCached();
+        }
+
+        return false;
     }
 
     @Override

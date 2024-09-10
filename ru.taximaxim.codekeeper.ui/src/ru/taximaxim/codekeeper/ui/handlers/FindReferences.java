@@ -35,13 +35,10 @@ public class FindReferences extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
 
-        if (activeEditor instanceof SQLEditor) {
-            SQLEditor editor = (SQLEditor) activeEditor;
-
+        if (activeEditor instanceof SQLEditor editor) {
             IProject proj = ((IFileEditorInput) editor.getEditorInput()).getFile().getProject();
 
             PgObjLocation ref = editor.getCurrentReference();
-
             if (ref != null) {
                 NewSearchUI.activateSearchResultView();
                 NewSearchUI.runQueryInBackground(new ReferenceSearchQuery(ref, proj));

@@ -170,8 +170,8 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgConstraintExclude && super.compare(obj)) {
-            return compareUnalterable((PgConstraintExclude) obj);
+        if (obj instanceof PgConstraintExclude exclude && super.compare(obj)) {
+            return compareUnalterable(exclude);
         }
         return false;
     }

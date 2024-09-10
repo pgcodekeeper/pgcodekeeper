@@ -28,8 +28,7 @@ public class AddDepcy extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         IWorkbenchPart part = HandlerUtil.getActiveEditor(event);
 
-        if (part instanceof ProjectEditorDiffer){
-            ProjectEditorDiffer differ = (ProjectEditorDiffer) part;
+        if (part instanceof ProjectEditorDiffer differ) {
             differ.addDependency();
         }
         return null;

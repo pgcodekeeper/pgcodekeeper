@@ -82,6 +82,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
         return true;
     }
 
+    @Override
     public void addInclude(String column) {
         includes.add(column);
         resetHash();
@@ -135,8 +136,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
             return true;
         }
 
-        if (obj instanceof AbstractIndex && super.compare(obj)) {
-            AbstractIndex index = (AbstractIndex) obj;
+        if (obj instanceof AbstractIndex index && super.compare(obj)) {
             return compareUnalterable(index)
                     && isClustered == index.isClustered()
                     && Objects.equals(tablespace, index.getTablespace())

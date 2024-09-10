@@ -65,16 +65,16 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
-        if (ctx instanceof SqlContext) {
+        if (ctx instanceof SqlContext sqlCtx) {
             Sql sql = new Sql(meta);
             declareAnalyzerArgs(sql);
-            return analyze((SqlContext) ctx, sql);
+            return analyze(sqlCtx, sql);
         }
 
-        if (ctx instanceof Function_bodyContext) {
+        if (ctx instanceof Function_bodyContext bodyCtx) {
             SqlFunctionBody body = new SqlFunctionBody(meta);
             declareAnalyzerArgs(body);
-            return analyze((Function_bodyContext) ctx, body);
+            return analyze(bodyCtx, body);
         }
 
         Function function = new Function(meta);

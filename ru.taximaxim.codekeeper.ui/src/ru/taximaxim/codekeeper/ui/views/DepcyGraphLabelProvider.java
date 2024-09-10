@@ -68,8 +68,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public String getText(Object element) {
-        if (element instanceof PgStatement) {
-            PgStatement st = (PgStatement) element;
+        if (element instanceof PgStatement st) {
             switch (st.getStatementType()) {
             case CAST:
                 return "CAST " + st.getBareName(); //$NON-NLS-1$
@@ -136,8 +135,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
                 return "TEMP " + st.getBareName(); //$NON-NLS-1$
             case FTS_CONFIGURATION:
                 return "CONF " + st.getBareName(); //$NON-NLS-1$
-            case FTS_DICTIONARY:
-            case DICTIONARY:
+            case FTS_DICTIONARY, DICTIONARY:
                 return "DICT "  + st.getBareName(); //$NON-NLS-1$
             }
             return st.getClass() + " " + st.getBareName(); //$NON-NLS-1$
@@ -180,14 +178,14 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public IFigure getTooltip(Object entity) {
-        if (entity instanceof PgStatement) {
-            TextFlow text = new TextFlow(((PgStatement) entity).getName());
+        if (entity instanceof PgStatement st) {
+            TextFlow text = new TextFlow(st.getName());
             FlowPage page = new FlowPage();
             page.add(text);
             return page;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     @Override

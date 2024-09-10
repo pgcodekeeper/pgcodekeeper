@@ -112,8 +112,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof AbstractForeignTable && super.compare(obj)) {
-            AbstractForeignTable table = (AbstractForeignTable) obj;
+        if (obj instanceof AbstractForeignTable table && super.compare(obj)) {
             return Objects.equals(serverName, table.getServerName());
         }
 

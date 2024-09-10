@@ -38,8 +38,7 @@ public class StatisticsAnalysisLauncher extends AbstractAnalysisLauncher {
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         ValueExprWithNmspc expr = new ValueExprWithNmspc(meta);
 
-        if (stmt instanceof PgStatistics) {
-            PgStatistics stat = (PgStatistics) stmt;
+        if (stmt instanceof PgStatistics stat) {
             expr.addRawTableReference(
                     new GenericColumn(stat.getForeignSchema(), stat.getForeignTable(), DbObjType.TABLE));
         }

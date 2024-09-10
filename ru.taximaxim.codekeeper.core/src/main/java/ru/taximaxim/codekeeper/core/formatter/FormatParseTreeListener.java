@@ -37,7 +37,7 @@ public abstract class FormatParseTreeListener implements ParseTreeListener {
      * @param unaryOps
      *            found unary operators and other operator-like tokens
      */
-    public FormatParseTreeListener(CommonTokenStream tokens,
+    protected FormatParseTreeListener(CommonTokenStream tokens,
             Map<Token, Pair<IndentDirection, Integer>> indents,
             Set<Token> unaryOps) {
         this.tokens = tokens;

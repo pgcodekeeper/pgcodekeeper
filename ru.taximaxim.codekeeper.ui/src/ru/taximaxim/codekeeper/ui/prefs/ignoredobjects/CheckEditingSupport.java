@@ -36,8 +36,7 @@ public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor
 
     @Override
     protected Object getValue(Object element) {
-        if (element instanceof IgnoredObject) {
-            IgnoredObject data = (IgnoredObject) element;
+        if (element instanceof IgnoredObject data) {
             switch (type) {
             case IGNORE_CONTENT:
                 return data.isIgnoreContent();
@@ -52,8 +51,7 @@ public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor
 
     @Override
     protected void setValue(Object element, Object value) {
-        if (element instanceof IgnoredObject) {
-            IgnoredObject data = (IgnoredObject) element;
+        if (element instanceof IgnoredObject data) {
             boolean boolValue = (Boolean) value;
             switch (type) {
             case IGNORE_CONTENT:

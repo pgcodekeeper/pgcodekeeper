@@ -60,8 +60,7 @@ public class SQLEditorActionContributor extends TextEditorActionContributor {
     @Override
     public void setActiveEditor(IEditorPart part) {
         super.setActiveEditor(part);
-        if (part instanceof SQLEditor) {
-            SQLEditor editor = (SQLEditor) part;
+        if (part instanceof SQLEditor editor) {
             fContentAssist.setAction(getAction(editor, SQLEditor.CONTENT_ASSIST));
             languageItem.setActiveEditor(editor);
         }

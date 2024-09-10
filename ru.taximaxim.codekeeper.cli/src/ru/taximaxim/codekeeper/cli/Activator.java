@@ -50,8 +50,7 @@ public class Activator implements BundleActivator {
 
     private void configureLogbackInBundle(Bundle bundle) throws JoranException, IOException {
         ILoggerFactory factory = LoggerFactory.getILoggerFactory();
-        if (factory instanceof LoggerContext) {
-            LoggerContext loggerContext = (LoggerContext) factory;
+        if (factory instanceof LoggerContext loggerContext) {
             JoranConfigurator jc = new JoranConfigurator();
             jc.setContext(loggerContext);
             loggerContext.reset();

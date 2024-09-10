@@ -442,8 +442,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgView && super.compare(obj)) {
-            PgView view = (PgView) obj;
+        if (obj instanceof PgView view && super.compare(obj)) {
             return Objects.equals(normalizedQuery, view.getNormalizedQuery())
                     && Objects.equals(isWithData, view.isWithData())
                     && Objects.equals(method, view.getMethod())

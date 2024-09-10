@@ -363,8 +363,7 @@ public class PgTrigger extends AbstractTrigger {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PgTrigger && super.compare(obj)) {
-            PgTrigger trigger = (PgTrigger) obj;
+        if (obj instanceof PgTrigger trigger && super.compare(obj)) {
             return compareUnalterable(trigger)
                     && Objects.equals(enabledState, trigger.getEnabledState());
         }

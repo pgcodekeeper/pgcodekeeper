@@ -166,104 +166,108 @@ public class MsTypesReader extends JdbcReader {
 
     @Override
     protected void addMsPriviligesPart(QueryBuilder builder) {
-        String acl = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT  \n"
-                + "      perm.state_desc AS sd,\n"
-                + "      perm.permission_name AS pn,\n"
-                + "      roleprinc.name AS r\n"
-                + "    FROM sys.database_principals roleprinc WITH (NOLOCK)\n"
-                + "    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id\n"
-                + "    WHERE major_id = res.user_type_id AND perm.class = 6\n"
-                + "  ) aa \n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") aa (acl)";
+        String acl = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT \s
+                      perm.state_desc AS sd,
+                      perm.permission_name AS pn,
+                      roleprinc.name AS r
+                    FROM sys.database_principals roleprinc WITH (NOLOCK)
+                    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
+                    WHERE major_id = res.user_type_id AND perm.class = 6
+                  ) aa\s
+                  FOR XML RAW, ROOT
+                ) aa (acl)""";
 
         builder.column("aa.acl");
         builder.join(acl);
     }
 
     private void addMsConstraintsPart(QueryBuilder builder) {
-        String checks = "CROSS APPLY ( \n"
-                + "  SELECT c.definition AS def\n"
-                + "  FROM sys.check_constraints c WITH (NOLOCK)\n"
-                + "  WHERE c.parent_object_id=ttt.type_table_object_id\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") ch (checks)";
+        String checks = """
+                CROSS APPLY (\s
+                  SELECT c.definition AS def
+                  FROM sys.check_constraints c WITH (NOLOCK)
+                  WHERE c.parent_object_id=ttt.type_table_object_id
+                  FOR XML RAW, ROOT
+                ) ch (checks)""";
 
         builder.column("ch.checks");
         builder.join(checks);
     }
 
     private void addMsColumnsPart(QueryBuilder builder) {
-        String cols = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT\n"
-                + "      c.name,\n"
-                + "      c.column_id AS id,\n"
-                + "      ss.name AS st,\n"
-                + "      usrt.name AS type,\n"
-                + "      usrt.is_user_defined AS ud,\n"
-                + "      CASE WHEN c.max_length >= 0 AND baset.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,\n"
-                + "      c.precision AS pr,\n"
-                + "      c.scale AS sc,\n"
-                + "      c.collation_name AS cn,\n"
-                + "      object_definition(c.default_object_id) AS dv,\n"
-                + "      c.is_nullable AS nl,\n"
-                + "      c.is_identity AS ii,\n"
-                + "      ic.seed_value AS s,\n"
-                + "      ic.increment_value AS i,\n"
-                + "      ic.is_not_for_replication AS nfr,\n"
-                + "      c.is_rowguidcol AS rgc,\n"
-                + "      cc.is_persisted AS ps,\n"
-                + "      cc.definition AS def\n"
-                + "    FROM sys.all_columns c WITH (NOLOCK)\n"
-                + "    LEFT OUTER JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND cc.column_id = c.column_id\n"
-                + "    LEFT OUTER JOIN sys.identity_columns ic WITH (NOLOCK) ON ic.object_id = c.object_id AND ic.column_id = c.column_id\n"
-                + "    LEFT OUTER JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = c.user_type_id\n"
-                + "    LEFT OUTER JOIN sys.schemas ss WITH (NOLOCK) ON ss.schema_id = usrt.schema_id\n"
-                + "    LEFT OUTER JOIN sys.types baset WITH (NOLOCK) ON (baset.user_type_id = c.system_type_id AND baset.user_type_id = baset.system_type_id)\n"
-                + "      OR (baset.system_type_id = c.system_type_id AND baset.user_type_id = c.user_type_id AND baset.is_user_defined = 0 AND baset.is_assembly_type = 1)\n"
-                + "    WHERE ttt.type_table_object_id=c.object_id\n"
-                + "  ) cc ORDER BY cc.id\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") cc (cols)";
+        String cols = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT
+                      c.name,
+                      c.column_id AS id,
+                      ss.name AS st,
+                      usrt.name AS type,
+                      usrt.is_user_defined AS ud,
+                      CASE WHEN c.max_length >= 0 AND baset.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
+                      c.precision AS pr,
+                      c.scale AS sc,
+                      c.collation_name AS cn,
+                      object_definition(c.default_object_id) AS dv,
+                      c.is_nullable AS nl,
+                      c.is_identity AS ii,
+                      ic.seed_value AS s,
+                      ic.increment_value AS i,
+                      ic.is_not_for_replication AS nfr,
+                      c.is_rowguidcol AS rgc,
+                      cc.is_persisted AS ps,
+                      cc.definition AS def
+                    FROM sys.all_columns c WITH (NOLOCK)
+                    LEFT OUTER JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND cc.column_id = c.column_id
+                    LEFT OUTER JOIN sys.identity_columns ic WITH (NOLOCK) ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+                    LEFT OUTER JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = c.user_type_id
+                    LEFT OUTER JOIN sys.schemas ss WITH (NOLOCK) ON ss.schema_id = usrt.schema_id
+                    LEFT OUTER JOIN sys.types baset WITH (NOLOCK) ON (baset.user_type_id = c.system_type_id AND baset.user_type_id = baset.system_type_id)
+                      OR (baset.system_type_id = c.system_type_id AND baset.user_type_id = c.user_type_id AND baset.is_user_defined = 0 AND baset.is_assembly_type = 1)
+                    WHERE ttt.type_table_object_id=c.object_id
+                  ) cc ORDER BY cc.id
+                  FOR XML RAW, ROOT
+                ) cc (cols)""";
 
         builder.column("cc.cols");
         builder.join(cols);
     }
 
     private void addMsIndicesPart(QueryBuilder builder) {
-        String indices = "CROSS APPLY ( \n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT\n"
-                + "      si.name,\n"
-                + "      si.is_primary_key AS pk,\n"
-                + "      si.is_unique_constraint AS uc,\n"
-                + "      si.ignore_dup_key AS dk,\n"
-                + "      INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS cl,\n"
-                + "      hi.bucket_count AS bc,\n"
-                + "      ccc.cols,\n"
-                + "      si.filter_definition AS def\n"
-                + "    FROM sys.indexes AS si WITH (NOLOCK)\n"
-                + "    LEFT JOIN sys.objects o WITH (NOLOCK) ON si.object_id = o.object_id\n"
-                + "    LEFT JOIN sys.hash_indexes hi WITH (NOLOCK) ON hi.object_id = si.object_id AND hi.index_id = si.index_id\n"
-                + "    CROSS APPLY ( \n"
-                + "      SELECT * FROM (\n"
-                + "        SELECT\n"
-                + "          c.index_column_id AS id,\n"
-                + "          sc.name,\n"
-                + "          c.is_descending_key AS is_desc\n"
-                + "        FROM sys.index_columns c WITH (NOLOCK)\n"
-                + "        JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id\n"
-                + "        WHERE c.object_id = si.object_id AND c.index_id = si.index_id\n"
-                + "      ) cc ORDER BY cc.id\n"
-                + "      FOR XML RAW, ROOT\n"
-                + "    ) ccc (cols)\n"
-                + "    WHERE si.object_id=ttt.type_table_object_id AND si.index_id > 0 AND si.is_hypothetical = 0\n"
-                + "  ) ii  \n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") ii (indices)";
+        String indices = """
+                CROSS APPLY (\s
+                  SELECT * FROM (
+                    SELECT
+                      si.name,
+                      si.is_primary_key AS pk,
+                      si.is_unique_constraint AS uc,
+                      si.ignore_dup_key AS dk,
+                      INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS cl,
+                      hi.bucket_count AS bc,
+                      ccc.cols,
+                      si.filter_definition AS def
+                    FROM sys.indexes AS si WITH (NOLOCK)
+                    LEFT JOIN sys.objects o WITH (NOLOCK) ON si.object_id = o.object_id
+                    LEFT JOIN sys.hash_indexes hi WITH (NOLOCK) ON hi.object_id = si.object_id AND hi.index_id = si.index_id
+                    CROSS APPLY (\s
+                      SELECT * FROM (
+                        SELECT
+                          c.index_column_id AS id,
+                          sc.name,
+                          c.is_descending_key AS is_desc
+                        FROM sys.index_columns c WITH (NOLOCK)
+                        JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
+                        WHERE c.object_id = si.object_id AND c.index_id = si.index_id
+                      ) cc ORDER BY cc.id
+                      FOR XML RAW, ROOT
+                    ) ccc (cols)
+                    WHERE si.object_id=ttt.type_table_object_id AND si.index_id > 0 AND si.is_hypothetical = 0
+                  ) ii \s
+                  FOR XML RAW, ROOT
+                ) ii (indices)""";
 
         builder.column("ii.indices");
         builder.join(indices);

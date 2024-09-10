@@ -133,11 +133,13 @@ public class CliArgs extends PgDiffArguments {
     private boolean isInsertMode;
 
     @Option(name="--mode",
-            usage="specify mode:"
-                    + "\nDIFF - to compares the two sources and generates a migration script;"
-                    + "\nPARSE - to save database schema as a directory hierarchy;"
-                    + "\nGRAPH - to search for dependencies of an object;"
-                    + "\nINSERT - to gathering data from the source database taking into account the FK dependencies;\n")
+            usage="""
+                specify mode:
+                DIFF - to compares the two sources and generates a migration script;
+                PARSE - to save database schema as a directory hierarchy;
+                GRAPH - to search for dependencies of an object;
+                INSERT - to gathering data from the source database taking into account the FK dependencies;
+                """)
     private CliMode mode;
 
     @Option(name="-s", depends="-t", aliases="--source", metaVar="<path or JDBC>",
@@ -205,15 +207,17 @@ public class CliArgs extends PgDiffArguments {
     private String timeZone;
 
     @Option(name="--pre-script", metaVar="<path>",
-            usage="PRE script file path or directory with PRE scripts"
-                    + "\nnested directories are loaded recursively"
-                    + "\nspecify multiple times to use several paths")
+            usage="""
+                PRE script file path or directory with PRE scripts
+                nested directories are loaded recursively
+                specify multiple times to use several paths""")
     private List<String> preFilePath = new ArrayList<>();
 
     @Option(name="--post-script", metaVar="<path>",
-            usage="POST script file path or directory with POST scripts"
-                    + "\nnested directories are loaded recursively"
-                    + "\nspecify multiple times to use several paths")
+            usage="""
+                POST script file path or directory with POST scripts
+                nested directories are loaded recursively
+                specify multiple times to use several paths""")
     private List<String> postFilePath = new ArrayList<>();
 
     @Option(name="--ignore-column-order",

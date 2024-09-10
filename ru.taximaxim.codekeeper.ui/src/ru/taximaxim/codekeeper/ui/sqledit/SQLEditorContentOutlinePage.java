@@ -85,8 +85,7 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
             @Override
             public Image getImage(Object element) {
-                if (element instanceof Segments) {
-                    Segments seg = (Segments) element;
+                if (element instanceof Segments seg) {
                     DbObjType type = seg.getType();
                     return type != null ? Activator.getDbObjImage(type)
                             : Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE);

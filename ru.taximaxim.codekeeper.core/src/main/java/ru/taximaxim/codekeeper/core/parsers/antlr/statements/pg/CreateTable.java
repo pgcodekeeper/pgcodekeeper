@@ -79,8 +79,8 @@ public class CreateTable extends TableAbstract {
         for (AbstractColumn col : table.getColumns()) {
             PgSequence seq = ((PgColumn) col).getSequence();
             if (seq != null) {
-                if (table instanceof AbstractRegularTable) {
-                    seq.setLogged(((AbstractRegularTable) table).isLogged());
+                if (table instanceof AbstractRegularTable regTable) {
+                    seq.setLogged(regTable.isLogged());
                 }
                 seq.setParent(schema);
             }
@@ -137,9 +137,9 @@ public class CreateTable extends TableAbstract {
         String distribution = parseDistribution(ctx.distributed_clause());
         table.setDistribution(distribution);
 
-        if (table instanceof PartitionGpTable) {
+        if (table instanceof PartitionGpTable partTable) {
             var partitionGP = ctx.partition_gp();
-            ((PartitionGpTable) table).setPartitionGpBound(getFullCtxText(partitionGP),
+            partTable.setPartitionGpBound(getFullCtxText(partitionGP),
                     AntlrUtils.normalizeWhitespaceUnquoted(partitionGP, stream));
         }
 

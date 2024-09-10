@@ -237,8 +237,7 @@ public class PgDatabase extends AbstractDatabase {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof PgDatabase && super.compareChildren(obj)) {
-            PgDatabase db = (PgDatabase) obj;
+        if (obj instanceof PgDatabase db && super.compareChildren(obj)) {
             return extensions.equals(db.extensions)
                     && eventTriggers.equals(db.eventTriggers)
                     && fdws.equals(db.fdws)

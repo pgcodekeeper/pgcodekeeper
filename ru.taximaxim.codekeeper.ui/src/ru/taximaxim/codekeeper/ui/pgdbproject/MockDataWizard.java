@@ -38,8 +38,8 @@ public class MockDataWizard extends Wizard implements INewWizard {
         this.selection = selection;
         setDefaultPageImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.APP_WIZ));
         Object element = selection.getFirstElement();
-        if (element instanceof IResource) {
-            dbType = OpenProjectUtils.getDatabaseType(((IResource)element).getProject());
+        if (element instanceof IResource res) {
+            dbType = OpenProjectUtils.getDatabaseType(res.getProject());
         }
     }
 

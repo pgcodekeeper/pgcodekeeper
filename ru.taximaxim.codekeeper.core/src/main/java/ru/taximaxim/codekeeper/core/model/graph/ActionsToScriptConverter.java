@@ -193,8 +193,8 @@ public class ActionsToScriptConverter {
         List<ActionContainer> currentList = null;
         for (ActionContainer action : actions) {
             var oldObj = action.getOldObj();
-            if (action.getAction() == StatementActions.ALTER && oldObj instanceof PgColumn
-                    && ((PgColumn) oldObj).isJoinable((PgColumn) action.getNewObj())) {
+            if (action.getAction() == StatementActions.ALTER && oldObj instanceof PgColumn oldCol
+                    && oldCol.isJoinable((PgColumn) action.getNewObj())) {
                 String parent = oldObj.getParent().getQualifiedName();
                 if (!parent.equals(previousParent)) {
                     currentList = new ArrayList<>();
@@ -331,15 +331,14 @@ public class ActionsToScriptConverter {
     }
 
     private boolean isPartitionTable(PgStatement obj) {
-        return obj instanceof SimplePgTable && ((SimplePgTable) obj).getPartitionBy() != null;
+        return obj instanceof SimplePgTable simple && simple.getPartitionBy() != null;
     }
 
     private void fillPartitionTables() {
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
-            if (obj instanceof PartitionPgTable && action.getAction() == StatementActions.CREATE) {
-                PartitionPgTable table = (PartitionPgTable) obj;
+            if (obj instanceof PartitionPgTable table && action.getAction() == StatementActions.CREATE) {
                 partitionTables.computeIfAbsent(table.getParentTable(), tables -> new ArrayList<>()).add(table);
             }
         }
@@ -361,7 +360,7 @@ public class ActionsToScriptConverter {
         partitionChildren = partitionTables.values().stream()
                 .flatMap(List::stream)
                 .map(PgStatement::getQualifiedName)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private void addCommandsForMovePartitionData(PgStatement obj) {
@@ -422,8 +421,7 @@ public class ActionsToScriptConverter {
     }
 
     private void processSequence(ActionContainer action) {
-        if (action.getOldObj() instanceof PgSequence) {
-            PgSequence oldSeq = (PgSequence) action.getOldObj();
+        if (action.getOldObj() instanceof PgSequence oldSeq) {
             PgSequence newSeq = (PgSequence) action.getNewObj();
             if (newSeq.getOwnedBy() != null
                     && action.getAction() == StatementActions.CREATE
@@ -620,7 +618,7 @@ public class ActionsToScriptConverter {
         List<String> identityCols = tblIdentityCols.get(tblQName);
         List<String> identityColsForMovingData = identityCols == null ? Collections.emptyList()
                 : identityCols.stream().filter(colsForMovingData::contains)
-                .collect(Collectors.toList());
+                .toList();
 
         StringBuilder sb = new StringBuilder();
 
@@ -711,6 +709,6 @@ public class ActionsToScriptConverter {
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         }
-        return cols.map(AbstractColumn::getName).collect(Collectors.toList());
+        return cols.map(AbstractColumn::getName).toList();
     }
 }

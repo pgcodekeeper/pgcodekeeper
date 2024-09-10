@@ -52,18 +52,17 @@ public final class ChRelationsReader extends JdbcReader {
 
         var engineName = result.getString("engine").toLowerCase(Locale.ROOT);
         if (engineName.contains("dictionary")) {
-            child = getDictionary(result, schema, name, definition);
+            child = getDictionary(schema, name, definition);
         } else if (engineName.contains("view")) {
-            child = getView(result, schema, name, definition);
+            child = getView(schema, name, definition);
         } else {
-            child = getTable(result, schema, name, definition);
+            child = getTable(schema, name, definition);
         }
 
         schema.addChild(child);
     }
 
-    private PgStatement getDictionary(ResultSet result, AbstractSchema schema, String name, String definition)
-            throws SQLException {
+    private PgStatement getDictionary(AbstractSchema schema, String name, String definition) {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.DICTIONARY));
         ChDictionary dict = new ChDictionary(name);
         loader.submitChAntlrTask(definition,
@@ -72,8 +71,7 @@ public final class ChRelationsReader extends JdbcReader {
         return dict;
     }
 
-    private PgStatement getView(ResultSet result, AbstractSchema schema, String name, String definition)
-            throws SQLException {
+    private PgStatement getView(AbstractSchema schema, String name, String definition) {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.VIEW));
         ChView view = new ChView(name);
         loader.submitChAntlrTask(definition,
@@ -85,8 +83,7 @@ public final class ChRelationsReader extends JdbcReader {
         return view;
     }
 
-    private PgStatement getTable(ResultSet result, AbstractSchema schema, String name, String definition)
-            throws SQLException {
+    private PgStatement getTable(AbstractSchema schema, String name, String definition) {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.TABLE));
         ChTable table = new ChTable(name);
         loader.submitChAntlrTask(definition,

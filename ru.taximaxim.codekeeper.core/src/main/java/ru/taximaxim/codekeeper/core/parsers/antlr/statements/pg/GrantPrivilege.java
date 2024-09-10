@@ -253,8 +253,7 @@ public class GrantPrivilege extends PgParserAbstract {
         case SCHEMA:
             schema = (PgSchema) getSafe(PgDatabase::getSchema, db, idCtx);
             break;
-        case FOREIGN_DATA_WRAPPER:
-        case SERVER:
+        case FOREIGN_DATA_WRAPPER, SERVER:
             schema = null;
             break;
         default:

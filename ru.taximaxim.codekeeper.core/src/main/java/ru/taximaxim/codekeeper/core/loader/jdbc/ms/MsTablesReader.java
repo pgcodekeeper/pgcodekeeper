@@ -170,57 +170,59 @@ public class MsTablesReader extends JdbcReader {
     }
 
     private void addMsColumnsPart(QueryBuilder builder) {
-        String cols = "CROSS APPLY (\n"
-                + "  SELECT * FROM (\n"
-                + "    SELECT\n"
-                + "      c.name,\n"
-                + "      c.column_id AS id,\n"
-                + "      SCHEMA_NAME(t.schema_id) AS st,\n"
-                + "      t.name AS type,\n"
-                + "      CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,\n"
-                + "      c.precision AS pr,\n"
-                + "      c.scale AS sc,\n"
-                + "      c.is_sparse AS sp,\n"
-                + "      c.collation_name AS cn,\n"
-                + "      object_definition(c.default_object_id) AS dv,\n"
-                + "      dc.name AS dn,\n"
-                + "      c.is_nullable AS nl,\n"
-                + "      c.is_identity AS ii,\n"
-                + "      ic.seed_value AS s,\n"
-                + "      ic.increment_value AS i,\n"
-                + "      ic.is_not_for_replication AS nfr,\n"
-                + "      c.is_rowguidcol AS rgc,\n"
-                + "      cc.is_persisted AS ps,\n"
-                + "      t.is_user_defined AS ud,\n"
-                + "      mc.masking_function AS mf,\n"
-                + "      cc.definition AS def,\n"
-                + "      CASE WHEN t.name IN ('GEOMETRY', 'GEOGRAPHY')\n"
-                + "        OR TYPE_NAME(t.system_type_id) IN ('TEXT', 'NTEXT','IMAGE' ,'XML')\n"
-                + "        OR (TYPE_NAME(t.system_type_id) IN ('VARCHAR', 'NVARCHAR', 'VARBINARY') AND c.max_length = -1)\n"
-                + "        THEN 1 ELSE 0 END AS ti\n"
-                + "      FROM sys.columns c WITH (NOLOCK)\n"
-                + "      JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id\n"
-                + "      LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id\n"
-                + "      LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id\n"
-                + "      LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id\n"
-                + "      LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id\n"
-                + "      LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id\n"
-                + "      WHERE c.object_id = res.object_id\n"
-                + "  ) cc ORDER BY cc.id\n"
-                + "  FOR XML RAW, ROOT\n"
-                + ") cc (cols)";
+        String cols = """
+                CROSS APPLY (
+                  SELECT * FROM (
+                    SELECT
+                      c.name,
+                      c.column_id AS id,
+                      SCHEMA_NAME(t.schema_id) AS st,
+                      t.name AS type,
+                      CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
+                      c.precision AS pr,
+                      c.scale AS sc,
+                      c.is_sparse AS sp,
+                      c.collation_name AS cn,
+                      object_definition(c.default_object_id) AS dv,
+                      dc.name AS dn,
+                      c.is_nullable AS nl,
+                      c.is_identity AS ii,
+                      ic.seed_value AS s,
+                      ic.increment_value AS i,
+                      ic.is_not_for_replication AS nfr,
+                      c.is_rowguidcol AS rgc,
+                      cc.is_persisted AS ps,
+                      t.is_user_defined AS ud,
+                      mc.masking_function AS mf,
+                      cc.definition AS def,
+                      CASE WHEN t.name IN ('GEOMETRY', 'GEOGRAPHY')
+                        OR TYPE_NAME(t.system_type_id) IN ('TEXT', 'NTEXT','IMAGE' ,'XML')
+                        OR (TYPE_NAME(t.system_type_id) IN ('VARCHAR', 'NVARCHAR', 'VARBINARY') AND c.max_length = -1)
+                        THEN 1 ELSE 0 END AS ti
+                      FROM sys.columns c WITH (NOLOCK)
+                      JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
+                      LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
+                      LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id
+                      LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
+                      LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id
+                      LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id
+                      WHERE c.object_id = res.object_id
+                  ) cc ORDER BY cc.id
+                  FOR XML RAW, ROOT
+                ) cc (cols)""";
 
         builder.column("cc.cols");
         builder.join(cols);
     }
 
     private void addMsTablespacePart(QueryBuilder builder) {
-        String cols = "CROSS APPLY (\n"
-                + "  SELECT TOP 1 dsp.name\n"
-                + "  FROM sys.indexes ind WITH (NOLOCK)\n"
-                + "  LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id\n"
-                + "  WHERE ind.object_id = res.object_id\n"
-                + ") tt";
+        String cols = """
+                CROSS APPLY (
+                  SELECT TOP 1 dsp.name
+                  FROM sys.indexes ind WITH (NOLOCK)
+                  LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id
+                  WHERE ind.object_id = res.object_id
+                ) tt""";
 
         builder.column("tt.name AS space_name");
         builder.join(cols);

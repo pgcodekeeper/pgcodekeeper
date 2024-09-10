@@ -214,8 +214,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
             return true;
         }
 
-        if (obj instanceof PgOperator && super.compare(obj)) {
-            PgOperator oper  = (PgOperator) obj;
+        if (obj instanceof PgOperator oper && super.compare(obj)) {
             return compareUnalterable(oper)
                     && Objects.equals(restrict, oper.getRestrict())
                     && Objects.equals(join, oper.getJoin());

@@ -134,8 +134,7 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
 
     @Override
     protected boolean compareUnalterable(MsConstraint obj) {
-        if (obj instanceof MsConstraintFk) {
-            var con = (MsConstraintFk) obj;
+        if (obj instanceof MsConstraintFk con) {
             return Objects.equals(columns, con.columns)
                     && Objects.equals(getForeignSchema(), con.getForeignSchema())
                     && Objects.equals(getForeignTable(), con.getForeignTable())
@@ -150,9 +149,8 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsConstraintFk) {
-            var con = (MsConstraintFk) obj;
-            return super.compare(con) && compareUnalterable(con);
+        if (obj instanceof MsConstraintFk con && super.compare(con)) {
+            return compareUnalterable(con);
         }
         return false;
     }

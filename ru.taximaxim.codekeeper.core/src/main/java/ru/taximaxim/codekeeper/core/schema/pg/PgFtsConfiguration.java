@@ -138,8 +138,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
             return true;
         }
 
-        if (obj instanceof PgFtsConfiguration && super.compare(obj)) {
-            PgFtsConfiguration config = (PgFtsConfiguration) obj;
+        if (obj instanceof PgFtsConfiguration config && super.compare(obj)) {
             return Objects.equals(parser, config.getParser())
                     && dictionariesMap.equals(config.dictionariesMap);
         }

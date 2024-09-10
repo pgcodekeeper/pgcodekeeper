@@ -289,22 +289,20 @@ implements TSqlContextProcessor {
     }
 
     private String getAction(ParserRuleContext ctx) {
-        if (ctx instanceof Another_statementContext) {
-            Another_statementContext ast = (Another_statementContext) ctx;
+        if (ctx instanceof Another_statementContext ast) {
             Transaction_statementContext transactionCtx;
             if ((transactionCtx = ast.transaction_statement()) != null
                     && transactionCtx.BEGIN() != null) {
                 return "BEGIN TRANSACTION";
             }
-        } else if (ctx instanceof Dml_clauseContext) {
-            Dml_clauseContext dml = (Dml_clauseContext) ctx;
+        } else if (ctx instanceof Dml_clauseContext dml) {
             if (dml.merge_statement() != null) {
                 return "MERGE";
-            } else if (dml.select_statement() != null) {
+            }
+            if (dml.select_statement() != null) {
                 return "SELECT";
             }
-        } else if (ctx instanceof Schema_createContext) {
-            Schema_createContext createCtx = (Schema_createContext) ctx;
+        } else if (ctx instanceof Schema_createContext createCtx) {
             Create_xml_indexContext xmlIdxCtx;
             int descrWordsCount = 2;
             if (createCtx.create_application_role() != null
@@ -344,8 +342,7 @@ implements TSqlContextProcessor {
                 descrWordsCount = 4;
             }
             return getActionDescription(ctx, descrWordsCount);
-        } else if (ctx instanceof Schema_alterContext) {
-            Schema_alterContext alterCtx = (Schema_alterContext) ctx;
+        } else if (ctx instanceof Schema_alterContext alterCtx) {
             int descrWordsCount = 2;
             if (alterCtx.alter_asymmetric_key() != null
                     || alterCtx.alter_application_role() != null
@@ -384,8 +381,7 @@ implements TSqlContextProcessor {
                 descrWordsCount = 4;
             }
             return getActionDescription(ctx, descrWordsCount);
-        } else if (ctx instanceof Schema_dropContext) {
-            Schema_dropContext dropCtx = (Schema_dropContext) ctx;
+        } else if (ctx instanceof Schema_dropContext dropCtx) {
             int descrWordsCount = 2;
             if (dropCtx.drop_asymmetric_key() != null
                     || dropCtx.drop_event_notifications_or_session() != null

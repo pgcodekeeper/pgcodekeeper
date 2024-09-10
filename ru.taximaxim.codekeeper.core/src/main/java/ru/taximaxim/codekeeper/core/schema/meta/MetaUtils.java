@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -104,7 +103,7 @@ public final class MetaUtils {
             MetaRelation rel = new MetaRelation(loc);
             Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
             if (columns != null) {
-                rel.addColumns(columns.collect(Collectors.toList()));
+                rel.addColumns(columns.toList());
             }
             meta = rel;
             break;
@@ -212,8 +211,8 @@ public final class MetaUtils {
     public static void initializeView(MetaContainer meta, String schemaName,
             String name, List<? extends Pair<String, String>> columns) {
         IRelation rel = meta.findRelation(schemaName, name);
-        if (rel instanceof MetaRelation) {
-            ((MetaRelation) rel).addColumns(columns);
+        if (rel instanceof MetaRelation metaRel) {
+            metaRel.addColumns(columns);
         }
     }
 

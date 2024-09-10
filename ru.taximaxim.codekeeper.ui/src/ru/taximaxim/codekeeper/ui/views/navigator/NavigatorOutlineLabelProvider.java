@@ -30,8 +30,7 @@ implements IDescriptionProvider {
 
     @Override
     public String getDescription(Object anElement) {
-        if (anElement instanceof SegmentsWithParent) {
-            SegmentsWithParent seg = (SegmentsWithParent) anElement;
+        if (anElement instanceof SegmentsWithParent seg) {
             return seg + " (" + seg.getType() + ')'; //$NON-NLS-1$
         }
         return null;
@@ -47,8 +46,7 @@ implements IDescriptionProvider {
 
     @Override
     public Image getImage(Object element) {
-        if (element instanceof SegmentsWithParent) {
-            SegmentsWithParent seg = (SegmentsWithParent) element;
+        if (element instanceof SegmentsWithParent seg) {
             DbObjType type = seg.getType();
             return type != null ? Activator.getDbObjImage(type)
                     : Activator.getEclipseImage(ISharedImages.IMG_OBJ_FILE);

@@ -278,10 +278,10 @@ public abstract class TableAbstract extends PgParserAbstract {
             String tablespace, String location) {
         Constr_bodyContext constrBody = ctx.constr_body();
 
-        if (constrBlank instanceof PgConstraintFk) {
-            fillConstrFk((PgConstraintFk) constrBlank, constrBody, null, schemaName, tableName);
-        } else if (constrBlank instanceof PgConstraintExclude) {
-            fillConstrExcl((PgConstraintExclude) constrBlank, constrBody, schemaName, tableName);
+        if (constrBlank instanceof PgConstraintFk fk) {
+            fillConstrFk(fk, constrBody, null, schemaName, tableName);
+        } else if (constrBlank instanceof PgConstraintExclude exclude) {
+            fillConstrExcl(exclude, constrBody, schemaName, tableName);
             for (Index_columnContext col : constrBody.index_column()) {
                 db.addAnalysisLauncher(new ConstraintAnalysisLauncher(constrBlank, col.vex(), location));
                 Storage_parametersContext params = col.storage_parameters();
@@ -291,10 +291,10 @@ public abstract class TableAbstract extends PgParserAbstract {
                     }
                 }
             }
-        } else if (constrBlank instanceof PgConstraintPk) {
-            fillConstrPk((PgConstraintPk) constrBlank, constrBody, null, null, schemaName, tableName);
-        } else if (constrBlank instanceof PgConstraintCheck) {
-            fillConstrCheck((PgConstraintCheck) constrBlank, constrBody, false);
+        } else if (constrBlank instanceof PgConstraintPk pk) {
+            fillConstrPk(pk, constrBody, null, null, schemaName, tableName);
+        } else if (constrBlank instanceof PgConstraintCheck check) {
+            fillConstrCheck(check, constrBody, false);
         }
 
         if (tablespace != null) {

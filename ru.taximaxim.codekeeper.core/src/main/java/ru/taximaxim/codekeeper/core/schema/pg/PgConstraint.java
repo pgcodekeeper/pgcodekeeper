@@ -106,7 +106,7 @@ public abstract class PgConstraint extends AbstractConstraint {
         if (parent instanceof PartitionPgTable) {
             return false;
         }
-        return parent instanceof AbstractRegularTable && ((AbstractRegularTable) parent).getPartitionBy() == null;
+        return parent instanceof AbstractRegularTable regTable && regTable.getPartitionBy() == null;
     }
 
     protected void appendExtraOptions(StringBuilder sbSQL) {
@@ -186,11 +186,7 @@ public abstract class PgConstraint extends AbstractConstraint {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgConstraint) {
-            var con = (PgConstraint) obj;
-            return super.compare(con);
-        }
-        return false;
+        return obj instanceof PgConstraint && super.compare(obj);
     }
 
     protected boolean compareCommonFields(PgConstraint con) {

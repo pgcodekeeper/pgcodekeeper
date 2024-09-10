@@ -27,7 +27,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -405,7 +404,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         }
         List<Pair<String, String>> unmodifiable = resultTypes.stream()
                 .map(Pair::copy)
-                .collect(Collectors.toList());
+                .toList();
         return cte.put(withName, unmodifiable) != null;
     }
 

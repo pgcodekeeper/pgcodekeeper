@@ -78,9 +78,9 @@ public class ResultSetView extends ViewPart {
             public void mouseDown(MouseEvent event) {
                 // checking which button was pressed (1 - left; 2 - middle; 3 - right)
                 if (2 == event.button) {
-                    CTabItem clickedQueryTab = tabFolder.getItem(new Point(event.x,event.y));
-                    if (clickedQueryTab != null) {
-                        clickedQueryTab.dispose();
+                    CTabItem clickedTab = tabFolder.getItem(new Point(event.x, event.y));
+                    if (clickedTab != null) {
+                        clickedTab.dispose();
                     }
                 }
             }
@@ -302,10 +302,7 @@ public class ResultSetView extends ViewPart {
         @Override
         protected void initialize(ColumnViewer viewer, ViewerColumn column) {
             super.initialize(viewer, column);
-            this.viewer = null;
-            if (viewer instanceof TableViewer) {
-                this.viewer = (TableViewer) viewer;
-            }
+            this.viewer = viewer instanceof TableViewer tableViewer ? tableViewer : null;
         }
 
         @Override

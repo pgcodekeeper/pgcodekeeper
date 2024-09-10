@@ -115,8 +115,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsTrigger && super.compare(obj)) {
-            MsTrigger trigger = (MsTrigger) obj;
+        if (obj instanceof MsTrigger trigger && super.compare(obj)) {
             return Objects.equals(getFirstPart(), trigger.getFirstPart())
                     && Objects.equals(getSecondPart(), trigger.getSecondPart())
                     && isQuotedIdentified() == trigger.isQuotedIdentified()

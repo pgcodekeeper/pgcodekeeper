@@ -55,11 +55,8 @@ public abstract class CacheableLibrary extends AbstractLibrary {
     private void clearAllChildren(List<AbstractLibrary> children) throws IOException {
         for (AbstractLibrary child : children) {
             clearAllChildren(child.getChildren());
-            if (child instanceof CacheableLibrary) {
-                CacheableLibrary lib = (CacheableLibrary) child;
-                if (lib.exists()) {
-                    FileUtils.deleteRecursive(lib.getPath());
-                }
+            if (child instanceof CacheableLibrary lib && lib.exists()) {
+                FileUtils.deleteRecursive(lib.getPath());
             }
         }
     }
@@ -79,8 +76,7 @@ public abstract class CacheableLibrary extends AbstractLibrary {
             return true;
         }
 
-        if (obj instanceof CacheableLibrary && super.equals(obj)) {
-            CacheableLibrary lib = (CacheableLibrary) obj;
+        if (obj instanceof CacheableLibrary lib && super.equals(obj)) {
             return Objects.equals(libPath, lib.libPath);
         }
 

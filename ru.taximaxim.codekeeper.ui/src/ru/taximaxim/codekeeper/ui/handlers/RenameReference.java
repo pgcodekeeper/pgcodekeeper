@@ -31,9 +31,7 @@ public class RenameReference extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
-
-        PgRefactory.getInstance().rename(
-                HandlerUtil.getActiveShell(event), editor.getCurrentReference());
+        PgRefactory.getInstance().rename(HandlerUtil.getActiveShell(event), editor.getCurrentReference());
 
         return null;
     }
@@ -41,10 +39,8 @@ public class RenameReference extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        if (part instanceof SQLEditor) {
-            SQLEditor editor = (SQLEditor) part;
-            return UIProjectLoader.isInProject(editor.getEditorInput())
-                    && editor.getCurrentReference() != null;
+        if (part instanceof SQLEditor editor) {
+            return UIProjectLoader.isInProject(editor.getEditorInput()) && editor.getCurrentReference() != null;
         }
 
         return false;

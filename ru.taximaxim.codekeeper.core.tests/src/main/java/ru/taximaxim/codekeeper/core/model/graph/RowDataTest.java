@@ -32,10 +32,12 @@ public class RowDataTest {
 
     @Test
     void compareInsertScriptPG() {
-        var expected = "INSERT INTO test.table (col1, col2, col3)\n"
-                + "VALUES (15, NULL, 'some String')\n"
-                + "ON CONFLICT DO NOTHING;\n"
-                + "\n";
+        var expected = """
+            INSERT INTO test.table (col1, col2, col3)
+            VALUES (15, NULL, 'some String')
+            ON CONFLICT DO NOTHING;
+
+            """;
 
         var rowData = createRowData(Arrays.asList("col2"));
         rowData.addReplacement("col2");
@@ -45,13 +47,15 @@ public class RowDataTest {
 
         assertEquals(expected, sb.toString());
     }
-    
+
     @Test
     void compareInsertScriptMultiReplacementPG() {
-        var expected = "INSERT INTO test.table (col1, col2, col3)\n"
-                + "VALUES (15, NULL, NULL)\n"
-                + "ON CONFLICT DO NOTHING;\n"
-                + "\n";
+        var expected = """
+            INSERT INTO test.table (col1, col2, col3)
+            VALUES (15, NULL, NULL)
+            ON CONFLICT DO NOTHING;
+
+            """;
 
         var rowData = createRowData(Arrays.asList("col2", "col3"));
         rowData.addReplacement("col2");
@@ -65,11 +69,13 @@ public class RowDataTest {
 
     @Test
     void compareInsertScriptPGWithIncrement() {
-        var expected = "INSERT INTO test.table (col1, col2, col3)\n"
-                + "OVERRIDING SYSTEM VALUE\n"
-                + "VALUES (15, NULL, 'some String')\n"
-                + "ON CONFLICT DO NOTHING;\n"
-                + "\n";
+        var expected = """
+            INSERT INTO test.table (col1, col2, col3)
+            OVERRIDING SYSTEM VALUE
+            VALUES (15, NULL, 'some String')
+            ON CONFLICT DO NOTHING;
+
+            """;
 
         var rowData = createRowData(Arrays.asList("col2"));
         rowData.addReplacement("col2");
@@ -115,11 +121,13 @@ public class RowDataTest {
 
     @Test
     void compareInsertScriptMS() {
-        var expected = "INSERT INTO test.table (col1, col2, col3)\n"
-                + "SELECT 15, NULL, 'some String'\n"
-                + "WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));\n"
-                + "GO\n"
-                + "\n";
+        var expected = """
+            INSERT INTO test.table (col1, col2, col3)
+            SELECT 15, NULL, 'some String'
+            WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));
+            GO
+
+            """;
 
         var rowData = createRowData(Arrays.asList("col2"));
         rowData.addReplacement("col2");
@@ -129,14 +137,16 @@ public class RowDataTest {
 
         assertEquals(expected, sb.toString());
     }
-    
+
     @Test
     void compareInsertScriptMultiReplacementMS() {
-        var expected = "INSERT INTO test.table (col1, col2, col3)\n"
-                + "SELECT 15, NULL, NULL\n"
-                + "WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));\n"
-                + "GO\n"
-                + "\n";
+        var expected = """
+            INSERT INTO test.table (col1, col2, col3)
+            SELECT 15, NULL, NULL
+            WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));
+            GO
+
+            """;
 
         var rowData = createRowData(Arrays.asList("col2", "col3"));
         rowData.addReplacement("col2");
@@ -150,14 +160,19 @@ public class RowDataTest {
 
     @Test
     void compareInsertScriptMSWithIncrement() {
-        var expected = "SET IDENTITY_INSERT test.table ON;\n"
-                + "GO\n\n"
-                + "INSERT INTO test.table (col1, col2, col3)\n"
-                + "SELECT 15, NULL, 'some String'\n"
-                + "WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));\n"
-                + "GO\n\n"
-                + "SET IDENTITY_INSERT test.table OFF;\n"
-                + "GO\n\n";
+        var expected = """
+            SET IDENTITY_INSERT test.table ON;
+            GO
+
+            INSERT INTO test.table (col1, col2, col3)
+            SELECT 15, NULL, 'some String'
+            WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));
+            GO
+
+            SET IDENTITY_INSERT test.table OFF;
+            GO
+
+            """;
 
         var rowData = createRowData(Arrays.asList("col2"));
         rowData.addReplacement("col2");

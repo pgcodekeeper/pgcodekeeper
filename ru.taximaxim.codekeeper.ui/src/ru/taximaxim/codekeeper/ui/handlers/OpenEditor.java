@@ -67,12 +67,12 @@ public class OpenEditor extends AbstractHandler {
     }
 
     private IProject getSelectedProject(Object ctx) {
-        if (ctx instanceof IEvaluationContext) {
-            Object sel = ((IEvaluationContext) ctx).getVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME);
-            if (sel instanceof IStructuredSelection) {
-                Object el = ((IStructuredSelection) sel).getFirstElement();
-                if (el instanceof IAdaptable) {
-                    return ((IAdaptable) el).getAdapter(IProject.class);
+        if (ctx instanceof IEvaluationContext evaluation) {
+            Object sel = evaluation.getVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME);
+            if (sel instanceof IStructuredSelection ss) {
+                Object el = ss.getFirstElement();
+                if (el instanceof IAdaptable adaptable) {
+                    return adaptable.getAdapter(IProject.class);
                 }
             }
         }
