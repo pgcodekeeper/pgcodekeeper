@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.views;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
@@ -76,10 +75,10 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
         DBPair dbPair = null;
         List<?> selected = ((IStructuredSelection) selection).toList();
         for (Object object : selected) {
-            if (object instanceof DBPair) {
-                dbPair = (DBPair) object;
-            } else if (object instanceof IProject) {
-                project  = (IProject) object;
+            if (object instanceof DBPair pair) {
+                dbPair = pair;
+            } else if (object instanceof IProject proj) {
+                project = proj;
             }
         }
 
@@ -102,7 +101,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                             .filter(e -> e.getSide() != DiffSide.RIGHT)
                             .map(e -> e.getPgStatement(db))
                             .anyMatch(st -> o.getNewStatement().equals(st)))
-                    .collect(Collectors.toList()));
+                    .toList());
         }
     }
 
@@ -179,10 +178,10 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
             @Override
             public void run() {
                 ISelection sel = viewer.getSelection();
-                if (!sel.isEmpty() && sel instanceof IStructuredSelection) {
-                    Object obj = ((IStructuredSelection) sel).getFirstElement();
-                    if (obj instanceof PgOverride) {
-                        CompareAction.openCompareEditor(new CompareInput((PgOverride)obj));
+                if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
+                    Object obj = ss.getFirstElement();
+                    if (obj instanceof PgOverride override) {
+                        CompareAction.openCompareEditor(new CompareInput(override));
                     }
                 }
             }
@@ -190,9 +189,9 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
         menuMgr.addMenuListener(manager -> {
             boolean enable = !viewer.getSelection().isEmpty();
-            for (IContributionItem it : manager.getItems()) {
-                if (it instanceof ActionContributionItem) {
-                    ((ActionContributionItem) it).getAction().setEnabled(enable);
+            for (IContributionItem item : manager.getItems()) {
+                if (item instanceof ActionContributionItem actionItem) {
+                    actionItem.getAction().setEnabled(enable);
                 }
             }
         });
@@ -202,11 +201,10 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
     private void openFile(boolean openOldFile) {
         ISelection sel = viewer.getSelection();
-        if (!sel.isEmpty() && sel instanceof IStructuredSelection) {
-            Object obj = ((IStructuredSelection) sel).getFirstElement();
-            if (obj instanceof PgOverride) {
+        if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
+            Object obj = ss.getFirstElement();
+            if (obj instanceof PgOverride ov) {
                 try {
-                    PgOverride ov = (PgOverride) obj;
                     PgStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
                     PgObjLocation loc = st.getLocation();
                     String proj = project == null ? null : project.getName();
@@ -220,10 +218,9 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
 
     private boolean canOpen(boolean isOld) {
         ISelection sel = viewer.getSelection();
-        if (!sel.isEmpty() && sel instanceof IStructuredSelection) {
-            Object obj = ((IStructuredSelection) sel).getFirstElement();
-            if (obj instanceof PgOverride) {
-                PgOverride ov = (PgOverride) obj;
+        if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
+            Object obj = ss.getFirstElement();
+            if (obj instanceof PgOverride ov) {
                 PgStatement st = isOld ? ov.getOldStatement() : ov.getNewStatement();
                 return st.getLocation() != null;
             }

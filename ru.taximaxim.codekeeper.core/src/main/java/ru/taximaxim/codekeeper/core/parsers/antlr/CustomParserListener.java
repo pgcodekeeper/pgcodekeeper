@@ -140,8 +140,8 @@ public class CustomParserListener<T extends AbstractDatabase> {
                 return;
             }
 
-            if (child instanceof ParserRuleContext) {
-                fillActionDescription((ParserRuleContext) child, descrWordsCount, descr);
+            if (child instanceof ParserRuleContext ruleCtx) {
+                fillActionDescription(ruleCtx, descrWordsCount, descr);
             } else if (child instanceof TerminalNode) {
                 descr.append(child.getText().toUpperCase(Locale.ROOT));
                 if (0 < --descrWordsCount[0]) {

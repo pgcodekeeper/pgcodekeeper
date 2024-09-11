@@ -207,10 +207,7 @@ public class DepcyResolver {
 
         // if no depcies were triggered for a MsTable alter
         // check for column layout changes and refresh views
-        if (!isNeedDepcies.get() &&
-                oldObjStat instanceof MsTable && newObjStat instanceof MsTable) {
-            MsTable tOld = (MsTable) oldObjStat;
-            MsTable tNew = (MsTable) newObjStat;
+        if (!isNeedDepcies.get() && oldObjStat instanceof MsTable tOld && newObjStat instanceof MsTable tNew) {
             List<AbstractColumn> cOld = tOld.getColumns();
             List<AbstractColumn> cNew = tNew.getColumns();
 
@@ -270,7 +267,7 @@ public class DepcyResolver {
         if (newSt instanceof AbstractMsFunction && isMsTypeDep(newSt))  {
             return false;
         }
-        if (newSt instanceof MsView && ((MsView) newSt).isSchemaBinding()) {
+        if (newSt instanceof MsView view && view.isSchemaBinding()) {
             return false;
         }
 
@@ -335,8 +332,7 @@ public class DepcyResolver {
     private boolean inDropsList(PgStatement statement) {
         // если овнедбай колонка или таблица уже в дроплисте
         // то сиквенс тоже неявно с ними дропнут, возвращаем true
-        if (statement instanceof PgSequence) {
-            PgSequence seq = (PgSequence) statement;
+        if (statement instanceof PgSequence seq) {
             GenericColumn ownedBy = seq.getOwnedBy();
             if (ownedBy != null) {
                 PgStatement column = oldDb.getStatement(ownedBy);
@@ -358,15 +354,9 @@ public class DepcyResolver {
     private void addToListWithoutDepcies(StatementActions action,
             PgStatement oldObj, PgStatement starter) {
         switch (action) {
-        case CREATE:
-        case DROP:
-            actions.add(new ActionContainer(oldObj, oldObj, action, starter));
-            break;
-        case ALTER:
-            actions.add(new ActionContainer(oldObj, oldObj.getTwin(newDb), action, starter));
-            break;
-        default:
-            throw new IllegalStateException("Not implemented action");
+        case CREATE, DROP -> actions.add(new ActionContainer(oldObj, oldObj, action, starter));
+        case ALTER ->  actions.add(new ActionContainer(oldObj, oldObj.getTwin(newDb), action, starter));
+        default -> throw new IllegalStateException("Not implemented action");
         }
     }
 
@@ -440,17 +430,15 @@ public class DepcyResolver {
                 }
 
                 // пропускаем колонки типизированных таблиц, если изменился тип
-                if (oldTable instanceof TypedPgTable &&
-                        !Objects.equals(((TypedPgTable)oldTable).getOfType(),
-                                ((TypedPgTable)newTable).getOfType())) {
+                if (oldTable instanceof TypedPgTable typedTable
+                        && !Objects.equals(typedTable.getOfType(), ((TypedPgTable) newTable).getOfType())) {
                     return true;
                 }
             }
 
             // пропускаем сиквенс, если дропается его овнедбай
             // сиквенс дропнется неявно вместе с колонкой
-            if (oldObj instanceof PgSequence) {
-                PgSequence seq = (PgSequence) oldObj;
+            if (oldObj instanceof PgSequence seq) {
                 GenericColumn ownedBy = seq.getOwnedBy();
                 if (ownedBy != null && newDb.getStatement(ownedBy) == null) {
                     return true;
@@ -489,8 +477,7 @@ public class DepcyResolver {
                 }
 
                 // columns are integrated into CREATE TABLE OF TYPE
-                if (newTable instanceof TypedPgTable) {
-                    TypedPgTable newTypedTable = (TypedPgTable) newTable;
+                if (newTable instanceof TypedPgTable newTypedTable) {
                     TypedPgTable oldTypedTable = (TypedPgTable) oldTable;
                     if (!Objects.equals(newTypedTable.getOfType(),
                             oldTypedTable.getOfType())) {
@@ -529,8 +516,7 @@ public class DepcyResolver {
             }
 
             // создать колонку при создании сиквенса с owned by
-            if (newObj instanceof PgSequence) {
-                PgSequence seq = (PgSequence) newObj;
+            if (newObj instanceof PgSequence seq) {
                 GenericColumn ownedBy = seq.getOwnedBy();
                 if (ownedBy != null && oldDb.getStatement(ownedBy) == null) {
                     PgStatement col = newDb.getStatement(ownedBy);

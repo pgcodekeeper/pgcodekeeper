@@ -58,6 +58,11 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsView;
  */
 class MsAntlrLoaderTest {
 
+    private static final String QUOTED_MS_USER = "[ms_user]";
+    private static final String SCHEMA_DBO = "SCHEMA::[dbo]";
+    private static final String REVOKE = "REVOKE";
+    private static final String GRANT = "GRANT";
+
     private static final String BIGINT = "[bigint]";
     private static final String NVARCHAR_40 = "[nvarchar](40)";
     private static final String BIT = "[bit]";
@@ -430,16 +435,17 @@ class MsAntlrLoaderTest {
         func.setQuotedIdentified(true);
         func.addArgument(new Argument("@eid", "int"));
         func.setFirstPart("");
-        func.setSecondPart("(@eid int)\n" +
-                "RETURNS varchar(100)\n" +
-                "WITH RETURNS NULL ON NULL INPUT\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    Declare @logid varchar(50);\n" +
-                "    SELECT @logid = tbl1.id from [dbo].[table1] AS tbl1\n" +
-                "    WHERE tbl1.entityId = @eid\n" +
-                "    RETURN  @logid\n" +
-                "END");
+        func.setSecondPart("""
+            (@eid int)
+            RETURNS varchar(100)
+            WITH RETURNS NULL ON NULL INPUT
+            AS
+            BEGIN
+                Declare @logid varchar(50);
+                SELECT @logid = tbl1.id from [dbo].[table1] AS tbl1
+                WHERE tbl1.entityId = @eid
+                RETURN  @logid
+            END""");
 
         schema.addFunction(func);
 
@@ -449,19 +455,20 @@ class MsAntlrLoaderTest {
         func.addArgument(new Argument("@First", "int"));
         func.addArgument(new Argument("@Second", "int"));
         func.setFirstPart("");
-        func.setSecondPart("(@First int, @Second int) \n" +
-                "RETURNS integer\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    DECLARE @Res integer = 0\n" +
-                "\n" +
-                "    SET @Res = @First * @Second\n" +
-                "\n" +
-                "    IF @Res < 0\n" +
-                "        SET @Res = 0\n" +
-                "\n" +
-                "    RETURN @Res\n" +
-                "END");
+        func.setSecondPart("""
+            (@First int, @Second int)\s
+            RETURNS integer
+            AS
+            BEGIN
+                DECLARE @Res integer = 0
+
+                SET @Res = @First * @Second
+
+                IF @Res < 0
+                    SET @Res = 0
+
+                RETURN @Res
+            END""");
         schema.addFunction(func);
 
         func = new MsFunction("select_something");
@@ -470,14 +477,15 @@ class MsAntlrLoaderTest {
         func.addArgument(new Argument("@First", "int"));
         func.addArgument(new Argument("@Second", "int"));
         func.setFirstPart("");
-        func.setSecondPart("(@First int, @Second int) \n" +
-                "RETURNS integer\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    DECLARE @Res integer = 0\n" +
-                "    SELECT  @Res = COUNT(*) FROM [dbo].[table1];\n" +
-                "    RETURN @Res + @First * @Second\n" +
-                "END");
+        func.setSecondPart("""
+            (@First int, @Second int)\s
+            RETURNS integer
+            AS
+            BEGIN
+                DECLARE @Res integer = 0
+                SELECT  @Res = COUNT(*) FROM [dbo].[table1];
+                RETURN @Res + @First * @Second
+            END""");
         schema.addFunction(func);
 
         testDatabase("ms_schema_4.sql", d);
@@ -489,15 +497,15 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(dbType);
         AbstractSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "SELECT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "UPDATE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "DELETE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "INSERT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
 
-        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "SELECT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "UPDATE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "DELETE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "INSERT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
 
         MsTable table = new MsTable("test_table");
         table.setAnsiNulls(true);
@@ -533,14 +541,15 @@ class MsAntlrLoaderTest {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart("()\n" +
-                "RETURNS varchar(100)\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    DECLARE @Res varchar(100) = ''\n" +
-                "    SELECT  @Res = DATENAME(dw, '09/23/2013')\n" +
-                "    RETURN  @Res\n" +
-                "END");
+        func.setSecondPart("""
+            ()
+            RETURNS varchar(100)
+            AS
+            BEGIN
+                DECLARE @Res varchar(100) = ''
+                SELECT  @Res = DATENAME(dw, '09/23/2013')
+                RETURN  @Res
+            END""");
 
         schema.addFunction(func);
 
@@ -570,17 +579,18 @@ class MsAntlrLoaderTest {
         func.setQuotedIdentified(true);
         func.addArgument(new Argument("@arg1", "int"));
         func.setFirstPart("/*Name test*/\n");
-        func.setSecondPart("(@arg1 int)\n" +
-                "RETURNS bit\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    DECLARE @Res bit = 0\n" +
-                "\n" +
-                "    IF @arg1 > 1\n" +
-                "        SET @Res = 1\n" +
-                "\n" +
-                "    RETURN @Res\n" +
-                "END");
+        func.setSecondPart("""
+            (@arg1 int)
+            RETURNS bit
+            AS
+            BEGIN
+                DECLARE @Res bit = 0
+
+                IF @arg1 > 1
+                    SET @Res = 1
+
+                RETURN @Res
+            END""");
 
         func.setOwner(MS_USER);
 
@@ -636,12 +646,13 @@ class MsAntlrLoaderTest {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" AS\n" +
-                "    SELECT \n" +
-                "    [user_data].[id],\n" +
-                "    [user_data].[email],\n" +
-                "    [user_data].[created]\n" +
-                "FROM [dbo].[user_data]");
+        view.setSecondPart("""
+             AS
+                SELECT\s
+                [user_data].[id],
+                [user_data].[email],
+                [user_data].[created]
+            FROM [dbo].[user_data]""");
 
         view.setOwner(MS_USER);
         schema.addView(view);
@@ -650,50 +661,57 @@ class MsAntlrLoaderTest {
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
-        trigger.setSecondPart("\n" +
-                "    INSTEAD OF DELETE\n" +
-                "    AS\n" +
-                "    BEGIN\n" +
-                "        DELETE FROM [dbo].[user_data]\n" +
-                "        WHERE id = 10  \n" +
-                "    END");
+        trigger.setSecondPart("""
+
+                INSTEAD OF DELETE
+                AS
+                BEGIN
+                    DELETE FROM [dbo].[user_data]
+                    WHERE id = 10 \s
+                END\
+            """);
         view.addTrigger(trigger);
 
         trigger = new MsTrigger("instead_of_insert");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
-        trigger.setSecondPart("\n" +
-                "    INSTEAD OF INSERT\n" +
-                "    AS\n" +
-                "    BEGIN\n" +
-                "        INSERT INTO [dbo].[user_data] (id, email, created)\n" +
-                "        VALUES(1, 'test@supermail.loc', getdate())\n" +
-                "    END");
+        trigger.setSecondPart("""
+
+                INSTEAD OF INSERT
+                AS
+                BEGIN
+                    INSERT INTO [dbo].[user_data] (id, email, created)
+                    VALUES(1, 'test@supermail.loc', getdate())
+                END\
+            """);
         view.addTrigger(trigger);
 
         trigger = new MsTrigger("instead_of_update");
         trigger.setAnsiNulls(true);
         trigger.setQuotedIdentified(true);
         trigger.setFirstPart("");
-        trigger.setSecondPart("\n" +
-                "    INSTEAD OF UPDATE\n" +
-                "    AS\n" +
-                "    BEGIN\n" +
-                "        UPDATE [dbo].[user_data] \n" +
-                "        SET id = 55, email = 'super@supermail.loc'\n" +
-                "        WHERE id = 4\n" +
-                "    END");
+        trigger.setSecondPart("""
+
+                INSTEAD OF UPDATE
+                AS
+                BEGIN
+                    UPDATE [dbo].[user_data]\s
+                    SET id = 55, email = 'super@supermail.loc'
+                    WHERE id = 4
+                END\
+            """);
         view.addTrigger(trigger);
 
         view = new MsView("ws_test");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" AS\n" +
-                "    SELECT \n" +
-                "    ud.[id] AS \"   i   d   \"\n" +
-                "FROM [dbo].[user_data] ud");
+        view.setSecondPart("""
+             AS
+                SELECT\s
+                ud.[id] AS "   i   d   "
+            FROM [dbo].[user_data] ud""");
         schema.addView(view);
 
         testDatabase("ms_schema_8.sql", d);
@@ -807,14 +825,15 @@ class MsAntlrLoaderTest {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart("()\n" +
-                "RETURNS nvarchar(30)\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    Declare @textdate nvarchar(30);\n" +
-                "    SELECT @textdate = CAST(GETDATE() AS nvarchar(30));\n" +
-                "    RETURN  @textdate;\n" +
-                "END");
+        func.setSecondPart("""
+            ()
+            RETURNS nvarchar(30)
+            AS
+            BEGIN
+                Declare @textdate nvarchar(30);
+                SELECT @textdate = CAST(GETDATE() AS nvarchar(30));
+                RETURN  @textdate;
+            END""");
 
         schema.addFunction(func);
 
@@ -824,37 +843,24 @@ class MsAntlrLoaderTest {
     @Test
     void testDB11() throws IOException, InterruptedException {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // d.setComment("'This is my comment on this database.'");
-
         AbstractSchema schema = d.getDefaultSchema();
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // schema.setComment("'Contains super objects.'");
 
         MsTable table = new MsTable("TABLE_1");
         table.setAnsiNulls(true);
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // table.setComment("'This is my table comment.'");
         schema.addTable(table);
 
         MsColumn col = new MsColumn("ID");
         col.setType(INT);
         col.setNullValue(false);
         col.setIdentity("1", "1");
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // col.setComment("'This is the primary key comment'");
         table.addColumn(col);
 
         col = new MsColumn("COLUMN_1");
         col.setType("[varchar](10)");
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // col.setComment("'This is column one comment'");
         table.addColumn(col);
 
         col = new MsColumn("COLUMN_2");
         col.setType("[varchar](10)");
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // col.setComment("'This is column 2 comment'");
         table.addColumn(col);
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_TABLE_1", true);
@@ -878,25 +884,26 @@ class MsAntlrLoaderTest {
         func.addArgument(new Argument("@string", "nvarchar(MAX)"));
         func.addArgument(new Argument("@delimiter", "char(1)"));
         func.setFirstPart("");
-        func.setSecondPart("\n" +
-                "(@string nvarchar(MAX), @delimiter char(1))\n" +
-                "RETURNS @output TABLE(tbldata nvarchar(256))\n" +
-                "BEGIN\n" +
-                "    DECLARE @start INT, @end INT\n" +
-                "    SELECT @start = 1, @end = CHARINDEX(@delimiter, @string)\n" +
-                "\n" +
-                "    WHILE @start < LEN(@string) + 1 BEGIN\n" +
-                "        IF @end = 0 \n" +
-                "            SET @end = LEN(@string) + 1\n" +
-                "\n" +
-                "        INSERT INTO @output (tbldata) \n" +
-                "        VALUES(SUBSTRING(@string, @start, @end - @start))\n" +
-                "        SET @start = @end + 1\n" +
-                "        SET @end = CHARINDEX(@delimiter, @string, @start)\n" +
-                "    END\n" +
-                "\n" +
-                "    RETURN\n" +
-                "END");
+        func.setSecondPart("""
+
+            (@string nvarchar(MAX), @delimiter char(1))
+            RETURNS @output TABLE(tbldata nvarchar(256))
+            BEGIN
+                DECLARE @start INT, @end INT
+                SELECT @start = 1, @end = CHARINDEX(@delimiter, @string)
+
+                WHILE @start < LEN(@string) + 1 BEGIN
+                    IF @end = 0\s
+                        SET @end = LEN(@string) + 1
+
+                    INSERT INTO @output (tbldata)\s
+                    VALUES(SUBSTRING(@string, @start, @end - @start))
+                    SET @start = @end + 1
+                    SET @end = CHARINDEX(@delimiter, @string, @start)
+                END
+
+                RETURN
+            END""");
         schema.addFunction(func);
 
         func = new MsFunction("function_empty");
@@ -906,13 +913,14 @@ class MsAntlrLoaderTest {
         func.addArgument(new Argument("@string", "nvarchar(MAX)"));
         func.addArgument(new Argument("@delimiter", "char(1)"));
         func.setFirstPart("");
-        func.setSecondPart("\n" +
-                "(@string nvarchar(MAX), @delimiter char(1))\n" +
-                "RETURNS @output TABLE(tbldata nvarchar(256))\n" +
-                "BEGIN\n" +
-                "    -- aaa\n" +
-                "    RETURN\n" +
-                "END");
+        func.setSecondPart("""
+
+            (@string nvarchar(MAX), @delimiter char(1))
+            RETURNS @output TABLE(tbldata nvarchar(256))
+            BEGIN
+                -- aaa
+                RETURN
+            END""");
 
         schema.addFunction(func);
 
@@ -925,47 +933,37 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(dbType);
         AbstractSchema schema = d.getDefaultSchema();
 
-        schema.addPrivilege(new PgPrivilege("REVOKE", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("REVOKE", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "SELECT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "UPDATE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "DELETE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(REVOKE, "INSERT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
 
-        schema.addPrivilege(new PgPrivilege("GRANT", "SELECT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "UPDATE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "DELETE", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-        schema.addPrivilege(new PgPrivilege("GRANT", "INSERT", "SCHEMA::[dbo]", "[ms_user]", false, dbType));
-
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // d.setComment("comments database");
-        // schema.setComment("dbo schema");
+        schema.addPrivilege(new PgPrivilege(GRANT, "SELECT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "UPDATE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "DELETE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
+        schema.addPrivilege(new PgPrivilege(GRANT, "INSERT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
 
         MsSequence seq = new MsSequence("test_id_seq");
         seq.setStartWith("1");
         seq.setMinMaxInc(1L, null, null, null, 0L);
         seq.setCached(true);
         seq.setCache("1");
-        schema.addSequence(seq);
-
         seq.setOwner(MS_USER);
-
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // seq.setComment("test table sequence");
+        schema.addSequence(seq);
 
         MsFunction func = new MsFunction("test_fnc");
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.addArgument(new Argument("@arg", "nvarchar"));
         func.setFirstPart("");
-        func.setSecondPart("(@arg nvarchar) \n" +
-                "RETURNS bit\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    RETURN 1\n" +
-                "END");
+        func.setSecondPart("""
+            (@arg nvarchar)\s
+            RETURNS bit
+            AS
+            BEGIN
+                RETURN 1
+            END""");
         func.setOwner(MS_USER);
-
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // func.setComment("test function");
 
         schema.addFunction(func);
 
@@ -973,12 +971,13 @@ class MsAntlrLoaderTest {
         func.setAnsiNulls(true);
         func.setQuotedIdentified(true);
         func.setFirstPart("");
-        func.setSecondPart("() \n" +
-                "RETURNS bit\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    RETURN 1\n" +
-                "END");
+        func.setSecondPart("""
+            ()\s
+            RETURNS bit
+            AS
+            BEGIN
+                RETURN 1
+            END""");
 
 
         schema.addFunction(func);
@@ -989,12 +988,13 @@ class MsAntlrLoaderTest {
         proc.setAnsiNulls(true);
         proc.setQuotedIdentified(true);
         proc.setFirstPart("");
-        proc.setSecondPart("\n" +
-                "AS\n" +
-                "BEGIN\n" +
-                "    -- empty procedure\n" +
-                "    RETURN\n" +
-                "END");
+        proc.setSecondPart("""
+
+            AS
+            BEGIN
+                -- empty procedure
+                RETURN
+            END""");
         schema.addFunction(proc);
 
         proc.setOwner(MS_USER);
@@ -1005,8 +1005,6 @@ class MsAntlrLoaderTest {
 
         MsColumn col = new MsColumn("id");
         col.setType(INT);
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // col.setComment("id column");
         col.setNullValue(false);
         col.setDefaultName("DF_test_id");
         col.setDefaultValue("(NEXT VALUE FOR [dbo].[test_id_seq])");
@@ -1015,69 +1013,50 @@ class MsAntlrLoaderTest {
         col = new MsColumn("text");
         col.setType("[nvarchar](20)");
         col.setNullValue(false);
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // col.setComment("text column");
         table.addColumn(col);
 
         var constraintCheck = new MsConstraintCheck("text_check");
         constraintCheck.setExpression("(LEN([text])>(0))");
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // constraint.setComment("text check");
         table.addConstraint(constraintCheck);
 
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // table.setComment("test table");
 
         MsConstraintPk constriaintPk = new MsConstraintPk("PK_test", true);
         constriaintPk.setClustered(true);
         constriaintPk.setDataSpace(PRIMARY);
         constriaintPk.addColumn(new SimpleColumn("id"));
         table.addConstraint(constriaintPk);
-
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // constraint.setComment("primary key");
-
         table.setOwner(MS_USER);
 
         MsView view = new MsView("test_view");
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" AS\n" +
-                "    SELECT \n" +
-                "    [test].[id],\n" +
-                "    [test].[text]\n" +
-                "FROM [dbo].[test]");
+        view.setSecondPart("""
+             AS
+                SELECT\s
+                [test].[id],
+                [test].[text]
+            FROM [dbo].[test]""");
         schema.addView(view);
-
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // view.setComment("test view");
-        // view.addColumnComment("id", "view id col");
-
         view.setOwner(MS_USER);
 
         MsIndex idx = new MsIndex("IX_test_id");
         table.addIndex(idx);
         idx.addColumn(new SimpleColumn("id"));
 
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // idx.setComment("view id col");
-
         MsTrigger trigger = new MsTrigger("test_trigger");
         trigger.setQuotedIdentified(true);
         trigger.setAnsiNulls(true);
         trigger.setFirstPart("");
-        trigger.setSecondPart("\n" +
-                "FOR UPDATE\n" +
-                "AS \n" +
-                "    BEGIN\n" +
-                "        SET NOCOUNT ON;\n" +
-                "        EXEC [dbo].[trigger_proc];\n" +
-                "    END");
-        table.addTrigger(trigger);
+        trigger.setSecondPart("""
 
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // trigger.setComment("test trigger");
+            FOR UPDATE
+            AS\s
+                BEGIN
+                    SET NOCOUNT ON;
+                    EXEC [dbo].[trigger_proc];
+                END""");
+        table.addTrigger(trigger);
 
         testDatabase("ms_schema_13.sql", d);
     }
@@ -1094,9 +1073,6 @@ class MsAntlrLoaderTest {
         MsColumn col = new MsColumn("id");
         col.setType(BIGINT);
         table.addColumn(col);
-
-        // TODO uncomment this code when comment setting for MSSQL-objects will be supported.
-        // table.setComment("multiline\ncomment\n");
 
         testDatabase("ms_schema_14.sql", d);
     }
@@ -1128,14 +1104,15 @@ class MsAntlrLoaderTest {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" AS\n" +
-                "    SELECT \n" +
-                "        c.[id] AS id_t_chart, \n" +
-                "        t.[id] AS id_t_work \n" +
-                "    FROM ( SELECT \n" +
-                "               [\"t_work\"].[id] \n" +
-                "           FROM [dbo].[\"t_work\"]) t \n" +
-                "JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
+        view.setSecondPart("""
+             AS
+                SELECT\s
+                    c.[id] AS id_t_chart,\s
+                    t.[id] AS id_t_work\s
+                FROM ( SELECT\s
+                           ["t_work"].[id]\s
+                       FROM [dbo].["t_work"]) t\s
+            JOIN [dbo].["t_chart"] c ON t.[id] = c.[id]""");
         schema.addView(view);
 
         testDatabase("ms_schema_15.sql", d);
@@ -1176,19 +1153,21 @@ class MsAntlrLoaderTest {
         view.setAnsiNulls(true);
         view.setQuotedIdentified(true);
         view.setFirstPart("");
-        view.setSecondPart(" AS\n" +
-                "    SELECT \n" +
-                "        c.[id] AS id_t_chart, \n" +
-                "        t.[id] AS id_t_work, \n" +
-                "        t.[name]\n" +
-                "    FROM (SELECT \n" +
-                "              w.[id], \n" +
-                "              m.[name] \n" +
-                "          FROM (SELECT \n" +
-                "                    [\"t_work\"].[id]\n" +
-                "                FROM [dbo].[\"t_work\"]) w \n" +
-                "          JOIN [dbo].[\"t_memo\"] m ON w.[id] = CONVERT(INT, CONVERT(VARCHAR(MAX), m.[name]))) t\n" +
-                "    JOIN [dbo].[\"t_chart\"] c ON t.[id] = c.[id]");
+        view.setSecondPart("""
+             AS
+                SELECT\s
+                    c.[id] AS id_t_chart,\s
+                    t.[id] AS id_t_work,\s
+                    t.[name]
+                FROM (SELECT\s
+                          w.[id],\s
+                          m.[name]\s
+                      FROM (SELECT\s
+                                ["t_work"].[id]
+                            FROM [dbo].["t_work"]) w\s
+                      JOIN [dbo].["t_memo"] m ON w.[id] = CONVERT(INT, CONVERT(VARCHAR(MAX), m.[name]))) t
+                JOIN [dbo].["t_chart"] c ON t.[id] = c.[id]\
+            """);
         schema.addView(view);
 
         testDatabase("ms_schema_16.sql", d);

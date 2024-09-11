@@ -129,16 +129,13 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
             public void mouseDoubleClick(MouseEvent e) {
                 ISelection selection = gv.getSelection();
                 if (currentProject != null && !selection.isEmpty()
-                        && selection instanceof IStructuredSelection) {
-                    Object obj = ((IStructuredSelection) selection).getFirstElement();
-                    if (obj instanceof PgStatement) {
-                        try {
-                            PgStatement st = (PgStatement) obj;
-                            FileUtilsUi.openFileInSqlEditor(
-                                    st.getLocation(), currentProject.getName(), st.getDbType(), st.isLib());
-                        } catch (PartInitException ex) {
-                            ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
-                        }
+                        && selection instanceof IStructuredSelection ss
+                        && ss.getFirstElement() instanceof PgStatement st) {
+                    try {
+                        FileUtilsUi.openFileInSqlEditor(
+                                st.getLocation(), currentProject.getName(), st.getDbType(), st.isLib());
+                    } catch (PartInitException ex) {
+                        ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                     }
                 }
             }
@@ -172,10 +169,10 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         List<?> selected = ((IStructuredSelection) selection).toList();
 
         for (Object object : selected) {
-            if (object instanceof DBPair) {
-                dbPair = (DBPair) object;
-            } else if (object instanceof IProject) {
-                selectedProj  = (IProject) object;
+            if (object instanceof DBPair pair) {
+                dbPair = pair;
+            } else if (object instanceof IProject proj) {
+                selectedProj = proj;
             }
         }
         if (dbPair == null) {
@@ -197,8 +194,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         Set<PgStatement> newInput = new HashSet<>();
         Set<PgStatement> rootSet = new HashSet<>();
         for (Object object : selected) {
-            if (object instanceof TreeElement){
-                TreeElement el = (TreeElement) object;
+            if (object instanceof TreeElement el) {
                 // does el exist in the chosen graph (or DB)
                 boolean elIsProject = el.getSide() == DiffSide.LEFT;
                 if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
@@ -223,8 +219,8 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         @Override
         public Object[] getConnectedTo(Object entity) {
-            if (entity instanceof PgStatement) {
-                return depRes.getConnectedTo((PgStatement) entity).toArray();
+            if (entity instanceof PgStatement st) {
+                return depRes.getConnectedTo(st).toArray();
             }
             return null;
         }

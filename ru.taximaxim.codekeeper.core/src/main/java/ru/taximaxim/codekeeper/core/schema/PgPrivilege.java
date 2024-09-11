@@ -132,8 +132,7 @@ public class PgPrivilege implements IHashable {
         StringBuilder sbName = new StringBuilder()
                 .append(typeName)
                 .append(' ');
-        if (newObj instanceof AbstractPgFunction) {
-            AbstractPgFunction func = (AbstractPgFunction) newObj;
+        if (newObj instanceof AbstractPgFunction func) {
             sbName.append(PgDiffUtils.getQuotedName(func.getParent().getName()))
             .append('.');
             func.appendFunctionSignature(sbName, false, true);
@@ -165,20 +164,19 @@ public class PgPrivilege implements IHashable {
 
     @Override
     public boolean equals(Object obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof PgPrivilege) {
-            PgPrivilege priv = (PgPrivilege) obj;
-            eq = isGrantOption == priv.isGrantOption()
+            return true;
+        }
+
+        if (obj instanceof PgPrivilege priv) {
+            return isGrantOption == priv.isGrantOption()
                     && Objects.equals(state, priv.getState())
                     && Objects.equals(permission, priv.getPermission())
                     && Objects.equals(role, priv.getRole())
                     && Objects.equals(name, priv.getName());
         }
 
-        return eq;
+        return false;
     }
 
     @Override

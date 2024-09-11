@@ -49,10 +49,8 @@ extends CommonEditingSupport<TextCellEditor> {
 
     @Override
     protected void setValue(Object element, Object value) {
-        if (klass.isInstance(element) && value instanceof String) {
+        if (klass.isInstance(element) && value instanceof String newText) {
             T el = klass.cast(element);
-            String newText = (String) value;
-
             // for case when text parameter has not changed
             if (newText.equalsIgnoreCase(getText(el))) {
                 return;

@@ -87,8 +87,11 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
             return true;
         }
 
-        return obj instanceof PgFtsTemplate && super.compare(obj)
-                && compareUnalterable((PgFtsTemplate) obj);
+        if (obj instanceof PgFtsTemplate temp && super.compare(obj)) {
+            return compareUnalterable(temp);
+        }
+
+        return false;
     }
 
     private boolean compareUnalterable(PgFtsTemplate template) {

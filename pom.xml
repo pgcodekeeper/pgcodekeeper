@@ -44,7 +44,7 @@
         <sonar.java.target>${java.version}</sonar.java.target>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
-        <sonar.exclusions>**/*.sql, **/generated/**, **/Messages.java</sonar.exclusions>
+        <sonar.exclusions>**/*.sql, **/*.xml, **/generated/**, **/Messages.java</sonar.exclusions>
 
         <java.version>17</java.version>
         <tycho.version>4.0.7</tycho.version>

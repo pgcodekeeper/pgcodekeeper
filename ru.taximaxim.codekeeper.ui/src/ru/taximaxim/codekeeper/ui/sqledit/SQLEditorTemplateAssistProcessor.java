@@ -57,8 +57,8 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
     private String getCtxTypeId() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
                 .getActivePage().getActiveEditor();
-        if (editor instanceof SQLEditor) {
-            DatabaseType dbType = ((SQLEditor) editor).getDbType();
+        if (editor instanceof SQLEditor sqlEditor) {
+            DatabaseType dbType = sqlEditor.getDbType();
             switch (dbType) {
             case PG:
                 return SQLEditorTemplateContextType.CONTEXT_TYPE_PG;

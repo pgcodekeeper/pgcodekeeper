@@ -173,20 +173,21 @@ public class ViewsReader extends JdbcReader {
     }
 
     private void addColumnsPart(QueryBuilder builder) {
-        String columns = "LEFT JOIN\n"
-                + "  (SELECT attrelid,\n"
-                + "          pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names,\n"
-                + "          pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments,\n"
-                + "          pg_catalog.array_agg(pg_catalog.pg_get_expr(def.adbin, def.adrelid) ORDER BY attr.attnum) AS column_defaults,\n"
-                + "          pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl\n"
-                + "   FROM pg_catalog.pg_attribute attr\n"
-                + "   LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum\n"
-                + "     AND attr.attrelid = def.adrelid\n"
-                + "     AND attr.attisdropped IS FALSE\n"
-                + "   LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid\n"
-                + "     AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass\n"
-                + "     AND des.objsubid = attr.attnum\n"
-                + "  GROUP BY attrelid) subselect ON subselect.attrelid = res.oid";
+        String columns = """
+                LEFT JOIN
+                  (SELECT attrelid,
+                          pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names,
+                          pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments,
+                          pg_catalog.array_agg(pg_catalog.pg_get_expr(def.adbin, def.adrelid) ORDER BY attr.attnum) AS column_defaults,
+                          pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl
+                   FROM pg_catalog.pg_attribute attr
+                   LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum
+                     AND attr.attrelid = def.adrelid
+                     AND attr.attisdropped IS FALSE
+                   LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid
+                     AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
+                     AND des.objsubid = attr.attnum
+                  GROUP BY attrelid) subselect ON subselect.attrelid = res.oid""";
 
         builder.column("subselect.column_names");
         builder.column("subselect.column_comments");

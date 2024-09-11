@@ -134,9 +134,9 @@ class DbSourcePicker extends Composite {
         IContainer[] conts = ResourcesPlugin.getWorkspace().getRoot().findContainersForLocationURI(dir.toURI());
         IProject project = null;
         for (IContainer cont : conts) {
-            if (cont instanceof IProject && ((IProject) cont).isOpen()) {
+            if (cont instanceof IProject proj && proj.isOpen()) {
                 if (project == null) {
-                    project = (IProject) cont;
+                    project = proj;
                 } else {
                     // ambiguous project: work as if with a plain directory
                     project = null;

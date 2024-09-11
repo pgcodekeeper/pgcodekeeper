@@ -79,8 +79,7 @@ public class PartitionTemplateContainer implements IHashable {
             return true;
         }
 
-        if (obj instanceof PartitionTemplateContainer) {
-            PartitionTemplateContainer template = (PartitionTemplateContainer) obj;
+        if (obj instanceof PartitionTemplateContainer template) {
             return Objects.equals(partitionName, template.partitionName)
                     && PgDiffUtils.setlikeEquals(normalizedSubElements, template.normalizedSubElements);
         }

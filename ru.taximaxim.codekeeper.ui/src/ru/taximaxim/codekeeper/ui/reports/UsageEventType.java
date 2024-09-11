@@ -91,8 +91,7 @@ public class UsageEventType {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof UsageEventType) {
-            UsageEventType type = (UsageEventType)obj;
+        if (obj instanceof UsageEventType type) {
             return getComponentName().equals(type.getComponentName()) && getActionName().equals(type.getActionName());
         }
         return false;

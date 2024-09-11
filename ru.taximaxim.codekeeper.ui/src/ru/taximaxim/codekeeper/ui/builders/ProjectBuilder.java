@@ -92,14 +92,11 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             if (UIProjectLoader.isInProject(d, dbType)) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
-                    switch (d.getKind()) {
-                    case IResourceDelta.REMOVED:
-                    case IResourceDelta.REMOVED_PHANTOM:
+                    int kind = d.getKind();
+                    if (IResourceDelta.REMOVED == kind || IResourceDelta.REMOVED_PHANTOM == kind) {
                         parser.removeResFromRefs(res);
-                        break;
-                    default:
+                    } else {
                         files.add((IFile) res);
-                        break;
                     }
                 }
             }

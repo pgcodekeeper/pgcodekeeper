@@ -168,8 +168,7 @@ public class IgnoredObject {
     @Override
     public boolean equals(Object obj) {
         boolean eq = false;
-        if (obj instanceof IgnoredObject) {
-            IgnoredObject other = (IgnoredObject) obj;
+        if (obj instanceof IgnoredObject other) {
             eq = ignoreContent == other.ignoreContent
                     && isQualified == other.isQualified
                     && isRegular == other.isRegular

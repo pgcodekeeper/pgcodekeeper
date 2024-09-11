@@ -74,8 +74,8 @@ public class NavigatorRootActionProvider extends CommonActionProvider {
             ISelection selection = provider.getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                if (sel instanceof OpenProjectFromNavigator) {
-                    proj = ((OpenProjectFromNavigator) sel).getProject();
+                if (sel instanceof OpenProjectFromNavigator project) {
+                    proj = project.getProject();
                     return true;
                 }
             }
@@ -84,15 +84,14 @@ public class NavigatorRootActionProvider extends CommonActionProvider {
 
         @Override
         public void run() {
-            if (isEnabled()) {
-                try {
-                    OpenEditor.openEditor(
-                            PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(),
-                            proj);
-                } catch (PartInitException e) {
-                    ExceptionNotifier.notifyDefault(MessageFormat.format(
-                            Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
-                }
+            if (!isEnabled())
+                return;
+
+            try {
+                OpenEditor.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), proj);
+            } catch (PartInitException e) {
+                ExceptionNotifier.notifyDefault(MessageFormat.format(
+                        Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
             }
         }
     }

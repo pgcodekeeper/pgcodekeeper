@@ -159,8 +159,7 @@ public class ChUser extends PgStatement {
             return true;
         }
 
-        if (obj instanceof ChUser && super.compare(obj)) {
-            ChUser user = (ChUser) obj;
+        if (obj instanceof ChUser user && super.compare(obj)) {
             return hosts.equals(user.hosts)
                     && Objects.equals(storageType, user.storageType)
                     && defRoles.equals(user.defRoles)

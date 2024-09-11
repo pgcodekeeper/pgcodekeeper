@@ -80,8 +80,11 @@ public abstract class AbstractConstraint extends PgStatement implements IConstra
             return true;
         }
 
-        return obj instanceof AbstractConstraint && super.compare(obj)
-                && notValid == ((AbstractConstraint) obj).isNotValid();
+        if (obj instanceof AbstractConstraint con && super.compare(obj)) {
+            return notValid == con.isNotValid();
+        }
+
+        return false;
     }
 
     @Override

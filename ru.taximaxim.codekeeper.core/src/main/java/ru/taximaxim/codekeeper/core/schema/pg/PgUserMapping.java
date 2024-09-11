@@ -80,8 +80,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PgUserMapping && super.compare(obj)) {
-            PgUserMapping usm = (PgUserMapping) obj;
+        if (obj instanceof PgUserMapping usm && super.compare(obj)) {
             return Objects.equals(user, usm.getUser())
                     && Objects.equals(server, usm.getServer())
                     && Objects.equals(options, usm.getOptions());

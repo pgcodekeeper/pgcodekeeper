@@ -40,11 +40,13 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
 public class CreateView extends PgParserAbstract {
 
-    private static final String RECURSIVE_PATTERN = "CREATE VIEW {0} "
-            + "\nAS WITH RECURSIVE {0}({1}) AS ("
-            + "\n{2}\n)"
-            + "\nSELECT {1}"
-            + "\nFROM {0};";
+    private static final String RECURSIVE_PATTERN = """
+        CREATE VIEW {0}
+        AS WITH RECURSIVE {0}({1}) AS (
+        {2}
+        )
+        SELECT {1}
+        FROM {0};""";
 
     private final Create_view_statementContext context;
     private final String tablespace;

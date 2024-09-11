@@ -329,8 +329,7 @@ implements SqlContextProcessor {
     }
 
     private String getAction(ParserRuleContext ctx) {
-        if (ctx instanceof StatementContext) {
-            StatementContext stmtCtx = (StatementContext) ctx;
+        if (ctx instanceof StatementContext stmtCtx) {
             Script_statementContext scriptCtx;
             Script_transactionContext transactionCtx;
             if ((scriptCtx = stmtCtx.script_statement()) != null
@@ -338,12 +337,11 @@ implements SqlContextProcessor {
                     && transactionCtx.START() != null) {
                 return "START TRANSACTION";
             }
-        } else if (ctx instanceof Data_statementContext) {
-            if (((Data_statementContext) ctx).select_stmt() != null) {
+        } else if (ctx instanceof Data_statementContext dataCtx) {
+            if (dataCtx.select_stmt() != null) {
                 return "SELECT";
             }
-        } else if (ctx instanceof Schema_createContext) {
-            Schema_createContext createCtx = (Schema_createContext) ctx;
+        } else if (ctx instanceof Schema_createContext createCtx) {
             int descrWordsCount = 2;
             if (createCtx.create_language_statement() != null) {
                 return "CREATE LANGUAGE";
@@ -365,8 +363,7 @@ implements SqlContextProcessor {
                 descrWordsCount = 4;
             }
             return getActionDescription(ctx, descrWordsCount);
-        } else if (ctx instanceof Schema_alterContext) {
-            Schema_alterContext alterCtx = (Schema_alterContext) ctx;
+        } else if (ctx instanceof Schema_alterContext alterCtx) {
             int descrWordsCount = 2;
             if (alterCtx.alter_language_statement() != null) {
                 return "ALTER LANGUAGE";
@@ -380,8 +377,7 @@ implements SqlContextProcessor {
                 descrWordsCount = 3;
             }
             return getActionDescription(ctx, descrWordsCount);
-        } else if (ctx instanceof Schema_dropContext) {
-            Schema_dropContext dropCtx = (Schema_dropContext) ctx;
+        } else if (ctx instanceof Schema_dropContext dropCtx) {
             int descrWordsCount = 2;
             if (dropCtx.drop_operator_family_statement() != null
                     || dropCtx.drop_operator_class_statement() != null

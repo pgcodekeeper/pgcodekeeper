@@ -124,8 +124,7 @@ public class AddComment extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        if (part instanceof SQLEditor) {
-            SQLEditor editor = (SQLEditor) part;
+        if (part instanceof SQLEditor editor) {
             if (!UIProjectLoader.isInProject(editor.getEditorInput())) {
                 return false;
             }

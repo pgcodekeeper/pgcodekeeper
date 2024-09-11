@@ -278,14 +278,11 @@ public abstract class AbstractExpr {
         // handle system columns; look for relation anyway for a potential 'not found' warning
         // do not use the stream nor add the depcy though
         switch (colName) {
-        case "oid":
-        case "tableoid":
+        case "oid", "tableoid":
             return "oid";
-        case "xmin":
-        case "xmax":
+        case "xmin", "xmax":
             return "xid";
-        case "cmin":
-        case "cmax":
+        case "cmin", "cmax":
             return "cid";
         case "ctid":
             return "tid";

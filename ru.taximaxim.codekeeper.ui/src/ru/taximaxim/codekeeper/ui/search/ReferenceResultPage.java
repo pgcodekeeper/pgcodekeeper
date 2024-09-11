@@ -59,9 +59,9 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
 
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-                if (e1 instanceof PgObjLocation && e2 instanceof PgObjLocation) {
-                    int x = ((PgObjLocation) e1).getOffset();
-                    int y = ((PgObjLocation) e2).getOffset();
+                if (e1 instanceof PgObjLocation firstLoc && e2 instanceof PgObjLocation secondLoc) {
+                    int x = firstLoc.getOffset();
+                    int y = secondLoc.getOffset();
                     return Integer.compare(x, y);
                 }
 
@@ -88,8 +88,7 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
         } else {
             editor = open(page, file, activate);
         }
-        if (editor instanceof SQLEditor) {
-            SQLEditor sqlEditor = (SQLEditor) editor;
+        if (editor instanceof SQLEditor sqlEditor) {
             sqlEditor.refreshReferences();
         }
     }

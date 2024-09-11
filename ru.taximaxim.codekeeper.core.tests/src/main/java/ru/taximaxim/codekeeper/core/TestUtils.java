@@ -116,10 +116,11 @@ public final class TestUtils {
     }
 
     public static void createIgnoredSchemaFile(Path dir) throws IOException {
-        String rule = "SHOW ALL \n"
-                + "HIDE NONE country \n"
-                + "HIDE NONE worker  \n"
-                + "HIDE REGEX 'ignore.*' ";
+        String rule = """
+            SHOW ALL
+            HIDE NONE country
+            HIDE NONE worker
+            HIDE REGEX 'ignore.*'""";
         Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
     }
 

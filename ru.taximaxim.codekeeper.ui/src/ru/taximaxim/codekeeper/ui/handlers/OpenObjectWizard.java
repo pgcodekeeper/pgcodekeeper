@@ -35,8 +35,8 @@ public class OpenObjectWizard extends AbstractHandler {
 
         if (selection.isEmpty()) {
             IEditorInput input = HandlerUtil.getActiveEditorInput(event);
-            if (input instanceof IFileEditorInput) {
-                selection = new StructuredSelection(((IFileEditorInput)input).getFile());
+            if (input instanceof IFileEditorInput editorInput) {
+                selection = new StructuredSelection(editorInput.getFile());
             }
         }
 

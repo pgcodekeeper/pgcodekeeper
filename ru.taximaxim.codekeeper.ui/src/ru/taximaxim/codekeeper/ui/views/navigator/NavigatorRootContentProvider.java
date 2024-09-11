@@ -27,8 +27,8 @@ public class NavigatorRootContentProvider implements ITreeContentProvider {
 
     @Override
     public Object[] getChildren(Object parentElement) {
-        if (parentElement instanceof IProject) {
-            return new Object[] { new OpenProjectFromNavigator((IProject) parentElement) };
+        if (parentElement instanceof IProject project) {
+            return new Object[] { new OpenProjectFromNavigator(project) };
         }
         return null;
     }

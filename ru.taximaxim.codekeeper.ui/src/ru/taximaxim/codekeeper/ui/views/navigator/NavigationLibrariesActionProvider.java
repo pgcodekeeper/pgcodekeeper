@@ -97,11 +97,9 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         public void run() {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
             Object sel = selection.getFirstElement();
-            if (sel instanceof FileLibrary) {
+            if (sel instanceof FileLibrary lib) {
                 try {
-                    FileLibrary lib = (FileLibrary) sel;
-                    FileUtilsUi.openFileInSqlEditor(
-                            lib.getPath(), lib.getProject(), lib.getDbType(), true);
+                    FileUtilsUi.openFileInSqlEditor(lib.getPath(), lib.getProject(), lib.getDbType(), true);
                 } catch (PartInitException e) {
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_open_library, e);
@@ -121,7 +119,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             ISelection selection = getContext().getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                return sel instanceof CacheableLibrary && ((CacheableLibrary) sel).exists();
+                return sel instanceof CacheableLibrary lib && lib.exists();
             }
 
             return false;
@@ -131,9 +129,9 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         public void run() {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
             Object sel = selection.getFirstElement();
-            if (sel instanceof CacheableLibrary && ((CacheableLibrary) sel).exists()) {
+            if (sel instanceof CacheableLibrary lib && lib.exists()) {
                 try {
-                    ((CacheableLibrary) sel).clear();
+                    lib.clear();
                 } catch (IOException e) {
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_clear_library_cache, e);
@@ -160,9 +158,9 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             IStructuredSelection selection = (IStructuredSelection) getContext()
                     .getSelection();
             Object sel = selection.getFirstElement();
-            if (sel instanceof CacheableLibrary) {
+            if (sel instanceof CacheableLibrary lib) {
                 try {
-                    ((CacheableLibrary) sel).refresh();
+                    lib.refresh();
                 } catch (IOException e) {
                     ExceptionNotifier.notifyDefault(
                             Messages.NavigationLibrariesActionProvider_failed_to_refresh_library, e);

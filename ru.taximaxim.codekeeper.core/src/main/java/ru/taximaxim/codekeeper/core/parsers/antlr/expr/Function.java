@@ -318,11 +318,11 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             if (columns.isEmpty()) {
                 return;
             }
-            var record = start.identifier_list().identifier();
-            if (record.size() != 1) {
+            var rec = start.identifier_list().identifier();
+            if (rec.size() != 1) {
                 return;
             }
-            var key = record.get(0).getText();
+            var key = rec.get(0).getText();
             addReference(key, null);
             complexNamespace.put(key, new ArrayList<>(columns));
         }

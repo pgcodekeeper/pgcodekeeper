@@ -120,10 +120,10 @@ public final class InsertWriter {
         db.getDescendants().filter(AbstractTable.class::isInstance).map(e -> (AbstractTable) e).forEach(e -> {
             var tableName = e.getQualifiedName();
             for (var constr : e.getConstraints()) {
-                if (constr instanceof IConstraintFk) {
-                    allFkConstr.computeIfAbsent(tableName, t -> new ArrayList<>()).add((IConstraintFk) constr);
-                } else if (constr instanceof IConstraintPk) {
-                    allPkConstr.put(tableName, (IConstraintPk) constr);
+                if (constr instanceof IConstraintFk fk) {
+                    allFkConstr.computeIfAbsent(tableName, t -> new ArrayList<>()).add(fk);
+                } else if (constr instanceof IConstraintPk pk) {
+                    allPkConstr.put(tableName, pk);
                 }
             }
             cols.put(tableName, e.getColumns());
@@ -376,12 +376,11 @@ public final class InsertWriter {
             return true;
         }
 
-        if (col instanceof MsColumn) {
-            MsColumn msCol = (MsColumn) col;
+        if (col instanceof MsColumn msCol) {
             return msCol.getExpression() != null || TIMESTAMP_TYPE.equals(colType);
         }
 
-        return col instanceof PgColumn && ((PgColumn) col).isGenerated();
+        return col instanceof PgColumn pgCol && pgCol.isGenerated();
     }
 
     /**

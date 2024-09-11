@@ -59,15 +59,15 @@ public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
     public Set<PgObjLocation> analyze(ParserRuleContext ctx, MetaContainer meta) {
         String schema = getSchemaName();
 
-        if (ctx instanceof Sql_clausesContext) {
+        if (ctx instanceof Sql_clausesContext sqlCtx) {
             MsSqlClauses clauses = new MsSqlClauses(schema, meta);
-            clauses.analyze((Sql_clausesContext) ctx);
+            clauses.analyze(sqlCtx);
             return clauses.getDepcies();
         }
 
-        if (ctx instanceof Select_statementContext) {
+        if (ctx instanceof Select_statementContext selectCtx) {
             MsSelect select = new MsSelect(schema, meta);
-            return analyze((Select_statementContext) ctx, select);
+            return analyze(selectCtx, select);
         }
 
         MsValueExpr expr = new MsValueExpr(schema, meta);

@@ -133,8 +133,11 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
             return true;
         }
 
-        return obj instanceof AbstractFunction && super.compare(obj)
-                && compareUnalterable((AbstractFunction) obj);
+        if (obj instanceof AbstractFunction func && super.compare(obj)) {
+            return compareUnalterable(func);
+        }
+
+        return false;
     }
 
     public abstract boolean needDrop(AbstractFunction newFunction);

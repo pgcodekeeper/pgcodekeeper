@@ -55,8 +55,8 @@ public class SimplePgTable extends AbstractRegularTable {
 
     @Override
     protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
-        if (newTable instanceof AbstractRegularTable) {
-            ((AbstractRegularTable)newTable).convertTable(sb);
+        if (newTable instanceof AbstractRegularTable regTable) {
+            regTable.convertTable(sb);
         }
     }
 

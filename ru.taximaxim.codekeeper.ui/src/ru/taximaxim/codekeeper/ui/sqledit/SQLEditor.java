@@ -320,8 +320,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         ISelection selection = provider.getSelection();
-        if (selection instanceof ITextSelection) {
-            ITextSelection textSelection = (ITextSelection) selection;
+        if (selection instanceof ITextSelection textSelection) {
             return getObjectAtOffset(textSelection.getOffset(), true);
         }
 
@@ -464,8 +463,8 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         if (res != null) {
             dbType = OpenProjectUtils.getDatabaseType(res.getProject());
-        } else if (in instanceof SQLEditorInput) {
-            dbType = ((SQLEditorInput) in).getDbType();
+        } else if (in instanceof SQLEditorInput sqlEditor) {
+            dbType = sqlEditor.getDbType();
         }
 
         if (res != null && UIProjectLoader.isInProject(res)) {
@@ -502,13 +501,11 @@ implements IResourceChangeListener, ITextErrorReporter {
             return;
         }
 
-        if (res instanceof IFile) {
-            IFile file = (IFile) res;
+        if (res instanceof IFile file) {
             IProject proj = file.getProject();
             IEclipsePreferences prefs = PgDbProject.getPrefs(proj, true);
 
-            if (prefs != null
-                    && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {
+            if (prefs != null && prefs.getBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, false)) {
                 return;
             }
 
@@ -519,10 +516,10 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         IEditorInput in = getEditorInput();
-        if (in.exists() && in instanceof IURIEditorInput) {
+        if (in.exists() && in instanceof IURIEditorInput uriInput) {
             IDocument document = getDocumentProvider().getDocument(in);
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
-            String name = Paths.get(((IURIEditorInput) in).getURI()).toString();
+            String name = Paths.get(uriInput.getURI()).toString();
             parser.fillRefsFromInputStream(stream, name, dbType, monitor);
         }
     }
@@ -566,8 +563,8 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         synchronized (getLock(model)) {
-            if (model instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, null);
+            if (model instanceof IAnnotationModelExtension ext) {
+                ext.replaceAnnotations(occurrenceAnnotations, null);
             } else {
                 for (Annotation annotation : occurrenceAnnotations) {
                     model.removeAnnotation(annotation);
@@ -579,8 +576,8 @@ implements IResourceChangeListener, ITextErrorReporter {
     }
 
     private Object getLock(IAnnotationModel model) {
-        if (model instanceof ISynchronizable) {
-            Object lock = ((ISynchronizable) model).getLockObject();
+        if (model instanceof ISynchronizable sync) {
+            Object lock = sync.getLockObject();
             if (lock != null) {
                 return lock;
             }
@@ -893,8 +890,8 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
 
             synchronized (getLock(model)) {
-                if (model instanceof IAnnotationModelExtension) {
-                    ((IAnnotationModelExtension) model).replaceAnnotations(occurrenceAnnotations, annotations);
+                if (model instanceof IAnnotationModelExtension ext) {
+                    ext.replaceAnnotations(occurrenceAnnotations, annotations);
                 } else {
                     removeOccurrenceAnnotations();
                     for (Entry<Annotation, Position> entry : annotations.entrySet()) {
@@ -912,8 +909,8 @@ implements IResourceChangeListener, ITextErrorReporter {
         @Override
         public void partClosed(IWorkbenchPartReference partRef) {
             if (partRef.getPart(false) == SQLEditor.this && !PlatformUI.getWorkbench().isClosing()
-                    && getEditorInput() instanceof IFileEditorInput) {
-                IFile f = ((IFileEditorInput) getEditorInput()).getFile();
+                    && getEditorInput() instanceof IFileEditorInput fileInput) {
+                IFile f = fileInput.getFile();
                 if (PROJ_PATH.MIGRATION_DIR.equals(f.getProjectRelativePath().segment(0))) {
                     askDeleteScript(f);
                 }

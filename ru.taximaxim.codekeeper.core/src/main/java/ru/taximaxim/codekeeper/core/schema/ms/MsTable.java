@@ -182,8 +182,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        if (newTable instanceof MsTable) {
-            MsTable smt = (MsTable) newTable;
+        if (newTable instanceof MsTable smt) {
             return !Objects.equals(smt.getTablespace(), getTablespace())
                     || isAnsiNulls() != smt.isAnsiNulls()
                     || !PgDiffUtils.setlikeEquals(smt.getPkeys(), getPkeys())
@@ -251,8 +250,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
-        } else if (obj instanceof MsTable && super.compare(obj)) {
-            MsTable table = (MsTable) obj;
+        } else if (obj instanceof MsTable table && super.compare(obj)) {
             return ansiNulls == table.isAnsiNulls()
                     && Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())

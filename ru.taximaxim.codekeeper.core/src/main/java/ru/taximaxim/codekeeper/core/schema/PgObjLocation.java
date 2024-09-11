@@ -69,8 +69,7 @@ public class PgObjLocation extends ContextLocation {
         if (!super.equals(obj)) {
             return false;
         }
-        if (obj instanceof PgObjLocation) {
-            PgObjLocation loc = (PgObjLocation) obj;
+        if (obj instanceof PgObjLocation loc) {
             return Objects.equals(loc.getObj(), getObj())
                     && Objects.equals(loc.getSql(), getSql())
                     && Objects.equals(loc.getAction(), getAction());

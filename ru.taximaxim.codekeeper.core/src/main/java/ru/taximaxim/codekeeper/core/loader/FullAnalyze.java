@@ -84,14 +84,14 @@ public final class FullAnalyze {
         List<AbstractAnalysisLauncher> launchers = db.getAnalysisLaunchers();
         for (int i = 0; i < launchers.size(); ++i) {
             AbstractAnalysisLauncher l = launchers.get(i);
-            if (l instanceof ViewAnalysisLauncher
+            if (l instanceof ViewAnalysisLauncher v
                     && (rel == null
                     || (rel.getSchemaName().equals(l.getSchemaName())
                             && rel.getName().equals(l.getStmt().getName())))) {
                 // allow GC to reclaim context memory immediately
                 // and protects from infinite recursion
                 launchers.set(i, null);
-                ((ViewAnalysisLauncher) l).setFullAnalyze(this);
+                v.setFullAnalyze(this);
                 l.getStmt().addAllDeps(l.launchAnalyze(errors, meta));
                 refs.addAll(l.getReferences());
             }

@@ -343,8 +343,7 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PgBaseType) {
-            PgBaseType type = (PgBaseType) obj;
+        if (obj instanceof PgBaseType type) {
             return super.compare(type)
                     && compareUnalterable(type)
                     && Objects.equals(compressType, type.getCompressType())

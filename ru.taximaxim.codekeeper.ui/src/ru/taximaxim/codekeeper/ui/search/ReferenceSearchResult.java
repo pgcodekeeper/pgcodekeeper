@@ -88,10 +88,8 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
 
     @Override
     public IFile getFile(Object element) {
-        if (element instanceof PgObjLocation) {
-            PgObjLocation loc = (PgObjLocation) element;
-            return ResourcesPlugin.getWorkspace().getRoot()
-                    .getFileForLocation(new Path(loc.getFilePath()));
+        if (element instanceof PgObjLocation loc) {
+            return ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(loc.getFilePath()));
         }
         return null;
     }

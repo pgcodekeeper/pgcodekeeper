@@ -250,7 +250,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         PgSequence sequence = super.writeSequences(column, sbOption, newLine);
         if (isLogged != sequence.isLogged()) {
             sbOption.append("\nALTER SEQUENCE ").append(sequence.getQualifiedName()).append(" SET ")
-                    .append(sequence.isLogged() ? "LOGGED;" : "UNLOGGED;");
+            .append(sequence.isLogged() ? "LOGGED;" : "UNLOGGED;");
         }
         return sequence;
     }
@@ -311,8 +311,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof AbstractRegularTable && super.compare(obj)) {
-            AbstractRegularTable table = (AbstractRegularTable) obj;
+        if (obj instanceof AbstractRegularTable table && super.compare(obj)) {
             return Objects.equals(tablespace, table.getTablespace())
                     && isLogged == table.isLogged()
                     && isRowSecurity == table.isRowSecurity()

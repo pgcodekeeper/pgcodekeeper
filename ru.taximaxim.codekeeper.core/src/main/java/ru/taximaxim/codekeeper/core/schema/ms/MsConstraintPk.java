@@ -202,8 +202,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
             return true;
         }
 
-        if (obj instanceof MsConstraintPk && super.compare(obj)) {
-            var con = (MsConstraintPk) obj;
+        if (obj instanceof MsConstraintPk con && super.compare(obj)) {
             return Objects.equals(isTracked, con.isTracked())
                     && compareUnalterable(con);
         }
@@ -213,8 +212,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
 
     @Override
     protected boolean compareUnalterable(MsConstraint obj) {
-        if (obj instanceof MsConstraintPk) {
-            var con = (MsConstraintPk) obj;
+        if (obj instanceof MsConstraintPk con) {
             return isPrimaryKey() == con.isPrimaryKey()
                     && isClustered() == con.isClustered()
                     && Objects.equals(dataSpace, con.dataSpace)

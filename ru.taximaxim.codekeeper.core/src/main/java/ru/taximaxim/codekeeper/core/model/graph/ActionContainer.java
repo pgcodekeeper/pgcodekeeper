@@ -68,8 +68,7 @@ class ActionContainer {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ActionContainer) {
-            ActionContainer cont = (ActionContainer) obj;
+        if (obj instanceof ActionContainer cont) {
             return action == cont.getAction() &&
                     Objects.equals(oldObj, cont.getOldObj()) &&
                     Objects.equals(newObj, cont.getNewObj());

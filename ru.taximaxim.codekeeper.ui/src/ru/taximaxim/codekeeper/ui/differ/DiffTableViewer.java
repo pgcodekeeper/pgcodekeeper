@@ -519,9 +519,9 @@ public class DiffTableViewer extends Composite {
 
         menuMgr.addMenuListener(manager -> {
             boolean enable = !viewer.getSelection().isEmpty();
-            for (IContributionItem it : manager.getItems()) {
-                if (it instanceof ActionContributionItem) {
-                    ((ActionContributionItem) it).getAction().setEnabled(enable);
+            for (IContributionItem item : manager.getItems()) {
+                if (item instanceof ActionContributionItem actionItem) {
+                    actionItem.getAction().setEnabled(enable);
                 }
             }
         });
@@ -1336,8 +1336,7 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public boolean equals(Object obj) {
-            return obj instanceof SortingColumn
-                    && ((SortingColumn) obj).col == col;
+            return obj instanceof SortingColumn sort && sort.col == col;
         }
 
         @Override

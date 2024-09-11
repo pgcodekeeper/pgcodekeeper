@@ -94,8 +94,7 @@ public class MsView extends AbstractView implements SourceStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsView && super.compare(obj)) {
-            MsView view = (MsView) obj;
+        if (obj instanceof MsView view && super.compare(obj)) {
             return Objects.equals(getFirstPart(), view.getFirstPart())
                     && Objects.equals(getSecondPart(), view.getSecondPart())
                     && isQuotedIdentified() == view.isQuotedIdentified()

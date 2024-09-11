@@ -91,8 +91,8 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
 
-            if (newTable instanceof AbstractRegularTable) {
-                ((AbstractRegularTable)newTable).convertTable(sb);
+            if (newTable instanceof AbstractRegularTable table) {
+                table.convertTable(sb);
             }
         }
     }
@@ -113,8 +113,8 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
     protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
         super.compareTableOptions(newTable, sb);
 
-        if (newTable instanceof PartitionPgTable) {
-            String newBounds = ((PartitionPgTable) newTable).getPartitionBounds();
+        if (newTable instanceof PartitionPgTable table) {
+            String newBounds = table.getPartitionBounds();
 
             Inherits oldInherits = inherits.get(0);
             Inherits newInherits = newTable.getInherits().get(0);
@@ -136,7 +136,7 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
                 .append('.')
                 .append(PgDiffUtils.getQuotedName(getName()))
                 .append(' ')
-                .append(((PartitionPgTable)newTable).getPartitionBounds())
+                .append(table.getPartitionBounds())
                 .append(';');
             }
         }
@@ -154,8 +154,7 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PartitionPgTable && super.compare(obj)) {
-            PartitionPgTable table = (PartitionPgTable) obj;
+        if (obj instanceof PartitionPgTable table && super.compare(obj)) {
             return Objects.equals(partitionBounds, table.partitionBounds);
         }
 

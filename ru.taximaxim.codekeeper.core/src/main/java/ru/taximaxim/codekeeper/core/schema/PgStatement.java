@@ -515,8 +515,8 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     public final PgStatement deepCopy() {
         PgStatement copy = shallowCopy();
-        if (copy instanceof IStatementContainer) {
-            getChildren().forEach(st -> ((IStatementContainer) copy).addChild(st.deepCopy()));
+        if (copy instanceof IStatementContainer cont) {
+            getChildren().forEach(st -> cont.addChild(st.deepCopy()));
         }
         return copy;
     }
@@ -562,8 +562,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (DbObjType.COLUMN == type) {
             return ((AbstractTable) twinParent).getColumn(getName());
         }
-        if (twinParent instanceof IStatementContainer) {
-            return ((IStatementContainer) twinParent).getChild(getName(), type);
+        if (twinParent instanceof IStatementContainer cont) {
+            return cont.getChild(getName(), type);
         }
 
         return null;
@@ -619,8 +619,9 @@ public abstract class PgStatement implements IStatement, IHashable {
     public final boolean equals(Object obj){
         if (this == obj) {
             return true;
-        } else if (obj instanceof PgStatement) {
-            PgStatement st = (PgStatement) obj;
+        }
+
+        if (obj instanceof PgStatement st) {
             return this.compare(st)
                     && this.parentNamesEquals(st)
                     && this.compareChildren(st);

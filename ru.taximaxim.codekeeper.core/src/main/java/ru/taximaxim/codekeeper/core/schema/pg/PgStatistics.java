@@ -135,8 +135,7 @@ public class PgStatistics extends AbstractStatistics {
             return true;
         }
 
-        if (obj instanceof PgStatistics && super.compare(obj)) {
-            PgStatistics stat = (PgStatistics) obj;
+        if (obj instanceof PgStatistics stat && super.compare(obj)) {
             return compareUnalterable(stat)
                     && stat.statistics == statistics;
         }

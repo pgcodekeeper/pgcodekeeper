@@ -103,20 +103,19 @@ public class Argument implements Serializable, IHashable {
 
     @Override
     public boolean equals(Object obj) {
-        boolean eq = false;
-
         if (this == obj) {
-            eq = true;
-        } else if (obj instanceof Argument) {
-            final Argument arg = (Argument) obj;
-            eq = Objects.equals(dataType, arg.getDataType())
+            return true;
+        }
+
+        if (obj instanceof Argument arg) {
+            return Objects.equals(dataType, arg.getDataType())
                     && Objects.equals(defaultExpression, arg.getDefaultExpression())
                     && mode == arg.getMode()
                     && isReadOnly == arg.isReadOnly()
                     && Objects.equals(name, arg.getName());
         }
 
-        return eq;
+        return false;
     }
 
     @Override

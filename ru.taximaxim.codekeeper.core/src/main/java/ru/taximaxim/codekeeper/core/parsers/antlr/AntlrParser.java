@@ -292,13 +292,14 @@ public class AntlrParser {
     public static void handleAntlrTaskException(ExecutionException ex)
             throws InterruptedException, IOException {
         Throwable t = ex.getCause();
-        if (t instanceof InterruptedException) {
-            throw (InterruptedException) t;
-        } else if (t instanceof IOException) {
-            throw (IOException) t;
-        } else {
-            throw new IllegalStateException(ex);
+        if (t instanceof InterruptedException in) {
+            throw in;
         }
+        if (t instanceof IOException io) {
+            throw io;
+        }
+
+        throw new IllegalStateException(ex);
     }
 
     public static void checkToClean(DatabaseType databaseType, long cleaningInterval) {
@@ -431,7 +432,7 @@ class CustomAntlrErrorListener extends BaseErrorListener {
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
             int line, int charPositionInLine, String msg, RecognitionException e) {
-        Token token = offendingSymbol instanceof Token ? (Token) offendingSymbol : null;
+        Token token = offendingSymbol instanceof Token t ? t : null;
         AntlrError error = new AntlrError(token, parsedObjectName, line, charPositionInLine, msg)
                 .copyWithOffset(offset, lineOffset, inLineOffset);
 

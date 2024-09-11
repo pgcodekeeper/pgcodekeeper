@@ -141,8 +141,11 @@ public class MsRole extends PgStatement {
             return true;
         }
 
-        return obj instanceof MsRole && super.compare(obj)
-                && Objects.equals(members, ((MsRole) obj).members);
+        if (obj instanceof MsRole role && super.compare(obj)) {
+            return Objects.equals(members, role.members);
+        }
+
+        return false;
     }
 
     @Override

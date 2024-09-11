@@ -56,11 +56,9 @@ public class IgnoreSchemaList implements IIgnoreList {
             if (rule.match(schema)) {
                 AddStatus newStatus = rule.getAddStatus();
                 switch (newStatus) {
-                case ADD:
-                case ADD_SUBTREE:
+                case ADD, ADD_SUBTREE:
                     return true;
-                case SKIP:
-                case SKIP_SUBTREE:
+                case SKIP, SKIP_SUBTREE:
                     return false;
                 }
             }

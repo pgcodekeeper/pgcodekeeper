@@ -102,8 +102,7 @@ public abstract class AbstractPolicy extends PgStatement {
             return true;
         }
 
-        if (obj instanceof AbstractPolicy && super.compare(obj)) {
-            AbstractPolicy police = (AbstractPolicy) obj;
+        if (obj instanceof AbstractPolicy police && super.compare(obj)) {
             return isPermissive == police.isPermissive
                     && event == police.event
                     && roles.equals(police.roles)

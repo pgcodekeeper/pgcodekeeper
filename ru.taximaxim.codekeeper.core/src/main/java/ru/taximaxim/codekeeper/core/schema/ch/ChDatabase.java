@@ -198,8 +198,7 @@ public class ChDatabase extends AbstractDatabase {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof ChDatabase && super.compareChildren(obj)) {
-            ChDatabase db = (ChDatabase) obj;
+        if (obj instanceof ChDatabase db && super.compareChildren(obj)) {
             return functions.equals(db.functions)
                     && users.equals(db.users)
                     && roles.equals(db.roles)

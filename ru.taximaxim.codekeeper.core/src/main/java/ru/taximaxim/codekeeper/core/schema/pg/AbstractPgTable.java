@@ -238,8 +238,8 @@ public abstract class AbstractPgTable extends AbstractTable {
     @Override
     protected boolean isColumnsOrderChanged(AbstractTable newTable) {
         // broken inherit algorithm
-        if (newTable instanceof AbstractPgTable && !(newTable instanceof TypedPgTable)
-                && inherits.isEmpty() && ((AbstractPgTable) newTable).inherits.isEmpty()) {
+        if (newTable instanceof AbstractPgTable table && !(newTable instanceof TypedPgTable)
+                && inherits.isEmpty() && table.inherits.isEmpty()) {
             return super.isColumnsOrderChanged(newTable);
         }
 
@@ -432,9 +432,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
-        } else if (obj instanceof AbstractPgTable && super.compare(obj)) {
-            AbstractPgTable table = (AbstractPgTable) obj;
-
+        } else if (obj instanceof AbstractPgTable table && super.compare(obj)) {
             return hasOids == table.getHasOids()
                     && inherits.equals(table.inherits);
         }

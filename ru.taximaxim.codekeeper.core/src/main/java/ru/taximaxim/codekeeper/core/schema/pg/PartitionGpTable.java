@@ -110,8 +110,7 @@ public class PartitionGpTable extends AbstractRegularTable {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof PartitionGpTable && super.compare(obj)) {
-            PartitionGpTable table = (PartitionGpTable) obj;
+        if (obj instanceof PartitionGpTable table && super.compare(obj)) {
             return Objects.equals(normalizedPartitionGpBounds, table.getNormalizedPartitionGpBounds())
                     && Objects.equals(templates, table.templates);
         }

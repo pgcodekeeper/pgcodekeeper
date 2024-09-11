@@ -107,8 +107,7 @@ public class PgEventTrigger extends PgStatement {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PgEventTrigger && super.compare(obj)) {
-            PgEventTrigger newEventTrigger = (PgEventTrigger) obj;
+        if (obj instanceof PgEventTrigger newEventTrigger && super.compare(obj)) {
             return Objects.equals(executable, newEventTrigger.executable)
                     && Objects.equals(tags, newEventTrigger.tags)
                     && Objects.equals(event, newEventTrigger.event)

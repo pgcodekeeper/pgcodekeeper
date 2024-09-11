@@ -148,8 +148,7 @@ public class ChSchema extends AbstractSchema {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof ChSchema) {
-            ChSchema schema = (ChSchema) obj;
+        if (obj instanceof ChSchema schema) {
             return super.compareChildren(obj)
                     && dictionaries.equals(schema.dictionaries);
         }

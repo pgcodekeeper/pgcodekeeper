@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgFtsDictionary extends PgStatement
-        implements ISimpleOptionContainer, ISearchPath {
+implements ISimpleOptionContainer, ISearchPath {
 
     private String template;
     private final Map<String, String> options = new LinkedHashMap<>();
@@ -135,8 +135,7 @@ public class PgFtsDictionary extends PgStatement
             return true;
         }
 
-        if (obj instanceof PgFtsDictionary && super.compare(obj)) {
-            PgFtsDictionary dictionary = (PgFtsDictionary) obj;
+        if (obj instanceof PgFtsDictionary dictionary && super.compare(obj)) {
             return Objects.equals(template, dictionary.template)
                     && options.equals(dictionary.options);
         }

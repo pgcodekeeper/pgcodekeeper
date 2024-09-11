@@ -124,13 +124,8 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj instanceof MsType) {
-            MsType type = (MsType) obj;
-            return super.compare(type) && compareUnalterable(type);
+        if (obj instanceof MsType type && super.compare(type)) {
+            return compareUnalterable(type);
         }
 
         return false;

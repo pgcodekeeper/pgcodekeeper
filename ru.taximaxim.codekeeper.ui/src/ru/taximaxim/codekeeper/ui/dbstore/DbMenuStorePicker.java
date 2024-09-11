@@ -122,9 +122,9 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
         String conType = null;
 
         if (selection != null) {
-            if (selection instanceof DbInfo) {
-                text = ((DbInfo) selection).getName();
-                conType = ((DbInfo) selection).getConType();
+            if (selection instanceof DbInfo info) {
+                text = info.getName();
+                conType = info.getConType();
             } else {
                 text = ((File) selection).getName();
             }
@@ -170,8 +170,8 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
     }
 
     private void setBackground() {
-        if (!lnkDb.isDisposed() && selection instanceof DbInfo) {
-            setBackground(((DbInfo) selection).getConType());
+        if (!lnkDb.isDisposed() && selection instanceof DbInfo info) {
+            setBackground(info.getConType());
         }
     }
 

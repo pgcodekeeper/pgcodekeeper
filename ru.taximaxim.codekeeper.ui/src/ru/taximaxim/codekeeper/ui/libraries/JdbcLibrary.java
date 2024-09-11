@@ -53,8 +53,7 @@ public class JdbcLibrary extends AbstractLibrary {
             return true;
         }
 
-        if (obj instanceof JdbcLibrary && super.equals(obj)) {
-            JdbcLibrary lib = (JdbcLibrary) obj;
+        if (obj instanceof JdbcLibrary lib && super.equals(obj)) {
             return Objects.equals(url, lib.url);
         }
 

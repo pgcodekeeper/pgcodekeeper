@@ -38,16 +38,11 @@ class CustomTSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
     @Override
     protected String getTokenName(Integer token, Vocabulary vocabulary) {
         switch (token) {
-        case TSQLLexer.LOCAL_ID:
-        case TSQLLexer.SQUARE_BRACKET_ID:
-        case TSQLLexer.ID:
+        case TSQLLexer.LOCAL_ID, TSQLLexer.SQUARE_BRACKET_ID, TSQLLexer.ID:
             return IDENTIFIER;
-        case TSQLLexer.DOUBLE_QUOTE_ID:
-        case TSQLLexer.STRING:
+        case TSQLLexer.DOUBLE_QUOTE_ID, TSQLLexer.STRING:
             return STRING;
-        case TSQLLexer.DECIMAL:
-        case TSQLLexer.FLOAT:
-        case TSQLLexer.REAL:
+        case TSQLLexer.DECIMAL, TSQLLexer.FLOAT, TSQLLexer.REAL:
             return NUMBER;
         default:
             return vocabulary.getDisplayName(token);

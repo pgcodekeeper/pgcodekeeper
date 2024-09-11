@@ -377,9 +377,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction function) {
-        if (function instanceof AbstractPgFunction && super.compareUnalterable(function)) {
-            AbstractPgFunction func = (AbstractPgFunction) function;
-
+        if (function instanceof AbstractPgFunction func && super.compareUnalterable(function)) {
             return Objects.equals(body, func.getBody())
                     && isWindow == func.isWindow()
                     && Objects.equals(language, func.getLanguage())

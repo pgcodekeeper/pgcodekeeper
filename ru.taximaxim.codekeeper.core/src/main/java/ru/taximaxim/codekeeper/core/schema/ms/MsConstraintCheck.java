@@ -61,8 +61,7 @@ public final class MsConstraintCheck extends MsConstraint {
 
     @Override
     protected boolean compareUnalterable(MsConstraint newConstr) {
-        if (newConstr instanceof MsConstraintCheck) {
-            var con = (MsConstraintCheck) newConstr;
+        if (newConstr instanceof MsConstraintCheck con) {
             return isNotForRepl() == con.isNotForRepl()
                     && Objects.equals(getExpression(), con.getExpression());
         }
@@ -71,8 +70,8 @@ public final class MsConstraintCheck extends MsConstraint {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsConstraintCheck) {
-            return super.compare(obj) && compareUnalterable((MsConstraintCheck) obj);
+        if (obj instanceof MsConstraintCheck check && super.compare(obj)) {
+            return compareUnalterable(check);
         }
         return false;
     }

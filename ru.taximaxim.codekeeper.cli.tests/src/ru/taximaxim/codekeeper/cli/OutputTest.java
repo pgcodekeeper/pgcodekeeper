@@ -412,8 +412,11 @@ class ConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "SET search_path = pg_catalog;\n\n" +
-                "CREATE INDEX CONCURRENTLY testindex ON public.testview USING btree (first);\n";
+        return """
+            SET search_path = pg_catalog;
+
+            CREATE INDEX CONCURRENTLY testindex ON public.testview USING btree (first);
+            """;
     }
 }
 
@@ -437,8 +440,17 @@ class MsConcurrentlyArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "BEGIN TRANSACTION\nGO\n\nCREATE CLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])\n" +
-                "WITH (ONLINE = ON)\nGO\n\nCOMMIT\nGO\n";
+        return """
+            BEGIN TRANSACTION
+            GO
+
+            CREATE CLUSTERED INDEX [index_c2] ON [dbo].[table1] ([c2])
+            WITH (ONLINE = ON)
+            GO
+
+            COMMIT
+            GO
+            """;
     }
 }
 

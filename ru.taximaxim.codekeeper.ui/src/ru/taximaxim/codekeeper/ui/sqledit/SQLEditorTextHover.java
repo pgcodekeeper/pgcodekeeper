@@ -83,8 +83,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
 
         PgObjLocation pgObjLocation = null;
         String comment = null;
-        if (hoverRegion instanceof SQLEditorMyRegion) {
-            SQLEditorMyRegion sqlEditorMyRegion = (SQLEditorMyRegion) hoverRegion;
+        if (hoverRegion instanceof SQLEditorMyRegion sqlEditorMyRegion) {
             pgObjLocation = sqlEditorMyRegion.getPgObjLocation();
             comment = sqlEditorMyRegion.getComment();
         }

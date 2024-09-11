@@ -213,8 +213,7 @@ public class PgAggregate extends AbstractPgFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction func) {
-        if (func instanceof PgAggregate && super.compareUnalterable(func)) {
-            PgAggregate aggr = (PgAggregate) func;
+        if (func instanceof PgAggregate aggr && super.compareUnalterable(func)) {
             return directCount == aggr.directCount
                     && Objects.equals(kind, aggr.getKind())
                     && Objects.equals(sFunc, aggr.getSFunc())

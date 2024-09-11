@@ -289,8 +289,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public boolean compareChildren(PgStatement obj) {
-        if (obj instanceof AbstractSchema) {
-            AbstractSchema schema = (AbstractSchema) obj;
+        if (obj instanceof AbstractSchema schema) {
             return sequences.equals(schema.sequences)
                     && functions.equals(schema.functions)
                     && views.equals(schema.views)

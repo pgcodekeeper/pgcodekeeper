@@ -31,17 +31,12 @@ public class CodekeeperLinkHelper implements ILinkHelper {
     @Override
     public IStructuredSelection findSelection(IEditorInput anInput) {
         // TODO expand tree and populate library objects before?
-        if (anInput instanceof ProjectEditorInput) {
-            ProjectEditorInput in = (ProjectEditorInput) anInput;
+        if (anInput instanceof ProjectEditorInput in) {
             return new StructuredSelection(in.getProject());
         }
 
-        if (anInput instanceof SQLEditorInput) {
-            SQLEditorInput input = (SQLEditorInput) anInput;
-            if (input.isReadOnly()) {
-                return new StructuredSelection(new FileLibrary(
-                        input.getPath(), input.getProject(), input.getDbType()));
-            }
+        if (anInput instanceof SQLEditorInput input && input.isReadOnly()) {
+            return new StructuredSelection(new FileLibrary(input.getPath(), input.getProject(), input.getDbType()));
         }
 
         return StructuredSelection.EMPTY;
@@ -54,11 +49,9 @@ public class CodekeeperLinkHelper implements ILinkHelper {
         }
         IEditorInput input = null;
         Object element = aSelection.getFirstElement();
-        if (element instanceof IProject) {
-            IProject proj = (IProject) element;
+        if (element instanceof IProject proj) {
             input = new ProjectEditorInput(proj.getName());
-        } else if (element instanceof FileLibrary) {
-            FileLibrary lib = (FileLibrary) element;
+        } else if (element instanceof FileLibrary lib) {
             input = new SQLEditorInput(lib.getPath(), lib.getProject(), lib.getDbType(), true);
         }
         if (input == null) {

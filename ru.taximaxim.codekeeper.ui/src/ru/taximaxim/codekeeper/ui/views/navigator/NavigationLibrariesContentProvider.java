@@ -35,15 +35,14 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
 
     @Override
     public Object[] getChildren(Object parent) {
-        if (parent instanceof IProject) {
+        if (parent instanceof IProject proj) {
             try {
-                IProject proj = (IProject) parent;
                 return new Object[] {LibraryUtils.create(proj)};
             } catch (IOException e) {
                 Log.log(e);
             }
-        } else if (parent instanceof AbstractLibrary) {
-            return ((AbstractLibrary) parent).getChildren().toArray();
+        } else if (parent instanceof AbstractLibrary lib) {
+            return lib.getChildren().toArray();
         }
 
         return NO_CHILDREN;
@@ -51,8 +50,8 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
 
     @Override
     public Object getParent(Object element) {
-        if (element instanceof AbstractLibrary) {
-            return ((AbstractLibrary) element).getParent();
+        if (element instanceof AbstractLibrary lib) {
+            return lib.getParent();
         }
 
         return null;
@@ -60,8 +59,8 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
 
     @Override
     public boolean hasChildren(Object element) {
-        if (element instanceof AbstractLibrary) {
-            return ((AbstractLibrary) element).hasChildren();
+        if (element instanceof AbstractLibrary lib) {
+            return lib.hasChildren();
         }
         return false;
     }

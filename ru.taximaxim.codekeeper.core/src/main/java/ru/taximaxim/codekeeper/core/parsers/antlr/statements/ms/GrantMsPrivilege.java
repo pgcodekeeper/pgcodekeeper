@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.stream.Collectors;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -81,7 +80,7 @@ public class GrantMsPrivilege extends MsParserAbstract {
         List<String> roles = ctx.name_list().id().stream()
                 .map(ParserRuleContext::getText)
                 .map(MsDiffUtils::quoteName)
-                .collect(Collectors.toList());
+                .toList();
 
         Columns_permissionsContext columnsCtx = ctx.columns_permissions();
         if (columnsCtx != null) {
@@ -92,7 +91,7 @@ public class GrantMsPrivilege extends MsParserAbstract {
         List<String> permissions = ctx.permissions().permission().stream()
                 .map(ParserAbstract::getFullCtxText)
                 .map(e -> e.toUpperCase(Locale.ROOT))
-                .collect(Collectors.toList());
+                .toList();
 
         PgStatement st = getStatement(nameCtx);
 
@@ -125,8 +124,8 @@ public class GrantMsPrivilege extends MsParserAbstract {
                     name.append('(').append(MsDiffUtils.quoteName(column.getText())).append(')');
                     PgPrivilege priv = new PgPrivilege(state, per, name.toString(), role, isGO, DatabaseType.MS);
                     // table column privileges to columns, other columns to statement
-                    if (st instanceof AbstractTable) {
-                        addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, column), priv);
+                    if (st instanceof AbstractTable table) {
+                        addPrivilege(getSafe(AbstractTable::getColumn, table, column), priv);
                     } else {
                         addPrivilege(st, priv);
                     }
@@ -194,8 +193,8 @@ public class GrantMsPrivilege extends MsParserAbstract {
 
                 for (String role : roles) {
                     PgPrivilege priv = new PgPrivilege(state, pr, objectName, role, isGO, DatabaseType.MS);
-                    if (st instanceof AbstractTable) {
-                        addPrivilege(getSafe(AbstractTable::getColumn, (AbstractTable) st, col), priv);
+                    if (st instanceof AbstractTable table) {
+                        addPrivilege(getSafe(AbstractTable::getColumn, table, col), priv);
                     } else {
                         addPrivilege(st, priv);
                     }

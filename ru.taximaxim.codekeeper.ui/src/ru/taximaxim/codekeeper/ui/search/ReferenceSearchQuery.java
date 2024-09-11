@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
@@ -53,7 +52,7 @@ public class ReferenceSearchQuery implements ISearchQuery {
         ReferenceSearchResult res = (ReferenceSearchResult) getSearchResult();
         res.removeAll();
 
-        List<PgObjLocation> locs = parser.getAllObjReferences().filter(ref::compare).collect(Collectors.toList());
+        List<PgObjLocation> locs = parser.getAllObjReferences().filter(ref::compare).toList();
         SubMonitor sub = SubMonitor.convert(monitor, locs.size());
         for (PgObjLocation loc : locs) {
             PgObjLocation copy = getLocationCopy(loc);

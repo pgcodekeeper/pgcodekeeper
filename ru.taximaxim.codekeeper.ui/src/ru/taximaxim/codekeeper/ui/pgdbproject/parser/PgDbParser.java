@@ -294,15 +294,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     @Override
     public void resourceChanged(IResourceChangeEvent event) {
-        switch (event.getType()) {
-        case IResourceChangeEvent.PRE_CLOSE:
-        case IResourceChangeEvent.PRE_DELETE:
-            if (PROJ_PARSERS.remove(event.getResource(), this)) {
-                ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-            }
-            break;
-        default:
-            break;
+        int type = event.getType();
+        if ((IResourceChangeEvent.PRE_CLOSE == type || IResourceChangeEvent.PRE_DELETE == type)
+                && PROJ_PARSERS.remove(event.getResource(), this)) {
+            ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
         }
     }
 
@@ -321,8 +316,8 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
                 Log.log(Log.LOG_WARNING, "Nature error", ex); //$NON-NLS-1$
             }
         }
-        if (in.exists() && in instanceof IURIEditorInput) {
-            return Paths.get(((IURIEditorInput) in).getURI()).toString();
+        if (in.exists() && in instanceof IURIEditorInput uriInput) {
+            return Paths.get(uriInput.getURI()).toString();
         }
 
         return null;

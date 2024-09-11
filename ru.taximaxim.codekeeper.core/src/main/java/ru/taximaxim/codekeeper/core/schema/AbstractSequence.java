@@ -82,29 +82,24 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
         return cycle;
     }
 
-    public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType,
-            long presicion);
+    public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType, long presicion);
 
     protected long getBoundaryTypeVal(String type, boolean needMaxVal, long presicion) {
-        switch (type) {
-        case "tinyint":
-            return needMaxVal ? 255 : 0;
-        case "smallint":
-            return needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
-        case "int":
-        case "integer":
-            return needMaxVal ? Integer.MAX_VALUE : Integer.MIN_VALUE;
-        case "numeric":
-        case "decimal":
+        return switch (type) {
+        case "tinyint" -> needMaxVal ? 255 : 0;
+        case "smallint" -> needMaxVal ? Short.MAX_VALUE : Short.MIN_VALUE;
+        case "int", "integer" -> needMaxVal ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        case BIGINT -> needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
+        case "numeric", "decimal" -> {
             // It used for MS SQL.
             long boundaryTypeVal = (long) (Math.pow(10, presicion)) - 1;
-            return needMaxVal ? boundaryTypeVal : - boundaryTypeVal;
-        default:
-            LOG.warn("Unsupported sequence type: {}", type);
-            // $FALL-THROUGH$
-        case BIGINT:
-            return needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
+            yield needMaxVal ? boundaryTypeVal : -boundaryTypeVal;
         }
+        default -> {
+            LOG.warn("Unsupported sequence type: {}", type);
+            yield needMaxVal ? Long.MAX_VALUE : Long.MIN_VALUE;
+        }
+        };
     }
 
     public String getIncrement() {
@@ -143,8 +138,7 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
             return true;
         }
 
-        if (obj instanceof AbstractSequence && super.compare(obj)) {
-            AbstractSequence seq = (AbstractSequence) obj;
+        if (obj instanceof AbstractSequence seq && super.compare(obj)) {
             return cycle == seq.isCycle()
                     && Objects.equals(increment, seq.getIncrement())
                     && Objects.equals(minValue, seq.getMinValue())

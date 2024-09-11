@@ -268,28 +268,27 @@ public class CreateAggregate extends PgParserAbstract {
         List<Argument> orderByArgs = args.subList(directCount, args.size());
 
         switch(paramName) {
-        case SFUNC:
-        case MSFUNC:
-        case MINVFUNC:
+        case SFUNC, MSFUNC, MINVFUNC:
             sb.append(paramName == AggFuncs.SFUNC ? sType : mSType).append(", ");
             fillStringByArgs(sb, orderByArgs.isEmpty() ? args : orderByArgs);
             break;
-        case FINALFUNC:
-        case MFINALFUNC:
+        case FINALFUNC, MFINALFUNC:
             sb.append(paramName == AggFuncs.FINALFUNC ? sType : mSType).append(", ");
             if (directCount > 0 && !orderByArgs.isEmpty()) {
-                // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
+            // for signature: aggregateName(mode name type, ... ORDER BY modeN nameN typeN, ....)
                 fillStringByArgs(sb, args.subList(0, directCount));
             }
             break;
-
+ 
         case COMBINEFUNC:
             sb.append(sType).append(", ").append(sType).append(", ");
             break;
 
         case DESERIALFUNC:
             sb.append("bytea").append(", ");
-            // $FALL-THROUGH$
+            fillStringByArgs(sb, args);
+            break;
+
         case SERIALFUNC:
             // Signature 'aggregateName(*)' with 'SERIALFUNC'-parameter could not be created.
             fillStringByArgs(sb, args);

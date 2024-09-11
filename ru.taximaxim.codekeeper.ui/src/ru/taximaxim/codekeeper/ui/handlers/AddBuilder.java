@@ -72,12 +72,8 @@ public class AddBuilder extends AbstractHandler implements IHandler {
 
     public static IProject getProject(final ExecutionEvent event) {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection instanceof IStructuredSelection) {
-            final Object element = ((IStructuredSelection) selection)
-                    .getFirstElement();
-
-            return Platform.getAdapterManager().getAdapter(element,
-                    IProject.class);
+        if (selection instanceof IStructuredSelection ss) {
+            return Platform.getAdapterManager().getAdapter(ss.getFirstElement(), IProject.class);
         }
 
         return null;

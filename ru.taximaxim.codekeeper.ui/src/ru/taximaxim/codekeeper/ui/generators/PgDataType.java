@@ -109,9 +109,8 @@ public enum PgDataType {
         if (type == null) {
             return data;
         }
-        switch (this) {
-        case BIT:
-        case TEXT:
+        switch (this) { 
+        case BIT, TEXT:
             int lparen = type.indexOf('(');
             int rparen = type.indexOf(')');
             if (lparen != -1 && rparen != -1) {

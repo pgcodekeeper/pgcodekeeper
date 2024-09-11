@@ -53,8 +53,8 @@ public class MsFunction extends AbstractMsFunction {
 
     @Override
     public boolean needDrop(AbstractFunction newFunction) {
-        if (newFunction instanceof MsFunction) {
-            return getFuncType() != ((MsFunction) newFunction).getFuncType();
+        if (newFunction instanceof MsFunction msFunction) {
+            return getFuncType() != msFunction.getFuncType();
         }
 
         return true;

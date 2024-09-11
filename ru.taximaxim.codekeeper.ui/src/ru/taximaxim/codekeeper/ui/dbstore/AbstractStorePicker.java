@@ -69,18 +69,17 @@ public abstract class AbstractStorePicker implements IStorePicker {
     @Override
     public DbInfo getDbInfo() {
         Object selection = getSelection();
-        return selection instanceof DbInfo ? (DbInfo) selection : null;
+        return selection instanceof DbInfo info ? info : null;
     }
 
     @Override
     public File getPath(boolean getDirectory) {
         Object selection = getSelection();
-        if (selection instanceof File) {
-            File f = (File) selection;
+        if (selection instanceof File f) {
             return f.isDirectory() == getDirectory ? f : null;
-        } else {
-            return null;
         }
+
+        return null;
     }
 
     @Override
