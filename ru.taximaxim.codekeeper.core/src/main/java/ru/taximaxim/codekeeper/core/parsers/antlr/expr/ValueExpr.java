@@ -56,6 +56,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IndirectionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_varContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Json_return_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_support_functionContext;
@@ -580,15 +581,15 @@ public class ValueExpr extends AbstractExpr {
 
             return new ModPair<>(functionName, func != null ?
                     getFunctionReturns(func) : TypesSetManually.FUNCTION_COLUMN);
-        } else {
-            IFunction resultFunction = resolveCall(functionName, argsType, argsName, functions);
-
-            if (resultFunction != null) {
-                addFunctionDepcy(resultFunction, QNameParser.getFirstNameCtx(ids));
-                return new ModPair<>(functionName, getFunctionReturns(resultFunction));
-            }
-            return new ModPair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
         }
+
+        IFunction resultFunction = resolveCall(functionName, argsType, argsName, functions);
+        if (resultFunction != null) {
+            addFunctionDepcy(resultFunction, QNameParser.getFirstNameCtx(ids));
+            return new ModPair<>(functionName, getFunctionReturns(resultFunction));
+        }
+
+        return new ModPair<>(functionName, TypesSetManually.FUNCTION_COLUMN);
     }
 
     private ModPair<String, String> functionSpecial(Function_callContext function) {
@@ -621,101 +622,16 @@ public class ValueExpr extends AbstractExpr {
                         TypesSetManually.NAME);
             }
         } else if ((datetime = function.date_time_function()) != null) {
-            String colname;
-            String coltype;
-            if (datetime.CURRENT_DATE() != null) {
-                colname = "date";
-                coltype = TypesSetManually.DATE;
-            } else if (datetime.CURRENT_TIME() != null) {
-                colname = "timetz";
-                coltype = TypesSetManually.TIMETZ;
-            } else if (datetime.CURRENT_TIMESTAMP() != null) {
-                colname = "now";
-                coltype = TypesSetManually.TIMESTAMPTZ;
-            } else if (datetime.LOCALTIME() != null) {
-                colname = "time";
-                coltype = TypesSetManually.TIME;
-            } else if (datetime.LOCALTIMESTAMP() != null) {
-                colname = "timestamp";
-                coltype = TypesSetManually.TIMESTAMP;
-            } else {
-                LOG.warn("No alternative in date_time_function!");
-                colname = NONAME;
-                coltype = TypesSetManually.UNKNOWN;
-            }
-            ret = new ModPair<>(colname, coltype);
+            ret = analyzeDate(datetime);
         } else if ((string = function.string_value_function()) != null) {
             args = string.vex();
-            Vex_bContext vexB = string.vex_b();
-            if (vexB != null) {
-                analyze(new Vex(vexB));
-            }
-
-            String colname = string.getChild(0).getText().toLowerCase(Locale.ROOT);
-            String coltype = TypesSetManually.TEXT;
-            if (string.TRIM() != null) {
-                if (string.LEADING() != null) {
-                    colname = "ltrim";
-                } else if (string.TRAILING() != null) {
-                    colname = "rtrim";
-                } else {
-                    colname = "btrim";
-                }
-            } else if (string.POSITION() != null) {
-                coltype = TypesSetManually.INTEGER;
-            } else {
-                // defaults work
-            }
-            ret = new ModPair<>(colname, coltype);
+            ret = analyzeString(string);
         } else if ((xml = function.xml_function()) != null) {
             args = xml.vex();
-
-            String colname = xml.getChild(0).getText().toLowerCase(Locale.ROOT);
-            String coltype = TypesSetManually.XML;
-            if (xml.XMLEXISTS() != null) {
-                coltype = TypesSetManually.BOOLEAN;
-            } else if (xml.XMLSERIALIZE() != null) {
-                Data_typeContext type = xml.data_type();
-                coltype = PgParserAbstract.getTypeName(type);
-                addTypeDepcy(type);
-            } else if (xml.XMLTABLE() != null) {
-                for (Xml_table_columnContext col : xml.xml_table_column()) {
-                    args.addAll(col.vex());
-                    Data_typeContext type = col.data_type();
-                    if (type != null) {
-                        addTypeDepcy(col.data_type());
-                    }
-                }
-                coltype = TypesSetManually.FUNCTION_TABLE;
-            } else {
-                // defaults work
-            }
-            ret = new ModPair<>(colname, coltype);
+            ret = analyzeXml(args, xml);
         } else if ((json = function.json_function()) != null) {
-            Json_return_clauseContext retClause = json.json_return_clause();
-            if (retClause == null && json.json_object_content() != null) {
-                retClause = json.json_object_content().json_return_clause();
-            }
-
-            String colname = json.getChild(0).getText().toLowerCase(Locale.ROOT);
-            String coltype = TypesSetManually.JSON;
-            if (retClause != null) {
-                Data_typeContext type = retClause.data_type();
-                coltype = PgParserAbstract.getTypeName(type);
-                addTypeDepcy(type);
-            } else if (json.JSON_ARRAY() != null || json.JSON_ARRAYAGG() != null) {
-                coltype = TypesSetManually.JSON + "[]";
-            }
-
-            var array = json.json_array_element();
-            if (array != null) {
-                var select = array.select_stmt_no_parens();
-                if (select != null) {
-                    new Select(this).analyze(select);
-                }
-            }
-
-            ret = new ModPair<>(colname, coltype);
+            args = new ArrayList<>();
+            ret = analyzeJson(args, json);
         } else if ((mer = function.merge_support_function()) != null) {
             String colname = mer.getChild(0).getText().toLowerCase(Locale.ROOT);
             ret = new ModPair<>(colname, TypesSetManually.TEXT);
@@ -747,6 +663,142 @@ public class ValueExpr extends AbstractExpr {
             }
         }
         return ret;
+    }
+
+    private ModPair<String, String> analyzeString(String_value_functionContext string) {
+        Vex_bContext vexB = string.vex_b();
+        if (vexB != null) {
+            analyze(new Vex(vexB));
+        }
+
+        String colname = string.getChild(0).getText().toLowerCase(Locale.ROOT);
+        String coltype = TypesSetManually.TEXT;
+        if (string.TRIM() != null) {
+            if (string.LEADING() != null) {
+                colname = "ltrim";
+            } else if (string.TRAILING() != null) {
+                colname = "rtrim";
+            } else {
+                colname = "btrim";
+            }
+        } else if (string.POSITION() != null) {
+            coltype = TypesSetManually.INTEGER;
+        }
+
+        return new ModPair<>(colname, coltype);
+    }
+
+    private ModPair<String, String> analyzeXml(List<VexContext> args, Xml_functionContext xml) {
+        String coltype = TypesSetManually.XML;
+        if (xml.XMLEXISTS() != null) {
+            coltype = TypesSetManually.BOOLEAN;
+        } else if (xml.XMLSERIALIZE() != null) {
+            Data_typeContext type = xml.data_type();
+            coltype = PgParserAbstract.getTypeName(type);
+            addTypeDepcy(type);
+        } else if (xml.XMLTABLE() != null) {
+            for (Xml_table_columnContext col : xml.xml_table_column()) {
+                args.addAll(col.vex());
+                Data_typeContext type = col.data_type();
+                if (type != null) {
+                    addTypeDepcy(col.data_type());
+                }
+            }
+            coltype = TypesSetManually.FUNCTION_TABLE;
+        }
+
+        String colname = xml.getChild(0).getText().toLowerCase(Locale.ROOT);
+        return new ModPair<>(colname, coltype);
+    }
+
+    private ModPair<String, String> analyzeDate(Date_time_functionContext datetime) {
+        String colname;
+        String coltype;
+        if (datetime.CURRENT_DATE() != null) {
+            colname = "date";
+            coltype = TypesSetManually.DATE;
+        } else if (datetime.CURRENT_TIME() != null) {
+            colname = "timetz";
+            coltype = TypesSetManually.TIMETZ;
+        } else if (datetime.CURRENT_TIMESTAMP() != null) {
+            colname = "now";
+            coltype = TypesSetManually.TIMESTAMPTZ;
+        } else if (datetime.LOCALTIME() != null) {
+            colname = "time";
+            coltype = TypesSetManually.TIME;
+        } else if (datetime.LOCALTIMESTAMP() != null) {
+            colname = "timestamp";
+            coltype = TypesSetManually.TIMESTAMP;
+        } else {
+            LOG.warn("No alternative in date_time_function!");
+            colname = NONAME;
+            coltype = TypesSetManually.UNKNOWN;
+        }
+        return new ModPair<>(colname, coltype);
+    }
+
+    private ModPair<String, String> analyzeJson(List<VexContext> args, Json_functionContext json) {
+        Json_return_clauseContext retClause = json.json_return_clause();
+        if (retClause == null && json.json_object_content() != null) {
+            retClause = json.json_object_content().json_return_clause();
+        }
+
+        String coltype = TypesSetManually.JSON;
+        if (retClause != null) {
+            Data_typeContext type = retClause.data_type();
+            coltype = PgParserAbstract.getTypeName(type);
+            addTypeDepcy(type);
+        } else if (json.JSON_ARRAY() != null || json.JSON_ARRAYAGG() != null) {
+            coltype = TypesSetManually.JSON + "[]";
+        } else if (json.JSON_EXISTS() != null) {
+            coltype = TypesSetManually.BOOLEAN;
+        } else if (json.JSON_QUERY() != null) {
+            coltype = TypesSetManually.JSONB;
+        } else if (json.JSON_VALUE() != null) {
+            coltype = TypesSetManually.TEXT;
+        } else if (json.JSON_SERIALIZE() != null) {
+            coltype = TypesSetManually.TEXT;
+        } else if (json.JSON_TABLE() != null) {
+            analyzeJsonColumns(args, json.json_columns());
+            coltype = TypesSetManually.FUNCTION_TABLE;
+        } else if (json.JSON_SCALAR() != null) {
+            var inputType = analyze(new Vex(json.vex())).getSecond();
+            if (TypesSetManually.BOOLEAN.equals(inputType)) {
+                coltype = TypesSetManually.BOOLEAN;
+            } else if (TypesSetManually.TEXT.equals(inputType)) {
+                coltype = TypesSetManually.TEXT;
+            }
+        }
+
+        var array = json.json_array_element();
+        if (array != null) {
+            var select = array.select_stmt_no_parens();
+            if (select != null) {
+                new Select(this).analyze(select);
+            }
+        }
+
+        var vex = json.vex();
+        if (vex != null) {
+            args.add(vex);
+        }
+
+        String colname = json.getChild(0).getText().toLowerCase(Locale.ROOT);
+        return new ModPair<>(colname, coltype);
+    }
+
+    private void analyzeJsonColumns(List<VexContext> args, Json_columnsContext columns) {
+        for (var col : columns.json_table_column()) {
+            if (col.NESTED() == null) {
+                args.add(col.vex());
+                Data_typeContext type = col.data_type();
+                if (type != null) {
+                    addTypeDepcy(col.data_type());
+                }
+            } else {
+                analyzeJsonColumns(args, col.json_columns());
+            }
+        }
     }
 
     /**

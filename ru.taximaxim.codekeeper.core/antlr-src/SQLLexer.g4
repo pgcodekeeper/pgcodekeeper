@@ -753,7 +753,6 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     ONLY_DATABASE_STATS: [oO] [nN] [lL] [yY] UNDERLINE [dD] [aA] [tT] [aA] [bB] [aA] [sS] [eE] UNDERLINE [sS] [tT] [aA] [tT] [sS];
     OUTPUT: [oO] [uU] [tT] [pP] [uU] [tT];
 
-    PARTITIONS: [pP] [aA] [rR] [tT] [iI] [tT] [iI] [oO] [nN] [sS];
     PASSEDBYVALUE: [pP] [aA] [sS] [sS] [eE] [dD] [bB] [yY] [vV] [aA] [lL] [uU] [eE];
     PERCENT: [pP] [eE] [rR] [cC] [eE] [nN] [tT];
     PERMISSIVE: [pP] [eE] [rR] [mM] [iI] [sS] [sS] [iI] [vV] [eE];
