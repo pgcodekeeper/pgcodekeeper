@@ -79,6 +79,11 @@ public class Merge extends AbstractExprWithNmspc<Merge_stmt_for_psqlContext>  {
                 }
             }
         }
+
+        if (merge.RETURNING() != null) {
+            return select.sublist(merge.select_list().select_sublist(), new ValueExpr(select));
+        }
+
         return Collections.emptyList();
     }
 }

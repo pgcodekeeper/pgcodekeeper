@@ -423,7 +423,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
             } else if (reindex.SCHEMA() != null) {
                 addSchemaDepcy(PgParserAbstract.getIdentifiers(reindex.schema_qualified_name()), null);
             }
-        } else if (table != null && (additional.CLUSTER() != null || additional.REFRESH() != null)) {
+        } else if (table != null && additional.REFRESH() != null) {
             addRelationDepcy(PgParserAbstract.getIdentifiers(table));
         } else if ((data = additional.data_statement()) != null) {
             new Sql(this).data(data);

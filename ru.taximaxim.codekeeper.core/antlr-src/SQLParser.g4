@@ -111,7 +111,7 @@ additional_statement
     | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
     | ANALYZE (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
-    | CLUSTER VERBOSE? (identifier ON schema_qualified_name | schema_qualified_name (USING identifier)?)?
+    | cluster_stmt
     | CHECKPOINT
     | LOAD Character_String_Literal
     | DEALLOCATE PREPARE? (identifier | ALL)
@@ -123,6 +123,16 @@ additional_statement
     | truncate_stmt
     | notify_stmt
     | reindex_stmt
+    ;
+
+cluster_stmt
+    : CLUSTER (LEFT_PAREN cluster_option (COMMA cluster_option)? RIGHT_PAREN)? (schema_qualified_name (USING identifier)?)? // current version
+    | CLUSTER VERBOSE (schema_qualified_name (USING identifier))? // legacy version
+    | CLUSTER identifier ON schema_qualified_name // very legacy version
+    ;
+
+cluster_option
+    : VERBOSE boolean_value?
     ;
 
 explain_statement
@@ -148,7 +158,8 @@ show_statement
     ;
 
 explain_option
-    : (ANALYZE | VERBOSE | COSTS | SETTINGS | GENERIC_PLAN | BUFFERS | WAL | TIMING | SUMMARY) boolean_value?
+    : (ANALYZE | VERBOSE | COSTS | SETTINGS | GENERIC_PLAN | BUFFERS | WAL | TIMING | SUMMARY | MEMORY) boolean_value?
+    | SERIALIZE (NONE | TEXT | BINARY)?
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
 
@@ -310,9 +321,9 @@ schema_drop
 
 schema_import
     : IMPORT FOREIGN SCHEMA name=identifier
-    ((LIMIT TO | EXCEPT) LEFT_PAREN identifier_list RIGHT_PAREN)?
-    FROM SERVER identifier INTO identifier
-    define_foreign_options?
+    ((LIMIT TO | EXCEPT) identifier_list_in_paren)?
+    FROM SERVER identifier
+    INTO identifier define_foreign_options?
     ;
 
 alter_function_statement
@@ -383,16 +394,24 @@ alter_table_statement
         | rename_to
         | RENAME CONSTRAINT identifier TO identifier
         | SET (WITH LEFT_PAREN REORGANIZE EQUAL (TRUE | FALSE) RIGHT_PAREN)? distributed_clause
-        | ATTACH PARTITION child=schema_qualified_name for_values_bound
-        | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?
+        | alter_partition
         | alter_partition_gp)
     ;
 
-alter_partition_gp
-    : (ALTER PARTITION alter_partition_gp_name)* partition_action
+alter_partition
+    : ATTACH partition_table_value
+    | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?
     ;
 
-partition_action
+partition_table_value
+    : PARTITION schema_qualified_name for_values_bound
+    ;
+
+alter_partition_gp
+    : (ALTER PARTITION alter_partition_gp_name)* partition_gp_action
+    ;
+
+partition_gp_action
     : ALTER DEFAULT PARTITION
     | DROP DEFAULT PARTITION if_exists?
     | DROP PARTITION if_exists? alter_partition_gp_name cascade_restrict?
@@ -401,7 +420,7 @@ partition_action
     | RENAME DEFAULT PARTITION TO identifier
     | RENAME PARTITION alter_partition_gp_name TO identifier
     | ADD DEFAULT PARTITION identifier (LEFT_PAREN template_spec RIGHT_PAREN)?
-    | ADD PARTITION identifier? alter_partition_element gp_partition_with_clause? (LEFT_PAREN template_spec RIGHT_PAREN)?
+    | ADD PARTITION identifier? alter_partition_gp_element gp_partition_with_clause? (LEFT_PAREN template_spec RIGHT_PAREN)?
     | EXCHANGE PARTITION alter_partition_gp_name WITH TABLE name=schema_qualified_name (WITH | WITHOUT VALIDATION)?
     | EXCHANGE DEFAULT PARTITION WITH TABLE identifier (WITH | WITHOUT VALIDATION)?
     | SET SUBPARTITION TEMPLATE (LEFT_PAREN template_spec? RIGHT_PAREN)
@@ -409,7 +428,7 @@ partition_action
     | SPLIT PARTITION alter_partition_gp_name AT LEFT_PAREN Character_String_Literal RIGHT_PAREN into_partition_gp_clause?
     ;
 
-alter_partition_element
+alter_partition_gp_element
     : partition_values
     | partition_start_clause
     | partition_end_clause
@@ -441,7 +460,7 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
-    | SET ACCESS METHOD access_method_name=identifier
+    | SET ACCESS METHOD (access_method_name=identifier | DEFAULT)
     | set_logged
     | SET storage_parameters
     | RESET names_in_parens
@@ -463,6 +482,7 @@ column_action
     | drop_def
     | (set=SET | DROP) NOT NULL
     | DROP IDENTITY if_exists?
+    | SET EXPRESSION AS LEFT_PAREN expression=vex RIGHT_PAREN
     | DROP EXPRESSION if_exists?
     | SET storage_parameters
     | SET compression_identifier
@@ -543,7 +563,7 @@ index_def_action
     | ATTACH PARTITION index=schema_qualified_name
     | NO? DEPENDS ON EXTENSION schema_qualified_name
     | ALTER COLUMN? (NUMBER_LITERAL | identifier) set_statistics
-    | RESET LEFT_PAREN identifier_list RIGHT_PAREN
+    | RESET identifier_list_in_paren
     | set_tablespace
     | SET storage_parameters
     ;
@@ -891,19 +911,14 @@ alter_tablespace_statement
     ;
 
 alter_owner_statement
-    : (OPERATOR target_operator
-        | LARGE OBJECT NUMBER_LITERAL
-        | (FUNCTION | PROCEDURE | AGGREGATE) name=schema_qualified_name function_args
-        | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | EVENT TRIGGER | SERVER | DOMAIN
-          | STATISTICS | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW)
-        if_exists? name=schema_qualified_name) owner_to
+    : owner_member_object owner_to
     ;
 
 alter_tablespace_action
     : rename_to
     | owner_to
     | SET storage_parameters
-    | RESET LEFT_PAREN identifier_list RIGHT_PAREN
+    | RESET identifier_list_in_paren
     ;
 
 alter_statistics_statement
@@ -911,7 +926,7 @@ alter_statistics_statement
     ;
 
 set_statistics
-    : SET STATISTICS signed_number_literal
+    : SET STATISTICS (signed_number_literal | DEFAULT)
     ;
 
 alter_foreign_data_wrapper
@@ -929,11 +944,7 @@ alter_operator_statement
 
 alter_operator_action
     : set_schema
-    | SET LEFT_PAREN operator_set_restrict_join (COMMA operator_set_restrict_join)* RIGHT_PAREN
-    ;
-
-operator_set_restrict_join
-    : (RESTRICT | JOIN) EQUAL schema_qualified_name
+    | SET LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
     ;
 
 drop_user_mapping_statement
@@ -1043,18 +1054,22 @@ create_foreign_data_wrapper_statement
     ;
 
 create_operator_statement
-    : OPERATOR name=operator_name LEFT_PAREN operator_option (COMMA operator_option)* RIGHT_PAREN
+    : OPERATOR name=operator_name LEFT_PAREN create_operator_option (COMMA create_operator_option)* RIGHT_PAREN
     ;
 
 operator_name
     : (schema_name=identifier DOT)? operator=all_simple_op
     ;
 
-operator_option
+create_operator_option
     : (FUNCTION | PROCEDURE) EQUAL func_name=schema_qualified_name
-    | RESTRICT EQUAL restr_name=schema_qualified_name
-    | JOIN EQUAL join_name=schema_qualified_name
     | (LEFTARG | RIGHTARG) EQUAL type=data_type
+    | operator_option
+    ;
+
+operator_option
+    : RESTRICT EQUAL restr_name=schema_qualified_name
+    | JOIN EQUAL join_name=schema_qualified_name
     | (COMMUTATOR | NEGATOR) EQUAL addition_oper_name=all_op_ref
     | HASHES
     | MERGES
@@ -1170,6 +1185,7 @@ rule_member_object
     | (FUNCTION | PROCEDURE | ROUTINE) func_name+=function_parameters (COMMA func_name+=function_parameters)*
     | LARGE OBJECT NUMBER_LITERAL (COMMA NUMBER_LITERAL)*
     | LANGUAGE names_references
+    | PARAMETER names_references
     | SCHEMA schema_names=names_references
     | TABLESPACE names_references
     | TYPE names_references
@@ -1181,7 +1197,7 @@ columns_permissions
     ;
 
 table_column_privileges
-    : table_column_privilege LEFT_PAREN identifier_list RIGHT_PAREN
+    : table_column_privilege identifier_list_in_paren
     ;
 
 permissions
@@ -1190,17 +1206,21 @@ permissions
 
 permission
     : ALL PRIVILEGES?
+    | ALTER SYSTEM
     | CONNECT
     | CREATE
     | DELETE
     | EXECUTE
     | INSERT
-    | UPDATE
+    | MAINTAIN
     | REFERENCES
     | SELECT
+    | SET
     | TEMP
+    | TEMPORARY
     | TRIGGER
     | TRUNCATE
+    | UPDATE
     | USAGE
     ;
 
@@ -1303,6 +1323,14 @@ label_member_object
     | SUBSCRIPTION identifier
     | TABLESPACE identifier
     | TYPE schema_qualified_name
+    ;
+
+owner_member_object
+    : OPERATOR target_operator
+    | LARGE OBJECT NUMBER_LITERAL
+    | (FUNCTION | PROCEDURE | AGGREGATE | ROUTINE) name=schema_qualified_name function_args
+    | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | EVENT TRIGGER | SERVER | DOMAIN
+      | STATISTICS | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW) if_exists? name=schema_qualified_name
     ;
 
 /*
@@ -1573,16 +1601,22 @@ copy_option_list
 
 copy_option
     : FORMAT? (TEXT | CSV | BINARY)
-    | OIDS truth_value?
-    | FREEZE truth_value?
+    | OIDS boolean_value?
+    | FREEZE boolean_value?
     | (DELIMITER | NULL) AS? Character_String_Literal
     | (DEFAULT | ENCODING | QUOTE | ESCAPE) Character_String_Literal
-    | HEADER (truth_value | MATCH)?
+    | HEADER (boolean_value | MATCH)?
     | FORCE QUOTE (MULTIPLY | identifier_list)
-    | FORCE_QUOTE (MULTIPLY | LEFT_PAREN identifier_list RIGHT_PAREN)
+    | FORCE_QUOTE (MULTIPLY | identifier_list_in_paren)
     | FORCE NOT NULL identifier_list
-    | FORCE_NOT_NULL LEFT_PAREN identifier_list RIGHT_PAREN
-    | FORCE_NULL LEFT_PAREN identifier_list RIGHT_PAREN
+    | FORCE_NOT_NULL (MULTIPLY | identifier_list_in_paren)
+    | FORCE_NULL (MULTIPLY | identifier_list_in_paren)
+    | ON_ERROR (STOP | IGNORE)
+    | LOG_VERBOSITY (DEFAULT | VERBOSE)
+    ;
+
+identifier_list_in_paren
+    : LEFT_PAREN identifier_list RIGHT_PAREN
     ;
 
 create_view_statement
@@ -2218,6 +2252,7 @@ bare_label_keyword
     | COMMITTED
     | COMPRESSION
     | CONCURRENTLY
+    | CONDITIONAL
     | CONFIGURATION
     | CONFLICT
     | CONNECTION
@@ -2270,11 +2305,13 @@ bare_label_keyword
     | DROP
     | EACH
     | ELSE
+    | EMPTY
     | ENABLE
     | ENCODING
     | ENCRYPTED
     | END
     | ENUM
+    | ERROR
     | ESCAPE
     | EVENT
     | EXCLUDE
@@ -2344,8 +2381,15 @@ bare_label_keyword
     | JSON
     | JSON_ARRAY
     | JSON_ARRAYAGG
+    | JSON_EXISTS
     | JSON_OBJECT
     | JSON_OBJECTAGG
+    | JSON_QUERY
+    | JSON_SCALAR
+    | JSON_SERIALIZE
+    | JSON_TABLE
+    | JSON_VALUE
+    | KEEP
     | KEY
     | KEYS
     | LABEL
@@ -2374,6 +2418,7 @@ bare_label_keyword
     | MATERIALIZED
     | MAXVALUE
     | MERGE
+    | MERGE_ACTION
     | METHOD
     | MINVALUE
     | MODE
@@ -2383,6 +2428,7 @@ bare_label_keyword
     | NATIONAL
     | NATURAL
     | NCHAR
+    | NESTED
     | NEW
     | NEXT
     | NFC
@@ -2406,6 +2452,7 @@ bare_label_keyword
     | OFF
     | OIDS
     | OLD
+    | OMIT
     | ONLY
     | OPERATOR
     | OPTION
@@ -2426,7 +2473,9 @@ bare_label_keyword
     | PARTITION
     | PASSING
     | PASSWORD
+    | PATH
     | PLACING
+    | PLAN
     | PLANS
     | POLICY
     | POSITION
@@ -2443,6 +2492,7 @@ bare_label_keyword
     | PROGRAM
     | PUBLICATION
     | QUOTE
+    | QUOTES
     | RANGE
     | READ
     | REAL
@@ -2500,6 +2550,7 @@ bare_label_keyword
     | SMALLINT
     | SNAPSHOT
     | SOME
+    | SOURCE
     | SQL
     | STABLE
     | STANDALONE
@@ -2511,6 +2562,7 @@ bare_label_keyword
     | STORAGE
     | STORED
     | STRICT
+    | STRING
     | STRIP
     | SUBSCRIPTION
     | SUBSTRING
@@ -2523,6 +2575,7 @@ bare_label_keyword
     | TABLES
     | TABLESAMPLE
     | TABLESPACE
+    | TARGET
     | TEMP
     | TEMPLATE
     | TEMPORARY
@@ -2545,6 +2598,7 @@ bare_label_keyword
     | UESCAPE
     | UNBOUNDED
     | UNCOMMITTED
+    | UNCONDITIONAL
     | UNENCRYPTED
     | UNIQUE
     | UNKNOWN
@@ -2631,6 +2685,7 @@ tokens_nonreserved
     | COMMIT
     | COMMITTED
     | COMPRESSION
+    | CONDITIONAL
     | CONFIGURATION
     | CONFLICT
     | CONNECTION
@@ -2667,10 +2722,12 @@ tokens_nonreserved
     | DOUBLE
     | DROP
     | EACH
+    | EMPTY
     | ENABLE
     | ENCODING
     | ENCRYPTED
     | ENUM
+    | ERROR
     | ESCAPE
     | EVENT
     | EXCLUDE
@@ -2721,6 +2778,7 @@ tokens_nonreserved
     | INVOKER
     | ISOLATION
     | JSON
+    | KEEP
     | KEY
     | KEYS
     | LABEL
@@ -2750,6 +2808,7 @@ tokens_nonreserved
     | MOVE
     | NAME
     | NAMES
+    | NESTED
     | NEW
     | NEXT
     | NFC
@@ -2767,6 +2826,7 @@ tokens_nonreserved
     | OFF
     | OIDS
     | OLD
+    | OMIT
     | OPERATOR
     | OPTION
     | OPTIONS
@@ -2783,6 +2843,8 @@ tokens_nonreserved
     | PARTITION
     | PASSING
     | PASSWORD
+    | PATH
+    | PLAN
     | PLANS
     | POLICY
     | PRECEDING
@@ -2797,6 +2859,7 @@ tokens_nonreserved
     | PROGRAM
     | PUBLICATION
     | QUOTE
+    | QUOTES
     | RANGE
     | READ
     | REASSIGN
@@ -2845,6 +2908,7 @@ tokens_nonreserved
     | SIMPLE
     | SKIP_
     | SNAPSHOT
+    | SOURCE
     | SQL
     | STABLE
     | STANDALONE
@@ -2856,6 +2920,7 @@ tokens_nonreserved
     | STORAGE
     | STORED
     | STRICT
+    | STRING
     | STRIP
     | SUBSCRIPTION
     | SUPPORT
@@ -2863,6 +2928,7 @@ tokens_nonreserved
     | SYSTEM
     | TABLES
     | TABLESPACE
+    | TARGET
     | TEMP
     | TEMPLATE
     | TEMPORARY
@@ -2878,6 +2944,7 @@ tokens_nonreserved
     | UESCAPE
     | UNBOUNDED
     | UNCOMMITTED
+    | UNCONDITIONAL
     | UNENCRYPTED
     | UNKNOWN
     | UNLISTEN
@@ -2927,9 +2994,16 @@ tokens_nonreserved_except_function_type
     | INTERVAL
     | JSON_ARRAY
     | JSON_ARRAYAGG
+    | JSON_EXISTS
     | JSON_OBJECT
     | JSON_OBJECTAGG
+    | JSON_QUERY
+    | JSON_SCALAR
+    | JSON_SERIALIZE
+    | JSON_TABLE
+    | JSON_VALUE
     | LEAST
+    | MERGE_ACTION
     | NATIONAL
     | NCHAR
     | NONE
@@ -3076,8 +3150,8 @@ tokens_nonkeyword
     | ALLOW_CONNECTIONS
     | BASETYPE
     | BLOCKSIZE
-    | BUFFERS
     | BUFFER_USAGE_LIMIT
+    | BUFFERS
     | BYPASSRLS
     | CANONICAL
     | CATEGORY
@@ -3122,6 +3196,7 @@ tokens_nonkeyword
     | HYPOTHETICAL
     | ICU_LOCALE
     | ICU_RULES
+    | IGNORE
     | INCLUSIVE
     | INDEX_CLEANUP
     | INIT
@@ -3137,9 +3212,12 @@ tokens_nonkeyword
     | LIST
     | LOCALE
     | LOCALE_PROVIDER
+    | LOG_VERBOSITY
     | LOGIN
     | MAIN
+    | MAINTAIN
     | MASTER
+    | MEMORY
     | MERGES
     | MFINALFUNC
     | MFINALFUNC_EXTRA
@@ -3165,10 +3243,10 @@ tokens_nonkeyword
     | NOREPLICATION
     | NOSUPERUSER
     | OID
-    | OUTPUT
+    | ON_ERROR
     | ONLY_DATABASE_STATS
+    | OUTPUT
     | PASSEDBYVALUE
-    | PATH
     | PERCENT
     | PERMISSIVE
     | PERSISTENTLY
@@ -3193,25 +3271,27 @@ tokens_nonkeyword
     | RIGHTARG
     | RULES
     | SAFE
-    | SEGMENTS
     | SEGMENT
+    | SEGMENTS
     | SEND
     | SERIALFUNC
+    | SERIALIZE
     | SETTINGS
     | SFUNC
     | SHAREABLE
-    | SKIP_LOCKED
     | SKIP_DATABASE_STATS
+    | SKIP_LOCKED
     | SORTOP
     | SPLIT
     | SSPACE
     | STRATEGY
+    | STOP
     | STYPE
+    | SUBPARTITION
+    | SUBSCRIPT
+    | SUBTYPE
     | SUBTYPE_DIFF
     | SUBTYPE_OPCLASS
-    | SUBTYPE
-    | SUBSCRIPT
-    | SUBPARTITION
     | SUMMARY
     | SUPERUSER
     | TIMING
@@ -3457,6 +3537,7 @@ function_call
     | string_value_function
     | xml_function
     | json_function
+    | merge_support_function
     ;
 
 vex_or_named_notation
@@ -3521,11 +3602,61 @@ xml_function
         RIGHT_PAREN
     ;
 
+merge_support_function
+    : MERGE_ACTION LEFT_PAREN RIGHT_PAREN
+    ;
+
 json_function
     : JSON_ARRAY LEFT_PAREN json_array_element json_on_null_clause? json_return_clause? RIGHT_PAREN
     | JSON_ARRAYAGG LEFT_PAREN vex (FORMAT JSON)? orderby_clause? json_on_null_clause? json_return_clause? RIGHT_PAREN
     | JSON_OBJECT LEFT_PAREN json_object_content RIGHT_PAREN
     | JSON_OBJECTAGG LEFT_PAREN json_object_entry json_on_null_clause? json_unique_keys? json_return_clause? RIGHT_PAREN
+    | JSON_EXISTS LEFT_PAREN vex COMMA character_string json_passing_clause? json_behavior_clause? RIGHT_PAREN
+    | JSON_QUERY LEFT_PAREN vex COMMA character_string json_passing_clause? json_return_clause? json_wrapper? json_quotes? json_behavior_clause* RIGHT_PAREN
+    | JSON_VALUE LEFT_PAREN vex COMMA character_string json_passing_clause? json_return_clause? json_behavior_clause* RIGHT_PAREN
+    | JSON_SCALAR LEFT_PAREN vex RIGHT_PAREN
+    | JSON_SERIALIZE LEFT_PAREN vex format_json? json_return_clause? RIGHT_PAREN
+    | JSON_TABLE LEFT_PAREN vex COMMA character_string (AS identifier)? json_passing_clause? json_columns json_behavior_clause? RIGHT_PAREN
+    ;
+
+json_columns
+    : COLUMNS LEFT_PAREN json_table_column (COMMA json_table_column)* RIGHT_PAREN
+    ;
+
+json_table_column
+    : vex FOR ORDINALITY
+    | vex data_type format_json? (PATH character_string)? json_wrapper? json_quotes? json_behavior_clause*
+    | vex data_type EXISTS (PATH character_string)? json_behavior_clause*
+    | NESTED PATH? character_string (AS identifier)? json_columns
+    ;
+
+json_wrapper
+    :  (WITHOUT | WITH (CONDITIONAL | UNCONDITIONAL)?) ARRAY? WRAPPER
+    ;
+
+json_quotes
+    : (KEEP | OMIT) QUOTES (ON SCALAR STRING)?
+    ;
+
+format_json
+    : FORMAT JSON (ENCODING vex)?
+    ;
+
+json_passing_clause
+    : PASSING vex AS identifier (COMMA vex AS identifier)*
+    ;
+
+json_behavior_clause
+    : (json_behavior_type | DEFAULT vex) ON (ERROR | EMPTY)
+    ;
+
+json_behavior_type
+    : ERROR
+    | NULL
+    | TRUE
+    | FALSE
+    | UNKNOWN
+    | EMPTY (ARRAY | OBJECT)?
     ;
 
 json_array_element
@@ -3543,7 +3674,7 @@ json_unique_keys
     ;
 
 json_object_entry
-    : vex (COLON | VALUE) vex (FORMAT JSON (ENCODING vex)?)?
+    : vex (COLON | VALUE) vex format_json?
     ;
 
 json_on_null_clause
@@ -3551,7 +3682,7 @@ json_on_null_clause
     ;
 
 json_return_clause
-    : RETURNING data_type (FORMAT JSON (ENCODING vex)?)?
+    : RETURNING data_type format_json?
     ;
 
 xml_table_column
@@ -3749,11 +3880,13 @@ merge_stmt_for_psql
     MERGE INTO merge_table_name=schema_qualified_name (AS? alias=identifier)?
     USING from_item ON vex
     when_condition+
+    (RETURNING select_list)?
     ;
 
 when_condition
     : WHEN MATCHED (AND vex)? THEN merge_matched
-    | WHEN NOT MATCHED (AND vex)? THEN merge_not_matched
+    | WHEN NOT MATCHED (BY TARGET)? (AND vex)? THEN merge_not_matched
+    | WHEN NOT MATCHED BY SOURCE (AND vex)? THEN merge_matched
     ;
 
 merge_matched

@@ -35,6 +35,7 @@ public interface TypesSetManually {
     String NAME = "name";
     String XML = "xml";
     String JSON = "json";
+    String JSONB = "jsonb";
     String ANY = "any";
     String ANYTYPE = "anyelement";
     String ANYARRAY = "anyarray";

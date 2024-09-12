@@ -1406,3 +1406,38 @@ select json_object('{{a, 1}, {b, "def"}, {c, 3.5}}');
 select json_object('{a,b}', '{1,2}');
 select json_object('code' VALUE 'P123', 'title': 'Jaws');
 select json_objectagg(k:v) FROM (VALUES ('a'::text,current_date),('b',current_date + 1)) AS t(k,v);
+select JSON_EXISTS(jsonb '{"key1": [1,2,3]}', 'strict $.key1[*] ? (@ > $x)' PASSING 2 AS x);
+select JSON_EXISTS(jsonb '{"a": [1,2,3]}', 'lax $.a[5]' ERROR ON ERROR);
+select JSON_EXISTS(jsonb '{"a": [1,2,3]}', 'strict $.a[5]' ERROR ON ERROR);
+select JSON_VALUE(jsonb '"123.45"', '$' RETURNING float);
+select JSON_VALUE(jsonb '"03:04 2015-02-01"', '$.datetime("HH24:MI YYYY-MM-DD")' RETURNING date);
+select JSON_VALUE(jsonb '[1,2]', 'strict $[$off]' PASSING 1 as off);
+select JSON_VALUE(jsonb '[1,2]', 'strict $[*]' DEFAULT 9 ON ERROR);
+select JSON_QUERY(jsonb '[1,[2,3],null]', 'lax $[*][$off]' PASSING 1 AS off WITH CONDITIONAL WRAPPER);
+select JSON_QUERY(jsonb '{"a": "[1, 2]"}', 'lax $.a' OMIT QUOTES);
+select JSON_QUERY(jsonb '{"a": "[1, 2]"}', 'lax $.a' RETURNING int[] OMIT QUOTES ERROR ON ERROR);
+
+SELECT * FROM JSON_TABLE (
+'{"favorites":
+    {"movies":
+      [{"name": "One", "director": "John Doe"},
+       {"name": "Two", "director": "Don Joe"}],
+     "books":
+      [{"name": "Mystery", "authors": [{"name": "Brown Dan"}]},
+       {"name": "Wonder", "authors": [{"name": "Jun Murakami"}, {"name":"Craig Doe"}]}]
+}}'::json, '$.favorites[*]'
+COLUMNS (
+  user_id FOR ORDINALITY,
+  NESTED '$.movies[*]'
+    COLUMNS (
+    movie_id FOR ORDINALITY,
+    mname text PATH '$.name',
+    director text),
+  NESTED '$.books[*]'
+    COLUMNS (
+      book_id FOR ORDINALITY,
+      bname text PATH '$.name',
+      NESTED '$.authors[*]'
+        COLUMNS (
+          author_id FOR ORDINALITY,
+          author_name text PATH '$.name'))));

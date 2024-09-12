@@ -349,3 +349,119 @@ ON (dest.request_app_name = source.val)
 WHEN NOT MATCHED THEN
     INSERT (request_app_name)
     VALUES (source.val);
+    
+-- DELETE/INSERT not matched by source/target
+BEGIN;
+MERGE INTO target t
+USING source AS s
+ON t.tid = s.sid
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE
+WHEN NOT MATCHED BY TARGET THEN
+	INSERT VALUES (s.sid, s.delta)
+RETURNING merge_action(), t.*;
+SELECT * FROM target ORDER BY tid;
+
+-- UPSERT with UPDATE/DELETE when not matched by source
+BEGIN;
+DELETE FROM SOURCE WHERE sid = 2;
+MERGE INTO target t
+USING source AS s
+ON t.tid = s.sid
+WHEN MATCHED AND t.balance > s.delta THEN
+    UPDATE SET balance = t.balance - s.delta
+WHEN MATCHED THEN
+	UPDATE SET balance = 0
+WHEN NOT MATCHED THEN
+    INSERT VALUES (s.sid, s.delta)
+WHEN NOT MATCHED BY SOURCE AND tid = 1 THEN
+	UPDATE SET balance = 0
+WHEN NOT MATCHED BY SOURCE THEN
+	DELETE
+RETURNING merge_action(), t.*;
+
+-- RETURNING
+CREATE TABLE merge_actions(action text, abbrev text);
+INSERT INTO merge_actions VALUES ('INSERT', 'ins'), ('UPDATE', 'upd'), ('DELETE', 'del');
+MERGE INTO sq_target t
+USING sq_source s
+ON tid = sid
+WHEN MATCHED AND tid >= 2 THEN
+    UPDATE SET balance = t.balance + delta
+WHEN NOT MATCHED THEN
+    INSERT (balance, tid) VALUES (balance + delta, sid)
+WHEN MATCHED AND tid < 2 THEN
+    DELETE
+RETURNING (SELECT abbrev FROM merge_actions
+            WHERE action = merge_action()) AS action,
+          t.*,
+          CASE merge_action()
+              WHEN 'INSERT' THEN 'Inserted '||t
+              WHEN 'UPDATE' THEN 'Added '||delta||' to balance'
+              WHEN 'DELETE' THEN 'Removed '||t
+          END AS description;
+
+-- RETURNING in CTEs
+CREATE TABLE sq_target_merge_log (tid integer NOT NULL, last_change text);
+INSERT INTO sq_target_merge_log VALUES (1, 'Original value');
+BEGIN;
+WITH m AS (
+    MERGE INTO sq_target t
+    USING sq_source s
+    ON tid = sid
+    WHEN MATCHED AND tid >= 2 THEN
+        UPDATE SET balance = t.balance + delta
+    WHEN NOT MATCHED THEN
+        INSERT (balance, tid) VALUES (balance + delta, sid)
+    WHEN MATCHED AND tid < 2 THEN
+        DELETE
+    RETURNING merge_action() AS action, t.*,
+              CASE merge_action()
+                  WHEN 'INSERT' THEN 'Inserted '||t
+                  WHEN 'UPDATE' THEN 'Added '||delta||' to balance'
+                  WHEN 'DELETE' THEN 'Removed '||t
+              END AS description
+), m2 AS (
+    MERGE INTO sq_target_merge_log l
+    USING m
+    ON l.tid = m.tid
+    WHEN MATCHED THEN
+        UPDATE SET last_change = description
+    WHEN NOT MATCHED THEN
+        INSERT VALUES (m.tid, description)
+    RETURNING action, merge_action() AS log_action, l.*
+)
+SELECT * FROM m2;
+SELECT * FROM sq_target_merge_log ORDER BY tid;
+
+-- COPY (MERGE ... RETURNING) TO ...
+COPY (
+    MERGE INTO sq_target t
+    USING sq_source s
+    ON tid = sid
+    WHEN MATCHED AND tid >= 2 THEN
+        UPDATE SET balance = t.balance + delta
+    WHEN NOT MATCHED THEN
+        INSERT (balance, tid) VALUES (balance + delta, sid)
+    WHEN MATCHED AND tid < 2 THEN
+        DELETE
+    RETURNING merge_action(), t.*
+) TO stdout;
+
+-- try simple MERGE
+MERGE INTO pa_target t
+  USING (SELECT '2017-01-15' AS slogts, * FROM pa_source WHERE sid < 10) s
+  ON t.tid = s.sid
+  WHEN MATCHED THEN
+    UPDATE SET balance = balance + delta, val = val || ' updated by merge'
+  WHEN NOT MATCHED THEN
+    INSERT VALUES (slogts::timestamp, sid, delta, 'inserted by merge')
+  RETURNING merge_action(), t.*;
+  
+-- try a system catalog
+MERGE INTO pg_class c
+USING (SELECT 'pg_depend'::regclass AS oid) AS j
+ON j.oid = c.oid
+WHEN MATCHED THEN
+	UPDATE SET reltuples = reltuples + 1
+RETURNING j.oid;

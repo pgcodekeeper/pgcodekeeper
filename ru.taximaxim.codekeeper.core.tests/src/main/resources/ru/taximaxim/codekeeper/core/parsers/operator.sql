@@ -171,3 +171,13 @@ CREATE OPERATOR CLASS box_ops DEFAULT
     FUNCTION 6  gist_box_picksplit(internal, internal),
     FUNCTION 7  gist_box_same(box, box, internal);
 CREATE OPERATOR |@| (PROCEDURE = unnest, RIGHTARG = ANYARRAY);
+
+-- Test setting merges and hashes
+ALTER OPERATOR === (boolean, real) SET (MERGES);
+ALTER OPERATOR === (boolean, real) SET (HASHES);
+
+-- Test setting commutator
+ALTER OPERATOR === (boolean, real) SET (COMMUTATOR = ====);
+
+ALTER OPERATOR @=(real, boolean) SET (COMMUTATOR = ===);
+ALTER OPERATOR @!=(boolean, real) SET (NEGATOR = ===);

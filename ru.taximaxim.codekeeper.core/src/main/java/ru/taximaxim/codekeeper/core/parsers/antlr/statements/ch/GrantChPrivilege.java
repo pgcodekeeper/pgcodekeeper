@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -68,7 +69,9 @@ public class GrantChPrivilege extends ChParserAbstract {
             }
 
             List<String> permissions = priv.permissions().permission().stream()
-                    .map(ParserAbstract::getFullCtxText).toList();
+                    .map(ParserAbstract::getFullCtxText)
+                    .map(e -> e.toUpperCase(Locale.ROOT))
+                    .toList();
 
             // 1 privilege for each user or role
             for (var user : usersOrRoles) {
@@ -92,7 +95,7 @@ public class GrantChPrivilege extends ChParserAbstract {
         // collect information about column privileges
         Map<String, Entry<IdentifierContext, List<String>>> colPriv = new HashMap<>();
         for (var col : columnsCtx.table_column_privileges()) {
-            String privName = getFullCtxText(col.permission());
+            String privName = getFullCtxText(col.permission()).toUpperCase(Locale.ROOT);
             for (var colName : col.identifier_list().identifier()) {
                 colPriv.computeIfAbsent(colName.getText(), k -> new SimpleEntry<>(colName, new ArrayList<>()))
                 .getValue().add(privName);

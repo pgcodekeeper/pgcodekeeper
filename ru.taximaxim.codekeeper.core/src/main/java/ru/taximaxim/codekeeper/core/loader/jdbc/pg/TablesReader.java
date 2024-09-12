@@ -17,8 +17,6 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.pg;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -233,7 +231,15 @@ public class TablesReader extends JdbcReader {
         if (SupportedVersion.VERSION_16.isLE(loader.getVersion())) {
             // in PG 16 type changed from int4 to int2
             Short[] tmpStatictics = getColArray(res, "col_statictics");
-            colStatictics = Arrays.stream(tmpStatictics).map(e -> (int) e).toArray(Integer[]::new);
+            colStatictics = new Integer[tmpStatictics.length];
+            for (int i = 0; i < tmpStatictics.length; i++) {
+                //in PG 17 we can have null instead -1
+                if (tmpStatictics[i] == null) {
+                    colStatictics[i] = -1;
+                } else {
+                    colStatictics[i] = (int) tmpStatictics[i];
+                }
+            }
         } else {
             colStatictics = getColArray(res, "col_statictics");
         }

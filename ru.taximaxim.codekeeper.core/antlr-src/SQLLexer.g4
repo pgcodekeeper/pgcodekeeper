@@ -90,6 +90,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     COMMIT: [cC] [oO] [mM] [mM] [iI] [tT];
     COMMITTED: [cC] [oO] [mM] [mM] [iI] [tT] [tT] [eE] [dD];
     COMPRESSION: [cC] [oO] [mM] [pP] [rR] [eE] [sS] [sS] [iI] [oO] [nN];
+    CONDITIONAL: [cC] [oO] [nN] [dD] [iI] [tT] [iI] [oO] [nN] [aA] [lL];
     CONFIGURATION: [cC] [oO] [nN] [fF] [iI] [gG] [uU] [rR] [aA] [tT] [iI] [oO] [nN];
     CONFLICT: [cC] [oO] [nN] [fF] [lL] [iI] [cC] [tT];
     CONNECTION: [cC] [oO] [nN] [nN] [eE] [cC] [tT] [iI] [oO] [nN];
@@ -128,10 +129,12 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     DROP: [dD] [rR] [oO] [pP];
 
     EACH: [eE] [aA] [cC] [hH];
+    EMPTY: [eE] [mM] [pP] [tT] [yY];
     ENABLE: [eE] [nN] [aA] [bB] [lL] [eE];
     ENCODING: [eE] [nN] [cC] [oO] [dD] [iI] [nN] [gG];
     ENCRYPTED: [eE] [nN] [cC] [rR] [yY] [pP] [tT] [eE] [dD];
     ENUM: [eE] [nN] [uU] [mM];
+    ERROR: [eE] [rR] [rR] [oO] [rR];
     ESCAPE: [eE] [sS] [cC] [aA] [pP] [eE];
     EVENT: [eE] [vV] [eE] [nN] [tT];
     EXCLUDE: [eE] [xX] [cC] [lL] [uU] [dD] [eE];
@@ -188,6 +191,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     JSON: [jJ] [sS] [oO] [nN];
 
+    KEEP: [kK] [eE] [eE] [pP];
     KEY: [kK] [eE] [yY];
     KEYS: [kK] [eE] [yY] [sS];
 
@@ -220,6 +224,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     NAME: [nN] [aA] [mM] [eE];
     NAMES: [nN] [aA] [mM] [eE] [sS];
+    NESTED: [nN] [eE] [sS] [tT] [eE] [dD];
     NEW: [nN] [eE] [wW];
     NEXT: [nN] [eE] [xX] [tT];
     NFC: [nN] [fF] [cC];
@@ -238,6 +243,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     OFF: [oO] [fF] [fF];
     OIDS: [oO] [iI] [dD] [sS];
     OLD: [oO] [lL] [dD];
+    OMIT: [oO] [mM] [iI] [tT];
     OPERATOR: [oO] [pP] [eE] [rR] [aA] [tT] [oO] [rR];
     OPTION: [oO] [pP] [tT] [iI] [oO] [nN];
     OPTIONS: [oO] [pP] [tT] [iI] [oO] [nN] [sS];
@@ -255,6 +261,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PARTITION: [pP] [aA] [rR] [tT] [iI] [tT] [iI] [oO] [nN];
     PASSING: [pP] [aA] [sS] [sS] [iI] [nN] [gG];
     PASSWORD: [pP] [aA] [sS] [sS] [wW] [oO] [rR] [dD];
+    PATH: [pP] [aA] [tT] [hH];
+    PLAN: [pP] [lL] [aA] [nN];
     PLANS: [pP] [lL] [aA] [nN] [sS];
     POLICY: [pP] [oO] [lL] [iI] [cC] [yY];
     PRECEDING: [pP] [rR] [eE] [cC] [eE] [dD] [iI] [nN] [gG];
@@ -270,6 +278,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     PUBLICATION: [pP] [uU] [bB] [lL] [iI] [cC] [aA] [tT] [iI] [oO] [nN];
 
     QUOTE: [qQ] [uU] [oO] [tT] [eE];
+    QUOTES: [qQ] [uU] [oO] [tT] [eE] [sS];
 
     RANGE: [rR] [aA] [nN] [gG] [eE];
     READ: [rR] [eE] [aA] [dD];
@@ -321,6 +330,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     // SKIP is reserved by ANTLR
     SKIP_: [sS] [kK] [iI] [pP];
     SNAPSHOT: [sS] [nN] [aA] [pP] [sS] [hH] [oO] [tT];
+    SOURCE: [sS] [oO] [uU] [rR] [cC] [eE];
     SQL: [sS] [qQ] [lL];
     STABLE: [sS] [tT] [aA] [bB] [lL] [eE];
     STANDALONE: [sS] [tT] [aA] [nN] [dD] [aA] [lL] [oO] [nN] [eE];
@@ -332,6 +342,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     STORAGE: [sS] [tT] [oO] [rR] [aA] [gG] [eE];
     STORED: [sS] [tT] [oO] [rR] [eE] [dD];
     STRICT: [sS] [tT] [rR] [iI] [cC] [tT];
+    STRING: [sS] [tT] [rR] [iI] [nN] [gG];
     STRIP: [sS] [tT] [rR] [iI] [pP];
     SUBSCRIPTION: [sS] [uU] [bB] [sS] [cC] [rR] [iI] [pP] [tT] [iI] [oO] [nN];
     SUPPORT: [sS] [uU] [pP] [pP] [oO] [rR] [tT];
@@ -340,6 +351,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     TABLES: [tT] [aA] [bB] [lL] [eE] [sS];
     TABLESPACE: [tT] [aA] [bB] [lL] [eE] [sS] [pP] [aA] [cC] [eE];
+    TARGET: [tT] [aA] [rR] [gG] [eE] [tT];
     TEMP: [tT] [eE] [mM] [pP];
     TEMPLATE: [tT] [eE] [mM] [pP] [lL] [aA] [tT] [eE];
     TEMPORARY: [tT] [eE] [mM] [pP] [oO] [rR] [aA] [rR] [yY];
@@ -356,6 +368,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     UESCAPE: [uU] [eE] [sS] [cC] [aA] [pP] [eE];
     UNBOUNDED: [uU] [nN] [bB] [oO] [uU] [nN] [dD] [eE] [dD];
     UNCOMMITTED: [uU] [nN] [cC] [oO] [mM] [mM] [iI] [tT] [tT] [eE] [dD];
+    UNCONDITIONAL: [uU] [nN] [cC] [oO] [nN] [dD] [iI] [tT] [iI] [oO] [nN] [aA] [lL];
     UNENCRYPTED: [uU] [nN] [eE] [nN] [cC] [rR] [yY] [pP] [tT] [eE] [dD];
     UNKNOWN: [uU] [nN] [kK] [nN] [oO] [wW] [nN];
     UNLISTEN: [uU] [nN] [lL] [iI] [sS] [tT] [eE] [nN];
@@ -421,10 +434,18 @@ private final Deque<String> _tags = new ArrayDeque<String>();
 
     JSON_ARRAY: [jJ] [sS] [oO] [nN] UNDERLINE  [aA] [rR] [rR] [aA] [yY];
     JSON_ARRAYAGG: [jJ] [sS] [oO] [nN] UNDERLINE  [aA] [rR] [rR] [aA] [yY] [aA] [gG] [gG];
+    JSON_EXISTS: [jJ] [sS] [oO] [nN] UNDERLINE  [eE] [xX] [iI] [sS] [tT] [sS];
     JSON_OBJECT: [jJ] [sS] [oO] [nN] UNDERLINE  [oO] [bB] [jJ] [eE] [cC] [tT];
     JSON_OBJECTAGG: [jJ] [sS] [oO] [nN] UNDERLINE  [oO] [bB] [jJ] [eE] [cC] [tT] [aA] [gG] [gG];
+    JSON_QUERY: [jJ] [sS] [oO] [nN] UNDERLINE  [qQ] [uU] [eE] [rR] [yY];
+    JSON_SCALAR: [jJ] [sS] [oO] [nN] UNDERLINE  [sS] [cC] [aA] [lL] [aA] [rR];
+    JSON_SERIALIZE: [jJ] [sS] [oO] [nN] UNDERLINE  [sS] [eE] [rR] [iI] [aA] [lL] [iI] [zZ] [eE];
+    JSON_TABLE: [jJ] [sS] [oO] [nN] UNDERLINE  [tT] [aA] [bB] [lL] [eE];
+    JSON_VALUE: [jJ] [sS] [oO] [nN] UNDERLINE  [vV] [aA] [lL] [uU] [eE];
 
     LEAST: [lL] [eE] [aA] [sS] [tT];
+
+    MERGE_ACTION: [mM] [eE] [rR] [gG] [eE] UNDERLINE  [aA] [cC] [tT] [iI] [oO] [nN];
 
     NATIONAL: [nN] [aA] [tT] [iI] [oO] [nN] [aA] [lL];
     NCHAR: [nN] [cC] [hH] [aA] [rR];
@@ -676,7 +697,8 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     HYPOTHETICAL: [hH] [yY] [pP] [oO] [tT] [hH] [eE] [tT] [iI] [cC] [aA] [lL];
 
     ICU_LOCALE: [iI] [cC] [uU] UNDERLINE LOCALE;
-    ICU_RULES:[iI] [cC] [uU] UNDERLINE [rR] [uU] [lL] [eE] [sS];
+    ICU_RULES :[iI] [cC] [uU] UNDERLINE [rR] [uU] [lL] [eE] [sS];
+    IGNORE : [iI] [gG] [nN] [oO] [rR] [eE];
     INCLUSIVE: [iI] [nN] [cC] [lL] [uU] [sS] [iI] [vV] [eE];
     INDEX_CLEANUP: [iI] [nN] [dD] [eE] [xX] UNDERLINE [cC] [lL] [eE] [aA] [nN] [uU] [pP];
     INIT: [iI] [nN] [iI] [tT];
@@ -693,10 +715,13 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     LIST: [lL] [iI] [sS] [tT];
     LOCALE: [lL] [oO] [cC] [aA] [lL] [eE];
     LOCALE_PROVIDER: LOCALE UNDERLINE PROVIDER;
+    LOG_VERBOSITY: [lL] [oO] [gG] UNDERLINE [vV] [eE] [rR] [bB] [oO] [sS] [iI] [tT] [yY];
     LOGIN: [lL] [oO] [gG] [iI] [nN];
 
     MAIN: [mM] [aA] [iI]  [nN];
+    MAINTAIN: [mM] [aA] [iI] [nN] [tT] [aA] [iI] [nN];
     MASTER: [mM] [aA] [sS] [tT] [eE] [rR];
+    MEMORY: [mM] [eE] [mM] [oO] [rR] [yY];
     MERGES: [mM] [eE] [rR] [gG] [eE] [sS];
     MFINALFUNC: [mM] [fF] [iI] [nN] [aA] [lL] [fF] [uU] [nN] [cC];
     MFINALFUNC_EXTRA: MFINALFUNC UNDERLINE [eE] [xX] [tT] [rR] [aA];
@@ -724,11 +749,11 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     NOSUPERUSER: [nN] [oO] [sS] [uU] [pP] [eE] [rR] [uU] [sS] [eE] [rR];
 
     OID: [oO] [iI] [dD];
+    ON_ERROR: [oO] [nN] UNDERLINE [eE] [rR] [rR] [oO] [rR];
     ONLY_DATABASE_STATS: [oO] [nN] [lL] [yY] UNDERLINE [dD] [aA] [tT] [aA] [bB] [aA] [sS] [eE] UNDERLINE [sS] [tT] [aA] [tT] [sS];
     OUTPUT: [oO] [uU] [tT] [pP] [uU] [tT];
 
     PASSEDBYVALUE: [pP] [aA] [sS] [sS] [eE] [dD] [bB] [yY] [vV] [aA] [lL] [uU] [eE];
-    PATH: [pP] [aA] [tT] [hH];
     PERCENT: [pP] [eE] [rR] [cC] [eE] [nN] [tT];
     PERMISSIVE: [pP] [eE] [rR] [mM] [iI] [sS] [sS] [iI] [vV] [eE];
     PERSISTENTLY: [pP] [eE] [rR] [sS] [iI] [sS] [tT] [eE] [nN] [tT] [lL] [yY];
@@ -758,6 +783,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SEGMENTS: [sS] [eE] [gG] [mM] [eE] [nN] [tT] [sS];
     SEGMENT: [sS] [eE] [gG] [mM] [eE] [nN] [tT];
     SEND: [sS] [eE] [nN] [dD];
+    SERIALIZE: [sS] [eE] [rR] [iI] [aA] [lL] [iI] [zZ] [eE];
     SERIALFUNC: [sS] [eE] [rR] [iI] [aA] [lL] [fF] [uU] [nN] [cC];
     SETTINGS: [sS] [eE] [tT] [tT] [iI] [nN] [gG] [sS];
     SFUNC: [sS] [fF] [uU] [nN] [cC];
@@ -768,6 +794,7 @@ private final Deque<String> _tags = new ArrayDeque<String>();
     SPLIT: [sS] [pP] [lL] [iI] [tT];
     SSPACE: [sS] [sS] [pP] [aA] [cC] [eE];
     STRATEGY: [sS] [tT] [rR] [aA] [tT] [eE] [gG] [yY];
+    STOP : [sS] [tT] [oO] [pP];
     STYPE: [sS] [tT] [yY] [pP] [eE];
     SUBPARTITION: [sS] [uU] [bB] [pP] [aA] [rR] [tT] [iI] [tT] [iI] [oO] [nN];
     SUBTYPE_DIFF: [sS] [uU] [bB] [tT] [yY] [pP] [eE] UNDERLINE [dD] [iI] [fF] [fF];
