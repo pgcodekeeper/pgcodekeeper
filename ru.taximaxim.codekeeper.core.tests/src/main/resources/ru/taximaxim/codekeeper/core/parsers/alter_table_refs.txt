@@ -1676,7 +1676,3 @@ Reference: Object = parted.check_a (CONSTRAINT), action = DROP, offset = 101190,
 Reference: Object = parted.check_b (CONSTRAINT), action = DROP, offset = 101215, line number = 2672, charPositionInLine = 60
 Reference: Object = nv_parent (TABLE), action = ALTER, offset = 101237, line number = 2674, charPositionInLine = 12
 Reference: Object = nv_parent.c (CONSTRAINT), action = CREATE, offset = 101262, line number = 2674, charPositionInLine = 37
-Reference: Object = sales_range (TABLE), action = ALTER, offset = 101350, line number = 2677, charPositionInLine = 12
-Reference: Object = sales_list (TABLE), action = ALTER, offset = 101653, line number = 2682, charPositionInLine = 12
-Reference: Object = sales_list2 (TABLE), action = ALTER, offset = 101930, line number = 2687, charPositionInLine = 12
-Reference: Object = sales_list (TABLE), action = ALTER, offset = 102059, line number = 2691, charPositionInLine = 12

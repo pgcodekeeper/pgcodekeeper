@@ -401,8 +401,6 @@ alter_table_statement
 alter_partition
     : ATTACH partition_table_value
     | DETACH PARTITION child=schema_qualified_name (CONCURRENTLY | FINALIZE)?
-    | SPLIT PARTITION schema_qualified_name INTO LEFT_PAREN partition_table_value (COMMA partition_table_value)* RIGHT_PAREN
-    | MERGE PARTITIONS LEFT_PAREN schema_qualified_name (COMMA schema_qualified_name)* RIGHT_PAREN INTO schema_qualified_name
     ;
 
 partition_table_value
@@ -3248,7 +3246,6 @@ tokens_nonkeyword
     | ON_ERROR
     | ONLY_DATABASE_STATS
     | OUTPUT
-    | PARTITIONS
     | PASSEDBYVALUE
     | PERCENT
     | PERMISSIVE
@@ -3614,6 +3611,52 @@ json_function
     | JSON_ARRAYAGG LEFT_PAREN vex (FORMAT JSON)? orderby_clause? json_on_null_clause? json_return_clause? RIGHT_PAREN
     | JSON_OBJECT LEFT_PAREN json_object_content RIGHT_PAREN
     | JSON_OBJECTAGG LEFT_PAREN json_object_entry json_on_null_clause? json_unique_keys? json_return_clause? RIGHT_PAREN
+    | JSON_EXISTS LEFT_PAREN vex COMMA character_string json_passing_clause? json_behavior_clause? RIGHT_PAREN
+    | JSON_QUERY LEFT_PAREN vex COMMA character_string json_passing_clause? json_return_clause? json_wrapper? json_quotes? json_behavior_clause* RIGHT_PAREN
+    | JSON_VALUE LEFT_PAREN vex COMMA character_string json_passing_clause? json_return_clause? json_behavior_clause* RIGHT_PAREN
+    | JSON_SCALAR LEFT_PAREN vex RIGHT_PAREN
+    | JSON_SERIALIZE LEFT_PAREN vex format_json? json_return_clause? RIGHT_PAREN
+    | JSON_TABLE LEFT_PAREN vex COMMA character_string (AS identifier)? json_passing_clause? json_columns json_behavior_clause? RIGHT_PAREN
+    ;
+
+json_columns
+    : COLUMNS LEFT_PAREN json_table_column (COMMA json_table_column)* RIGHT_PAREN
+    ;
+
+json_table_column
+    : vex FOR ORDINALITY
+    | vex data_type format_json? (PATH character_string)? json_wrapper? json_quotes? json_behavior_clause*
+    | vex data_type EXISTS (PATH character_string)? json_behavior_clause*
+    | NESTED PATH? character_string (AS identifier)? json_columns
+    ;
+
+json_wrapper
+    :  (WITHOUT | WITH (CONDITIONAL | UNCONDITIONAL)?) ARRAY? WRAPPER
+    ;
+
+json_quotes
+    : (KEEP | OMIT) QUOTES (ON SCALAR STRING)?
+    ;
+
+format_json
+    : FORMAT JSON (ENCODING vex)?
+    ;
+
+json_passing_clause
+    : PASSING vex AS identifier (COMMA vex AS identifier)*
+    ;
+
+json_behavior_clause
+    : (json_behavior_type | DEFAULT vex) ON (ERROR | EMPTY)
+    ;
+
+json_behavior_type
+    : ERROR
+    | NULL
+    | TRUE
+    | FALSE
+    | UNKNOWN
+    | EMPTY (ARRAY | OBJECT)?
     ;
 
 json_array_element
@@ -3631,7 +3674,7 @@ json_unique_keys
     ;
 
 json_object_entry
-    : vex (COLON | VALUE) vex (FORMAT JSON (ENCODING vex)?)?
+    : vex (COLON | VALUE) vex format_json?
     ;
 
 json_on_null_clause
@@ -3639,7 +3682,7 @@ json_on_null_clause
     ;
 
 json_return_clause
-    : RETURNING data_type (FORMAT JSON (ENCODING vex)?)?
+    : RETURNING data_type format_json?
     ;
 
 xml_table_column

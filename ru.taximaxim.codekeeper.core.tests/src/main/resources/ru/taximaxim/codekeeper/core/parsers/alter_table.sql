@@ -2672,21 +2672,3 @@ ALTER TABLE part_b DROP CONSTRAINT check_b;
 ALTER TABLE parted DROP CONSTRAINT check_a, DROP CONSTRAINT check_b;
 
 alter table nv_parent add constraint c check(c1 > 0) no inherit not valid;
-
---Test PG 17 feature SPLIT PARTITION
-ALTER TABLE sales_range SPLIT PARTITION sales_feb_mar_apr2023 INTO
-   (PARTITION sales_feb2023 FOR VALUES FROM ('2023-02-01') TO ('2023-03-01'),
-    PARTITION sales_mar2023 FOR VALUES FROM ('2023-03-01') TO ('2023-04-01'),
-    PARTITION sales_apr2023 FOR VALUES FROM ('2023-04-01') TO ('2023-05-01'));
-
-ALTER TABLE sales_list SPLIT PARTITION sales_all INTO
-   (PARTITION sales_west FOR VALUES IN ('Lisbon', 'New York', 'Madrid'),
-    PARTITION sales_east FOR VALUES IN ('Bejing', 'Delhi', 'Vladivostok'),
-    PARTITION sales_central FOR VALUES IN ('Warsaw', 'Berlin', 'Kyiv')); 
-
-ALTER TABLE sales_list2 SPLIT PARTITION sales_all INTO
-   (PARTITION sales_west DEFAULT);
-
---Test PG 17 feature MERGE PARTITIONS
-ALTER TABLE sales_list MERGE PARTITIONS (sales_west, sales_east, sales_central)
-    INTO sales_all;
