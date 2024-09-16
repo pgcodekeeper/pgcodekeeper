@@ -868,6 +868,12 @@ CREATE TABLE table_2
 (MY_ID integer, MY_INT integer, MY_DATE date, MY_TEXT varchar(40))
 distributed randomly;
 
+CREATE TEMPORARY TABLE tmp_t1 AS
+    SELECT id, col1
+FROM public.t1
+WHERE col1 != null
+DISTRIBUTED RANDOMLY;
+
 CREATE TABLE baby.rank2 
 (id int, rank int, year smallint, gender char(1), count int)
 DISTRIBUTED BY (rank, gender public.gist__int_ops, year);

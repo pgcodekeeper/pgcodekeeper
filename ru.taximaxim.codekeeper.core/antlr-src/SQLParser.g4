@@ -1743,6 +1743,7 @@ create_table_as_statement
     table_space?
     AS (select_stmt | EXECUTE function_call)
     (WITH NO? DATA)?
+    distributed_clause?
     ;
 
 create_foreign_table_statement

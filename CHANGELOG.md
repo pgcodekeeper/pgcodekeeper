@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed error when explicitly specifying default schema in dump.
+- Fixed parser rule for Greenplum `CREATE TABLE AS`.
 
 ### Removed
 
