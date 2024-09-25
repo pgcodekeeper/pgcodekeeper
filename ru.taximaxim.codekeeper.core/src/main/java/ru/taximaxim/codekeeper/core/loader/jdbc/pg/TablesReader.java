@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.pg;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -286,7 +287,7 @@ public class TablesReader extends JdbcReader {
             if (colFOptions[i] != null) {
                 ParserAbstract.fillOptionParams(colFOptions[i].split(","), column::addForeignOption, false, true, false);
             }
-            if (loader.isGreenplumDb() && colEncOptions[i] != null) {
+            if (loader.isGreenplumDb() && colEncOptions[i] != null && !column.isInherit()) {
                 ICompressOptionContainer.fillCompressOptions(column, colEncOptions[i]);
             }
 
