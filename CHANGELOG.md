@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed error when explicitly specifying default schema in dump.
 - Fixed parser rule for Greenplum `CREATE TABLE AS`.
 - Fixed a bug when comparing partitions in Greenplum.
+- Fixed compatibility bug with Eclipse 2024-09 (4.33.0).
 
 ### Removed
 
