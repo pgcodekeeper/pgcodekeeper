@@ -409,6 +409,9 @@
                     commandId="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
                     label="%command.commandname.GetSystemObjects"
                     style="push">
+                <visibleWhen
+                     checkEnabled="true">
+                </visibleWhen>
                 </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenDocs"
