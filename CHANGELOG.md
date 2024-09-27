@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Removed deprecated `--ms-sql` parameter.
 - Removed support for old version of project structure (pgCodeKeeper versions < 4.0.0).
+- Removed the "Create snapshot of system objects" item from the pgCodeKeeper menu.
 
 ## [9.14.0] - 2024-09-04
 
