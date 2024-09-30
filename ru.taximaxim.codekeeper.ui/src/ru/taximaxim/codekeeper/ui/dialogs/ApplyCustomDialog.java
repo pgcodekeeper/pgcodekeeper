@@ -33,6 +33,8 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 /**
@@ -41,18 +43,7 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
  */
 public class ApplyCustomDialog extends Dialog {
 
-    private Button btnScriptAddTransact;
-    private Button btnCheckFuncBodies;
-    private Button btnAlterColUsingExpr;
-    private Button btnCreateIdxConcurrent;
-    private Button btnConstraintNotValid;
-    private Button btnScriptFromSelObjs;
-    private Button btnGenerateExists;
-    private Button btnGenerateExistDoBlock;
-    private Button btndropBeforeCreate;
-    private Button btnCommInScriptEnd;
-    private Button btnAddPrePostScript;
-    private Button btnDataMovementMode;
+    private FieldEditorStore fieldEditorStore;
 
     private final OverridablePrefs prefs;
     private final DatabaseType dbType;
@@ -82,55 +73,42 @@ public class ApplyCustomDialog extends Dialog {
                 .format(Messages.getChangesCustomDialog_custom_prefs_description,
                         Messages.DiffTableViewer_apply_to));
 
-        btnScriptAddTransact = createCustomButton(panel, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.DbUpdatePrefPage_script_add_transaction);
+        Composite btnsPanel = new Composite(panel, SWT.NONE);
+        GridData gd = new GridData();
+        gd.horizontalIndent = 10;
+        btnsPanel.setLayoutData(gd);
 
-        btnCreateIdxConcurrent = createCustomButton(panel, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.DbUpdatePrefPage_print_index_with_concurrently);
+        fieldEditorStore = new FieldEditorStore();
 
-        btnConstraintNotValid = createCustomButton(panel, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                Messages.ApplyCustomDialog_constraint_not_valid);
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.DbUpdatePrefPage_script_add_transaction, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.ApplyCustomDialog_constraint_not_valid, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
+                Messages.DbUpdatePrefPage_add_pre_post_script, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                Messages.DbUpdatePrefPage_allow_data_movement, btnsPanel, prefs::getBooleanOfDbUpdatePref));
 
-        btnGenerateExists = createCustomButton(panel, DB_UPDATE_PREF.GENERATE_EXISTS,
-                Messages.DbUpdatePrefPage_option_if_exists);
-
-        btnGenerateExistDoBlock = createCustomButton(panel, DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
-                Messages.DbUpdatePrefPage_generate_exist_do_block);
-
-        btndropBeforeCreate = createCustomButton(panel, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                Messages.DbUpdatePrefPage_option_drop_object);
-
-        btnCommInScriptEnd = createCustomButton(panel, DB_UPDATE_PREF.COMMENTS_TO_END,
-                Messages.DbUpdatePrefPage_comments_to_end);
-
-        btnAddPrePostScript = createCustomButton(panel, DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
-                Messages.DbUpdatePrefPage_add_pre_post_script);
-
-        if (dbType == DatabaseType.PG) {
-            btnCheckFuncBodies = createCustomButton(panel, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
-                    Messages.dbUpdatePrefPage_check_function_bodies);
-
-            btnAlterColUsingExpr = createCustomButton(panel, DB_UPDATE_PREF.USING_ON_OFF,
-                    Messages.dbUpdatePrefPage_switch_on_off_using);
+        if (DatabaseType.PG == dbType) {
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                    Messages.dbUpdatePrefPage_check_function_bodies, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
+                    Messages.dbUpdatePrefPage_switch_on_off_using, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                    Messages.dbUpdatePrefPage_check_function_bodies, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                    Messages.DbUpdatePrefPage_generate_exist_do_block, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
+                    Messages.DbUpdatePrefPage_comments_to_end, btnsPanel, prefs::getBooleanOfDbUpdatePref));
         }
 
-        btnScriptFromSelObjs = createCustomButton(panel, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                Messages.DbUpdatePrefPage_script_from_selected_objs);
-
-        btnDataMovementMode = createCustomButton(panel, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                Messages.DbUpdatePrefPage_allow_data_movement);
-
         return panel;
-    }
-
-    private Button createCustomButton(Composite panel, String prefName, String text) {
-        GridData gd = new GridData();
-        Button btn = new Button(panel, SWT.CHECK);
-        gd.horizontalIndent = 10;
-        btn.setLayoutData(gd);
-        btn.setText(text);
-        btn.setSelection(prefs.getBooleanOfDbUpdatePref(prefName));
-        return btn;
     }
 
     @Override
@@ -144,32 +122,7 @@ public class ApplyCustomDialog extends Dialog {
     @Override
     protected void okPressed() {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, true);
-        customSettings.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                btnScriptAddTransact.getSelection());
-        customSettings.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                btnCreateIdxConcurrent.getSelection());
-        customSettings.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                btnConstraintNotValid.getSelection());
-        customSettings.put(DB_UPDATE_PREF.GENERATE_EXISTS,
-                btnGenerateExists.getSelection());
-        customSettings.put(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
-                btnGenerateExistDoBlock.getSelection());
-        customSettings.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                btndropBeforeCreate.getSelection());
-        customSettings.put(DB_UPDATE_PREF.COMMENTS_TO_END,
-                btnCommInScriptEnd.getSelection());
-        customSettings.put(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
-                btnAddPrePostScript.getSelection());
-        if (dbType == DatabaseType.PG) {
-            customSettings.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
-                    btnCheckFuncBodies.getSelection());
-            customSettings.put(DB_UPDATE_PREF.USING_ON_OFF,
-                    btnAlterColUsingExpr.getSelection());
-        }
-        customSettings.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                btnScriptFromSelObjs.getSelection());
-        customSettings.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                btnDataMovementMode.getSelection());
+        customSettings.putAll(fieldEditorStore.getPrefs());
         super.okPressed();
     }
 }
