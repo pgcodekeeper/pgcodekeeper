@@ -192,10 +192,13 @@
    </plugins>
 
    <configurations>
+      <plugin id="ch.qos.logback.classic" autoStart="true" startLevel="2" />
+      <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="0" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <property name="eclipse.log.level" value="INFO" />
       <property name="osgi.instance.area" value="@user.home/.pgcodekeeper-cli" />
+      <property name="java.util.logging.config.file" value="non-existent-file.properties" />
    </configurations>
 
    <preferencesInfo>
