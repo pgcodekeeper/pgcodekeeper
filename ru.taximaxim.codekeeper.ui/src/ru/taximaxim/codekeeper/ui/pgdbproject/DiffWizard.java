@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
@@ -65,6 +64,8 @@ import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
@@ -172,24 +173,7 @@ class PageDiff extends WizardPage implements Listener {
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
 
-    private Button btnNoPrivileges;
-    private Button btnIgnoreColumnOrder;
-    private Button btnEnableFuncDep;
-    private Button btnSimplifyView;
-    private Button btnUseGlobalIgnoreList;
-
-    private Button btnScriptAddTransact;
-    private Button btnCheckFuncBodies;
-    private Button btnAlterColUsingExpr;
-    private Button btnCreateIdxConcurrent;
-    private Button btnConstraintNotValid;
-    private Button btnScriptFromSelObjs;
-    private Button btnGenerateExists;
-    private Button btnGenerateExistDoBlock;
-    private Button btnDropBeforeCreate;
-    private Button btnCommentsToEnd;
-
-    private Button btnDataMovementMode;
+    private FieldEditorStore fieldEditorStore;
 
     public PageDiff(String pageName, IPreferenceStore mainPrefs, PgDbProject proj) {
         super(pageName, pageName, null);
@@ -208,7 +192,7 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public IgnoreList getIgnoreList() {
-        if (btnUseGlobalIgnoreList.getSelection()) {
+        if (fieldEditorStore.getValue(PROJ_PREF.USE_GLOBAL_IGNORE_LIST)) {
             return InternalIgnoreList.readInternalList();
         }
 
@@ -283,91 +267,55 @@ class PageDiff extends WizardPage implements Listener {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 boolean selected = btnShowPrefs.getSelection();
-                btnNoPrivileges.setVisible(selected);
-                btnIgnoreColumnOrder.setVisible(selected);
-                btnEnableFuncDep.setVisible(selected);
-                btnSimplifyView.setVisible(selected);
-                btnUseGlobalIgnoreList.setVisible(selected);
-                btnScriptAddTransact.setVisible(selected);
-                btnCheckFuncBodies.setVisible(selected);
-                btnAlterColUsingExpr.setVisible(selected);
-                btnCreateIdxConcurrent.setVisible(selected);
-                btnConstraintNotValid.setVisible(selected);
-                btnScriptFromSelObjs.setVisible(selected);
-                btnGenerateExists.setVisible(selected);
-                btnGenerateExistDoBlock.setVisible(selected);
-                btnDropBeforeCreate.setVisible(selected);
-                btnCommentsToEnd.setVisible(selected);
-                btnDataMovementMode.setVisible(selected);
-
+                fieldEditorStore.setVisible(selected);
                 UiSync.exec(getShell(), () -> getShell().pack());
             }
         });
 
-        btnNoPrivileges = createBoooleanButton(container, PREF.NO_PRIVILEGES,
-                Messages.dbUpdatePrefPage_ignore_privileges);
+        fieldEditorStore = new FieldEditorStore();
 
-        btnIgnoreColumnOrder = createBoooleanButton(container, PREF.IGNORE_COLUMN_ORDER,
-                Messages.GeneralPrefPage_ignore_column_order);
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.NO_PRIVILEGES,
+                Messages.dbUpdatePrefPage_ignore_privileges, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
+                Messages.GeneralPrefPage_ignore_column_order, container, mainPrefs::getBoolean));
+        var bodyDepBtn = new TempBooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
+                Messages.GeneralPrefPage_enable_body_dependencies, container, mainPrefs::getBoolean);
+        bodyDepBtn.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
+        fieldEditorStore.add(bodyDepBtn);
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW,
+                Messages.GeneralPrefPage_simplify_view, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(PROJ_PREF.USE_GLOBAL_IGNORE_LIST,
+                Messages.ProjectProperties_use_global_ignore_list, container, true));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
+                Messages.DbUpdatePrefPage_script_add_transaction, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
+                Messages.ApplyCustomDialog_constraint_not_valid, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
+                Messages.DbUpdatePrefPage_script_from_selected_objs, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
+                Messages.DbUpdatePrefPage_option_if_exists, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
+                Messages.DbUpdatePrefPage_option_drop_object, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
+                Messages.DbUpdatePrefPage_allow_data_movement, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+                Messages.dbUpdatePrefPage_check_function_bodies, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
+                Messages.dbUpdatePrefPage_switch_on_off_using, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
+                Messages.dbUpdatePrefPage_check_function_bodies, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
+                Messages.DbUpdatePrefPage_generate_exist_do_block, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
+                Messages.DbUpdatePrefPage_comments_to_end, container, mainPrefs::getBoolean));
 
-        btnEnableFuncDep = createBoooleanButton(container, PREF.ENABLE_BODY_DEPENDENCIES,
-                Messages.GeneralPrefPage_enable_body_dependencies);
-        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-
-        btnSimplifyView = createBoooleanButton(container, PREF.SIMPLIFY_VIEW,
-                Messages.GeneralPrefPage_simplify_view);
-
-        btnUseGlobalIgnoreList = new Button(container, SWT.CHECK);
-        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
-        btnUseGlobalIgnoreList.setSelection(true);
-        btnUseGlobalIgnoreList.setVisible(false);
-
-        btnScriptAddTransact = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.DbUpdatePrefPage_script_add_transaction);
-
-        btnCheckFuncBodies = createBoooleanButton(container, DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
-                Messages.dbUpdatePrefPage_check_function_bodies);
-
-        btnScriptFromSelObjs = createBoooleanButton(container, DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                Messages.DbUpdatePrefPage_script_from_selected_objs);
-
-        btnAlterColUsingExpr = createBoooleanButton(container, DB_UPDATE_PREF.USING_ON_OFF,
-                Messages.dbUpdatePrefPage_switch_on_off_using);
-
-        btnCreateIdxConcurrent = createBoooleanButton(container, DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.DbUpdatePrefPage_print_index_with_concurrently);
-
-        btnConstraintNotValid = createBoooleanButton(container, DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                Messages.ApplyCustomDialog_constraint_not_valid);
-
-        btnGenerateExists = createBoooleanButton(container, DB_UPDATE_PREF.GENERATE_EXISTS,
-                Messages.DbUpdatePrefPage_option_if_exists);
-
-        btnGenerateExistDoBlock = createBoooleanButton(container, DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
-                Messages.DbUpdatePrefPage_generate_exist_do_block);
-
-        btnDropBeforeCreate = createBoooleanButton(container, DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                Messages.DbUpdatePrefPage_option_drop_object);
-
-        btnCommentsToEnd = createBoooleanButton(container, DB_UPDATE_PREF.COMMENTS_TO_END,
-                Messages.DbUpdatePrefPage_comments_to_end);
-
-        btnDataMovementMode = createBoooleanButton(container, DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                Messages.DbUpdatePrefPage_allow_data_movement);
+        fieldEditorStore.setVisible(false);
 
         if (proj != null) {
             dbTarget.setDbStore(proj.getProject().getLocation().toFile());
         }
 
         setControl(container);
-    }
-
-    private Button createBoooleanButton(Composite container, String pref, String btnText) {
-        Button btn = new Button(container, SWT.CHECK);
-        btn.setText(btnText);
-        btn.setSelection(mainPrefs.getBoolean(pref));
-        btn.setVisible(false);
-        return btn;
     }
 
     private void timeZoneWarn() {
@@ -403,11 +351,6 @@ class PageDiff extends WizardPage implements Listener {
             err = Messages.DiffWizard_different_types;
         }
 
-        boolean isPg = getDbType(dbSource) == DatabaseType.PG;
-        btnSimplifyView.setEnabled(isPg);
-        btnCheckFuncBodies.setEnabled(isPg);
-        btnAlterColUsingExpr.setEnabled(isPg);
-
         setErrorMessage(err);
         return err == null;
     }
@@ -419,26 +362,7 @@ class PageDiff extends WizardPage implements Listener {
     }
 
     public Map<String, Boolean> getOneTimePrefs() {
-        Map<String, Boolean> oneTimePrefs = new HashMap<>();
-
-        oneTimePrefs.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
-        oneTimePrefs.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
-        oneTimePrefs.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
-        oneTimePrefs.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
-        oneTimePrefs.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, btnScriptAddTransact.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES, btnCheckFuncBodies.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.USING_ON_OFF, btnAlterColUsingExpr.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY, btnCreateIdxConcurrent.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID, btnConstraintNotValid.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXISTS, btnGenerateExists.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK, btnGenerateExistDoBlock.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.DROP_BEFORE_CREATE, btnDropBeforeCreate.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.COMMENTS_TO_END, btnCommentsToEnd.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS, btnScriptFromSelObjs.getSelection());
-        oneTimePrefs.put(DB_UPDATE_PREF.DATA_MOVEMENT_MODE, btnDataMovementMode.getSelection());
-
-        return oneTimePrefs;
+        return fieldEditorStore.getPrefs();
     }
 
     @Override

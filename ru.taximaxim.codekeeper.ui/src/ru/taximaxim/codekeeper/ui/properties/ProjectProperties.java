@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -52,16 +51,13 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
 
 public class ProjectProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
-    private Button btnNoPrivileges;
-    private Button btnAutoFormatCode;
-    private Button btnIgnoreColumnOrder;
-    private Button btnEnableFuncDep;
-    private Button btnSimplifyView;
-    private Button btnUseGlobalIgnoreList;
+    private FieldEditorStore fieldEditorStore;
 
     private Button btnForceUnixNewlines;
     private Button btnDisableParser;
@@ -131,6 +127,8 @@ public class ProjectProperties extends PropertyPage {
         storePicker.setEnabled(btnBindProjToDb.getSelection());
         storePicker.addSelectionListener(() -> dbForBind = storePicker.getDbInfo());
 
+        GridData gd;
+
         if (dbType == DatabaseType.PG) {
             new Label(panel, SWT.NONE).setText(Messages.projectProperties_timezone_for_all_db_connections);
 
@@ -144,7 +142,7 @@ public class ProjectProperties extends PropertyPage {
             lblWarn = new CLabel(panel, SWT.NONE);
             lblWarn.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
             lblWarn.setText(Messages.ProjectProperties_change_projprefs_warn);
-            GridData gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
+            gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 2, 1);
             gd.exclude = true;
             lblWarn.setLayoutData(gd);
             lblWarn.setVisible(false);
@@ -166,55 +164,42 @@ public class ProjectProperties extends PropertyPage {
         btnEnableProjPref.setText(Messages.ProjectProperties_enable_proj_prefs);
         btnEnableProjPref.setLayoutData(new GridData(SWT.DEFAULT, SWT.DEFAULT, false, false, 2, 1));
         btnEnableProjPref.setSelection(overridePref);
+
+        Composite btnsPanel = new Composite(panel, SWT.NONE);
+        gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, true, false, 2, 1);
+        gd.horizontalIndent = 10;
+        btnsPanel.setLayoutData(gd);
+
         btnEnableProjPref.addSelectionListener(new SelectionAdapter() {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                boolean enable = btnEnableProjPref.getSelection();
-                btnNoPrivileges.setEnabled(enable);
-                btnAutoFormatCode.setEnabled(enable);
-                btnIgnoreColumnOrder.setEnabled(enable);
-                btnEnableFuncDep.setEnabled(enable);
-                btnUseGlobalIgnoreList.setEnabled(enable);
-                if (dbType == DatabaseType.PG) {
-                    btnSimplifyView.setEnabled(enable);
-                }
+                fieldEditorStore.setEnable(btnEnableProjPref.getSelection());
             }
         });
 
-        btnIgnoreColumnOrder = createButton(panel, Messages.GeneralPrefPage_ignore_column_order,
-                prefs.getBoolean(PREF.IGNORE_COLUMN_ORDER, false), overridePref);
+        fieldEditorStore = new FieldEditorStore();
 
-        btnEnableFuncDep = createButton(panel, Messages.GeneralPrefPage_enable_body_dependencies,
-                prefs.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES, false), overridePref);
-        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
+                Messages.GeneralPrefPage_ignore_column_order, btnsPanel, prefs::getBoolean));
 
-        btnNoPrivileges = createButton(panel, Messages.dbUpdatePrefPage_ignore_privileges,
-                prefs.getBoolean(PREF.NO_PRIVILEGES, false), overridePref);
-
-        if (dbType == DatabaseType.PG) {
-            btnSimplifyView = createButton(panel, Messages.GeneralPrefPage_simplify_view,
-                    prefs.getBoolean(PREF.SIMPLIFY_VIEW, false), overridePref);
+        var bodyBepBtn = new TempBooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
+                Messages.GeneralPrefPage_enable_body_dependencies, btnsPanel, prefs::getBoolean);
+        bodyBepBtn.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
+        fieldEditorStore.add(bodyBepBtn);
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.NO_PRIVILEGES, Messages.dbUpdatePrefPage_ignore_privileges,
+                btnsPanel, prefs::getBoolean));
+        if (DatabaseType.PG == dbType) {
+            fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW, Messages.GeneralPrefPage_simplify_view,
+                    btnsPanel, prefs::getBoolean));
         }
-
-        btnAutoFormatCode = createButton(panel, Messages.GeneralPrefPage_format_object_code_automatically,
-                prefs.getBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, false), overridePref);
-
-        btnUseGlobalIgnoreList = createButton(panel, Messages.ProjectProperties_use_global_ignore_list,
-                prefs.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true), overridePref);
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY,
+                Messages.GeneralPrefPage_format_object_code_automatically, btnsPanel, prefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(PROJ_PREF.USE_GLOBAL_IGNORE_LIST,
+                Messages.ProjectProperties_use_global_ignore_list, btnsPanel, prefs::getBoolean, true));
+        fieldEditorStore.setEnable(overridePref);
 
         return panel;
-    }
-
-    private Button createButton(Composite parent, String text, boolean selection, boolean enable) {
-        Button button = new Button(parent, SWT.CHECK);
-        button.setText(text);
-        GridData gd = new GridData(SWT.BEGINNING, SWT.DEFAULT, false, false, 2, 1);
-        gd.horizontalIndent = 10;
-        button.setLayoutData(gd);
-        button.setSelection(selection);
-        button.setEnabled(enable);
-        return button;
     }
 
     private void checkSwitchWarnLbl() {
@@ -241,19 +226,10 @@ public class ProjectProperties extends PropertyPage {
     @Override
     protected void performDefaults() {
         // overridable preferences
-        IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
-        boolean enable = false;
-
-        btnEnableProjPref.setSelection(enable);
-        btnNoPrivileges.setEnabled(enable);
-        btnNoPrivileges.setSelection(mainPS.getBoolean(PREF.NO_PRIVILEGES));
-        btnAutoFormatCode.setEnabled(enable);
-        btnAutoFormatCode.setSelection(mainPS.getBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
-
-        btnEnableFuncDep.setEnabled(enable);
-        btnEnableFuncDep.setSelection(mainPS.getBoolean(PREF.ENABLE_BODY_DEPENDENCIES));
-        btnUseGlobalIgnoreList.setEnabled(enable);
-        btnUseGlobalIgnoreList.setSelection(true);
+        btnEnableProjPref.setSelection(false);
+        fieldEditorStore.performDefaults(Activator.getDefault().getPreferenceStore());
+        fieldEditorStore.setValue(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
+        fieldEditorStore.setEnable(false);
 
         // project preferences
         btnDisableParser.setSelection(false);
@@ -262,8 +238,6 @@ public class ProjectProperties extends PropertyPage {
         storePicker.setSelection(null);
         if (dbType == DatabaseType.PG) {
             cmbTimezone.setText(Consts.UTC);
-            btnSimplifyView.setEnabled(enable);
-            btnSimplifyView.setSelection(mainPS.getBoolean(PREF.SIMPLIFY_VIEW));
         }
         try {
             fillPrefs();
@@ -313,17 +287,12 @@ public class ProjectProperties extends PropertyPage {
 
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
-        prefs.putBoolean(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
-        prefs.putBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, btnAutoFormatCode.getSelection());
-        prefs.putBoolean(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
-        prefs.putBoolean(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
-        prefs.putBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
+        fieldEditorStore.getPrefs().forEach((k, v) -> prefs.putBoolean(k, v));
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         dbBindPrefs.put(DB_BIND_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
         if (dbType == DatabaseType.PG) {
             prefs.put(PROJ_PREF.TIMEZONE, cmbTimezone.getText());
-            prefs.putBoolean(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
         }
         prefs.flush();
         dbBindPrefs.flush();
