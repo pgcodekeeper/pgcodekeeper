@@ -9,6 +9,16 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.0.0] - 2024-10-01
+
+### Добавлено
+
 - Добавлена поддержка PostgreSQL 17.
 
 ### Изменено
@@ -2054,7 +2064,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...HEAD
+[10.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...v10.0.0
 [9.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...v9.14.0
 [9.13.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...v9.13.2
 [9.13.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.0...v9.13.1
