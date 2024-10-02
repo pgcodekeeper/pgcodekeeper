@@ -33,7 +33,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
@@ -45,7 +45,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     private PgDiffArguments arguments;
 
-    private SupportedVersion version;
+    private SupportedPgVersion version;
 
     /**
      * Current default schema.
@@ -92,11 +92,11 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         return arguments;
     }
 
-    public SupportedVersion getVersion() {
-        return version != null ? version : SupportedVersion.VERSION_10;
+    public SupportedPgVersion getVersion() {
+        return version != null ? version : SupportedPgVersion.VERSION_10;
     }
 
-    public void setVersion(SupportedVersion version) {
+    public void setVersion(SupportedPgVersion version) {
         this.version = version;
     }
 

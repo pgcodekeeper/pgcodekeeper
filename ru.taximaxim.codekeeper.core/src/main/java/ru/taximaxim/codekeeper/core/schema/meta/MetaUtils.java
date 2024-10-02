@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -52,7 +52,7 @@ public final class MetaUtils {
     }
 
     public static MetaContainer createTreeFromDefs(Stream<MetaStatement> defs,
-            DatabaseType dbType, SupportedVersion version) {
+            DatabaseType dbType, SupportedPgVersion version) {
         MetaContainer tree = new MetaContainer();
         defs.forEach(tree::addStatement);
 

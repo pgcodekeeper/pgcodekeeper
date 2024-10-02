@@ -22,10 +22,10 @@ import java.text.MessageFormat;
 import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcType;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateDomain;
@@ -193,7 +193,7 @@ public final class TypesReader extends JdbcReader {
             setFunctionWithDep(PgBaseType::setAnalyzeFunction, t, typanalyzeset, FUNC_SIGN.INTERNAL.getName());
         }
 
-        if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             String typsubscript = res.getString("typsubscript");
             if (!EMPTY_FUNCTION.equals(typsubscript)) {
                 setFunctionWithDep(PgBaseType::setSubscriptFunction, t, typsubscript, FUNC_SIGN.INTERNAL.getName());
@@ -345,7 +345,7 @@ public final class TypesReader extends JdbcReader {
                     MessageFormat.format(FUNC_SIGN.SUBTYPE_DIFF.getName(), t.getSubtype()));
         }
 
-        if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             long multiRangeLong = res.getLong("rngmultirange");
             if (multiRangeLong != 0) {
                 JdbcType multiRangeType = loader.getCachedTypeByOid(multiRangeLong);
@@ -415,7 +415,7 @@ public final class TypesReader extends JdbcReader {
         .join("LEFT JOIN pg_catalog.pg_range r ON r.rngtypid = res.oid")
         .join("LEFT JOIN pg_catalog.pg_opclass opc ON opc.oid = r.rngsubopc");
 
-        if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             builder.column("r.rngmultitypid::bigint AS rngmultirange");
         }
     }
@@ -439,7 +439,7 @@ public final class TypesReader extends JdbcReader {
         .column("res.typelem::bigint")
         .column("res.typdelim");
 
-        if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             builder.column("res.typsubscript");
         }
 

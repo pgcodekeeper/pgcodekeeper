@@ -23,9 +23,9 @@ import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
@@ -58,7 +58,7 @@ public class ViewsReader extends JdbcReader {
             if (tableSpace != null && !tableSpace.isEmpty()) {
                 v.setTablespace(tableSpace);
             }
-            if (SupportedVersion.VERSION_12.isLE(loader.getVersion())) {
+            if (SupportedPgVersion.VERSION_12.isLE(loader.getVersion())) {
                 v.setMethod(res.getString("access_method"));
             }
         }

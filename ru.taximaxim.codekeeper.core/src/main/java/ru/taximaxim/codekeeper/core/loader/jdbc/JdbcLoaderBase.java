@@ -42,7 +42,8 @@ import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.core.loader.ms.SupportedMsVersion;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
@@ -305,7 +306,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             stType = "TABLE";
             if (columnId != null) {
                 order = "raxw";
-            } else if (SupportedVersion.VERSION_17.isLE(version)) {
+            } else if (SupportedPgVersion.VERSION_17.isLE(version)) {
                 order = "raxdtDwm";
             } else {
                 order = "raxdtDw";
@@ -493,16 +494,23 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         }
     }
 
-    protected void queryCheckVersion() throws SQLException, InterruptedException {
-        setCurrentOperation("version checking query");
-        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_VERSION)) {
-            version = res.next() ? res.getInt(1) : SupportedVersion.VERSION_9_4.getVersion();
+    protected void queryCheckPgVersion() throws SQLException, InterruptedException {
+        setCurrentOperation("PostrgreSQL version checking query");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_PG_VERSION)) {
+            version = res.next() ? res.getInt(1) : SupportedPgVersion.VERSION_9_4.getVersion();
+        }
+    }
+
+    protected void queryCheckMsVersion() throws SQLException, InterruptedException {
+        setCurrentOperation("MS SQL version checking query");
+        try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_MS_VERSION)) {
+            version = res.next() ? res.getInt(1) : SupportedMsVersion.VERSION_12.getVersion();
         }
     }
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
         setCurrentOperation("last system oid checking query");
-        if (SupportedVersion.VERSION_15.isLE(getVersion())) {
+        if (SupportedPgVersion.VERSION_15.isLE(getVersion())) {
             lastSysOid = FIRST_NORMAL_OBJECT_ID - 1L;
         } else {
             try (ResultSet res = runner.runScript(statement,

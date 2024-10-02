@@ -19,9 +19,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -73,7 +73,7 @@ public class PoliciesReader extends JdbcReader {
             }
         }
 
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             p.setPermissive(res.getBoolean("polpermissive"));
         }
         AbstractDatabase db = schema.getDatabase();
@@ -123,7 +123,7 @@ public class PoliciesReader extends JdbcReader {
         .from("pg_catalog.pg_policy res")
         .join("JOIN pg_catalog.pg_class c ON c.oid = res.polrelid");
 
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             builder.column("res.polpermissive");
         }
     }

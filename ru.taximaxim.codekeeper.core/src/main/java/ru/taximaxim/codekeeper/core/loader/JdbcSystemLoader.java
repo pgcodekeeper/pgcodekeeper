@@ -84,7 +84,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
             statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
             statement.execute("SET timezone = " + PgDiffUtils.quoteString(timezone));
 
-            queryCheckVersion();
+            queryCheckPgVersion();
             queryCheckLastSysOid();
             queryTypesForCache();
 

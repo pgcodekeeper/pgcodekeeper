@@ -72,6 +72,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             // TODO add counting objects later
             //setupMonitorWork();
 
+            queryCheckMsVersion();
             new MsSchemasReader(this, d).read();
             new MsFPVTReader(this).read();
             new MsExtendedObjectsReader(this).read();

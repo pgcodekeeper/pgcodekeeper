@@ -21,9 +21,9 @@ import java.sql.SQLException;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateStatistics;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -54,7 +54,7 @@ public class StatisticsReader extends JdbcReader {
                 pair -> new CreateStatistics(pair.getFirst(), (PgDatabase) schema.getDatabase(), pair.getSecond())
                 .parseStatistics(stat));
 
-        if (SupportedVersion.VERSION_13.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_13.isLE(loader.getVersion())) {
             stat.setStatistics(res.getInt("stxstattarget"));
         }
 
@@ -86,7 +86,7 @@ public class StatisticsReader extends JdbcReader {
         .column("pg_catalog.pg_get_statisticsobjdef(res.oid::pg_catalog.oid) AS def")
         .from("pg_catalog.pg_statistic_ext res");
 
-        if (SupportedVersion.VERSION_13.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_13.isLE(loader.getVersion())) {
             builder.column("res.stxstattarget");
         }
     }

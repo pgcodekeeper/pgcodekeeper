@@ -24,10 +24,10 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.AbstractStatementReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
@@ -144,7 +144,7 @@ public class CastsReader extends AbstractStatementReader {
         .from("pg_catalog.pg_cast res")
         .where("res.oid > ?");
 
-        if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             builder.where("NOT EXISTS (SELECT 1 FROM pg_range r WHERE res.castsource = r.rngtypid AND res.casttarget = r.rngmultitypid)");
         }
     }

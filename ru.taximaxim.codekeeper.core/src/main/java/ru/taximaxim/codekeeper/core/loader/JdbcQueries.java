@@ -25,8 +25,9 @@ public class JdbcQueries {
     public static final String QUERY_CHECK_TIMESTAMPS = getCheckTimestampsQuery();
     public static final String QUERY_CHECK_LAST_SYS_OID = getCheckLastSysOidQuery();
     public static final String QUERY_CHECK_USER_PRIVILEGES = getCheckUserPrivilegesQuery();
-    public static final String QUERY_CHECK_VERSION = getCheckVersionQuery();
+    public static final String QUERY_CHECK_PG_VERSION = getCheckPgVersionQuery();
     public static final String QUERY_CHECK_GREENPLUM = getCheckGreenplumQuery();
+    public static final String QUERY_CHECK_MS_VERSION = getCheckMsVersionQuery();
     public static final String QUERY_SCHEMAS_ACCESS = getSchemasAccessQuery();
     public static final String QUERY_SEQUENCES_ACCESS = getSequencesAccessQuery();
     public static final String QUERY_SEQUENCES_DATA =   getSequencesDataQuery();
@@ -84,7 +85,7 @@ public class JdbcQueries {
                 .build();
     }
 
-    private static String getCheckVersionQuery() {
+    private static String getCheckPgVersionQuery() {
         return new QueryBuilder()
                 .column("CAST (pg_catalog.current_setting('server_version_num') AS INT)")
                 .build();
@@ -92,8 +93,14 @@ public class JdbcQueries {
 
     private static String getCheckGreenplumQuery() {
         return new QueryBuilder()
-            .column("version()")
-            .build();
+                .column("version()")
+                .build();
+    }
+
+    private static String getCheckMsVersionQuery() {
+        return new QueryBuilder()
+                .column("CAST(LEFT(CAST(SERVERPROPERTY('productversion') AS varchar), 2) AS INT)")
+                .build();
     }
 
     private static String getSchemasAccessQuery() {

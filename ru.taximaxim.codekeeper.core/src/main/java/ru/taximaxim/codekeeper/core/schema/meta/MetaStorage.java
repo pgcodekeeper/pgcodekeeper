@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 
 public class MetaStorage implements Serializable {
 
@@ -32,7 +32,7 @@ public class MetaStorage implements Serializable {
 
     public static final String FILE_NAME = "SYSTEM_OBJECTS_";
 
-    private static final ConcurrentMap<SupportedVersion, MetaStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<SupportedPgVersion, MetaStorage> STORAGE_CACHE = new ConcurrentHashMap<>();
 
     private final List<MetaStatement> definitions = new ArrayList<>();
 
@@ -40,12 +40,12 @@ public class MetaStorage implements Serializable {
         definitions.add(meta);
     }
 
-    static List<MetaStatement> getSystemObjects(SupportedVersion version) {
+    static List<MetaStatement> getSystemObjects(SupportedPgVersion version) {
         MetaStorage storage = getObjectsFromResources(version);
         return storage != null ? storage.definitions : Collections.emptyList();
     }
 
-    private static MetaStorage getObjectsFromResources(SupportedVersion ver) {
+    private static MetaStorage getObjectsFromResources(SupportedPgVersion ver) {
         MetaStorage db = STORAGE_CACHE.get(ver);
         if (db != null) {
             return db;

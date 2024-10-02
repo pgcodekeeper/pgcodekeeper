@@ -29,7 +29,6 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.CastsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.pg.CollationsReader;
@@ -85,7 +84,7 @@ public class JdbcPgLoader extends JdbcLoaderBase {
             getRunner().run(statement, "SET search_path TO pg_catalog;");
             getRunner().run(statement, "SET timezone = " + PgDiffUtils.quoteString(timezone));
 
-            queryCheckVersion();
+            queryCheckPgVersion();
             queryCheckGreenplumDb();
             queryCheckLastSysOid();
             queryTypesForCache();
@@ -100,14 +99,14 @@ public class JdbcPgLoader extends JdbcLoaderBase {
             new ViewsReader(this).read();
             new TablesReader(this).read();
             new RulesReader(this).read();
-            if (SupportedVersion.VERSION_9_5.isLE(getVersion())) {
+            if (SupportedPgVersion.VERSION_9_5.isLE(getVersion())) {
                 new PoliciesReader(this).read();
             }
             new TriggersReader(this).read();
             new IndicesReader(this).read();
             new ConstraintsReader(this).read();
             new TypesReader(this).read();
-            if (SupportedVersion.VERSION_10.isLE(getVersion())) {
+            if (SupportedPgVersion.VERSION_10.isLE(getVersion())) {
                 new StatisticsReader(this).read();
             }
 
@@ -131,7 +130,7 @@ public class JdbcPgLoader extends JdbcLoaderBase {
             }
             new CollationsReader(this).read();
 
-            if (!SupportedVersion.VERSION_10.isLE(getVersion())) {
+            if (!SupportedPgVersion.VERSION_10.isLE(getVersion())) {
                 SequencesReader.querySequencesData(d, this);
             }
             connection.commit();
@@ -139,7 +138,7 @@ public class JdbcPgLoader extends JdbcLoaderBase {
 
             d.sortColumns();
 
-            d.setVersion(SupportedVersion.valueOf(getVersion()));
+            d.setVersion(SupportedPgVersion.valueOf(getVersion()));
             LOG.info("Database object has been successfully queried from JDBC");
         } catch (InterruptedException ex) {
             throw ex;
