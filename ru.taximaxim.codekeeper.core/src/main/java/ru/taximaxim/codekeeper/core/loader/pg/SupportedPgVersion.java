@@ -13,9 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.loader;
+package ru.taximaxim.codekeeper.core.loader.pg;
 
-public enum SupportedVersion {
+/**
+ * PostgreSQL supported versions
+ */
+public enum SupportedPgVersion {
     VERSION_9_4 (90400, "9.4"),
     VERSION_9_5 (90500, "9.5"),
     VERSION_9_6 (90600, "9.6"),
@@ -31,7 +34,7 @@ public enum SupportedVersion {
     private final int version;
     private final String text;
 
-    SupportedVersion(int version, String text) {
+    SupportedPgVersion(int version, String text) {
         this.version = version;
         this.text = text;
     }
@@ -48,16 +51,16 @@ public enum SupportedVersion {
         return this.version <= version;
     }
 
-    public static SupportedVersion valueOf(int checkVersion) {
-        SupportedVersion[] set = SupportedVersion.values();
+    public static SupportedPgVersion valueOf(int checkVersion) {
+        SupportedPgVersion[] set = SupportedPgVersion.values();
 
         for (int i = set.length - 1; i >= 0; i--) {
-            SupportedVersion verEnum = set[i];
+            SupportedPgVersion verEnum = set[i];
             if (verEnum.isLE(checkVersion)) {
                 return verEnum;
             }
         }
 
-        return SupportedVersion.VERSION_9_4;
+        return SupportedPgVersion.VERSION_9_4;
     }
 }

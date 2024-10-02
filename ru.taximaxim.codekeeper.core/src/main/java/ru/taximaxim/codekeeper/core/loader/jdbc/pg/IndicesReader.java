@@ -21,9 +21,9 @@ import java.sql.SQLException;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -65,7 +65,7 @@ public class IndicesReader extends JdbcReader {
         i.setClustered(res.getBoolean("indisclustered"));
         i.setUnique(res.getBoolean("indisunique"));
 
-        if (SupportedVersion.VERSION_15.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
             i.setNullsDistinction(res.getBoolean("indnullsnotdistinct"));
         }
 
@@ -115,7 +115,7 @@ public class IndicesReader extends JdbcReader {
         .where("ind.indisexclusion = FALSE")
         .where("cons.conindid is NULL");
 
-        if (SupportedVersion.VERSION_15.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
             builder.column("ind.indnullsnotdistinct");
         }
     }

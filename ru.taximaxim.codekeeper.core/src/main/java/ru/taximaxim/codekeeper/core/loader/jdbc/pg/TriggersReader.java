@@ -21,9 +21,9 @@ import java.sql.SQLException;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateTrigger;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -156,7 +156,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         // after Postgresql 10
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             t.setOldTable(res.getString("tgoldtable"));
             t.setNewTable(res.getString("tgnewtable"));
         }
@@ -220,7 +220,7 @@ public class TriggersReader extends JdbcReader {
         .where("cls.relkind IN ('r', 'f', 'p', 'm', 'v')")
         .where("res.tgisinternal = FALSE");
 
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             builder
             .column("res.tgoldtable")
             .column("res.tgnewtable");

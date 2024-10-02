@@ -30,9 +30,9 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -66,7 +66,7 @@ public class SequencesReader extends JdbcReader {
         }
 
         String identityType = null;
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             identityType = res.getString("attidentity");
             if (identityType != null && identityType.isEmpty()) {
                 // treat lack of table dependency and no identityType as a single case
@@ -87,7 +87,7 @@ public class SequencesReader extends JdbcReader {
 
         loader.setComment(s, res);
 
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             s.setStartWith(Long.toString(res.getLong("seqstart")));
             String dataType = loader.getCachedTypeByOid(res.getLong("data_type")).getFullName();
             s.setMinMaxInc(res.getLong("seqincrement"), res.getLong("seqmax"),
@@ -237,7 +237,7 @@ public class SequencesReader extends JdbcReader {
         .join("LEFT JOIN pg_catalog.pg_attribute a ON a.attrelid = dep.refobjid AND a.attnum = dep.refobjsubid AND a.attisdropped IS FALSE")
         .where("res.relkind = 'S'");
 
-        if (SupportedVersion.VERSION_10.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_10.isLE(loader.getVersion())) {
             builder
             .column("s.seqtypid::bigint AS data_type")
             .column("s.seqstart")

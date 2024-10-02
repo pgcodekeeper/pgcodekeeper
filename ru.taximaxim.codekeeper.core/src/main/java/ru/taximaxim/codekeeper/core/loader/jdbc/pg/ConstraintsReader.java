@@ -21,9 +21,9 @@ import java.sql.SQLException;
 import org.antlr.v4.runtime.CommonTokenStream;
 
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.AlterTable;
@@ -49,7 +49,7 @@ public class ConstraintsReader extends JdbcReader {
 
     @Override
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException {
-        if (SupportedVersion.VERSION_11.isLE(loader.getVersion()) && res.getInt("conparentid") != 0) {
+        if (SupportedPgVersion.VERSION_11.isLE(loader.getVersion()) && res.getInt("conparentid") != 0) {
             return;
         }
 
@@ -136,7 +136,7 @@ public class ConstraintsReader extends JdbcReader {
         .where("res.contype != 't'")
         .where("res.coninhcount = 0");
 
-        if (SupportedVersion.VERSION_11.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_11.isLE(loader.getVersion())) {
             builder.column("res.conparentid::bigint");
         }
     }

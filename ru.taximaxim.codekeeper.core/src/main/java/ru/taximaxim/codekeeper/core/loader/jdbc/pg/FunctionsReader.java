@@ -25,10 +25,10 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
-import ru.taximaxim.codekeeper.core.loader.SupportedVersion;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcType;
+import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
@@ -76,7 +76,7 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private AbstractPgFunction getFunc(ResultSet res, AbstractSchema schema, String funcName) throws SQLException {
-        boolean isProc = SupportedVersion.VERSION_11.isLE(loader.getVersion()) && res.getBoolean("proisproc");
+        boolean isProc = SupportedPgVersion.VERSION_11.isLE(loader.getVersion()) && res.getBoolean("proisproc");
         AbstractPgFunction function = isProc ? new PgProcedure(funcName) : new PgFunction(funcName);
         loader.setCurrentObject(new GenericColumn(schema.getName(), funcName, function.getStatementType()));
 
@@ -85,7 +85,7 @@ public class FunctionsReader extends JdbcReader {
         // since 9.5 PostgreSQL
         fillTransform(function, res);
 
-        if (SupportedVersion.VERSION_12.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_12.isLE(loader.getVersion())) {
             String supportFunc = res.getString("support_func");
             if (!"-".equals(supportFunc)) {
                 setFunctionWithDep(AbstractPgFunction::setSupportFunc, function, supportFunc,
@@ -132,7 +132,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_9_6.isLE(loader.getVersion())) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":
@@ -160,7 +160,7 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private void fillTransform(AbstractPgFunction function, ResultSet res) throws SQLException {
-        if (SupportedVersion.VERSION_9_5.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_9_5.isLE(loader.getVersion())) {
             Long[] protrftypes = getColArray(res, "protrftypes");
             if (protrftypes != null) {
                 for (Long s : protrftypes) {
@@ -254,7 +254,7 @@ public class FunctionsReader extends JdbcReader {
             body = sb.toString();
         } else if (definition != null && !definition.isEmpty() && !"-".equals(definition)) {
             body = PgDiffUtils.quoteStringDollar(definition);
-        } else if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        } else if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             String probody = res.getString("prosqlbody");
             // must not be null at this point, otherwise function has no body (?)
             checkObjectValidity(probody, DbObjType.FUNCTION, function.getBareName());
@@ -338,7 +338,7 @@ public class FunctionsReader extends JdbcReader {
 
         // since 9.6 PostgreSQL
         // parallel mode: s - safe, r - restricted, u - unsafe
-        if (SupportedVersion.VERSION_9_6.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_9_6.isLE(loader.getVersion())) {
             String parMode = res.getString("proparallel");
             switch (parMode) {
             case "s":
@@ -353,7 +353,7 @@ public class FunctionsReader extends JdbcReader {
         }
 
         // since 9.6 PostgreSQL and default for greenplum
-        if (SupportedVersion.VERSION_9_6.isLE(loader.getVersion()) || loader.isGreenplumDb()) {
+        if (SupportedPgVersion.VERSION_9_6.isLE(loader.getVersion()) || loader.isGreenplumDb()) {
             aggregate.setCombineFunc(getProcessedName(aggregate, res.getString("combinefunc_nsp"),
                     res.getString("combinefunc"), AggFuncs.COMBINEFUNC));
             aggregate.setSerialFunc(getProcessedName(aggregate, res.getString("serialfunc_nsp"),
@@ -362,7 +362,7 @@ public class FunctionsReader extends JdbcReader {
                     res.getString("deserialfunc"), AggFuncs.DESERIALFUNC));
         }
         // since 11 PostgreSQL
-        if (SupportedVersion.VERSION_11.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_11.isLE(loader.getVersion())) {
             aggregate.setFinalFuncModify(getModifyType(
                     res.getString("finalfunc_modify"), aggregate.getKind()));
             aggregate.setMFinalFuncModify(getModifyType(
@@ -595,15 +595,15 @@ public class FunctionsReader extends JdbcReader {
         .join("LEFT JOIN pg_catalog.pg_operator sortop ON a.aggsortop = sortop.oid")
         .join("LEFT JOIN pg_catalog.pg_namespace sortop_n ON sortop.oprnamespace = sortop_n.oid");
 
-        if (SupportedVersion.VERSION_9_5.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_9_5.isLE(loader.getVersion())) {
             builder.column("res.protrftypes::bigint[]");
         }
 
-        if (SupportedVersion.VERSION_9_6.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_9_6.isLE(loader.getVersion())) {
             builder.column("res.proparallel");
         }
 
-        if (SupportedVersion.VERSION_9_6.isLE(loader.getVersion()) || loader.isGreenplumDb()) {
+        if (SupportedPgVersion.VERSION_9_6.isLE(loader.getVersion()) || loader.isGreenplumDb()) {
             builder
             .column("combinefn.proname AS combinefunc")
             .column("combinefn_n.nspname AS combinefunc_nsp")
@@ -619,7 +619,7 @@ public class FunctionsReader extends JdbcReader {
             .join("LEFT JOIN pg_catalog.pg_namespace deserialfn_n ON deserialfn.pronamespace = deserialfn_n.oid");
         }
 
-        if (SupportedVersion.VERSION_11.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_11.isLE(loader.getVersion())) {
             builder
             .column("res.prokind = 'a' AS proisagg")
             .column("res.prokind = 'w' AS proiswindow")
@@ -632,11 +632,11 @@ public class FunctionsReader extends JdbcReader {
             .column("res.proiswindow");
         }
 
-        if (SupportedVersion.VERSION_12.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_12.isLE(loader.getVersion())) {
             builder.column("res.prosupport AS support_func");
         }
 
-        if (SupportedVersion.VERSION_14.isLE(loader.getVersion())) {
+        if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
             builder.column("pg_get_function_sqlbody(res.oid) AS prosqlbody");
         }
 
