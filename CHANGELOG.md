@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Renamed view `pg Dependencies` to `Dependency graph`.
+
 ### Fixed
 
 ### Removed
