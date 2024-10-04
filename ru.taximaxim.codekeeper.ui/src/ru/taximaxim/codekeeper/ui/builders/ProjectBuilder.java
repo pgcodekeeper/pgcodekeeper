@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
@@ -43,7 +42,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, Map<String, String> args,
             IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
-        if (!proj.hasNature(NATURE.ID) ||
+        if (!OpenProjectUtils.isPgCodeKeeperProject(proj) ||
                 !OpenProjectUtils.checkVersion(proj, new StringBuilder())) {
             return null;
         }

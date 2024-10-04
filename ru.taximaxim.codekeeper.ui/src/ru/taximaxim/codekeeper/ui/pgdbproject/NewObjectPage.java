@@ -21,8 +21,6 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -32,9 +30,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -68,7 +66,8 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.ObjectLevel;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -92,31 +91,23 @@ public final class NewObjectPage extends WizardPage {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
-    private static final String NAME = "name"; //$NON-NLS-1$
-    private static final String SCHEMA = "schema"; //$NON-NLS-1$
-    private static final String CONTAINER = "container"; //$NON-NLS-1$
+    private static final DbObjType DEFAULT_TYPE = DbObjType.TABLE;
 
-    private static final String PATTERN = "CREATE {0} {1};"; //$NON-NLS-1$
+    private static final String EXPECTED_SCHEMA = "schema"; //$NON-NLS-1$
+    private static final String EXPECTED_CONTAINER = "container"; //$NON-NLS-1$
+    private static final String EXPECTED_NAME = "name"; //$NON-NLS-1$
+    private static final String EXPECTED_OP_NAME = "=+*";
 
-    private static final String GROUP_DELIMITER = "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
-
-    private final EnumSet<DbObjType> firstLevelTypes = EnumSet.of(DbObjType.SCHEMA, DbObjType.EXTENSION,
-            DbObjType.EVENT_TRIGGER, DbObjType.FOREIGN_DATA_WRAPPER, DbObjType.SERVER);
-
-    private final EnumSet<DbObjType> secondLevelTypes = EnumSet.of(DbObjType.COLLATION,
-            DbObjType.DOMAIN, DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.SEQUENCE,
-            DbObjType.AGGREGATE, DbObjType.TABLE, DbObjType.VIEW, DbObjType.STATISTICS, DbObjType.TYPE,
-            DbObjType.FTS_PARSER, DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
-
-    private final EnumSet<DbObjType> thirdLevelTypes = EnumSet.of(DbObjType.TRIGGER, DbObjType.RULE,
-            DbObjType.POLICY, DbObjType.INDEX, DbObjType.CONSTRAINT);
+    private static final String PATTERN = "CREATE SCHEMA {0};"; //$NON-NLS-1$
+    private static final String CH_PATTERN = "CREATE DATABASE {0}\nENGINE = Atomic;"; //$NON-NLS-1$
+    private static final String CREATE_POSTFIX = ".create"; //$NON-NLS-1$
 
     private final List<DbObjType> allowedTypes = new ArrayList<>();
 
     private DbObjType type;
-    private String name = NAME;
-    private String schema = "public"; //$NON-NLS-1$
-    private String container = CONTAINER;
+    private String schema = EXPECTED_SCHEMA;
+    private String container = EXPECTED_CONTAINER;
+    private String name = EXPECTED_NAME;
     private String expectedFormat;
     private IProject currentProj;
     private boolean parentIsTable = true;
@@ -125,53 +116,59 @@ public final class NewObjectPage extends WizardPage {
     private ComboViewer viewerType;
     private Text txtName;
     private Group group;
+    private Label lblDbType;
+    private DatabaseType dbType;
 
     public NewObjectPage(String pageName, IStructuredSelection selection) {
         super(pageName, pageName, null);
-        fillAllowedTypes();
+        parseSelection(selection);
+    }
 
+    private void parseSelection(IStructuredSelection selection) {
         Object element = selection.getFirstElement();
         if (element instanceof IResource resource) {
-            if (resource.getType() == IResource.FILE && UIProjectLoader.isInProject(resource)) {
-                parseFile(resource);
-            } else if (resource.getType() == IResource.FOLDER) {
-                parseFolder(resource);
-            }
             currentProj = resource.getProject();
+            dbType = OpenProjectUtils.getDatabaseType(currentProj);
+            fillAllowedTypes();
+            if (resource.getType() == IResource.FILE && UIProjectLoader.isInProject(resource)) {
+                parseSelectionFile(resource);
+            } else if (resource.getType() == IResource.FOLDER) {
+                parseSelectionFolder(resource);
+            }
         }
-
         if (type == null) {
             String lastType = mainPrefs.getString(PREF.LAST_CREATED_OBJECT_TYPE);
             type = allowedTypes.stream().filter(e -> e.toString().equals(lastType))
-                    .findAny().orElse(DbObjType.TABLE);
+                    .findAny().orElse(DEFAULT_TYPE);
         }
     }
 
     private void fillAllowedTypes() {
-        allowedTypes.addAll(firstLevelTypes);
-        allowedTypes.addAll(secondLevelTypes);
-        allowedTypes.addAll(thirdLevelTypes);
-        allowedTypes.sort(Comparator.comparing(DbObjType::name));
+        allowedTypes.clear();
+        if (dbType != null) {
+            allowedTypes.addAll(ObjectLevel.getTypes(dbType, false,
+                    ObjectLevel.SCHEMA, ObjectLevel.CONTAINER, ObjectLevel.SUB_ELEMENT));
+            allowedTypes.sort(Comparator.comparing(DbObjType::name));
+        }
     }
 
-    private void parseFolder(IResource resource) {
+    private void parseSelectionFolder(IResource resource) {
         type = allowedTypes.stream()
-                .filter(e -> resource.getName().equals(WorkDirs.getDirectoryNameForType(DatabaseType.PG, e)))
+                .filter(e -> resource.getName().equals(WorkDirs.getDirectoryNameForType(dbType, e)))
                 .findAny().orElse(null);
         IContainer cont = resource.getParent();
+        var dbContName = WorkDirs.getDirectoryNameForType(dbType, DbObjType.SCHEMA);
         if (cont != null) {
             if (type != null && !isSchemaLevel()) {
                 schema = cont.getName();
-            } else if (DbObjType.SCHEMA.name().equals(cont.getName())) {
+            } else if (dbContName.equals(cont.getName())) {
                 schema = resource.getName();
             }
         }
     }
 
-    private void parseFile(IResource resource) {
-        Set<DbObjType> types = new HashSet<>();
-        types.addAll(firstLevelTypes);
-        types.addAll(secondLevelTypes);
+    private void parseSelectionFile(IResource resource) {
+        Set<DbObjType> types = ObjectLevel.getTypes(dbType, false, ObjectLevel.SCHEMA, ObjectLevel.CONTAINER);
         types.remove(DbObjType.SCHEMA);
 
         try {
@@ -182,7 +179,7 @@ public final class NewObjectPage extends WizardPage {
                     schema = path.getSchemaName();
                 }
 
-                if (type == DbObjType.TABLE || type == DbObjType.VIEW) {
+                if (type.in(DbObjType.TABLE, DbObjType.VIEW)) {
                     container = st.getName();
                     parentIsTable = type != DbObjType.VIEW;
                 }
@@ -192,30 +189,51 @@ public final class NewObjectPage extends WizardPage {
         }
     }
 
+    private boolean isClickHouseDb() {
+        return dbType == DatabaseType.CH;
+    }
+
     @Override
     public void createControl(Composite parent) {
         Composite area = new Composite(parent, SWT.NONE);
-        area.setLayout(new GridLayout(2, false));
-        area.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
+        area.setLayoutData(gd);
+        area.setLayout(new GridLayout(3, false));
 
-        new Label(area, SWT.NONE).setText(Messages.PgObject_object_name);
-        txtName = new Text(area, SWT.BORDER);
-        txtName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        //project
+        Label lblProj = new Label(area, SWT.NONE);
+        lblProj.setText(Messages.PgObject_project_name);
+        lblProj.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+        viewerProject = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
+        viewerProject.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 1, 1));
+        lblDbType = new Label(area, SWT.NONE);
+        lblDbType.setText(dbType != null ? dbType.name() : "");
+        lblDbType.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1));
+
+        //object name
+        Label lblObj = new Label(area, SWT.NONE);
+        gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 1, 1);
+        lblObj.setLayoutData(gd);
+        lblObj.setText(Messages.PgObject_object_name);
+        // in windows the beginning of long text disappears
+        int style = SWT.getPlatform().contains("win") ? SWT.MULTI | SWT.BORDER : SWT.BORDER;
+        txtName = new Text(area, style);
+        txtName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+
         txtName.addModifyListener(e -> {
             parseName();
             getWizard().getContainer().updateButtons();
         });
         txtName.setFocus();
 
+        //object type
         new Label(area, SWT.NONE).setText(Messages.PgObject_object_type);
         viewerType = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
+        viewerType.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false, 2, 1));
 
         createAdditionalFields(area);
         // must paint first time
         showGroup(true);
-
-        new Label(area, SWT.NONE).setText(Messages.PgObject_project_name);
-        viewerProject = new ComboViewer(area, SWT.READ_ONLY | SWT.DROP_DOWN);
 
         fillProjects();
         fillTypes();
@@ -237,17 +255,9 @@ public final class NewObjectPage extends WizardPage {
         });
 
         List<IProject> projectList = new ArrayList<>();
-        IWorkspaceRoot workspaceRoot = ResourcesPlugin.getWorkspace().getRoot();
-        IProject[] projects = workspaceRoot.getProjects();
-
-        for (IProject project : projects) {
-            try {
-                if (project.isOpen() && OpenProjectUtils.isPgProject(project)) {
-                    projectList.add(project);
-                }
-            } catch (CoreException ex) {
-                Log.log(Log.LOG_ERROR, "Project nature identifier error" //$NON-NLS-1$
-                        + ex.getLocalizedMessage(), ex);
+        for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
+            if (OpenProjectUtils.isPgCodeKeeperProject(project)) {
+                projectList.add(project);
             }
         }
 
@@ -261,6 +271,10 @@ public final class NewObjectPage extends WizardPage {
             Object object = ((StructuredSelection) e.getSelection()).getFirstElement();
             if (object != null) {
                 currentProj = ((IProject) object);
+                dbType = OpenProjectUtils.getDatabaseType(currentProj);
+                lblDbType.setText(dbType.getDbTypeName());
+                lblDbType.getParent().layout();
+                fillTypes();
             }
             getWizard().getContainer().updateButtons();
         });
@@ -271,12 +285,15 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void fillTypes() {
-        viewerType.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        fillAllowedTypes();
         viewerType.setContentProvider(ArrayContentProvider.getInstance());
         viewerType.setInput(allowedTypes);
 
         viewerType.addSelectionChangedListener(e -> {
             type = (DbObjType) ((StructuredSelection) e.getSelection()).getFirstElement();
+            if (type == null) {
+                type = DEFAULT_TYPE;
+            }
             showGroup(isHaveChoise());
             setDefaultName();
             getWizard().getContainer().updateButtons();
@@ -325,20 +342,42 @@ public final class NewObjectPage extends WizardPage {
 
     private void setDefaultName() {
         String path;
-        if (isSchemaLevel()) {
+        name = EXPECTED_NAME;
+        if (dbType != null) {
+            schema = setDefaultSchema();
+        }
+        switch (ObjectLevel.getLevel(dbType, type)) {
+        case SCHEMA:
             path = name;
-            expectedFormat = NAME;
-        } else if (secondLevelTypes.contains(type)) {
-            path = schema + '.' + name;
-            expectedFormat = SCHEMA + '.' + NAME;
-        } else if (isSubElement()) {
+            expectedFormat = EXPECTED_NAME;
+            break;
+        case CONTAINER:
+            if (type == DbObjType.OPERATOR) {
+                path = schema + '.' + EXPECTED_OP_NAME;
+                expectedFormat = EXPECTED_SCHEMA + '.' + EXPECTED_OP_NAME;
+            } else {
+                path = schema + '.' + name;
+                expectedFormat = EXPECTED_SCHEMA + '.' + EXPECTED_NAME;
+            }
+            break;
+        case SUB_ELEMENT:
             path = schema + '.' + container + '.' + name;
-            expectedFormat = SCHEMA + '.' + CONTAINER + '.' + NAME;
-        } else {
+            expectedFormat = EXPECTED_SCHEMA + '.' + EXPECTED_CONTAINER + '.' + EXPECTED_NAME;
+            break;
+        default:
             return;
         }
         txtName.setText(path);
         txtName.setSelection(path.length());
+    }
+
+    private String setDefaultSchema() {
+        return switch (dbType) {
+            case PG -> "public"; //$NON-NLS-1$
+            case MS -> "dbo"; //$NON-NLS-1$
+            case CH -> "default"; //$NON-NLS-1$
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
     }
 
     @Override
@@ -354,13 +393,22 @@ public final class NewObjectPage extends WizardPage {
             setDescription(Messages.PgObject_select_project);
             return false;
         }
-
         if (fullName.isEmpty()) {
             setDescription(Messages.PgObject_empty_name);
             return false;
         }
-
-        QNameParserWrapper parser = QNameParserWrapper.parsePg(fullName);
+        if (type != null && type.in(DbObjType.CAST, DbObjType.USER_MAPPING)) {
+            name = fullName;
+            return true;
+        }
+        QNameParserWrapper parser;
+        if (isClickHouseDb()) {
+            parser = QNameParserWrapper.parseCh(fullName);
+        } else if (type != null && type == DbObjType.OPERATOR) {
+            parser = QNameParserWrapper.parsePgOperator(fullName);
+        } else {
+            parser = QNameParserWrapper.parsePg(fullName);
+        }
         if (parser.hasErrors()) {
             err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
         } else {
@@ -385,42 +433,40 @@ public final class NewObjectPage extends WizardPage {
 
         setErrorMessage(err);
         if (err == null) {
-            setDescription(Messages.PgObject_create_object);
+            setDescription(MessageFormat.format(Messages.Object_create_object, dbType.getDbTypeName()));
         }
         return err == null;
     }
 
     private boolean isSchemaLevel() {
-        return firstLevelTypes.contains(type);
+        return ObjectLevel.SCHEMA == ObjectLevel.getLevel(dbType, type);
     }
 
     private boolean isHaveChoise() {
-        return type != DbObjType.CONSTRAINT && isSubElement();
+        return type.in(DbObjType.TRIGGER, DbObjType.RULE, DbObjType.INDEX);
     }
 
-    public boolean isSubElement() {
-        return thirdLevelTypes.contains(type);
+    private boolean isSubElement() {
+        return ObjectLevel.SUB_ELEMENT == ObjectLevel.getLevel(dbType, type);
     }
 
     public boolean createFile() {
         try {
             mainPrefs.setValue(PREF.LAST_CREATED_OBJECT_TYPE, type.name());
             if (isSchemaLevel()) {
-                if (type == DbObjType.SCHEMA) {
+                if (DbObjType.SCHEMA == type) {
                     createSchema(name, true, currentProj);
                 } else {
-                    createObject(null, name, type, true, currentProj);
+                    createObject(null, true);
                 }
             } else if (!isSubElement()) {
-                createObject(schema, name, type, true, currentProj);
+                createObject(schema, true);
             } else {
-                createSubElement(schema, container, name,
-                        !isHaveChoise() || parentIsTable, currentProj, type);
+                createSubElement(!isHaveChoise() || parentIsTable);
             }
             return true;
         } catch (CoreException ex) {
-            Log.log(Log.LOG_ERROR, Messages.PgObject_file_creation_error
-                    + ex.getLocalizedMessage(), ex);
+            Log.log(Log.LOG_ERROR, Messages.PgObject_file_creation_error + ex.getLocalizedMessage(), ex);
             setErrorMessage(Messages.PgObject_file_creation_error);
             return false;
         }
@@ -433,14 +479,12 @@ public final class NewObjectPage extends WizardPage {
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
             String object, String parent) throws CoreException {
-        String schemaName = schema != null ? PgDiffUtils.getQuotedName(schema) : null;
-        String objectName = PgDiffUtils.getQuotedName(object);
+        String schemaName = schema != null ? Utils.getQuotedName(schema, dbType) : null;
+        String objectName = type.in(DbObjType.OPERATOR, DbObjType.CAST, DbObjType.USER_MAPPING) ? object
+                : Utils.getQuotedName(object, dbType);
 
-        Template newObjTmpl = SQLEditorTemplateManager.getInstance()
-                .getTemplateStore().findTemplateById(tmplId);
-
-        ITextViewer textViewer = (ITextViewer) openFileInEditor(file)
-                .getAdapter(ITextOperationTarget.class);
+        Template newObjTmpl = SQLEditorTemplateManager.getInstance().getTemplateStore().findTemplateById(tmplId);
+        ITextViewer textViewer = (ITextViewer) openFileInEditor(file).getAdapter(ITextOperationTarget.class);
 
         if (parent == null) {
             // creation element
@@ -457,15 +501,13 @@ public final class NewObjectPage extends WizardPage {
                 provider.connect(file);
                 IDocument doc = provider.getDocument(file);
                 int offset = doc.getLength();
-                doc.replace(offset, 0, GROUP_DELIMITER);
-                offset += GROUP_DELIMITER.length();
+                doc.replace(offset, 0, ModelExporter.GROUP_DELIMITER);
+                offset += ModelExporter.GROUP_DELIMITER.length();
 
                 new SqlEditorTemplateProposal(newObjTmpl,
-                        new DocumentTemplateContext(
-                                new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
+                        new DocumentTemplateContext(new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
                         new Region(offset, 0), null, 0)
-                .fillTmplAndInsertToViewer(schemaName, objectName, PgDiffUtils.getQuotedName(parent),
-                        textViewer, 0);
+                .fillTmplAndInsertToViewer(schemaName, objectName, Utils.getQuotedName(parent, dbType), textViewer, 0);
             } catch (BadLocationException e) {
                 Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
             } finally {
@@ -475,94 +517,110 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
-        IFolder projectFolder = project.getFolder(WorkDirs.getDirectoryNameForType(DatabaseType.PG, DbObjType.SCHEMA));
-        if (!projectFolder.exists()) {
-            projectFolder.create(false, true, null);
+        IFolder schemaFolder;
+        String schemaFolderName = WorkDirs.getDirectoryNameForType(dbType, DbObjType.SCHEMA);
+        if (dbType == DatabaseType.MS) {
+            IFolder securityFolder = project.getFolder(new Path(WorkDirs.MS_SECURITY));
+            if (!securityFolder.exists()) {
+                securityFolder.create(false, true, null);
+            }
+            schemaFolder = securityFolder.getFolder(schemaFolderName);
+        } else {
+            IFolder rootSchemaFolder = project.getFolder(schemaFolderName);
+            if (!rootSchemaFolder.exists()) {
+                rootSchemaFolder.create(false, true, null);
+            }
+            schemaFolder = rootSchemaFolder.getFolder(FileUtils.getValidFilename(name));
         }
-        IFolder schemaFolder = projectFolder.getFolder(FileUtils.getValidFilename(name));
+
         if (!schemaFolder.exists()) {
             schemaFolder.create(false, true, null);
         }
+
         IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
-            sb.append(MessageFormat.format(PATTERN, DbObjType.SCHEMA, PgDiffUtils.getQuotedName(name)));
+            String schemaText = MessageFormat.format(isClickHouseDb() ? CH_PATTERN : PATTERN,
+                    Utils.getQuotedName(name, dbType));
+            sb.append(schemaText);
             file.create(new ByteArrayInputStream(sb.toString().getBytes(
                     Charset.forName(file.getCharset()))), false, null);
         }
+
         if (open) {
             openFileInEditor(file);
         }
         return schemaFolder;
     }
 
-    private IFile createObject(String schema, String name, DbObjType type,
-            boolean open, IProject project) throws CoreException {
-        IFile file;
+    private IFile createObject(String schema, boolean open) throws CoreException {
+        IFolder folder;
         if (schema == null) {
-            IFolder folder = project.getFolder(WorkDirs.getDirectoryNameForType(DatabaseType.PG, type));
-            if (!folder.exists()) {
-                folder.create(false, true, null);
+            if (dbType == DatabaseType.MS && type.in(DbObjType.SCHEMA, DbObjType.ROLE, DbObjType.USER)) {
+                folder = getMsSecurityFolder();
+            } else {
+                folder = currentProj.getFolder(WorkDirs.getDirectoryNameForType(dbType, type));
+                if (!folder.exists()) {
+                    folder.create(false, true, null);
+                }
             }
-            file = folder.getFile(ModelExporter.getExportedFilenameSql(name));
         } else {
-            file = getFolder(schema, type, project)
-                    .getFile(ModelExporter.getExportedFilenameSql(name));
+            folder = getFolder(schema, type, currentProj);
         }
 
+        IFile file = folder.getFile(getFileName(type, name));
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
             if (open) {
-                openFileInEditor(file, getTmplIdProtected(SQLEditorTemplateContextType.CONTEXT_TYPE_PG,
-                        ".create", type), schema, name, null); //$NON-NLS-1$
+                openFileInEditor(file, getTmplIdProtected(getTemplateType(), CREATE_POSTFIX, type), schema, name, null);
             }
         } else if (open) {
             openFileInEditor(file);
         }
+
         return file;
     }
 
-    private void createSubElement(String schema, String parent,
-            String name, boolean parentIsTable, IProject project, DbObjType type) throws CoreException {
-        DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
-        IFile file = getFolder(schema, parentType, project)
-                .getFile(ModelExporter.getExportedFilenameSql(parent));
-
-        if (!file.exists()) {
-            file.create(new ByteArrayInputStream(
-                    createParentCodeOfSubEl(schema, parent, parentType)
-                    .getBytes(Charset.forName(file.getCharset()))),
-                    false, null);
+    private String getFileName(DbObjType type, String name) {
+        if (DatabaseType.MS == dbType && ObjectLevel.SCHEMA != ObjectLevel.getLevel(dbType, type)) {
+            return FileUtils.getValidFilename(schema) + '.' + ModelExporter.getExportedFilenameSql(name);
         }
 
-        String tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
-        String tmplIdPostfix = ".create"; //$NON-NLS-1$
+        return ModelExporter.getExportedFilenameSql(name);
+    }
+
+    private String getTemplateType() {
+        return switch (dbType) {
+            case CH -> SQLEditorTemplateContextType.CONTEXT_TYPE_CH;
+            case MS -> SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
+            case PG -> SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
+    }
+
+    private void createSubElement(boolean parentIsTable) throws CoreException {
+        DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
+        IFile file = getFolder(schema, parentType, currentProj).getFile(getFileName(parentType, container));
+
+        if (!file.exists()) {
+            file.create(new ByteArrayInputStream(new byte[0]), false, null);
+            createParentCodeOfSubEl(file, schema, container, parentType);
+        }
+
+        String tmplCtxTypeId = getTemplateType();
+        String tmplIdPostfix = CREATE_POSTFIX;
         if (type == DbObjType.CONSTRAINT) {
             tmplCtxTypeId = SQLEditorTemplateContextType.CONTEXT_TYPE_COMMON;
             tmplIdPostfix = ".add"; //$NON-NLS-1$
         }
 
-        openFileInEditor(file, getTmplIdProtected(tmplCtxTypeId, tmplIdPostfix, type),
-                schema, name, parent);
+        openFileInEditor(file, getTmplIdProtected(tmplCtxTypeId, tmplIdPostfix, type), schema, name, container);
     }
 
-    private String createParentCodeOfSubEl(String schema, String parent, DbObjType parentType) {
-        String schemaName = PgDiffUtils.getQuotedName(schema);
-        String objectName = PgDiffUtils.getQuotedName(parent);
-        StringBuilder sb = new StringBuilder("CREATE "); //$NON-NLS-1$
-        switch (parentType) {
-        case TABLE:
-            sb.append(parentType).append(' ').append(schemaName).append('.')
-            .append(objectName).append(" (\n);"); //$NON-NLS-1$
-            break;
-        case VIEW:
-            sb.append(parentType).append(' ').append(schemaName).append('.')
-            .append(objectName).append(" AS\n\tSELECT 'select_text'::text AS text;"); //$NON-NLS-1$
-            break;
-        default:
-            return ""; //$NON-NLS-1$
-        }
-        return sb.toString();
+    private void createParentCodeOfSubEl(IFile file, String schema, String parent, DbObjType parentType)
+            throws CoreException {
+        String tmplCtxTypeId = getTemplateType();
+        openFileInEditor(file, getTmplIdProtected(tmplCtxTypeId, CREATE_POSTFIX, parentType), schema, parent, null);
     }
 
     /**
@@ -582,16 +640,35 @@ public final class NewObjectPage extends WizardPage {
      */
     private String getTmplIdProtected(String tmplCtxTypeId, String tmplIdPostfix,
             DbObjType objType) {
-        return tmplCtxTypeId + tmplIdPostfix + objType.name().toLowerCase(Locale.ROOT)
-                + SQLEditorTemplateManager.TEMPLATE_ID_PROTECTION_MARKER;
+        return tmplCtxTypeId + tmplIdPostfix + objType.name().toLowerCase(Locale.ROOT);
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {
         IFolder schemaFolder = createSchema(name, false, project);
-        IFolder typeFolder = schemaFolder.getFolder(type.name());
+        String folderName = WorkDirs.getDirectoryNameForType(dbType, type);
+
+        IFolder typeFolder;
+        if (DatabaseType.MS == dbType) {
+            typeFolder = project.getFolder(folderName);
+        } else {
+            typeFolder = schemaFolder.getFolder(folderName);
+        }
+
         if (!typeFolder.exists()) {
             typeFolder.create(false, true, null);
         }
         return typeFolder;
+    }
+
+    private IFolder getMsSecurityFolder() throws CoreException {
+        IFolder securityFolder = currentProj.getFolder(new Path(WorkDirs.MS_SECURITY));
+        if (!securityFolder.exists()) {
+            securityFolder.create(false, true, null);
+        }
+        IFolder objFolder = securityFolder.getFolder(WorkDirs.getDirectoryNameForType(dbType, type));
+        if (!objFolder.exists()) {
+            objFolder.create(false, true, null);
+        }
+        return objFolder;
     }
 }

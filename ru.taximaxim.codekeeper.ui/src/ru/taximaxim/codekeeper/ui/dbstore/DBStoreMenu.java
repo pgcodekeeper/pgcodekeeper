@@ -25,7 +25,6 @@ import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -37,11 +36,10 @@ import org.eclipse.ui.dialogs.PreferencesUtil;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class DBStoreMenu {
@@ -72,12 +70,8 @@ public class DBStoreMenu {
             // load projects in ctor for now, Workspace listener and dynamic list may be added later
             IProject[] projs = ResourcesPlugin.getWorkspace().getRoot().getProjects();
             for (int i = 0; i < MAX_FILES_HISTORY && i < projs.length; ++i) {
-                try {
-                    if (projs[i].isOpen() && projs[i].hasNature(NATURE.ID)) {
-                        this.projects.add(projs[i].getLocation().toFile());
-                    }
-                } catch (CoreException ex) {
-                    Log.log(ex);
+                if (OpenProjectUtils.isPgCodeKeeperProject(projs[i])) {
+                    this.projects.add(projs[i].getLocation().toFile());
                 }
             }
         }
@@ -201,20 +195,12 @@ public class DBStoreMenu {
             }
         };
         submenu.add(dbAction);
-        ProjectIcon projectIcon;
-        switch (dbInfo.getDbType()) {
-        case MS:
-            projectIcon = ProjectIcon.MS_ICON;
-            break;
-        case PG:
-            projectIcon = ProjectIcon.PG_ICON;
-            break;
-        case CH:
-            projectIcon = ProjectIcon.CH_ICON;
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
-        }
+        ProjectIcon projectIcon = switch (dbInfo.getDbType()) {
+            case MS -> ProjectIcon.MS_ICON;
+            case PG -> ProjectIcon.PG_ICON;
+            case CH -> ProjectIcon.CH_ICON;
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
+        };
         dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(projectIcon));
         if (dbInfo.equals(selection)) {
             dbAction.setChecked(true);

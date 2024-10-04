@@ -42,8 +42,8 @@ public class NewObjectWizard extends Wizard implements INewWizard {
 
     @Override
     public void addPages() {
-        setWindowTitle(Messages.PgObject_wizard_title);
-        page = new NewObjectPage(Messages.PgObject_create_object, selection);
+        setWindowTitle(Messages.Object_wizard_title);
+        page = new NewObjectPage(Messages.NewObjectWizard_create_object, selection);
         addPage(page);
     }
 

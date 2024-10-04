@@ -23,7 +23,9 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 
 public final class QNameParser<T extends ParserRuleContext> {
@@ -103,6 +105,15 @@ public final class QNameParser<T extends ParserRuleContext> {
                 .makeBasicParser(SQLParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
                 .qname_parser()
                 .schema_qualified_name());
+        return new QNameParser<>(parts, errors);
+    }
+
+    public static QNameParser<ParserRuleContext> parseCh(String schemaQualifiedName) {
+        List<Object> errors = new ArrayList<>();
+        List<ParserRuleContext> parts = ChParserAbstract.getIdentifiers(AntlrParser
+                .makeBasicParser(CHParser.class, schemaQualifiedName, "qname: " + schemaQualifiedName, errors)
+                .qname_parser()
+                .qualified_name());
         return new QNameParser<>(parts, errors);
     }
 

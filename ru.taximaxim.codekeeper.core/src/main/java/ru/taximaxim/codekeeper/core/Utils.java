@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.function.UnaryOperator;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -96,16 +97,25 @@ public final class Utils {
     }
 
     public static boolean isSystemSchema(String schema, DatabaseType dbType) {
-        switch (dbType) {
-        case PG:
-            return isPgSystemSchema(schema);
-        case MS:
-            return isMsSystemSchema(schema);
-        case CH:
-            return isChSystemSchema(schema);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return switch (dbType) {
+            case PG -> isPgSystemSchema(schema);
+            case MS -> isMsSystemSchema(schema);
+            case CH -> isChSystemSchema(schema);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
+    }
+
+    public static String getQuotedName(String name, DatabaseType dbType) {
+        return getQuoter(dbType).apply(name);
+    }
+
+    public static UnaryOperator<String> getQuoter(DatabaseType dbType) {
+        return switch (dbType) {
+            case PG -> PgDiffUtils::getQuotedName;
+            case MS -> MsDiffUtils::quoteName;
+            case CH -> ChDiffUtils::getQuotedName;
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
     }
 
     public static boolean isChSystemSchema(String schema) {

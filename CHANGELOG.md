@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to create objects from templates for all types of databases.
+
 ### Changed
 
 - Renamed view `pg Dependencies` to `Dependency graph`.

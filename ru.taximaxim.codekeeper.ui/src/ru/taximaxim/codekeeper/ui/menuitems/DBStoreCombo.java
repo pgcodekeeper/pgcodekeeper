@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.menuitems;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.swt.SWT;
@@ -37,9 +36,7 @@ import org.eclipse.ui.part.FileEditorInput;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dbstore.AbstractStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
@@ -133,17 +130,13 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
             return;
         }
 
-        try {
-            DatabaseType dbType;
-            if (proj != null && proj.hasNature(NATURE.ID)) {
-                dbType = OpenProjectUtils.getDatabaseType(proj);
-            } else {
-                dbType = null;
-            }
-            storePicker.filter(dbType);
-        } catch (CoreException ex) {
-            Log.log(ex);
+        DatabaseType dbType;
+        if (OpenProjectUtils.isPgCodeKeeperProject(proj)) {
+            dbType = OpenProjectUtils.getDatabaseType(proj);
+        } else {
+            dbType = null;
         }
+        storePicker.filter(dbType);
 
         if (lastDb == null) {
             storePicker.clearSelection();

@@ -85,134 +85,68 @@ public final class WorkDirs {
             DbObjType.FTS_PARSER, DbObjType.FTS_TEMPLATE, DbObjType.FTS_DICTIONARY, DbObjType.FTS_CONFIGURATION);
 
     public static List<String> getDirectoryNames(DatabaseType databaseType) {
-        switch (databaseType) {
-        case CH:
-            return CH_DIRECTORY_NAMES;
-        case MS:
-            return MS_DIRECTORY_NAMES;
-        case PG:
-            return PG_DIRECTORY_NAMES;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
-        }
+        return switch (databaseType) {
+            case CH -> CH_DIRECTORY_NAMES;
+            case MS -> MS_DIRECTORY_NAMES;
+            case PG -> PG_DIRECTORY_NAMES;
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        };
     }
 
     public static String getDirectoryNameForType(DatabaseType databaseType, DbObjType type) {
-        switch (databaseType) {
-        case CH:
-            return getChDirectoryNameForType(type);
-        case MS:
-            return getMsDirectoryNameForType(type);
-        case PG:
-            return getPgDirectoryNameForType(type);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
-        }
+        return switch (databaseType) {
+            case CH -> getChDirectoryNameForType(type);
+            case MS -> getMsDirectoryNameForType(type);
+            case PG -> getPgDirectoryNameForType(type);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        };
     }
 
     public static Path getRelativeFolderPath(PgStatement st, Path baseDir) {
         var databaseType = st.getDbType();
-        switch (databaseType) {
-        case CH:
-            return getChRelativeFolderPath(st, baseDir);
-        case MS:
-            return getMsRelativeFolderPath(st, baseDir);
-        case PG:
-            return getPgRelativeFolderPath(st, baseDir);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
-        }
+        return switch (databaseType) {
+            case CH -> getChRelativeFolderPath(st, baseDir);
+            case MS -> getMsRelativeFolderPath(st, baseDir);
+            case PG -> getPgRelativeFolderPath(st, baseDir);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        };
     }
 
     private static String getChDirectoryNameForType(DbObjType type) {
-        switch (type) {
-        case SCHEMA:
-            return CH_DATABASE;
-        case FUNCTION:
-        case POLICY:
-        case USER:
-        case ROLE:
-        case TABLE:
-        case DICTIONARY:
-        case VIEW:
-            return type.name();
-        case CONSTRAINT:
-        case INDEX:
-        case COLUMN:
-            return null;
-        default:
-            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
-        }
+        return switch (type) {
+            case SCHEMA -> CH_DATABASE;
+            case FUNCTION, POLICY, USER, ROLE, TABLE, DICTIONARY, VIEW -> type.name();
+            case CONSTRAINT, INDEX, COLUMN -> null;
+            default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        };
     }
 
     private static String getMsDirectoryNameForType(DbObjType type) {
-        switch (type) {
-        case SCHEMA:
-            return MS_SCHEMAS;
-        case ROLE:
-            return MS_ROLES;
-        case USER:
-            return MS_USERS;
-        case ASSEMBLY:
-            return MS_ASSEMBLIES;
-        case SEQUENCE:
-            return MS_SEQUENCES;
-        case VIEW:
-            return MS_VIEWS;
-        case TABLE:
-            return MS_TABLES;
-        case FUNCTION:
-            return MS_FUNCTIONS;
-        case PROCEDURE:
-            return MS_PROCEDURES;
-        case TYPE:
-            return MS_TYPES;
-        case CONSTRAINT:
-        case INDEX:
-        case TRIGGER:
-        case COLUMN:
-            return null;
-        default:
-            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
-        }
+        return switch (type) {
+            case SCHEMA -> MS_SCHEMAS;
+            case ROLE -> MS_ROLES;
+            case USER -> MS_USERS;
+            case ASSEMBLY -> MS_ASSEMBLIES;
+            case SEQUENCE -> MS_SEQUENCES;
+            case VIEW -> MS_VIEWS;
+            case TABLE -> MS_TABLES;
+            case FUNCTION -> MS_FUNCTIONS;
+            case PROCEDURE -> MS_PROCEDURES;
+            case TYPE -> MS_TYPES;
+            case CONSTRAINT, INDEX, TRIGGER, COLUMN -> null;
+            default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        };
     }
 
     private static String getPgDirectoryNameForType(DbObjType type) {
-        switch (type) {
-        case EXTENSION:
-        case SERVER:
-        case USER_MAPPING:
-        case CAST:
-        case EVENT_TRIGGER:
-        case SCHEMA:
-        case COLLATION:
-        case SEQUENCE:
-        case TYPE:
-        case DOMAIN:
-        case VIEW:
-        case TABLE:
-        case FUNCTION:
-        case PROCEDURE:
-        case AGGREGATE:
-        case OPERATOR:
-        case FTS_TEMPLATE:
-        case FTS_PARSER:
-        case FTS_DICTIONARY:
-        case FTS_CONFIGURATION:
-        case STATISTICS:
-            return type.name();
-        case FOREIGN_DATA_WRAPPER:
-            return PG_FDW;
-        case CONSTRAINT:
-        case INDEX:
-        case RULE:
-        case TRIGGER:
-        case POLICY:
-        case COLUMN:
-            return null;
-        default:
-            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
-        }
+        return switch (type) {
+            case FOREIGN_DATA_WRAPPER -> PG_FDW;
+            case CONSTRAINT, INDEX, RULE, TRIGGER, POLICY, COLUMN -> null;
+            case EXTENSION, SERVER, USER_MAPPING, CAST, EVENT_TRIGGER, SCHEMA, COLLATION, SEQUENCE, TYPE, DOMAIN,
+            VIEW, TABLE, FUNCTION, PROCEDURE, AGGREGATE, OPERATOR, FTS_TEMPLATE, FTS_PARSER, FTS_DICTIONARY,
+            FTS_CONFIGURATION, STATISTICS -> type.name(); 
+            default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        };
     }
 
     public static boolean isInMsSchema(String dirSub) {
@@ -221,81 +155,48 @@ public final class WorkDirs {
 
     private static Path getPgRelativeFolderPath(PgStatement st, Path baseDir) {
         DbObjType type = st.getStatementType();
-        switch (type) {
-        case EXTENSION:
-        case SERVER:
-        case USER_MAPPING:
-        case CAST:
-        case EVENT_TRIGGER:
-        case FOREIGN_DATA_WRAPPER:
-            return baseDir.resolve(getPgDirectoryNameForType(type));
-        case SCHEMA:
-            String schemaName = FileUtils.getValidFilename(st.getBareName());
-            return baseDir.resolve(PG_SCHEMA).resolve(schemaName);
-
-        case COLLATION:
-        case SEQUENCE:
-        case TYPE:
-        case DOMAIN:
-        case VIEW:
-        case TABLE:
-        case FUNCTION:
-        case PROCEDURE:
-        case AGGREGATE:
-        case OPERATOR:
-        case FTS_TEMPLATE:
-        case FTS_PARSER:
-        case FTS_DICTIONARY:
-        case FTS_CONFIGURATION:
-        case STATISTICS:
-            PgStatement parentSt = st.getParent();
-            schemaName = FileUtils.getValidFilename(parentSt.getBareName());
-            return baseDir.resolve(PG_SCHEMA).resolve(schemaName).resolve(getPgDirectoryNameForType(type));
-        default:
-            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
-        }
+        return switch (type) {
+            case EXTENSION, SERVER, USER_MAPPING, CAST, EVENT_TRIGGER, FOREIGN_DATA_WRAPPER -> baseDir
+                .resolve(getPgDirectoryNameForType(type));
+            case SCHEMA -> {
+                String schemaName = FileUtils.getValidFilename(st.getBareName());
+                yield baseDir.resolve(PG_SCHEMA).resolve(schemaName);
+            }
+            case COLLATION, SEQUENCE, TYPE, DOMAIN, VIEW, TABLE, FUNCTION, PROCEDURE, AGGREGATE, OPERATOR,
+            FTS_TEMPLATE, FTS_PARSER, FTS_DICTIONARY, FTS_CONFIGURATION, STATISTICS -> {
+                PgStatement parentSt = st.getParent();
+                String schemaName = FileUtils.getValidFilename(parentSt.getBareName());
+                yield baseDir.resolve(PG_SCHEMA).resolve(schemaName).resolve(getPgDirectoryNameForType(type));
+            }
+            default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        };
     }
 
     private static Path getMsRelativeFolderPath(PgStatement st, Path baseDir) {
         DbObjType type = st.getStatementType();
-        switch (type) {
-        case SCHEMA:
-        case ROLE:
-        case USER:
-            return baseDir.resolve(MS_SECURITY).resolve(getMsDirectoryNameForType(type));
-        case ASSEMBLY:
-        case SEQUENCE:
-        case VIEW:
-        case TABLE:
-        case FUNCTION:
-        case PROCEDURE:
-        case TYPE:
-            return baseDir.resolve(getMsDirectoryNameForType(type));
-        default:
-            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
-        }
+        return switch (type) {
+            case SCHEMA, ROLE, USER -> baseDir.resolve(MS_SECURITY).resolve(getMsDirectoryNameForType(type));
+            case ASSEMBLY, SEQUENCE, VIEW, TABLE, FUNCTION, PROCEDURE, TYPE -> baseDir
+                .resolve(getMsDirectoryNameForType(type));
+            default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        };
     }
 
     private static Path getChRelativeFolderPath(PgStatement st, Path baseDir) {
         DbObjType type = st.getStatementType();
-        switch (type) {
-        case USER:
-        case ROLE:
-        case FUNCTION:
-        case POLICY:
-            return baseDir.resolve(getChDirectoryNameForType(type));
-        case SCHEMA:
-            String databaseName = FileUtils.getValidFilename(st.getBareName());
-            return baseDir.resolve(CH_DATABASE).resolve(databaseName);
-        case TABLE:
-        case DICTIONARY:
-        case VIEW:
-            PgStatement parentSt = st.getParent();
-            databaseName = FileUtils.getValidFilename(parentSt.getBareName());
-            return baseDir.resolve(CH_DATABASE).resolve(databaseName).resolve(getChDirectoryNameForType(type));
-        default:
-            throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
-        }
+        return switch (type) {
+            case USER, ROLE, FUNCTION, POLICY -> baseDir.resolve(getChDirectoryNameForType(type));
+            case SCHEMA -> {
+                String databaseName = FileUtils.getValidFilename(st.getBareName());
+                yield baseDir.resolve(CH_DATABASE).resolve(databaseName);
+            }
+            case TABLE, DICTIONARY, VIEW -> {
+                PgStatement parentSt = st.getParent();
+                String databaseName = FileUtils.getValidFilename(parentSt.getBareName());
+                yield baseDir.resolve(CH_DATABASE).resolve(databaseName).resolve(getChDirectoryNameForType(type));
+            }
+            default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
+        };
     }
 
     public static Set<DbObjType> getDirLoadOrder() {

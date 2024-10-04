@@ -121,7 +121,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
@@ -273,14 +272,14 @@ implements IResourceChangeListener, ITextErrorReporter {
     }
 
     private String getWarningText(DangerStatement danger) {
-        switch (danger) {
-        case ALTER_COLUMN: return "ALTER COLUMN ... TYPE statement"; //$NON-NLS-1$
-        case DROP_COLUMN: return "DROP COLUMN statement"; //$NON-NLS-1$
-        case DROP_TABLE: return "DROP TABLE statement"; //$NON-NLS-1$
-        case RESTART_WITH: return "ALTER SEQUENCE ... RESTART WITH statement"; //$NON-NLS-1$
-        case UPDATE: return "UPDATE statement"; //$NON-NLS-1$
-        default: return null;
-        }
+        return switch (danger) {
+            case ALTER_COLUMN -> "ALTER COLUMN ... TYPE statement"; //$NON-NLS-1$
+            case DROP_COLUMN -> "DROP COLUMN statement"; //$NON-NLS-1$
+            case DROP_TABLE -> "DROP TABLE statement"; //$NON-NLS-1$
+            case RESTART_WITH -> "ALTER SEQUENCE ... RESTART WITH statement"; //$NON-NLS-1$
+            case UPDATE -> "UPDATE statement"; //$NON-NLS-1$
+            default -> null;
+        };
     }
 
     private Set<PgObjLocation> getReferences() {
@@ -440,10 +439,10 @@ implements IResourceChangeListener, ITextErrorReporter {
         super.configureSourceViewerDecorationSupport(support);
     }
 
-    private void checkBuilder() throws CoreException {
+    private void checkBuilder() {
         IResource resource = ResourceUtil.getResource(getEditorInput());
         IProject proj = resource == null ? null : resource.getProject();
-        if (proj != null && proj.hasNature(NATURE.ID) && !AddBuilder.hasBuilder(proj)) {
+        if (OpenProjectUtils.isPgCodeKeeperProject(proj) && !AddBuilder.hasBuilder(proj)) {
             MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
             mb.setText(Messages.SqlEditor_absent_builder_title);
             mb.setMessage(Messages.SqlEditor_absent_builder_message);
@@ -509,7 +508,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                 return;
             }
 
-            if (proj.hasNature(NATURE.ID)) {
+            if (OpenProjectUtils.isPgCodeKeeperProject(proj)) {
                 parser.getObjFromProjFile(file, monitor, dbType);
                 return;
             }
