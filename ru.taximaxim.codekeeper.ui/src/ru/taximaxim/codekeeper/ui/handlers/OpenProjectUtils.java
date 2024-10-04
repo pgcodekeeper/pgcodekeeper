@@ -37,11 +37,14 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public final class OpenProjectUtils {
+
+    private static final String NATURE_ID = UIConsts.PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
+    private static final String NATURE_MS = UIConsts.PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
+    private static final String NATURE_CH = UIConsts.PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
 
     static PgDbProject getProject(ExecutionEvent event) {
         try {
@@ -51,7 +54,7 @@ public final class OpenProjectUtils {
                 return null;
             }
             Object firstElement = selection.getFirstElement();
-            if (firstElement instanceof IProject proj && proj.getNature(NATURE.ID) != null) {
+            if (firstElement instanceof IProject proj && proj.getNature(NATURE_ID) != null) {
                 return new PgDbProject(proj);
             }
         } catch (CoreException ce){
@@ -60,13 +63,22 @@ public final class OpenProjectUtils {
         return null;
     }
 
+    public static boolean isPgCodeKeeperProject(IProject proj) {
+        try {
+            return proj != null && proj.exists() && proj.isOpen() && proj.hasNature(NATURE_ID);
+        } catch (CoreException ex) {
+            Log.log(Log.LOG_ERROR, "Project nature identifier error" + ex.getLocalizedMessage(), ex); //$NON-NLS-1$
+            return false;
+        }
+    }
+
     public static DatabaseType getDatabaseType(IProject proj) {
         try {
             if (proj.exists()) {
-                if (proj.hasNature(UIConsts.NATURE.MS)) {
+                if (proj.hasNature(NATURE_MS)) {
                     return DatabaseType.MS;
                 }
-                if (proj.hasNature(UIConsts.NATURE.CH)) {
+                if (proj.hasNature(NATURE_CH)) {
                     return DatabaseType.CH;
                 }
             }
@@ -77,21 +89,12 @@ public final class OpenProjectUtils {
     }
 
     public static String[] getProjectNatures(DatabaseType dbType) {
-        String[] natures;
-        switch (dbType) {
-        case PG:
-            natures = new String[] { NATURE.ID };
-            break;
-        case MS:
-            natures = new String[] { NATURE.ID, NATURE.MS };
-            break;
-        case CH:
-            natures = new String[] {NATURE.ID, NATURE.CH};
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
-        return natures;
+        return switch (dbType) {
+            case PG -> new String[] { NATURE_ID };
+            case MS -> new String[] { NATURE_ID, NATURE_MS };
+            case CH -> new String[] { NATURE_ID, NATURE_CH };
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
     }
 
     public static boolean checkVersionAndWarn(IProject proj, Shell parent,
@@ -153,10 +156,6 @@ public final class OpenProjectUtils {
         return true;
     }
 
-    public static boolean isPgProject(IProject proj) throws CoreException {
-        return proj.hasNature(NATURE.ID) && !proj.hasNature(NATURE.MS) && !proj.hasNature(NATURE.CH);
-    }
-
     /**
      * Shows a message box with version warning.
      * @param isError does the error block the project from opening
@@ -170,6 +169,34 @@ public final class OpenProjectUtils {
             Messages.OpenProjectUtils_proj_version_warn;
         mb.setMessage(msg + error);
         mb.open();
+    }
+
+    public static void configure(IProject project) throws CoreException {
+        if (project.hasNature(NATURE_ID)) {
+            project.getNature(NATURE_ID).configure();
+        }
+
+        if (project.hasNature(NATURE_MS)) {
+            project.getNature(NATURE_MS).configure();
+        }
+
+        if (project.hasNature(NATURE_CH)) {
+            project.getNature(NATURE_CH).configure();
+        }
+    }
+
+    public static void deconfigure(IProject project) throws CoreException {
+        if (project.hasNature(NATURE_ID)) {
+            project.getNature(NATURE_ID).deconfigure();
+        }
+
+        if (project.hasNature(NATURE_MS)) {
+            project.getNature(NATURE_MS).deconfigure();
+        }
+
+        if (project.hasNature(NATURE_CH)) {
+            project.getNature(NATURE_CH).deconfigure();
+        }
     }
 
     private OpenProjectUtils() {

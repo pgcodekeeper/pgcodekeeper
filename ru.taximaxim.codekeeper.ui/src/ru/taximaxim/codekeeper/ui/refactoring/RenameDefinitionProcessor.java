@@ -35,8 +35,8 @@ import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
@@ -128,14 +128,10 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         if (!selection.isGlobal()) {
             // do not quote alias
             quotedName = newName;
-        } else if (dbType == DatabaseType.MS) {
-            quotedName = MsDiffUtils.quoteName(newName);
         } else if (selection.getType() == DbObjType.USER_MAPPING || selection.getType() == DbObjType.CAST ) {
             quotedName = newName;
-        } else if (dbType == DatabaseType.PG){
-            quotedName = PgDiffUtils.getQuotedName(newName);
         } else {
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+            quotedName = Utils.getQuotedName(newName, dbType);
         }
 
         IFile file = null;

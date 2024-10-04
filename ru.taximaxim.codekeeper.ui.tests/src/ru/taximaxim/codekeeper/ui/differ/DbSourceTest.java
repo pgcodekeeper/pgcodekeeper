@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.ui.UiTestUtils;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class DbSourceTest {
@@ -187,13 +187,7 @@ public class DbSourceTest {
     private IProject createProjectInWorkspace(String projectName, DatabaseType dbType) throws CoreException {
         IProject project = workspaceRoot.getProject(projectName);
         PgDbProject.createPgDbProject(project, null, dbType);
-        project.getNature(NATURE.ID).deconfigure();
-        if (dbType == DatabaseType.MS) {
-            project.getNature(NATURE.MS).deconfigure();
-        } else if (dbType == DatabaseType.CH) {
-            project.getNature(NATURE.CH).deconfigure();
-        }
-
+        OpenProjectUtils.deconfigure(project);
         assertNotNull(project.getLocation(), "Project location cannot be determined");
         return project;
     }

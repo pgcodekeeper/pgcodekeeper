@@ -4,11 +4,20 @@
 <!-- templates for CREATE -->
 
 <template 
+    name="create_assembly"
+    description="%create.assembly.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createassembly"
+    >CREATE ASSEMBLY ${objectName}
+FROM ${client_assembly_specifier}
+GO</template>
+
+<template 
     name="create_function"
     description="%create.function.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createfunction"
-    >CREATE FUNCTION [${schemaName}].[${functionName}]() RETURNS ${typeName}
+    >CREATE FUNCTION ${schemaName}.${objectName}() RETURNS ${typeName}
 AS
 BEGIN
   --function body
@@ -21,10 +30,10 @@ GO</template>
     description="%create.function2.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createfunction2"
-    >CREATE FUNCTION [${schemaName}].[${functionName}]() 
+    >CREATE FUNCTION ${schemaName}.${objectName}() 
 RETURNS TABLE
-AS  
-RETURN   
+AS
+RETURN
 (
     --select statement
 )
@@ -35,7 +44,7 @@ GO</template>
     description="%create.sequence.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createsequence"
-    >CREATE SEQUENCE [${schemaName}].[${sequenceName}]
+    >CREATE SEQUENCE ${schemaName}.${objectName}
     AS bigint
     START WITH 1
     INCREMENT BY 1
@@ -48,10 +57,10 @@ GO</template>
     description="%create.procedure.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createprocedure"
-    >CREATE PROCEDURE [${schemaName}].[${procedureName}]
+    >CREATE PROCEDURE ${schemaName}.${objectName}
 AS
 BEGIN
-  --procedure body
+  SELECT 1;
 END
 GO</template>
 
@@ -60,7 +69,7 @@ GO</template>
     description="%create.table.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtable"
-    >CREATE TABLE [${schemaName}].[${tableName}](
+    >CREATE TABLE ${schemaName}.${objectName}(
     [${columnName}] [${typeName}] NOT NULL
 ) ON [PRIMARY]
 GO</template>
@@ -70,14 +79,9 @@ GO</template>
     description="%create.type.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtype"
-    >CREATE TYPE [${schemaName}].[${typeName}] AS TABLE(
-    [${columnName}] [${columnType}] NOT NULL,
-    INDEX [IX_${typeName}_${columnName}] NONCLUSTERED
-(
-    ${columnName} ASC
+    >CREATE TYPE ${schemaName}.${objectName} AS TABLE (
+    [${columnName}] [${columnType}]
 )
-)
-WITH ( MEMORY_OPTIMIZED = ON )
 GO</template>
 
 <template 
@@ -85,13 +89,46 @@ GO</template>
     description="%create.view.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
     id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createview"
-    >CREATE VIEW [${schemaName}].[${viewName}]
+    >CREATE VIEW ${schemaName}.${objectName}
 AS
 SELECT ${alias}.[${columnName}]
 FROM [${tableName}] ${alias}
 GO</template>
 
+<template 
+    name="create_index"
+    description="%create.index.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createindex"
+    >CREATE INDEX ${objectName} ON ${schemaName}.${parentName} (columnName);
+GO</template>
 
+<template 
+    name="create_trigger"
+    description="%create.trigger.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createtrigger"
+    >CREATE TRIGGER ${schemaName}.${objectName}
+	ON ${schemaName}.${parentName}
+	AFTER INSERT
+	AS EXEC function_name
+GO</template>
+
+<template 
+    name="create_role"
+    description="%create.role.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createrole"
+    >CREATE ROLE ${objectName}
+GO</template>
+
+<template 
+    name="create_user"
+    description="%create.user.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createuser"
+    >CREATE USER ${objectName}
+GO</template>
 
 <!-- templates for COMMENT -->
 

@@ -27,12 +27,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
@@ -722,20 +722,7 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     @Override
     public String getQualifiedName() {
-        UnaryOperator<String> quoter;
-        switch (getDbType()) {
-        case PG:
-            quoter = PgDiffUtils::getQuotedName;
-            break;
-        case MS:
-            quoter = MsDiffUtils::quoteName;
-            break;
-        case CH:
-            quoter = ChDiffUtils::getQuotedName;
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
-        }
+        UnaryOperator<String> quoter = Utils.getQuoter(getDbType());
         StringBuilder sb = new StringBuilder(quoter.apply(getBareName()));
 
         PgStatement par = this.parent;

@@ -713,6 +713,8 @@ public final class Messages extends NLS {
 
     public static String NavigatorRootLabelProvider_open_editor;
 
+    public static String NewObjectWizard_create_object;
+
     public static String NewObjectWizard_invalid_input_format;
 
     public static String NewObjectWizard_invalid_schema_format;
@@ -817,7 +819,7 @@ public final class Messages extends NLS {
 
     public static String PgObject_cant_find_projects;
 
-    public static String PgObject_create_object;
+    public static String Object_create_object;
 
     public static String PgObject_empty_name;
 
@@ -837,7 +839,7 @@ public final class Messages extends NLS {
 
     public static String PgObject_view;
 
-    public static String PgObject_wizard_title;
+    public static String Object_wizard_title;
 
     public static String PgPassDialog_close;
 

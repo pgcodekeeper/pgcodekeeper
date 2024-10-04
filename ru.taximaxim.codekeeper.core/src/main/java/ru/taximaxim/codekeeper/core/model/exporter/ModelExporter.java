@@ -64,7 +64,7 @@ public class ModelExporter {
 
     private static final Logger LOG = LoggerFactory.getLogger(ModelExporter.class);
 
-    private static final String GROUP_DELIMITER =
+    public static final String GROUP_DELIMITER =
             "\n\n--------------------------------------------------------------------------------\n\n";
 
     /**
@@ -301,14 +301,14 @@ class ExportTableOrder implements Comparator<PgStatement> {
     }
 
     private int getTableSubelementRank(PgStatement el) {
-        switch (el.getStatementType()) {
-        case INDEX:     return 1;
-        case TRIGGER:   return 2;
-        case RULE:      return 3;
-        case CONSTRAINT:return 4;
-        case POLICY:    return 5;
-        default:        return 0;
-        }
+        return switch (el.getStatementType()) {
+            case INDEX -> 1;
+            case TRIGGER -> 2;
+            case RULE -> 3;
+            case CONSTRAINT -> 4;
+            case POLICY -> 5;
+            default -> 0;
+        };
     }
 
     private ExportTableOrder() {}

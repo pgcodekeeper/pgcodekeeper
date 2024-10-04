@@ -43,7 +43,6 @@ import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
@@ -454,10 +453,8 @@ public final class InsertWriter {
     }
 
     private String getTableName(String schema, String name) {
-        if (dbType == DatabaseType.MS) {
-            return MsDiffUtils.quoteName(schema) + '.' + MsDiffUtils.quoteName(name);
-        }
-        return PgDiffUtils.getQuotedName(schema) + '.' + PgDiffUtils.getQuotedName(name);
+        var quoter = Utils.getQuoter(dbType);
+        return quoter.apply(schema) + '.' + quoter.apply(name);
     }
 
     private void removeCycles(RowData source, RowData target) {

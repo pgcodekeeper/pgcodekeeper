@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IDecoration;
@@ -28,27 +27,28 @@ import org.eclipse.ui.PlatformUI;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DECORATOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 
 public class PgDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
     @Override
     public void decorate(Object element, IDecoration decoration) {
-        if (element instanceof IResource res) {
-            IProject proj = res.getProject();
-            try {
-                if (res.exists() && proj != null && proj.isAccessible() && proj.hasNature(NATURE.ID)) {
-                    IMarker[] markers = res.findMarkers(MARKER.ERROR, false,
-                            IResource.DEPTH_INFINITE);
-                    if (markers.length > 0) {
-                        decoration.addOverlay(PlatformUI.getWorkbench().getSharedImages()
-                                .getImageDescriptor(ISharedImages.IMG_DEC_FIELD_ERROR));
-                    }
-                }
-            } catch (CoreException e) {
-                Log.log(e);
+        if (element instanceof IResource res && res.exists()
+                && OpenProjectUtils.isPgCodeKeeperProject(res.getProject())) {
+            addOverlay(decoration, res);
+        }
+    }
+
+    private void addOverlay(IDecoration decoration, IResource res) {
+        try {
+            IMarker[] markers = res.findMarkers(MARKER.ERROR, false, IResource.DEPTH_INFINITE);
+            if (markers.length > 0) {
+                decoration.addOverlay(PlatformUI.getWorkbench().getSharedImages()
+                    .getImageDescriptor(ISharedImages.IMG_DEC_FIELD_ERROR));
             }
+        } catch (CoreException e) {
+            Log.log(e);
         }
     }
 

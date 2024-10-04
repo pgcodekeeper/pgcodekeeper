@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+
+<!-- PROTECTED templates for using in wizard of creating new object -->
+<!-- 
+     The id of such templates ends with a special postfix “.protected”, 
+     and such templates are not displayed in the properties and cannot 
+     be changed by users. 
+-->
+
+<template 
+    name="create_database"
+    description="%create.database.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createschema"
+    >CREATE DATABASE ${objectName};
+</template>
+
+<template 
+    name="create_function"
+    description="%create.function.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createfunction"
+    >CREATE FUNCTION ${objectName} AS (${parameter}) -> ${expression};
+</template>
+
+<template 
+    name="create_policy"
+    description="%create.policy.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createpolicy"
+    >CREATE POLICY ${objectName} ON ${schemaName}.${parentName} USING ${condition};
+</template>
+
+<template 
+    name="create_table"
+    description="%create.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createtable"
+    >CREATE TABLE ${schemaName}.${objectName} (
+    ${columnName} ${dataType}
+) ENGINE = ${engine};
+</template>
+
+<template 
+    name="create_view"
+    description="%create.view.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createview"
+    >CREATE VIEW ${schemaName}.${objectName} AS
+    SELECT ${expression};
+</template>
+
+<template 
+    name="create_index"
+    description="%create.index.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createindex"
+    >CREATE INDEX ${objectName} ON ${schemaName}.${parentName} USING btree (${columnName});</template>
+
+<template 
+    name="create_user"
+    description="%create.user.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createuser"
+    >CREATE USER ${objectName};
+</template>
+
+<template 
+    name="create_dictionary"
+    description="%create.dictionary.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createdictionary"
+    >CREATE DICTIONARY ${schemaName}.${objectName}
+    (${keyName} ${dataType})
+	PRIMARY KEY ${keyName}
+	SOURCE(${sourceName}(${param1} ${value}))
+	LAYOUT(${layoutName}(${param1} ${value}))
+	LIFETIME(MIN ${min_val} MAX ${max_val})
+	SETTINGS(${settingName} = ${setting_value})
+	COMMENT 'Comment';
+</template>
+
+<template 
+    name="create_role"
+    description="%create.role.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.createrole"
+    >CREATE ROLE ${objectName};
+</template>
+
+<!-- templates for ALTER -->
+
+<template 
+    name="alter_user"
+    description="%alter.user.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.alteruser"
+    >ALTER USER ${objectName};
+</template>
+
+<template 
+    name="alter_role"
+    description="%alter.role.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.alterrole"
+    >ALTER ROLE ${objectName};
+</template>
+
+<!-- templates for DROP -->
+
+<template 
+    name="drop_database"
+    description="%drop.database.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.dropdatabase"
+    >DROP DATABASE ${objectName};
+</template>
+
+<template 
+    name="drop_table"
+    description="%drop.table.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.droptable"
+    >DROP [TEMPORARY] TABLE ${schemaName}.${objectName};
+</template>
+
+<template 
+    name="drop_dictionary"
+    description="%drop.dictionary.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.dropdictionary"
+    >DROP DICTIONARY ${schemaName}.${objectName};
+</template>
+
+<template 
+    name="drop_user"
+    description="%drop.user.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.dropuser"
+    >DROP USER ${objectName};
+</template>
+
+<template 
+    name="drop_role"
+    description="%drop.role.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.droprole"
+    >DROP ROLE ${objectName};
+</template>
+
+<template 
+    name="drop_policy"
+    description="%drop.policy.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.droppolicy"
+    >DROP POLICY ${objectName};
+</template>
+
+<template 
+    name="drop_view"
+    description="%drop.view.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.dropview"
+    >DROP VIEW ${schemaName}.${objectName};
+</template>
+
+<template 
+    name="drop_function"
+    description="%drop.function.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeCh.dropfunction"
+    >DROP FUNCTION ${objectName};
+</template>
+</templates>

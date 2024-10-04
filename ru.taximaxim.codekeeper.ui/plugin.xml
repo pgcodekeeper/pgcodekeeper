@@ -1136,6 +1136,10 @@
             translations="sql_templates/sqlTemplateMs.properties">
         </include>
         <include
+            file="sql_templates/templates_ch.xml"
+            translations="sql_templates/sqlTemplateCh.properties">
+        </include>
+        <include
             file="sql_templates/templates_common.xml"
             translations="sql_templates/sqlTemplateCommon.properties">
         </include>

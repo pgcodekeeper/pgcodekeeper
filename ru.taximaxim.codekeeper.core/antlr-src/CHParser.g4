@@ -17,6 +17,10 @@ ch_file
     : BOM? SEMICOLON* (query (SEMICOLON+ | EOF))* EOF
     ;
 
+qname_parser
+    : qualified_name EOF
+    ;
+
 expr_eof
     : expr EOF
     ;

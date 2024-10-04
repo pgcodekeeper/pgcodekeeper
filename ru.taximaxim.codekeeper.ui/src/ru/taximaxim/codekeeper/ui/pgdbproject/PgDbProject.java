@@ -27,9 +27,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 
@@ -86,23 +84,16 @@ public class PgDbProject {
         this.project = newProject;
     }
 
-    public static PgDbProject createPgDbProject(IProject newProject, URI location,
-            DatabaseType dbType) throws CoreException {
+    public static PgDbProject createPgDbProject(IProject newProject, URI location, DatabaseType dbType)
+            throws CoreException {
         if (!newProject.exists()) {
-            IProjectDescription desc = newProject.getWorkspace()
-                    .newProjectDescription(newProject.getName());
-
+            IProjectDescription desc = newProject.getWorkspace().newProjectDescription(newProject.getName());
             desc.setLocationURI(location);
             desc.setNatureIds(OpenProjectUtils.getProjectNatures(dbType));
             newProject.create(desc, null);
             newProject.open(IResource.BACKGROUND_REFRESH, null);
             newProject.refreshLocal(IResource.BACKGROUND_REFRESH, null);
-            newProject.getNature(NATURE.ID).configure();
-            if (dbType == DatabaseType.MS) {
-                newProject.getNature(NATURE.MS).configure();
-            } else if (dbType == DatabaseType.CH) {
-                newProject.getNature(NATURE.CH).configure();
-            }
+            OpenProjectUtils.configure(newProject);
         }
         return new PgDbProject(newProject);
     }
@@ -111,14 +102,10 @@ public class PgDbProject {
      * @return pgCodeKeeper project preferences or null if wrong project
      */
     public static IEclipsePreferences getPrefs(IProject proj, boolean isProject) {
-        try {
-            if (proj.hasNature(NATURE.ID)) {
-                return new ProjectScope(proj)
-                        .getNode(isProject ? PLUGIN_ID.THIS : DB_BIND_PREF.DB_BINDING);
-            }
-        } catch (CoreException ex) {
-            Log.log(ex);
+        if (!OpenProjectUtils.isPgCodeKeeperProject(proj)) {
+            return null;
         }
-        return null;
+
+        return new ProjectScope(proj).getNode(isProject ? PLUGIN_ID.THIS : DB_BIND_PREF.DB_BINDING);
     }
 }

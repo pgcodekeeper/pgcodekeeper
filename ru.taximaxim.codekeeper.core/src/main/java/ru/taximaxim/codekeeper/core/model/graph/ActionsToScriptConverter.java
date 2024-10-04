@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffScript;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
@@ -486,17 +487,12 @@ public class ActionsToScriptConverter {
         .map(e -> e.getPgStatement(obj.getDatabase()))
         .anyMatch(obj::equals);
 
-        switch (action.getAction()) {
-        case CREATE:
-            return isSelectedObj.test(action.getNewObj());
-        case ALTER:
-            return isSelectedObj.test(action.getNewObj())
-                    && isSelectedObj.test(action.getOldObj());
-        case DROP:
-            return isSelectedObj.test(action.getOldObj());
-        default:
-            throw new IllegalStateException("Not implemented action");
-        }
+        return switch (action.getAction()) {
+            case CREATE -> isSelectedObj.test(action.getNewObj());
+            case ALTER -> isSelectedObj.test(action.getNewObj()) && isSelectedObj.test(action.getOldObj());
+            case DROP -> isSelectedObj.test(action.getOldObj());
+            default -> throw new IllegalStateException("Not implemented action");
+        };
     }
 
     /**
@@ -568,20 +564,15 @@ public class ActionsToScriptConverter {
      * @return sql command to rename the given object
      */
     private String getRenameCommand(PgStatement st, String newName) {
-        switch (arguments.getDbType()) {
-        case PG:
-            return MessageFormat.format(RENAME_PG_OBJECT, st.getStatementType(),
-                    st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
-        case MS:
-            return MessageFormat.format(RENAME_MS_OBJECT,
-                    PgDiffUtils.quoteString(st.getQualifiedName()),
-                    PgDiffUtils.quoteString(newName));
-        case CH:
-            return MessageFormat.format(RENAME_CH_OBJECT, st.getStatementType(),
-                    st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        }
+        return switch (arguments.getDbType()) {
+            case PG -> MessageFormat.format(RENAME_PG_OBJECT,
+                    st.getStatementType(), st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
+            case MS -> MessageFormat.format(RENAME_MS_OBJECT,
+                    PgDiffUtils.quoteString(st.getQualifiedName()), PgDiffUtils.quoteString(newName));
+            case CH -> MessageFormat.format(RENAME_CH_OBJECT,
+                    st.getStatementType(), st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        };
     }
 
     /**
@@ -597,22 +588,8 @@ public class ActionsToScriptConverter {
         if (tblTmpBareName == null) {
             return;
         }
-        UnaryOperator<String> quoter;
-        switch (arguments.getDbType()) {
-        case PG:
-            quoter = PgDiffUtils::getQuotedName;
-            break;
-        case MS:
-            quoter = MsDiffUtils::quoteName;
-            break;
-        case CH:
-            quoter = ChDiffUtils::getQuotedName;
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        }
-        String tblTmpQName = quoter.apply(oldTbl.getSchemaName()) + '.'
-                + quoter.apply(tblTmpBareName);
+        var quoter = Utils.getQuoter(arguments.getDbType());
+        String tblTmpQName = quoter.apply(oldTbl.getSchemaName()) + '.' + quoter.apply(tblTmpBareName);
 
         List<String> colsForMovingData = getColsForMovingData(newTbl);
         List<String> identityCols = tblIdentityCols.get(tblQName);

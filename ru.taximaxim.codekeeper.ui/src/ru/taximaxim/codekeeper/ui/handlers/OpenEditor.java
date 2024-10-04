@@ -22,7 +22,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
@@ -33,7 +32,6 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -58,12 +56,7 @@ public class OpenEditor extends AbstractHandler {
     @Override
     public void setEnabled(Object evaluationContext) {
         proj = getSelectedProject(evaluationContext);
-        try {
-            setBaseEnabled(proj != null && proj.hasNature(NATURE.ID));
-        } catch (CoreException ex) {
-            setBaseEnabled(false);
-            Log.log(ex);
-        }
+        setBaseEnabled(OpenProjectUtils.isPgCodeKeeperProject(proj));
     }
 
     private IProject getSelectedProject(Object ctx) {

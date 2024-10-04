@@ -27,6 +27,14 @@ public class QNameParserWrapper {
         return new QNameParserWrapper(QNameParser.parsePg(fullName));
     }
 
+    public static QNameParserWrapper parseCh(String fullName) {
+        return new QNameParserWrapper(QNameParser.parseCh(fullName));
+    }
+
+    public static QNameParserWrapper parsePgOperator(String fullName) {
+        return new QNameParserWrapper(QNameParser.parsePgOperator(fullName));
+    }
+
     public String getFirstName() {
         return parser.getFirstName();
     }

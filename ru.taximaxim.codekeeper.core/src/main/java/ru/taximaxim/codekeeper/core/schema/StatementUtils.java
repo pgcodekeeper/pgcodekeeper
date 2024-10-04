@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public class StatementUtils {
@@ -95,21 +94,10 @@ public class StatementUtils {
 
     public static void appendCols(StringBuilder sbSQL, Collection<String> cols, DatabaseType dbType) {
         sbSQL.append('(');
-        switch (dbType) {
-        case PG:
-            for (var col : cols) {
-                sbSQL.append(PgDiffUtils.getQuotedName(col));
-                sbSQL.append(", ");
-            }
-            break;
-        case MS:
-            for (var col : cols) {
-                sbSQL.append(MsDiffUtils.quoteName(col));
-                sbSQL.append(", ");
-            }
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        var quoter = Utils.getQuoter(dbType);
+        for (var col : cols) {
+            sbSQL.append(quoter.apply(col));
+            sbSQL.append(", ");
         }
         sbSQL.setLength(sbSQL.length() - 2);
         sbSQL.append(')');

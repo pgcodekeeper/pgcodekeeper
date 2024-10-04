@@ -60,9 +60,8 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class UIProjectLoader extends ProjectLoader {
@@ -396,27 +395,20 @@ public class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         UIProjectLoader loader = new UIProjectLoader(null, null, monitor);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
-        AbstractDatabase db;
-        switch (dbType) {
-        case PG:
-            db = loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
-            break;
-        case CH:
-            db = loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASE, dbType);
-            break;
-        case MS:
-            db = loader.buildMsFiles(files, mon);
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        AbstractDatabase db = switch (dbType) {
+            case PG -> loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
+            case CH -> loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASE, dbType);
+            case MS -> loader.buildMsFiles(files, mon);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
         loader.finishLoaders();
         return db;
     }
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
-        return buildFiles(Arrays.asList(file), DatabaseType.PG, new NullProgressMonitor())
+        DatabaseType dbType = OpenProjectUtils.getDatabaseType(file.getProject());
+        return buildFiles(Arrays.asList(file), dbType, new NullProgressMonitor())
                 .getDescendants()
                 .filter(e -> types.contains(e.getStatementType()))
                 .findAny().orElse(null);
@@ -443,26 +435,13 @@ public class UIProjectLoader extends ProjectLoader {
     }
 
     public static boolean isInProject(IResource resource) {
-        try {
-            IProject project = resource.getProject();
-            if (!project.hasNature(NATURE.ID)) {
-                return false;
-            }
-
-            DatabaseType dbType;
-            if (project.hasNature(NATURE.MS)) {
-                dbType = DatabaseType.MS;
-            } else if (project.hasNature(NATURE.CH)) {
-                dbType = DatabaseType.CH;
-            } else {
-                dbType = DatabaseType.PG;
-            }
-
-            return isInProject(resource.getProjectRelativePath(), dbType);
-        } catch (CoreException ex) {
-            Log.log(ex);
+        IProject project = resource.getProject();
+        if (!OpenProjectUtils.isPgCodeKeeperProject(project)) {
             return false;
         }
+
+        DatabaseType dbType = OpenProjectUtils.getDatabaseType(project);
+        return isInProject(resource.getProjectRelativePath(), dbType);
     }
 
     public static boolean isInProject(IResourceDelta delta, DatabaseType dbType) {
@@ -484,16 +463,12 @@ public class UIProjectLoader extends ProjectLoader {
      * @return whether the path corresponds to a schema sql file
      */
     public static boolean isSchemaFile(IPath path, DatabaseType dbType) {
-        switch (dbType) {
-        case PG:
-            return isPgSchemaFile(path);
-        case MS:
-            return isMsSchemaFile(path);
-        case CH:
-            return isChSchemaFile(path);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return switch (dbType) {
+            case PG -> isPgSchemaFile(path);
+            case MS -> isMsSchemaFile(path);
+            case CH -> isChSchemaFile(path);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
     }
 
     /**

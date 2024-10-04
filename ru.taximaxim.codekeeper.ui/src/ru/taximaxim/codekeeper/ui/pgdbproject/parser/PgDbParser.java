@@ -67,7 +67,6 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -307,15 +306,10 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     public static String getPathFromInput(IEditorInput in) {
         IResource res = ResourceUtil.getResource(in);
-        if (res != null) {
-            try {
-                if (res.getProject().hasNature(NATURE.ID)) {
-                    return res.getLocation().toOSString();
-                }
-            } catch (CoreException ex) {
-                Log.log(Log.LOG_WARNING, "Nature error", ex); //$NON-NLS-1$
-            }
+        if (res != null && OpenProjectUtils.isPgCodeKeeperProject(res.getProject())) {
+            return res.getLocation().toOSString();
         }
+
         if (in.exists() && in instanceof IURIEditorInput uriInput) {
             return Paths.get(uriInput.getURI()).toString();
         }

@@ -42,8 +42,8 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UiTestUtils;
-import ru.taximaxim.codekeeper.ui.UIConsts.NATURE;
 import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
 public class ProjectUpdaterTest {
@@ -75,7 +75,7 @@ public class ProjectUpdaterTest {
         File dir = workingDir.get().toFile();
         PgDbProject proj = PgDbProject.createPgDbProject(ResourcesPlugin.getWorkspace()
                 .getRoot().getProject(dir.getName()), dir.toURI(), DatabaseType.PG);
-        proj.getProject().getNature(NATURE.ID).deconfigure();
+        OpenProjectUtils.deconfigure(proj.getProject());
         proj.getProject().open(null);
         proj.getProject().setDefaultCharset(ENCODING, null);
         new UIProjectUpdater(dbNew, proj).updateFull(false);
