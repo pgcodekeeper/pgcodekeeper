@@ -1522,6 +1522,7 @@ xml_index_using
 // https://msdn.microsoft.com/en-us/library/ms188783.aspx
 create_index
     : UNIQUE? clustered? INDEX index_name index_rest
+    | clustered? COLUMNSTORE INDEX index_name name_list_in_brackets? (ORDER order_cols=index_sort)? index_where? index_options? (ON id)?
     ;
 
 index_name
@@ -2337,7 +2338,12 @@ column_def_table_constraint
     ;
 
 table_index
-    : INDEX id UNIQUE? clustered? HASH? index_rest
+    : INDEX ind_name=id  (UNIQUE? clustered? HASH? index_rest | columnstore_index index_where? index_options? (ON id)?)
+    ;
+
+columnstore_index
+    : CLUSTERED COLUMNSTORE (ORDER order_cols=index_sort)?
+    | NONCLUSTERED? COLUMNSTORE name_list_in_brackets
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms187742.aspx
@@ -3243,6 +3249,7 @@ simple_id
     | CLEANUP
     | CLUSTER
     | COLLECTION
+    | COLUMNSTORE
     | COLUMN_MASTER_KEY
     | COMMITTED
     | COMPATIBILITY_LEVEL

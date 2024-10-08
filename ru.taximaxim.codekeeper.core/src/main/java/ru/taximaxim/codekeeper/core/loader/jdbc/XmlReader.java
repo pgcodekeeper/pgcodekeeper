@@ -88,7 +88,7 @@ public class XmlReader {
         try (Reader reader = new InputStreamReader(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)))) {
             Document doc = Utils.readXml(reader);
 
-            if (!doc.getDocumentElement().getNodeName().equals(ROOT)) {
+            if (!ROOT.equals(doc.getDocumentElement().getNodeName())) {
                 throw new IOException("XML root element name is not as requested.");
             }
 

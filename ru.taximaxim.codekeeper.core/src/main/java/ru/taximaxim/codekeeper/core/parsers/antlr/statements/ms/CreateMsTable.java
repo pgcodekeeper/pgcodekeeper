@@ -26,11 +26,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnal
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Columnstore_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_optionsContext;
+import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
@@ -95,13 +98,21 @@ public class CreateMsTable extends MsTableAbstract {
                     schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText()));
         } else if (colCtx.table_index() != null) {
             Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.id().getText());
+            MsIndex index = new MsIndex(indCtx.ind_name.getText());
 
-            ClusteredContext cluster = indCtx.clustered();
-            index.setClustered(cluster != null && cluster.CLUSTERED() != null);
-            index.setUnique(indCtx.UNIQUE() != null);
-            parseIndex(indCtx.index_rest(), index, schemaCtx == null ? null : schemaCtx.getText(),
-                    tableCtx.getText());
+            var restCtx = indCtx.index_rest();
+            if (restCtx != null) {
+                index.setUnique(indCtx.UNIQUE() != null);
+                ClusteredContext cluster = indCtx.clustered();
+                index.setClustered(cluster != null && cluster.CLUSTERED() != null);
+                parseIndex(restCtx, index, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
+            } else {
+                var columnstoreIndCtx = indCtx.columnstore_index();
+                index.setColumnstore(true);
+                index.setClustered(columnstoreIndCtx.CLUSTERED() != null);
+                parseColumnstoreIndex(indCtx.columnstore_index(), index, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
+                parseIndexOptions(index, indCtx.index_where(), indCtx.index_options(), ctx.id());
+            }
 
             if (index.getTablespace() == null) {
                 index.setTablespace(table.getTablespace());
@@ -125,6 +136,20 @@ public class CreateMsTable extends MsTableAbstract {
             }
 
             table.addColumn(col);
+        }
+    }
+
+    private void parseColumnstoreIndex(Columnstore_indexContext ctx, AbstractIndex index, String schema, String table) {
+        var nameList = ctx.name_list_in_brackets();
+        if (nameList != null) {
+            for (IdContext col : nameList.id()) {
+                index.addInclude(col.getText());
+                index.addDep(new GenericColumn(schema, table, col.getText(), DbObjType.COLUMN));
+            }
+        }
+        var orderCols = ctx.order_cols;
+        if (orderCols != null) {
+            fillOrderCols((MsIndex) index, orderCols.column_name_list_with_order().column_with_order(), schema, table);
         }
     }
 

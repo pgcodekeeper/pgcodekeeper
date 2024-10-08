@@ -88,6 +88,13 @@ BEGIN
 END
 GO
 
+--create table with COLUMNSTORE
+CREATE TABLE [dbo].[24_11_23_1](
+	[col1] [int] NULL
+) ON [test1fg]
+WITH (DATA_COMPRESSION = COLUMNSTORE)
+GO
+
 -- Alter table drop multiple constraints in transaction
 IF NOT EXISTS (SELECT * FROM sys.columns cols
   JOIN sys.types AS types ON cols.user_type_id = types.user_type_id
@@ -247,3 +254,36 @@ GO
 
 create TABLE t (c1 int, firmID INT NULL INDEX ix_@filter_1 (c1, firmID) where (firmID > 0) with (fillfactor =70) );
 GO
+
+--create table with NONCLUSTERED index
+CREATE TABLE t1
+(
+    c1 INT,
+    INDEX ix_1 NONCLUSTERED (c1)
+);
+
+CREATE TABLE t1
+(
+    c1 INT,
+    INDEX ix_1 CLUSTERED (c1)
+);
+
+--create table with CLUSTERED COLUMNSTORE index
+CREATE TABLE t1
+(
+    c1 INT,
+    INDEX ix_1 CLUSTERED COLUMNSTORE ORDER (c1)
+);
+
+--create table with CLUSTERED COLUMNSTORE index
+CREATE TABLE t1
+(
+    c1 INT,
+    INDEX ix_1 COLUMNSTORE (c1)
+);
+
+CREATE TABLE t1
+(
+    c1 INT,
+    INDEX index_name2 UNIQUE NONCLUSTERED ([c1]) with (fillfactor=10)
+);

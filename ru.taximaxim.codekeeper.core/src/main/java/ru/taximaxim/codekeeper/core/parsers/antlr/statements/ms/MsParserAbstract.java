@@ -95,15 +95,17 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
                 index.addDep(new GenericColumn(schema, table, col.getText(), DbObjType.COLUMN));
             }
         }
-        Index_whereContext wherePart = rest.index_where();
+        parseIndexOptions(index, rest.index_where(), rest.index_options(), rest.id());
+    }
+
+    protected void parseIndexOptions(AbstractIndex index, Index_whereContext wherePart,
+            Index_optionsContext options, IdContext tablespace) {
         if (wherePart != null) {
             index.setWhere(getFullCtxText(wherePart.where));
         }
-        Index_optionsContext options = rest.index_options();
         if (options != null) {
             fillOptions(index, options.index_option());
         }
-        IdContext tablespace = rest.id();
         if (tablespace != null) {
             index.setTablespace(MsDiffUtils.quoteName(tablespace.getText()));
         }
@@ -281,6 +283,14 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
             if (schema != null && table != null) {
                 ((PgStatement) stmt).addDep(new GenericColumn(schema, table, name, DbObjType.COLUMN));
             }
+        }
+    }
+
+    protected void fillOrderCols(MsIndex index, List<Column_with_orderContext> cols, String schema, String table) {
+        for (var col : cols) {
+            var colName = col.id().getText();
+            index.addOrderCol(colName);
+            index.addDep(new GenericColumn(schema, table, colName, DbObjType.COLUMN));
         }
     }
 

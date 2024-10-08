@@ -108,7 +108,7 @@ public class CreateMsType extends MsParserAbstract {
     }
 
     private MsIndex getIndex(Table_indexContext indexCtx) {
-        var index = new MsIndex(indexCtx.id().getText());
+        var index = new MsIndex(indexCtx.ind_name.getText());
         index.setClustered(indexCtx.clustered() != null && indexCtx.clustered().CLUSTERED() != null);
         parseIndex(indexCtx.index_rest(), index, null, null);
         return index;

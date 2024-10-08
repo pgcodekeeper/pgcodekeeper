@@ -15,21 +15,45 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
+import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public class MsIndex extends AbstractIndex {
+    private boolean isColumnstore;
+    private List<String> orderCols = new ArrayList<>();
 
     public MsIndex(String name) {
         super(name);
+    }
+
+    public boolean isColumnstore() {
+        return isColumnstore;
+    }
+
+    public void setColumnstore(boolean isColumnstore) {
+        this.isColumnstore = isColumnstore;
+        resetHash();
+    }
+
+    public List<String> getOrderCols() {
+        return Collections.unmodifiableList(orderCols);
+    }
+
+    public void addOrderCol(String orderCol) {
+        this.orderCols.add(orderCol);
+        resetHash();
     }
 
     @Override
@@ -44,6 +68,10 @@ public class MsIndex extends AbstractIndex {
             sbSQL.append("UNIQUE ");
         }
         appendClustered(sbSQL);
+
+        if (isColumnstore()) {
+            sbSQL.append("COLUMNSTORE ");
+        }
         sbSQL.append(getDefinition(false, dropExisting));
         if (getTablespace() != null) {
             sbSQL.append("\nON ").append(getTablespace());
@@ -59,9 +87,11 @@ public class MsIndex extends AbstractIndex {
 
         if (!isTypeIndex) {
             appendFullName(sb);
-            sb.append(" (");
-            appendSimpleColumns(sb, columns);
-            sb.append(')');
+            if (!columns.isEmpty()) {
+                sb.append(" (");
+                appendSimpleColumns(sb, columns);
+                sb.append(')');
+            }
         } else {
             sb.append(MsDiffUtils.quoteName(getName()));
             sb.append(' ');
@@ -75,8 +105,12 @@ public class MsIndex extends AbstractIndex {
         }
 
         if (!includes.isEmpty()) {
-            sb.append(" INCLUDE ");
+            sb.append(isColumnstore() ? " " : " INCLUDE ");
             StatementUtils.appendCols(sb, includes, getDbType());
+        }
+        if (!orderCols.isEmpty()) {
+            sb.append("\nORDER ");
+            StatementUtils.appendCols(sb, orderCols, getDbType());
         }
         appendWhere(sb);
 
@@ -149,8 +183,27 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
+    public boolean compare(PgStatement obj) {
+        if (obj instanceof MsIndex ind && super.compare(obj)) {
+            return isColumnstore == ind.isColumnstore
+                    && Objects.equals(orderCols, ind.getOrderCols());
+        }
+        return false;
+    }
+
+    @Override
+    public void computeHash(Hasher hasher) {
+        super.computeHash(hasher);
+        hasher.put(isColumnstore);
+        hasher.put(orderCols);
+    }
+
+    @Override
     protected AbstractIndex getIndexCopy() {
-        return new MsIndex(getName());
+        MsIndex ind = new MsIndex(getName());
+        ind.setColumnstore(isColumnstore);
+        ind.orderCols.addAll(orderCols);
+        return ind;
     }
 
     @Override
