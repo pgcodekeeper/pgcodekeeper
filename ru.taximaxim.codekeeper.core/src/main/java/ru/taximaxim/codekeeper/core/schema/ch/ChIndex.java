@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChIndex extends AbstractIndex {
@@ -80,13 +81,13 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         var newIndex = (ChIndex) newCondition;
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

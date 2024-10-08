@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgDomain extends PgStatement implements ISearchPath {
@@ -139,7 +140,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgDomain newDomain = (PgDomain) newCondition;
@@ -147,7 +148,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
         if (!Objects.equals(newDomain.getDataType(), getDataType()) ||
                 !Objects.equals(newDomain.getCollation(), getCollation())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(newDomain.getDefaultValue(), getDefaultValue())) {
@@ -191,7 +192,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
         alterPrivileges(newDomain, sb);
         compareComments(sb, newDomain);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

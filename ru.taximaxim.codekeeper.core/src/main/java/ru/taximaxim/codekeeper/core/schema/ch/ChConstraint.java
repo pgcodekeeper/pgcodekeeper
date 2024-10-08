@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChConstraint extends AbstractConstraint {
@@ -64,13 +65,13 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

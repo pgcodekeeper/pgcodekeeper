@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -197,12 +198,12 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

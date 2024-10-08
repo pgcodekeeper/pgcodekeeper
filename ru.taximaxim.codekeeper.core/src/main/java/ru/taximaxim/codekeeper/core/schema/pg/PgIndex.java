@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
@@ -146,7 +147,7 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgIndex newIndex = (PgIndex) newCondition;
@@ -172,7 +173,7 @@ public class PgIndex extends AbstractIndex {
                 newIndex.appendComments(sb);
                 sb.append("\nCOMMIT TRANSACTION;");
             }
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(getTablespace(), newIndex.getTablespace())) {
@@ -196,7 +197,7 @@ public class PgIndex extends AbstractIndex {
         compareOptions(newIndex, sb);
         compareComments(sb, newIndex);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private void appendClusterSql(StringBuilder sb) {

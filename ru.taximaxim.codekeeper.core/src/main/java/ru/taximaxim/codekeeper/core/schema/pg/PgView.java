@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -169,7 +170,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgView newView = (PgView) newCondition;
@@ -178,7 +179,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
                 || !Objects.equals(getMethod(), newView.getMethod())
                 || !Objects.equals(getDistribution(), newView.getDistribution())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(getTablespace(), newView.getTablespace())) {
@@ -208,7 +209,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
         compareOptions(newView, sb);
         compareComments(sb, newView);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

@@ -50,6 +50,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
@@ -302,8 +303,8 @@ public class ActionsToScriptConverter {
                 return;
             }
             StringBuilder sb = new StringBuilder();
-            obj.appendAlterSQL(action.getNewObj(), sb, new AtomicBoolean());
-            if (sb.length() > 0) {
+            ObjectState state = obj.appendAlterSQL(action.getNewObj(), sb, new AtomicBoolean());
+            if (state == ObjectState.ALTER) {
                 if (depcy != null) {
                     script.addStatement(depcy);
                 }

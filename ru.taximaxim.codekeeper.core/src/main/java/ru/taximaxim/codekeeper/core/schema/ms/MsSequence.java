@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class MsSequence extends AbstractSequence {
@@ -82,14 +83,14 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         MsSequence newSequence = (MsSequence) newCondition;
 
         if (!newSequence.getDataType().equals(getDataType())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         StringBuilder sbSQL = new StringBuilder();
@@ -102,7 +103,7 @@ public class MsSequence extends AbstractSequence {
         }
 
         alterPrivileges(newSequence, sb);
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private boolean compareSequenceBody(MsSequence newSequence, StringBuilder sbSQL) {

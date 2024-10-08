@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -68,7 +69,7 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         if (!Objects.equals(getOwner(), newCondition.getOwner())) {
@@ -78,7 +79,7 @@ public class PgSchema extends AbstractSchema {
         alterPrivileges(newCondition, sb);
         compareComments(sb, newCondition);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     public PgDomain getDomain(String name) {

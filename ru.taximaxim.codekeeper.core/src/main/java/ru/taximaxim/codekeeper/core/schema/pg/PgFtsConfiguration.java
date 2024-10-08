@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgFtsConfiguration extends PgStatement implements ISearchPath {
@@ -70,14 +71,14 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgFtsConfiguration newConf = (PgFtsConfiguration) newCondition;
 
         if (!newConf.getParser().equals(parser)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareOptions(newConf, sb);
@@ -87,7 +88,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
         }
         compareComments(sb, newConf);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     public void compareOptions(PgFtsConfiguration newConf, StringBuilder sb) {

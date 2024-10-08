@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChUser extends PgStatement {
@@ -109,7 +110,7 @@ public class ChUser extends PgStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         ChUser newUser = (ChUser) newCondition;
@@ -137,7 +138,7 @@ public class ChUser extends PgStatement {
             .append(newUser.getStorageType()).append(";");
         }
         alterPrivileges(newCondition, sb);
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private void compareHosts(List<String> oldHosts, List<String> newHosts, StringBuilder sb) {

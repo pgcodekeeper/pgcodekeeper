@@ -71,7 +71,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         AbstractFunction newFunction = (AbstractFunction) newCondition;
@@ -79,7 +79,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
         if (!compareUnalterable(newFunction)) {
             if (needDrop(newFunction)) {
                 isNeedDepcies.set(true);
-                return true;
+                return ObjectState.RECREATE;
             }
 
             if (getDbType() == DatabaseType.MS) {
@@ -95,8 +95,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
 
         alterPrivileges(newFunction, sb);
         compareComments(sb, newFunction);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate);

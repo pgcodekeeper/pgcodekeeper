@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -83,14 +84,14 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgExtension newExt = (PgExtension) newCondition;
 
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
             if (!isRelocatable()) {
-                return true;
+                return ObjectState.RECREATE;
             }
             sb.append("\n\nALTER EXTENSION ")
             .append(PgDiffUtils.getQuotedName(getName()))
@@ -102,7 +103,7 @@ public class PgExtension extends PgStatement {
         // TODO ALTER EXTENSION UPDATE TO ?
         compareComments(sb, newExt);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ICast;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgCast extends PgStatement implements ICast {
@@ -131,18 +132,17 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgCast newCast = (PgCast) newCondition;
 
         if (!compareUnalterable(newCast)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
         compareComments(sb, newCast);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private boolean compareUnalterable(PgCast cast) {

@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
@@ -118,7 +119,7 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
@@ -127,9 +128,10 @@ public class MsIndex extends AbstractIndex {
             if (!isClustered() || newIndex.isClustered()) {
                 sb.append("\n\n")
                 .append(newIndex.getCreationSQL(true));
+                return ObjectState.ALTER;
             }
 
-            return true;
+            return ObjectState.RECREATE;
         }
 
         // options can be changed by syntax :
@@ -137,7 +139,7 @@ public class MsIndex extends AbstractIndex {
         // but how to reset option? all indices has all option with default value
         // and we don't know what is it and how to change current value to default value.
 
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

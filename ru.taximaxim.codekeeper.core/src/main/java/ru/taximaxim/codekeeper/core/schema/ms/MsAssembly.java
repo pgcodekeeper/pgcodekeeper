@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class MsAssembly extends PgStatement {
@@ -106,7 +107,7 @@ public class MsAssembly extends PgStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         MsAssembly newAss = (MsAssembly) newCondition;
@@ -115,7 +116,7 @@ public class MsAssembly extends PgStatement {
         // TODO add/drop binary as file name. What is filename?
         if (!Objects.equals(newAss.getBinaries(), getBinaries())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(getOwner(), newAss.getOwner())) {
@@ -132,7 +133,7 @@ public class MsAssembly extends PgStatement {
             .append(" WITH PERMISSION_SET = ").append(newAss.getPermission()).append(GO);
         }
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

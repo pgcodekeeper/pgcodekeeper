@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChTable extends AbstractTable {
@@ -95,19 +96,19 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         ChTable newTable = (ChTable) newCondition;
 
         if (isRecreated(newTable)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         comparePojections(sb, newTable.getProjections());
         engine.appendAlterSQL(sb, newTable.getEngine(), getAlterTable(true, false));
         compareComment(sb, newTable.getComment());
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private void comparePojections(StringBuilder sb, Map<String, String> newProjections) {

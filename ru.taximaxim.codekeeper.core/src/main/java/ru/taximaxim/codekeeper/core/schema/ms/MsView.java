@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 
@@ -66,7 +67,7 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         MsView newView = (MsView) newCondition;
@@ -84,7 +85,7 @@ public class MsView extends AbstractView implements SourceStatement {
         }
         alterPrivileges(newView, sb);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

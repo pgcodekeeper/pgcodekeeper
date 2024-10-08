@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
@@ -186,25 +187,26 @@ public class DepcyResolver {
         PgStatement newObjStat = newObj.getTwin(newDb);
         StringBuilder sb = new StringBuilder();
         AtomicBoolean isNeedDepcies = new AtomicBoolean();
-        boolean isChanged = (oldObjStat != null && oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies));
 
-        if (isChanged) {
-            if (isNeedDepcies.get()) {
-                // is state alterable (sb.length() > 0)
-                // is checked in the depcy tracker in this case
-                addDropStatements(oldObjStat);
-            } else if (!inDropsList(oldObjStat)
-                    && (oldObjStat.getStatementType() != DbObjType.COLUMN
-                    || !inDropsList(oldObjStat.getParent()))) {
-                // объект будет пересоздан ниже в новом состоянии, поэтому
-                // ничего делать не нужно
-                // пропускаем колонки таблиц из дроп листа
-                addToListWithoutDepcies(
-                        sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
-                                oldObjStat, null);
+        if (oldObjStat != null) {
+            ObjectState state = oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies);
+            if (state.in(ObjectState.RECREATE, ObjectState.ALTER)) {
+                if (isNeedDepcies.get()) {
+                    // is state alterable (sb.length() > 0)
+                    // is checked in the depcy tracker in this case
+                    addDropStatements(oldObjStat);
+                } else if (!inDropsList(oldObjStat)
+                        && (oldObjStat.getStatementType() != DbObjType.COLUMN
+                        || !inDropsList(oldObjStat.getParent()))) {
+                    // объект будет пересоздан ниже в новом состоянии, поэтому
+                    // ничего делать не нужно
+                    // пропускаем колонки таблиц из дроп листа
+                    addToListWithoutDepcies(
+                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
+                                    oldObjStat, null);
+                }
             }
         }
-
         // if no depcies were triggered for a MsTable alter
         // check for column layout changes and refresh views
         if (!isNeedDepcies.get() && oldObjStat instanceof MsTable tOld && newObjStat instanceof MsTable tNew) {
@@ -419,8 +421,8 @@ public class DepcyResolver {
 
                 // пропускаем также при recreate
                 StringBuilder sb = new StringBuilder();
-                if (oldTable.appendAlterSQL(newTable, sb, new AtomicBoolean())
-                        && sb.length() == 0) {
+                ObjectState state = oldTable.appendAlterSQL(newTable, sb, new AtomicBoolean());
+                if (state == ObjectState.RECREATE) {
                     return true;
                 }
 
@@ -576,13 +578,13 @@ public class DepcyResolver {
             StringBuilder sb = new StringBuilder();
             StatementActions alterAction = action;
             // Проверяем меняется ли объект
-            if (oldSt.appendAlterSQL(newSt, sb, isNeedDepcies)) {
-                if (sb.length() > 0) {
-                    alterAction = StatementActions.ALTER;
-                }
-            } else {
+            ObjectState state = oldSt.appendAlterSQL(newSt, sb, isNeedDepcies);
+            if (state == ObjectState.ALTER) {
+                alterAction = StatementActions.ALTER;
+            } else if (state != ObjectState.RECREATE) {
                 alterAction = StatementActions.NONE;
             }
+
             return alterAction;
         }
     }
@@ -616,7 +618,8 @@ public class DepcyResolver {
             }
 
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            if (oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy) && isNeedDepcy.get()) {
+            ObjectState state = oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy);
+            if (state.in(ObjectState.RECREATE, ObjectState.ALTER) && isNeedDepcy.get()) {
                 needDrop = oldSt;
             }
         }

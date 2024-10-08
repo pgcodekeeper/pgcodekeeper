@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public abstract class PgConstraint extends AbstractConstraint {
@@ -128,14 +129,14 @@ public abstract class PgConstraint extends AbstractConstraint {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgConstraint newConstr = (PgConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (isNotValid() && !newConstr.isNotValid()) {
@@ -145,8 +146,7 @@ public abstract class PgConstraint extends AbstractConstraint {
 
         compareExtraOptions(sb, newConstr);
         compareComments(sb, newConstr);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     protected boolean compareUnalterable(PgConstraint newConstr) {
