@@ -207,9 +207,9 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

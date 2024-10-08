@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractPolicy;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class PgPolicy extends AbstractPolicy implements ISearchPath {
@@ -74,14 +75,14 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgPolicy newPolice = (PgPolicy) newCondition;
 
         if (!compareUnalterable(newPolice)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         Set<String> newRoles = newPolice.roles;
@@ -114,7 +115,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         }
         compareComments(sb, newPolice);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

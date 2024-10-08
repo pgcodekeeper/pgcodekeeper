@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
@@ -108,7 +109,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgUserMapping newUsm = (PgUserMapping) newCondition;
@@ -116,13 +117,13 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
         if (!Objects.equals(newUsm.getUser(), getUser()) ||
                 !Objects.equals(newUsm.getServer(), getServer())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(newUsm.getOptions(), getOptions())) {
             compareOptions(newUsm, sb);
         }
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

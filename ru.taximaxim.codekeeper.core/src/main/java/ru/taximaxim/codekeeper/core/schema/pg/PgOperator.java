@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgOperator extends PgStatement implements IOperator, ISearchPath {
@@ -145,14 +146,14 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgOperator newOperator = (PgOperator) newCondition;
 
         if (!compareUnalterable(newOperator)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         String newOperRestr = newOperator.getRestrict();
@@ -180,7 +181,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         }
         compareComments(sb, newOperator);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private boolean compareUnalterable(PgOperator oper) {

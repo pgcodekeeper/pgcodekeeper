@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer {
@@ -126,7 +127,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgForeignDataWrapper newForeign = (PgForeignDataWrapper) newCondition;
@@ -163,7 +164,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         alterPrivileges(newCondition, sb);
         compareComments(sb, newForeign);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

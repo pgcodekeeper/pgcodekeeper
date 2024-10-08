@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -129,7 +130,7 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgSequence newSequence = (PgSequence) newCondition;
@@ -160,7 +161,7 @@ public class PgSequence extends AbstractSequence {
             sb.setLength(sb.length() + 1);
         }
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private boolean compareSequenceBody(PgSequence newSequence, StringBuilder sbSQL) {

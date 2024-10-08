@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class ChColumn extends AbstractColumn {
@@ -147,7 +148,7 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         ChColumn newColumn = (ChColumn) newCondition;
 
@@ -156,8 +157,7 @@ public final class ChColumn extends AbstractColumn {
         compareCodecs(sb, newColumn.getCodecs());
         compareTtl(sb, newColumn.getTtl(), newColumn.getType());
         compareComment(sb, newColumn.getComment());
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgFtsDictionary extends PgStatement
@@ -65,20 +66,20 @@ implements ISimpleOptionContainer, ISearchPath {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
 
         if (!newDictionary.getTemplate().equals(template)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareOptions(newDictionary, sb);
         compareComments(sb, newDictionary);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

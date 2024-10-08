@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgEventTrigger extends PgStatement {
@@ -61,14 +62,14 @@ public class PgEventTrigger extends PgStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         PgEventTrigger newEventTrigger = (PgEventTrigger) newCondition;
         if (!Objects.equals(getExecutable(), newEventTrigger.getExecutable())
                 || !Objects.equals(getTags(), newEventTrigger.getTags())
                 || !Objects.equals(getEvent(), newEventTrigger.getEvent())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         final int startLength = sb.length();
@@ -80,8 +81,7 @@ public class PgEventTrigger extends PgStatement {
             newEventTrigger.appendOwnerSQL(sb);
         }
         compareComments(sb, newEventTrigger);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

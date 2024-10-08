@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -171,14 +172,14 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareTableTypes(newTable, sb);
@@ -188,8 +189,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareTableOptions(newTable, sb);
         alterPrivileges(newTable, sb);
         compareComments(sb, newTable);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

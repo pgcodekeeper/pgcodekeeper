@@ -21,6 +21,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public abstract class MsConstraint extends AbstractConstraint {
@@ -61,14 +62,14 @@ public abstract class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         int startSize = sb.length();
         MsConstraint newConstr = (MsConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareOptions(newConstr, sb);
@@ -86,7 +87,7 @@ public abstract class MsConstraint extends AbstractConstraint {
             .append(GO);
         }
 
-        return startSize != sb.length();
+        return getObjectState(sb, startSize);
     }
 
     protected abstract boolean compareUnalterable(MsConstraint newConstr);

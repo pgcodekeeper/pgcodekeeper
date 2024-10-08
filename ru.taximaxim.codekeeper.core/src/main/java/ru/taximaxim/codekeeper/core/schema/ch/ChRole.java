@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class ChRole extends PgStatement {
@@ -50,7 +51,7 @@ public final class ChRole extends PgStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         ChRole newRole = (ChRole) newCondition;
         final int startLength = sb.length();
 
@@ -60,8 +61,7 @@ public final class ChRole extends PgStatement {
             .append(newRole.getStorageType()).append(";");
         }
         alterPrivileges(newCondition, sb);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgTrigger extends AbstractTrigger {
@@ -185,13 +186,13 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgTrigger newTrg = (PgTrigger) newCondition;
         if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
         String newEnabledState = newTrg.getEnabledState();
         if (!Objects.equals(getEnabledState(), newEnabledState)) {
@@ -208,7 +209,7 @@ public class PgTrigger extends AbstractTrigger {
         }
         compareComments(sb, newTrg);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

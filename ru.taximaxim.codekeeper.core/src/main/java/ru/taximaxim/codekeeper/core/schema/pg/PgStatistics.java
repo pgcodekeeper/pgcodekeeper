@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractStatistics;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
@@ -69,14 +70,14 @@ public class PgStatistics extends AbstractStatistics {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
 
         PgStatistics newStat = (PgStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (statistics != newStat.statistics) {
@@ -88,7 +89,7 @@ public class PgStatistics extends AbstractStatistics {
         }
         compareComments(sb, newStat);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private void appendStatistics(StringBuilder sb, PgStatistics stat) {

@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -250,7 +251,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgColumn newColumn = (PgColumn) newCondition;
@@ -259,7 +260,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                 || (isGenerated() && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))
                 || !compareCompressOptions(newColumn)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
@@ -284,8 +285,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         compareStats(getStatistics(), newColumn.getStatistics(), sb);
         compareIdentity(getIdentityType(), newColumn.getIdentityType(), getSequence(), newColumn.getSequence(), sb);
         compareComments(sb, newColumn);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private boolean compareCompressOptions(PgColumn newColumn) {

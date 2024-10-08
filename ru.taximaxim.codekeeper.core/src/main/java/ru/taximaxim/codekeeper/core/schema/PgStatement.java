@@ -498,8 +498,15 @@ public abstract class PgStatement implements IStatement, IHashable {
      * @return true - необходимо изменить объект, используя DROP в случае невозможности ALTER, false - объект не
      *         изменился
      */
-    public abstract boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+
+    //return object state to choise further operation
+    public abstract ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies);
+
+    public ObjectState getObjectState(StringBuilder sb, int startLength)
+    {
+        return sb.length() > startLength ? ObjectState.ALTER : ObjectState.NOTHING;
+    }
 
     /**
      * Copies all object properties into a new object and leaves all its children empty.

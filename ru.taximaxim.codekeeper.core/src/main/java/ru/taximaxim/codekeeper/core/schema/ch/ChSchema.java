@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChSchema extends AbstractSchema {
@@ -98,12 +99,12 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         if (!compareUnalterable((ChSchema) newCondition)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

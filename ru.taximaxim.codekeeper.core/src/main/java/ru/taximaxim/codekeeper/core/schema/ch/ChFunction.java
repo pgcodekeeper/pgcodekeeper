@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChFunction extends PgStatement implements IFunction {
@@ -90,13 +91,13 @@ public class ChFunction extends PgStatement implements IFunction {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         var newFunction = (ChFunction) newCondition;
         if (!compareUnalterable(newFunction)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
-        return false;
+        return ObjectState.NOTHING;
     }
 
     @Override

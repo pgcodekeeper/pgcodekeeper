@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -71,21 +72,21 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareOptions(newTable, sb);
         compareOwners(newTable, sb);
         alterPrivileges(newTable, sb);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     protected void appendName(StringBuilder sbSQL) {

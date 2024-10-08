@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class MsColumn extends AbstractColumn {
@@ -184,7 +185,7 @@ public class MsColumn extends AbstractColumn {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         MsColumn newColumn = (MsColumn) newCondition;
@@ -194,7 +195,7 @@ public class MsColumn extends AbstractColumn {
                 || !Objects.equals(newColumn.getIncrement(), getIncrement())
                 || !Objects.equals(newColumn.getExpression(), getExpression())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
@@ -222,7 +223,7 @@ public class MsColumn extends AbstractColumn {
 
         alterPrivileges(newColumn, sb);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private void compareDefaults(String oldDefaultName, String oldDefault,

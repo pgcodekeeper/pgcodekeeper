@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 
@@ -76,7 +77,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         MsTrigger newTrigger = (MsTrigger) newCondition;
         final int startLength = sb.length();
@@ -97,7 +98,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
             sb.append(GO);
         }
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

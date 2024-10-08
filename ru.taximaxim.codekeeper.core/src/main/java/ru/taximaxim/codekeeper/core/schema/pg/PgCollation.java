@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class PgCollation extends PgStatement implements ISearchPath {
@@ -122,14 +123,14 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         PgCollation newCollation = (PgCollation) newCondition;
 
         if (!compareUnalterable(newCollation)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(getOwner(), newCollation.getOwner())) {
@@ -137,7 +138,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
         }
         compareComments(sb, newCollation);
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

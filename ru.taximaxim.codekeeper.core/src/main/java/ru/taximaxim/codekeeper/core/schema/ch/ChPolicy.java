@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractPolicy;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public final class ChPolicy extends AbstractPolicy {
@@ -87,7 +88,7 @@ public final class ChPolicy extends AbstractPolicy {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         ChPolicy police = (ChPolicy) newCondition;
 
@@ -95,7 +96,7 @@ public final class ChPolicy extends AbstractPolicy {
             police.appendFullSQL(sb, false);
         }
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override

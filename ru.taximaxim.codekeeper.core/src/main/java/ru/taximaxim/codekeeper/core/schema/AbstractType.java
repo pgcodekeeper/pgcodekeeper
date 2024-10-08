@@ -40,14 +40,14 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
     protected abstract void appendDef(StringBuilder sb);
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         AbstractType newType = (AbstractType) newCondition;
 
         if (isNeedRecreate(newType)) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareType(newType, sb, isNeedDepcies);
@@ -57,8 +57,7 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
         }
         alterPrivileges(newType, sb);
         compareComments(sb, newType);
-
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private final boolean isNeedRecreate(AbstractType newType) {

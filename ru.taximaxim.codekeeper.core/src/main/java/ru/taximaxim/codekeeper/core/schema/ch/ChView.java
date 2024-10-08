@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 public class ChView extends AbstractView {
@@ -209,21 +210,21 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         ChView newView = (ChView) newCondition;
 
         if (getViewType() != newView.getViewType() || isViewModified(newView)
                 || !Objects.equals(engine, newView.getEngine())) {
             isNeedDepcies.set(true);
-            return true;
+            return ObjectState.RECREATE;
         }
 
         compareSqlSecurity(sb, newView);
         compareSql(sb, newView.getNormalizedQuery());
         compareComment(sb, newView.getComment());
 
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     private void compareSqlSecurity(StringBuilder sb, ChView newView) {

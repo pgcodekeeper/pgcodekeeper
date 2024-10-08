@@ -21,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -47,14 +48,14 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public boolean appendAlterSQL(PgStatement newCondition, StringBuilder sb,
+    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
             AtomicBoolean isNeedDepcies) {
         final int startLength = sb.length();
         if (!Objects.equals(getOwner(), newCondition.getOwner())) {
             newCondition.alterOwnerSQL(sb);
         }
         alterPrivileges(newCondition, sb);
-        return sb.length() > startLength;
+        return getObjectState(sb, startLength);
     }
 
     @Override
