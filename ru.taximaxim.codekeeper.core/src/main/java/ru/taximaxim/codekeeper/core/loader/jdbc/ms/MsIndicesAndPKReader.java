@@ -17,6 +17,8 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.ms;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.MessageFormat;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
+import ru.taximaxim.codekeeper.core.loader.ms.SupportedMsVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -67,14 +70,25 @@ public class MsIndicesAndPKReader extends JdbcReader {
             if (null != isTracked) {
                 constrPk.setTracked((Boolean) isTracked);
             }
-            fillColumns(constrPk, XmlReader.readXML(res.getString("cols")), schema.getName(), parent);
+            fillColumns(constrPk, XmlReader.readXML(res.getString("cols")), schema.getName(), parent, false, false);
             constrPk.setClustered(isClustered);
             constrPk.setDataSpace(dataSpace);
             options.forEach(constrPk::addOption);
             t.addChild(constrPk);
         } else {
             var index = new MsIndex(name);
-            fillColumns(index, XmlReader.readXML(res.getString("cols")), schema.getName(), parent);
+            var columnstore = res.getInt("index_type");
+            boolean isClusteredColumnstoreInd = columnstore == 5;
+            boolean isColumnstoreInd = isClusteredColumnstoreInd || columnstore == 6;
+            index.setColumnstore(isColumnstoreInd);
+            List<XmlReader> cols = XmlReader.readXML(res.getString("cols"));
+            if (isColumnstoreInd && SupportedMsVersion.VERSION_22.isLE(loader.getVersion())) {
+                cols.stream()
+                .filter(col -> col.getInt("col_order") > 0)
+                .sorted(Comparator.comparing(col -> col.getInt("col_order")))
+                .forEach(col -> index.addOrderCol(col.getString("name")));
+            }
+            fillColumns(index, cols, schema.getName(), parent, isColumnstoreInd, isClusteredColumnstoreInd);
             index.setClustered(isClustered);
             index.setUnique(res.getBoolean("is_unique"));
             index.setWhere(filter);
@@ -84,13 +98,15 @@ public class MsIndicesAndPKReader extends JdbcReader {
         }
     }
 
-    private void fillColumns(ISimpleColumnContainer stmt, List<XmlReader> cols, String schema, String parent) {
+    private void fillColumns(ISimpleColumnContainer stmt, List<XmlReader> cols, String schema, String parent,
+            boolean isColumnstoreInd, boolean isClusteredColumnstoreInd) {
         for (XmlReader col : cols) {
             boolean isDesc = col.getBoolean("is_desc");
             String colName = col.getString("name");
-            if (col.getBoolean("is_inc")) {
+            // If we have nonclustered columnstore index we read cols from is_inc
+            if (!isClusteredColumnstoreInd && col.getBoolean("is_inc")) {
                 stmt.addInclude(colName);
-            } else {
+            } else if (!isColumnstoreInd) {
                 var simpleCol = new SimpleColumn(colName);
                 simpleCol.setDesc(isDesc);
                 stmt.addColumn(simpleCol);
@@ -148,6 +164,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .column("res.name")
         .column("res.is_primary_key")
         .column("res.is_unique")
+        .column("res.type AS index_type")
         .column("res.is_unique_constraint")
         .column("INDEXPROPERTY(res.object_id, res.name, 'IsClustered') AS is_clustered")
         .column("res.is_padded")
@@ -168,7 +185,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .join("LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = res.object_id")
         .join("JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = res.object_id AND sp.index_id = res.index_id AND sp.partition_number = 1")
         .where("o.type = 'U'")
-        .where("res.type IN (1, 2)");
+        .where("res.type IN (1, 2, 5, 6)");
     }
 
     protected void addMsColsPart(QueryBuilder builder) {
@@ -179,6 +196,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
                       c.index_column_id AS id,
                       sc.name,
                       c.is_descending_key AS is_desc,
+                      {0}
                       c.is_included_column AS is_inc
                     FROM sys.index_columns c WITH (NOLOCK)
                     JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
@@ -187,8 +205,12 @@ public class MsIndicesAndPKReader extends JdbcReader {
                   FOR XML RAW, ROOT
                 ) cc (cols)""";
 
+        String orderColsStr = "c.column_store_order_ordinal AS col_order,";
+        String query = MessageFormat.format(cols,
+                SupportedMsVersion.VERSION_22.isLE(loader.getVersion()) ? orderColsStr : "");
+
         builder.column("cc.cols");
-        builder.join(cols);
+        builder.join(query);
     }
 
     @Override

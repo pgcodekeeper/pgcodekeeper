@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_nam
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
@@ -51,15 +52,35 @@ public class CreateMsIndex extends MsTableAbstract {
         AbstractSchema schema = getSchemaSafe(ids);
         addObjReference(Arrays.asList(schemaCtx, tableCtx), DbObjType.TABLE, null);
 
-        AbstractIndex ind = new MsIndex(nameCtx.getText());
+        MsIndex ind = new MsIndex(nameCtx.getText());
         ind.setUnique(ctx.UNIQUE() != null);
         ClusteredContext cluster = ctx.clustered();
         ind.setClustered(cluster != null && cluster.CLUSTERED() != null);
-
-        parseIndex(ctx.index_rest(), ind, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
+        ind.setColumnstore(ctx.COLUMNSTORE() != null);
+        var restCtx = ctx.index_rest();
+        if (restCtx != null) {
+            parseIndex(restCtx, ind, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
+        } else {
+            parseColumnstoreIndex(ctx, ind, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
+        }
 
         PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
         addSafe(table, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
+    }
+
+    private void parseColumnstoreIndex(Create_indexContext ctx, AbstractIndex index, String schema, String table) {
+        var nameList = ctx.name_list_in_brackets();
+        if (nameList != null) {
+            for (IdContext col : nameList.id()) {
+                index.addInclude(col.getText());
+                index.addDep(new GenericColumn(schema, table, col.getText(), DbObjType.COLUMN));
+            }
+        }
+        var orderCols = ctx.order_cols;
+        if (orderCols != null) {
+            fillOrderCols((MsIndex) index, orderCols.column_name_list_with_order().column_with_order(), schema, table);
+        }
+        parseIndexOptions(index, ctx.index_where(), ctx.index_options(), ctx.id());
     }
 
     @Override
