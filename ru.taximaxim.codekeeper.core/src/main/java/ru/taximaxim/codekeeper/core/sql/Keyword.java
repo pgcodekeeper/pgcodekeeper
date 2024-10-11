@@ -607,34 +607,23 @@ public class Keyword {
                 .filter(k -> k.getCategory() == kc)
                 .sorted(Comparator.comparing(Keyword::getKeyword)))
         .forEach(v -> {
-            if (prevCat[0] != v.getCategory()) {
+            var currentCat = v.getCategory();
+            if (prevCat[0] != currentCat) {
                 System.out.println();
                 System.out.println("    /*");
                 System.out.println("    ==================================================");
-                System.out.println("    " + v.getCategory());
+                System.out.println("    " + currentCat);
                 System.out.println("    ==================================================");
                 System.out.println("    */");
-                prevCat[0] = v.getCategory();
+                prevCat[0] = currentCat;
             }
-            String k = v.getKeyword();
-            String kUpper = k.toUpperCase(Locale.ROOT);
-            char firstLetter = k.charAt(0);
+            String kUpper = v.getKeyword().toUpperCase(Locale.ROOT);
+            char firstLetter = kUpper.charAt(0);
             if (prevFirstLetter[0] != firstLetter) {
                 System.out.println();
                 prevFirstLetter[0] = firstLetter;
             }
-            StringBuilder sb = new StringBuilder();
-            sb.append("    ").append(kUpper).append(':');
-            for (int i = 0; i < k.length(); ++i){
-                char ch = k.charAt(i);
-                if (ch == '_'){
-                    sb.append(" UNDERLINE ");
-                } else {
-                    sb.append(" [").append(ch).append(kUpper.charAt(i)).append(']');
-                }
-            }
-            sb.append(";");
-            System.out.println(sb);
+            System.out.println("    " + kUpper + ": \'" + kUpper + "\';");
         });
     }
 
