@@ -46,6 +46,38 @@ public final class Messages extends NLS {
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
 
+    public static String VerificationFunction_body_start;
+
+    public static String VerificationFunction_function_length;
+
+    public static String VerificationFunction_function_params;
+
+    public static String VerificationFunction_ncss;
+
+    public static String VerificationFunctionTreeListener_case_block;
+
+    public static String VerificationFunctionTreeListener_quotation_marks;
+
+    public static String VerificationFunctionTreeListener_temp_table;
+
+    public static String VerificationGrant_denied_grant;
+
+    public static String VerificationIndents_body_start_rule;
+
+    public static String VerificationIndents_cyclomatic_complexy;
+
+    public static String VerificationIndents_eol_before_stat;
+
+    public static String VerificationIndents_indent_size;
+
+    public static String VerificationIndents_semicolon_after_simple_sql;
+
+    public static String VerificationIndents_space_after_comma;
+
+    public static String VerificationIndents_space_after_if;
+
+    public static String VerificationIndents_space_math_operators;
+
     public static String XmlStore_read_error;
 
     public static String XmlStore_root_error;

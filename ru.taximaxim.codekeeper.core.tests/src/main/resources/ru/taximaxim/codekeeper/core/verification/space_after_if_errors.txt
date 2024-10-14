@@ -1,0 +1,1 @@
+space_after_if.sql line 6:5 Warning: Not space after 'if' keyword.

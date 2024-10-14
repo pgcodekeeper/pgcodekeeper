@@ -271,7 +271,8 @@ public final class PgDiffUtils {
         return stream::iterator;
     }
 
-    private PgDiffUtils() {
+    public static boolean isValidLanguage(String language) {
+        return "PLPGSQL".equalsIgnoreCase(language) || "SQL".equalsIgnoreCase(language);
     }
 
     public static void appendSqlWrappedInDo(StringBuilder sbResult, StringBuilder sbSQL, String expectedErrCode) {
@@ -290,4 +291,8 @@ public final class PgDiffUtils {
         .append("\nEND; $$")
         .append("\nLANGUAGE 'plpgsql';");
     }
+
+    private PgDiffUtils() {
+    }
+
 }

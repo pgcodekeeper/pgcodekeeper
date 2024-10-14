@@ -73,6 +73,7 @@ class OutputTest {
                 Arguments.of(new FailGraphDepthArgumentsProvider()),
                 Arguments.of(new FailGraphNameArgumentsProvider()),
                 Arguments.of(new FailGraphArgumentsProvider()),
+                Arguments.of(new FailVerifyArgumentProvider()),
                 Arguments.of(new IgnoreColumnOrderArgumentsProvider()),
                 Arguments.of(new FailGenerateExistDoBlock()));
     }
@@ -831,6 +832,22 @@ class IgnoreColumnOrderArgumentsProvider extends ArgumentsProvider {
     @Override
     public String output() {
         return "\n";
+    }
+}
+
+/**
+ * {@link ArgumentsProvider} implementation testing veryfication
+ */
+class FailVerifyArgumentProvider extends ArgumentsProvider {
+
+    @Override
+    public String[] args() throws URISyntaxException, IOException {
+        return new String[] { "--mode", "verify" };
+    }
+
+    @Override
+    public String output() {
+        return "Please specify argument \"--verify-rule-name\"\n";
     }
 }
 

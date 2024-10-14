@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added the ability to create objects from templates for all types of databases.
 - Added support for COLUMNSTORE INDEX in MS SQL.
+- Added the ability to check code style according to specified rules.
 
 ### Changed
 

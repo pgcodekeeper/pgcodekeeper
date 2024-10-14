@@ -1,0 +1,1 @@
+case_without_else.sql line 6:3 Using the case block without the else block is not allowed.

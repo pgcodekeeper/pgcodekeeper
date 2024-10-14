@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
 
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.formatter.AbstractFormatter;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatItem;
@@ -96,8 +97,7 @@ public class PgFormatter extends AbstractFormatter {
                 }
             }
 
-            if (funcDef == null || funcDef.symbol != null
-                    || (!"PLPGSQL".equalsIgnoreCase(language) && !"SQL".equalsIgnoreCase(language))) {
+            if (funcDef == null || funcDef.symbol != null || !PgDiffUtils.isValidLanguage(language)) {
                 return;
             }
 

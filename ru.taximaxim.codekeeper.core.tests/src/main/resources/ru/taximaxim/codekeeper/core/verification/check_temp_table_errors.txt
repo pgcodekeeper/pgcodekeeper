@@ -1,0 +1,2 @@
+check_temp_table.sql line 5:10 Creating only a temporary table is allowed.
+check_temp_table.sql line 7:13 Creating only a temporary table is allowed.

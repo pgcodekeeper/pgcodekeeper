@@ -147,11 +147,11 @@ class PgParserTest {
 
     @ParameterizedTest
     @CsvSource({
-            "collate, 7",
-            "groupingsets, 47",
-            "partition_aggregate, 1",
-            "partition_prune, 6",
-            "select, 2"
+        "collate, 7",
+        "groupingsets, 47",
+        "partition_aggregate, 1",
+        "partition_prune, 6",
+        "select, 2"
     })
     void parse(String fileNameTemplate, int allowedAmbiguity) throws IOException {
         List<Object> errors = new ArrayList<>();

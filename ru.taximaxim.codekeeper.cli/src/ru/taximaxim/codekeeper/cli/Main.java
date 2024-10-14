@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
+import ru.taximaxim.codekeeper.core.loader.TokenLoader;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
@@ -81,6 +82,8 @@ public final class Main {
                 return parse(arguments);
             case GRAPH:
                 return graph(writer, arguments);
+            case VERIFY:
+                return verify(writer, arguments);
             default:
                 if (arguments.getOldSrc() == null || arguments.getNewSrc() == null) {
                     return true; // clear cache
@@ -224,6 +227,18 @@ public final class Main {
                 w.println(dep);
             }
         }
+        return true;
+    }
+
+    private static boolean verify(PrintWriter writer, CliArgs arguments)
+            throws IOException, InterruptedException {
+        Path path = Paths.get(arguments.getVerifyRuleSetPath());
+        List<Object> errors = TokenLoader.verify(arguments, path, arguments.getVerifySources());
+        if (!errors.isEmpty()) {
+            errors.forEach(writer::println);
+            return false;
+        }
+
         return true;
     }
 
