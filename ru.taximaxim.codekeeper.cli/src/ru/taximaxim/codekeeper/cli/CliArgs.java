@@ -57,7 +57,8 @@ public class CliArgs extends PgDiffArguments {
         DIFF,
         PARSE,
         GRAPH,
-        INSERT;
+        INSERT,
+        VERIFY;
     }
 
     private static final String URL_START_JDBC = "jdbc:";
@@ -81,7 +82,10 @@ public class CliArgs extends PgDiffArguments {
         this.targetLibXmls = new ArrayList<>();
         this.targetLibs = new ArrayList<>();
         this.targetLibsWithoutPriv = new ArrayList<>();
+        this.preFilePath = new ArrayList<>();
+        this.postFilePath = new ArrayList<>();
         this.graphNames = new ArrayList<>();
+        this.verifySources = new ArrayList<>();
         this.inCharsetName = Consts.UTF_8;
         this.outCharsetName = Consts.UTF_8;
         this.graphDepth = DEFAULT_DEPTH;
@@ -139,6 +143,7 @@ public class CliArgs extends PgDiffArguments {
                 PARSE - to save database schema as a directory hierarchy;
                 GRAPH - to search for dependencies of an object;
                 INSERT - to gathering data from the source database taking into account the FK dependencies;
+                VERIFY - to check code style;
                 """)
     private CliMode mode;
 
@@ -211,14 +216,14 @@ public class CliArgs extends PgDiffArguments {
                 PRE script file path or directory with PRE scripts
                 nested directories are loaded recursively
                 specify multiple times to use several paths""")
-    private List<String> preFilePath = new ArrayList<>();
+    private List<String> preFilePath;
 
     @Option(name="--post-script", metaVar="<path>",
             usage="""
                 POST script file path or directory with POST scripts
                 nested directories are loaded recursively
                 specify multiple times to use several paths""")
-    private List<String> postFilePath = new ArrayList<>();
+    private List<String> postFilePath;
 
     @Option(name="--ignore-column-order",
             usage="ignore differences in table column order")
@@ -364,6 +369,16 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--insert-filter", metaVar="<filter>", depends="--insert-name",
             usage="value of where for script of select for start object")
     private String insertFilter;
+
+    @Option(name="--verify-source", metaVar="<path>",
+            usage="""
+                path to file or directory for code verification
+                specify multiple times to use several paths""")
+    private List<String> verifySources;
+
+    @Option(name="--verify-rule-set", metaVar="<path>",
+            usage="path to a file with a set of rules for code verification")
+    private String verifyRuleSetPath;
 
     public CliMode getMode() {
         return mode;
@@ -749,6 +764,14 @@ public class CliArgs extends PgDiffArguments {
         this.postFilePath = postFilePath;
     }
 
+    public Collection<String> getVerifySources() {
+        return Collections.unmodifiableCollection(verifySources);
+    }
+
+    public String getVerifyRuleSetPath() {
+        return verifyRuleSetPath;
+    }
+
     /**
      * Parses command line arguments or outputs instructions.
      *
@@ -799,7 +822,10 @@ public class CliArgs extends PgDiffArguments {
             setOldSrcFormat(parsePath(oldSrc));
         }
 
-        setNewSrcFormat(parsePath(newSrc));
+        if (CliMode.VERIFY != mode) {
+            setNewSrcFormat(parsePath(newSrc));
+        }
+
         return true;
     }
 
@@ -814,6 +840,16 @@ public class CliArgs extends PgDiffArguments {
     }
 
     private void checkParams() throws CmdLineException {
+        if (CliMode.VERIFY == mode) {
+            if (verifyRuleSetPath == null) {
+                badArgs("Please specify argument \"--verify-rule-name\"");
+            }
+            if (verifySources.isEmpty()) {
+                badArgs("Please specify argument \"--verify-source\"");
+            }
+            return;
+        }
+
         if (newSrc == null) {
             badArgs("Please specify SCHEMA.");
         }
@@ -857,16 +893,19 @@ public class CliArgs extends PgDiffArguments {
     }
 
     private void checkModeParams() throws CmdLineException {
-        badArgWithWrongModes(runOnDb != null, "-R (--run-on)", CliMode.PARSE, CliMode.GRAPH);
-        badArgWithWrongModes(addTransaction, "-X (--add-transaction)", CliMode.PARSE, CliMode.GRAPH);
-        badArgWithWrongModes(enableFunctionBodiesDependencies, "-f (--enable-function-bodies-dependencies)", CliMode.PARSE);
-        badArgWithWrongModes(simplifyView, "--simplify-views", CliMode.GRAPH, CliMode.INSERT);
-        badArgWithWrongModes(timeZone != null, "-Z (--time-zone)", CliMode.GRAPH, CliMode.INSERT);
-        badArgWithWrongModes(!allowedTypes.isEmpty(), "-O (--allowed-object)", CliMode.GRAPH);
-        badArgWithWrongModes(selectedOnly, "--selected-only", CliMode.GRAPH, CliMode.INSERT);
-        badArgWithWrongModes(!ignoreLists.isEmpty(), "-I (--ignore-list)", CliMode.GRAPH, CliMode.INSERT);
-
+        // argument can be used only with mode
+        badArgWithCorrectModes(newSrc != null, "-s (--source)", CliMode.DIFF, CliMode.PARSE, CliMode.GRAPH,
+                CliMode.INSERT);
         badArgWithCorrectModes(oldSrc != null, "-t (--target)", CliMode.DIFF);
+        badArgWithCorrectModes(addTransaction, "-X (--add-transaction)", CliMode.DIFF, CliMode.INSERT);
+        badArgWithCorrectModes(runOnDb != null, "-R (--run-on)", CliMode.DIFF, CliMode.INSERT);
+        badArgWithCorrectModes(enableFunctionBodiesDependencies, "-f (--enable-function-bodies-dependencies)",
+                CliMode.DIFF, CliMode.PARSE, CliMode.GRAPH);
+        badArgWithCorrectModes(simplifyView, "--simplify-views", CliMode.DIFF, CliMode.PARSE);
+        badArgWithCorrectModes(timeZone != null, "-Z (--time-zone)", CliMode.DIFF, CliMode.PARSE);
+        badArgWithCorrectModes(!allowedTypes.isEmpty(), "-O (--allowed-object)", CliMode.DIFF);
+        badArgWithCorrectModes(!ignoreLists.isEmpty(), "-I (--ignore-list)", CliMode.DIFF, CliMode.PARSE);
+        badArgWithCorrectModes(selectedOnly, "--selected-only", CliMode.DIFF);
         badArgWithCorrectModes(runOnTarget, "-r (--run-on-target)", CliMode.DIFF);
         badArgWithCorrectModes(disableCheckFunctionBodies, "-F (--no-check-function-bodies)", CliMode.DIFF);
         badArgWithCorrectModes(!preFilePath.isEmpty(), "--pre-script", CliMode.DIFF);
@@ -891,6 +930,8 @@ public class CliArgs extends PgDiffArguments {
         badArgWithCorrectModes(DEFAULT_DEPTH != graphDepth, "--graph-depth", CliMode.GRAPH);
         badArgWithCorrectModes(!graphFilterTypes.isEmpty(), "--graph-filter-object", CliMode.GRAPH);
         badArgWithCorrectModes(insertName != null, "--insert-name", CliMode.INSERT);
+        badArgWithCorrectModes(!verifySources.isEmpty(), "--verify-source", CliMode.VERIFY);
+        badArgWithCorrectModes(verifyRuleSetPath != null, "--verify-rule-set", CliMode.VERIFY);
     }
 
     private void checkDbTypesParam() throws CmdLineException {
@@ -901,12 +942,7 @@ public class CliArgs extends PgDiffArguments {
         badArgWithWrongDbType(concurrentlyMode, "-C (--concurrently-mode)", DatabaseType.CH);
         badArgWithWrongDbType(commentsToEnd, "--comments-to-end", DatabaseType.CH);
         badArgWithWrongDbType(CliMode.INSERT == mode, "--mode INSERT", DatabaseType.CH);
-    }
-
-    private void badArgWithWrongModes(boolean condition, String param, CliMode... modes) throws CmdLineException {
-        if (condition && containsInArray(mode, modes)) {
-            badArgs(MessageFormat.format(MESSAGE_WRONG_MODE, param, mode));
-        }
+        badArgWithWrongDbType(CliMode.VERIFY == mode, "--mode VERIFY", DatabaseType.CH, DatabaseType.MS);
     }
 
     private void badArgWithCorrectModes(boolean condition, String param, CliMode... modes) throws CmdLineException {

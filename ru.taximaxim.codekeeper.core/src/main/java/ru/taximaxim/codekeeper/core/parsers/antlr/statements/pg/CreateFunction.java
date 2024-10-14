@@ -184,8 +184,7 @@ public final class CreateFunction extends PgParserAbstract {
                 language = "sql";
             }
             analyzeFunctionBody(function, body, funcArgs);
-        } else if (funcDef != null && funcDef.symbol == null
-                && ("SQL".equalsIgnoreCase(language) || "PLPGSQL".equalsIgnoreCase(language))) {
+        } else if (funcDef != null && funcDef.symbol == null && PgDiffUtils.isValidLanguage(language)) {
             analyzeFunctionDefinition(function, language, funcDef.definition, funcArgs);
         }
 

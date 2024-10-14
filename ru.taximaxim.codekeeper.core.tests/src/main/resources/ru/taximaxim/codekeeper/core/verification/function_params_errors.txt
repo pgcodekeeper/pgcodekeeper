@@ -1,0 +1,1 @@
+function_params.sql line 1:1 A function have 7 parameters. There should be no more than 6 input parameters.

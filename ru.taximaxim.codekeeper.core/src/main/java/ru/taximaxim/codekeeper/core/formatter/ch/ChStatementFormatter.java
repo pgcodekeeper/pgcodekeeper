@@ -70,7 +70,7 @@ public class ChStatementFormatter extends StatementFormatter {
     }
 
     @Override
-    protected boolean isOperatorToken(int type) {
+    protected boolean isOperatorToken(int type, Token t) {
         switch (type) {
         case CHLexer.EQ_DOUBLE:
         case CHLexer.EQ_SINGLE:

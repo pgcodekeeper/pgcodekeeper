@@ -1,0 +1,2 @@
+dollar_begin_function.sql line 3:11 Warning: Function body must be start on new line and front of him no contains spaces. Remove whitespace and tabs.
+dollar_begin_function.sql line 7:8 Warning: Function body must be start on: [$$, $_$, $body$].

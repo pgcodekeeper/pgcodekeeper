@@ -102,29 +102,8 @@ public class PgStatementFormatter extends StatementFormatter {
     }
 
     @Override
-    protected boolean isOperatorToken(int type) {
-        switch (type) {
-        case SQLLexer.EQUAL:
-        case SQLLexer.NOT_EQUAL:
-        case SQLLexer.LTH:
-        case SQLLexer.LEQ:
-        case SQLLexer.GTH:
-        case SQLLexer.GEQ:
-        case SQLLexer.PLUS:
-        case SQLLexer.MINUS:
-        case SQLLexer.MULTIPLY:
-        case SQLLexer.DIVIDE:
-        case SQLLexer.MODULAR:
-        case SQLLexer.EXP:
-        case SQLLexer.EQUAL_GTH:
-        case SQLLexer.COLON_EQUAL:
-        case SQLLexer.LESS_LESS:
-        case SQLLexer.GREATER_GREATER:
-        case SQLLexer.HASH_SIGN:
-        case SQLLexer.OP_CHARS:
-            return true;
-        default:
-            return false;
-        }
+    protected boolean isOperatorToken(int type, Token t) {
+        return PgFormatterUtils.isOperatorToken(type)
+                && PgFormatterUtils.checkOperator(t, type, tokens);
     }
 }

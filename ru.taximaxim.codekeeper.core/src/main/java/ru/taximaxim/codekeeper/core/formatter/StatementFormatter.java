@@ -188,7 +188,7 @@ public abstract class StatementFormatter {
     }
 
     private void proccessOperators(int type, int tokenStart, Token t) {
-        if (isOperatorToken(type)) {
+        if (isOperatorToken(type, t)) {
             if (unaryOps.contains(t)) {
                 return;
             }
@@ -262,7 +262,7 @@ public abstract class StatementFormatter {
 
     protected abstract boolean isSpaceToken(int type);
 
-    protected abstract boolean isOperatorToken(int type);
+    protected abstract boolean isOperatorToken(int type, Token t);
 
     protected abstract boolean isNewLineToken(int type);
 }

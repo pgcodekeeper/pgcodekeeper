@@ -49,6 +49,10 @@ public class AntlrError extends ContextLocation {
         this.errorType = errorType;
     }
 
+    public AntlrError(String location, int line, int charPositionInLine, String msg, ErrorTypes errorType) {
+        this(location, line, charPositionInLine, msg, -1, -1, null, errorType);
+    }
+
     public AntlrError copyWithOffset(int offset, int lineOffset, int inLineOffset) {
         return new AntlrError(getFilePath(), getLineNumber() + lineOffset,
                 (getLineNumber() == 1 ? getCharPositionInLine() + inLineOffset : getCharPositionInLine()),
