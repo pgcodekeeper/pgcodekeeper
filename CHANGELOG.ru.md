@@ -21,7 +21,7 @@
 
 - Добавлена возможность создания объектов из шаблонов для всех типов БД.
 - Добавлена поддержка COLUMNSTORE INDEX в MS SQL.
-- Добавлен новый режим `--mode verify` (https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#verifymode) для верификации кода.
+- Добавлен новый режим [--mode verify](https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#verifymode) для верификации кода.
 
 ### Изменено
 

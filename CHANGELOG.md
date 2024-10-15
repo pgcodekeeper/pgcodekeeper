@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added the ability to create objects from templates for all types of databases.
 - Added support for COLUMNSTORE INDEX in MS SQL.
-- Added a new mode `--mode verify` (https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#verifymode) for code verification.
+- Added a new mode [--mode verify](https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#verifymode) for code verification.
 
 ### Changed
 
