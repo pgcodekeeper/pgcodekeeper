@@ -9,17 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added the ability to create objects from templates for all types of databases.
-- Added support for COLUMNSTORE INDEX in MS SQL.
-- Added the ability to check code style according to specified rules.
-
 ### Changed
-
-- Renamed view `pg Dependencies` to `Dependency graph`.
 
 ### Fixed
 
 ### Removed
+
+## [10.1.0] - 2024-10-15
+
+### Added
+
+- Added the ability to create objects from templates for all types of databases.
+- Added support for COLUMNSTORE INDEX in MS SQL.
+- Added a new mode `--mode verify` (https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#verifymode) for code verification.
+
+### Changed
+
+- Renamed view `pg Dependencies` to `Dependency graph`.
 
 ## [10.0.0] - 2024-10-01
 
@@ -2069,7 +2075,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...HEAD
+[10.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...v10.0.0
 [9.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...v9.14.0
 [9.13.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...v9.13.2

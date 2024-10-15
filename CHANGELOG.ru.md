@@ -9,17 +9,23 @@
 
 ### Добавлено
 
-- Добавлена возможность создания объектов из шаблонов для всех типов БД.
-- Добавлена поддержка COLUMNSTORE INDEX в MS SQL.
-- Добавлена возможность проверки стиля кода по заданным правилам.
-
 ### Изменено
-
-- Переименован вид `pg Зависимости` в `Граф зависимостей`.
 
 ### Исправлено
 
 ### Удалено
+
+## [10.1.0] - 2024-10-15
+
+### Добавлено
+
+- Добавлена возможность создания объектов из шаблонов для всех типов БД.
+- Добавлена поддержка COLUMNSTORE INDEX в MS SQL.
+- Добавлен новый режим `--mode verify` (https://pgcodekeeper.readthedocs.io/ru/latest/cli_version.html#verifymode) для верификации кода.
+
+### Изменено
+
+- Переименован вид `pg Зависимости` в `Граф зависимостей`.
 
 ## [10.0.0] - 2024-10-01
 
@@ -2070,7 +2076,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...HEAD
+[10.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...v10.0.0
 [9.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...v9.14.0
 [9.13.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.1...v9.13.2
