@@ -10,3 +10,16 @@ begin
     SELECT c1 from test.mstable;
     return;
 end
+GO
+
+--check INLINE option for MS2022
+CREATE FUNCTION [dbo].[FooBar4](
+    @p1 nVarchar(4000)
+)
+Returns int
+WITH INLINE = ON
+As
+Begin
+  return 123;
+END
+GO

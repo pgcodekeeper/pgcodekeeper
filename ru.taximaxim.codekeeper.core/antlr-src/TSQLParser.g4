@@ -1648,6 +1648,7 @@ function_option
     | RETURNS NULL ON NULL INPUT
     | CALLED ON NULL INPUT
     | execute_clause
+    | INLINE EQUAL on_off
     ;
 
 // https://msdn.microsoft.com/en-us/library/ms188038.aspx
@@ -3395,6 +3396,7 @@ simple_id
     | INFINITE
     | INIT
     | INITIATOR
+    | INLINE
     | INPUT
     | INSENSITIVE
     | INSTEAD
