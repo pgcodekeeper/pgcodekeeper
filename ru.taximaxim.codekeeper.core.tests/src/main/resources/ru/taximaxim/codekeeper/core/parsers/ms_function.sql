@@ -83,3 +83,16 @@ GO
 --drop Function, you can drop multiple at same time
 Drop function Func1
 drop function Func1 , Func2
+GO
+
+--create function return date_type and WITH INLINE = ON
+Create Function dbo.FooBar3(
+    @p1 nVarchar(4000)
+)
+Returns int
+WITH INLINE = ON
+As
+Begin
+  return 123;
+END
+GO
