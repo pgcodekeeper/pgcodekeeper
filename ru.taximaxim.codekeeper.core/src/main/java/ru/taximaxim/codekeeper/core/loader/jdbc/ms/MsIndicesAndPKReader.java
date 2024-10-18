@@ -116,23 +116,15 @@ public class MsIndicesAndPKReader extends JdbcReader {
     }
 
     private Map<String, String> readOption(ResultSet res) throws SQLException {
-        // TODO more options
-        boolean isPadded = res.getBoolean("is_padded");
         boolean isMemoryOptimized = res.getBoolean("is_memory_optimized");
-        boolean isStatisticsIncremental = res.getBoolean("is_incremental");
 
         // cannot be used in memory_optimized tables
         boolean allowRowLocks = isMemoryOptimized || res.getBoolean("allow_row_locks");
         boolean allowPageLocks = isMemoryOptimized || res.getBoolean("allow_page_locks");
-        boolean compression = res.getBoolean("data_compression");
-        long fillfactor = res.getLong("fill_factor");
 
         Map<String, String> options = new HashMap<>();
-        if (isPadded) {
+        if (res.getBoolean("is_padded")) {
             options.put("PAD_INDEX", "ON");
-        }
-        if (isStatisticsIncremental) {
-            options.put("STATISTICS_INCREMENTAL", "ON");
         }
 
         if (!allowPageLocks) {
@@ -143,12 +135,33 @@ public class MsIndicesAndPKReader extends JdbcReader {
             options.put("ALLOW_ROW_LOCKS", "OFF");
         }
 
+        long fillfactor = res.getLong("fill_factor");
         if (fillfactor != 0) {
             options.put("FILLFACTOR", Long.toString(fillfactor));
         }
 
-        if (compression) {
+        if (res.getBoolean("data_compression")) {
             options.put("DATA_COMPRESSION", res.getString("data_compression_desc"));
+        }
+
+        if (res.getBoolean("ignore_dup_key")) {
+            options.put("IGNORE_DUP_KEY", "ON");
+        }
+
+        if (res.getBoolean("no_recompute")) {
+            options.put("STATISTICS_NORECOMPUTE", "ON");
+        }
+
+        if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion()) && res.getBoolean("is_incremental")) {
+            options.put("STATISTICS_INCREMENTAL", "ON");
+        }
+
+        if (SupportedMsVersion.VERSION_19.isLE(loader.getVersion()) && res.getBoolean("optimize_for_sequential_key")) {
+            options.put("OPTIMIZE_FOR_SEQUENTIAL_KEY", "ON");
+        }
+
+        if (SupportedMsVersion.VERSION_22.isLE(loader.getVersion()) && res.getBoolean("xml_compression")) {
+            options.put("XML_COMPRESSION", res.getString("xml_compression_desc"));
         }
 
         return options;
@@ -168,7 +181,6 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .column("res.is_unique_constraint")
         .column("INDEXPROPERTY(res.object_id, res.name, 'IsClustered') AS is_clustered")
         .column("res.is_padded")
-        .column("st.is_incremental")
         .column("sp.data_compression")
         .column("sp.data_compression_desc")
         .column("res.allow_page_locks")
@@ -177,6 +189,8 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .column("res.filter_definition")
         .column("d.name AS data_space")
         .column("ctt.is_track_columns_updated_on AS is_tracked")
+        .column("res.ignore_dup_key")
+        .column("st.no_recompute")
         .from("sys.indexes res WITH (NOLOCK)")
         .join("LEFT JOIN sys.filegroups f WITH (NOLOCK) ON res.data_space_id = f.data_space_id")
         .join("LEFT JOIN sys.data_spaces d WITH (NOLOCK) ON res.data_space_id = d.data_space_id")
@@ -186,6 +200,20 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .join("JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = res.object_id AND sp.index_id = res.index_id AND sp.partition_number = 1")
         .where("o.type = 'U'")
         .where("res.type IN (1, 2, 5, 6)");
+
+        if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
+            builder.column("st.is_incremental");
+        }
+
+        if (SupportedMsVersion.VERSION_19.isLE(loader.getVersion())) {
+            builder.column("res.optimize_for_sequential_key");
+        }
+
+        if (SupportedMsVersion.VERSION_22.isLE(loader.getVersion())) {
+            builder
+            .column("sp.xml_compression")
+            .column("sp.xml_compression_desc");
+        }
     }
 
     protected void addMsColsPart(QueryBuilder builder) {
@@ -209,8 +237,9 @@ public class MsIndicesAndPKReader extends JdbcReader {
         String query = MessageFormat.format(cols,
                 SupportedMsVersion.VERSION_22.isLE(loader.getVersion()) ? orderColsStr : "");
 
-        builder.column("cc.cols");
-        builder.join(query);
+        builder
+        .column("cc.cols")
+        .join(query);
     }
 
     @Override
