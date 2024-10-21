@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed error text in CLI version.
+
 ### Removed
 
 ## [10.1.0] - 2024-10-15

@@ -141,14 +141,14 @@ class CliArgsTest {
             "filename filename --simplify-views --db-type MS;"
                     + "option \"--simplify-views\" cannot be used with dbType: MS",
 
-            "--insert jdbc:postgresql:q;"
+            "--mode INSERT jdbc:postgresql:q;"
                     + "Please specify argument \"--insert-name\"",
 
-            "--insert-name table_name jdbc:postgresql:q;"
-                    + "Please specify both SOURCE and DEST.",
+            "--insert-name table_name --insert-filter filter jdbc:postgresql:q;"
+                    + "option \"--insert-name\" cannot be used with mode: DIFF",
 
             "--mode INSERT --insert-name table_name --db-type CH jdbc:ch:q;"
-                    + "option \"--mode INSERT\" cannot be used with dbType: CH",
+                    + "option \"--insert-name\" requires the option(s) [--insert-filter]",
 
             "--mode INSERT filename;"
                     + "Cannot run work with non-database source.",
