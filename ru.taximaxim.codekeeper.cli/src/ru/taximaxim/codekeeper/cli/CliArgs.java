@@ -362,7 +362,7 @@ public class CliArgs extends PgDiffArguments {
             usage="invert graph filter object types: hide objects specified by the filter")
     private boolean graphInvertFilter;
 
-    @Option(name="--insert-name", metaVar="<name>",
+    @Option(name="--insert-name", metaVar="<name>", depends="--insert-filter",
             usage="name of start object in data insert mode")
     private String insertName;
 
@@ -804,11 +804,8 @@ public class CliArgs extends PgDiffArguments {
         // backwards compatibility
         convertDeprecatedArguments();
 
-        if (mode == CliMode.DIFF && (oldSrc == null || newSrc == null)) {
-            if (clearLibCache) {
-                return true;
-            }
-            badArgs("Please specify both SOURCE and DEST.");
+        if (clearLibCache && CliMode.DIFF == mode && (oldSrc == null || newSrc == null)) {
+            return true;
         }
 
         checkModeParams();
@@ -816,6 +813,9 @@ public class CliArgs extends PgDiffArguments {
         checkParams();
 
         if (CliMode.DIFF == mode) {
+            if (oldSrc == null || newSrc == null) {
+                badArgs("Please specify both SOURCE and DEST.");
+            }
             setOldSrcFormat(parsePath(oldSrc));
         } else if (CliMode.PARSE == mode && projUpdate) {
             setOldSrc(outputTarget);
