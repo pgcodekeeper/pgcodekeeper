@@ -21,11 +21,11 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_elementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Type_definitionContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
@@ -66,8 +66,7 @@ public class CreateMsType extends MsParserAbstract {
 
             type.setAssemblyClass(assemblyClass);
         } else {
-            for (Column_def_table_constraintContext con :
-                def.column_def_table_constraints().column_def_table_constraint()) {
+            for (var con : def.table_elements().table_element()) {
                 fillTableType(con, type);
             }
             type.setMemoryOptimized(def.WITH() != null && def.on_off().ON() != null);
@@ -77,9 +76,9 @@ public class CreateMsType extends MsParserAbstract {
         addSafe(getSchemaSafe(ids), type, ids);
     }
 
-    private void fillTableType(Column_def_table_constraintContext colCtx, MsType type) {
-        if (colCtx.table_constraint() != null) {
-            Table_constraint_bodyContext body = colCtx.table_constraint().table_constraint_body();
+    private void fillTableType(Table_elementContext tableElementContext, MsType type) {
+        if (tableElementContext.table_constraint() != null) {
+            Table_constraint_bodyContext body = tableElementContext.table_constraint().table_constraint_body();
             if (body.column_name_list_with_order() != null) {
                 type.addChild(getMsPKConstraint(null, null, null, body));
             } else {
@@ -87,9 +86,10 @@ public class CreateMsType extends MsParserAbstract {
                 constrCheck.setExpression(getFullCtxTextWithCheckNewLines(body.search_condition()));
                 type.addChild(constrCheck);
             }
-        } else if (colCtx.table_index() != null) {
-            type.addChild(getIndex(colCtx.table_index()));
+        } else if (tableElementContext.table_index() != null) {
+            type.addChild(getIndex(tableElementContext.table_index()));
         } else {
+            var colCtx = tableElementContext.column_def();
             MsColumn col = new MsColumn(colCtx.id().getText());
 
             if (colCtx.data_type() != null) {

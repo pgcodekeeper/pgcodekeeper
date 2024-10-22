@@ -29,14 +29,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.CustomParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_tableContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_table_actionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Schema_alterContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_action_dropContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_elements_extendedContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -67,58 +67,58 @@ public class AlterMsTable extends MsTableAbstract {
         List<ParserRuleContext> ids = Arrays.asList(schemaCtx, nameCtx);
         AbstractSchema schema = getSchemaSafe(ids);
         AbstractTable table = getSafe(AbstractSchema::getTable, schema, nameCtx);
-        PgObjLocation ref = addObjReference(Arrays.asList(schemaCtx, nameCtx),
-                DbObjType.TABLE, ACTION_ALTER);
+        PgObjLocation ref = addObjReference(ids, DbObjType.TABLE, ACTION_ALTER);
 
-        Column_def_table_constraintsContext constrs = ctx.column_def_table_constraints();
-        if (constrs != null ) {
-            addConstraint(constrs, table, schemaCtx, nameCtx);
-        } else if (ctx.CONSTRAINT() != null && ctx.ALL() == null) {
-            for (IdContext id : ctx.name_list().id()) {
+        var tableActionCtx = ctx.alter_table_action();
+        var elements = tableActionCtx.table_elements_extended();
+        if (elements != null) {
+            addConstraints(elements, table, schemaCtx, nameCtx);
+        } else if (tableActionCtx.CONSTRAINT() != null && tableActionCtx.ALL() == null) {
+            for (IdContext id : tableActionCtx.name_list().id()) {
                 MsConstraint constr = (MsConstraint) getSafe(AbstractTable::getConstraint, table, id);
-                if (ctx.WITH() != null) {
-                    doSafe(AbstractConstraint::setNotValid, constr, ctx.nocheck_check != null);
+                if (tableActionCtx.WITH() != null) {
+                    doSafe(AbstractConstraint::setNotValid, constr, tableActionCtx.nocheck_check != null);
                 }
-                doSafe(MsConstraint::setDisabled, constr, ctx.nocheck != null);
+                doSafe(MsConstraint::setDisabled, constr, tableActionCtx.nocheck != null);
             }
-        } else if (ctx.table_drop != null) {
-            for (Table_action_dropContext drop : ctx.table_action_drop()) {
+        } else if (tableActionCtx.table_drop != null) {
+            for (Table_action_dropContext drop : tableActionCtx.table_action_drop()) {
                 if (drop.COLUMN() != null) {
                     ref.setWarning(DangerStatement.DROP_COLUMN);
                     break;
                 }
             }
-        } else if (ctx.column_definition() != null) {
+        } else if (tableActionCtx.column_definition() != null) {
             ref.setWarning(DangerStatement.ALTER_COLUMN);
-        } else if (ctx.TRIGGER() != null && ctx.ALL() == null) {
-            for (IdContext trigger : ctx.name_list().id()) {
+        } else if (tableActionCtx.TRIGGER() != null && tableActionCtx.ALL() == null) {
+            for (IdContext trigger : tableActionCtx.name_list().id()) {
                 MsTrigger tr = (MsTrigger) getSafe(AbstractTable::getTrigger, table, trigger);
-                doSafe(MsTrigger::setDisable, tr, ctx.ENABLE() == null);
+                doSafe(MsTrigger::setDisable, tr, tableActionCtx.ENABLE() == null);
                 addObjReference(Arrays.asList(schemaCtx, nameCtx, trigger),
                         DbObjType.TRIGGER, ACTION_ALTER);
             }
-        } else if (ctx.CHANGE_TRACKING() != null && ctx.ENABLE() != null && !isRefMode()) {
-            AntlrParser.submitAntlrTask(antlrTasks, () -> ctx, altTablCtx -> parseTracked(table, altTablCtx));
+        } else if (tableActionCtx.CHANGE_TRACKING() != null && tableActionCtx.ENABLE() != null && !isRefMode()) {
+            AntlrParser.submitAntlrTask(antlrTasks, () -> tableActionCtx, actionCtx -> parseTracked(table, actionCtx));
         }
     }
 
-    private void parseTracked(AbstractTable table, Alter_tableContext altTablCtx) {
+    private void parseTracked(AbstractTable table, Alter_table_actionContext actionCtx) {
         table.getConstraints().stream()
-        .filter(MsConstraintPk.class::isInstance)
-        .map(MsConstraintPk.class::cast)
-        .findFirst()
-        .ifPresentOrElse(e -> e.setTracked(altTablCtx.on_off().ON() != null), () -> {
-            var ex = new UnresolvedReferenceException(
+            .filter(MsConstraintPk.class::isInstance)
+            .map(MsConstraintPk.class::cast)
+            .findFirst()
+            .ifPresentOrElse(e -> e.setTracked(actionCtx.on_off().ON() != null), () -> {
+                var ex = new UnresolvedReferenceException(
                         "To enable change tracking, a table must have a primary key.",
-                        altTablCtx.CHANGE_TRACKING().getSymbol());
-            errors.add(CustomParserListener.handleUnresolvedReference(ex, fileName));
-        });
+                        actionCtx.CHANGE_TRACKING().getSymbol());
+                errors.add(CustomParserListener.handleUnresolvedReference(ex, fileName));
+            });
     }
 
-    private void addConstraint(Column_def_table_constraintsContext constrs, AbstractTable table, IdContext schemaCtx,
+    private void addConstraints(Table_elements_extendedContext elementsCtx, AbstractTable table, IdContext schemaCtx,
             IdContext nameCtx) {
-        for (Column_def_table_constraintContext colCtx : constrs.column_def_table_constraint()) {
-            Table_constraintContext constrCtx = colCtx.table_constraint();
+        for (var elementCtx : elementsCtx.table_element_extended()) {
+            Table_constraintContext constrCtx = elementCtx.table_constraint();
             if (constrCtx == null) {
                 continue;
             }
@@ -134,7 +134,7 @@ public class AlterMsTable extends MsTableAbstract {
                 db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, expCtx, fileName));
             } else {
                 AbstractConstraint con = getMsConstraint(constrCtx, schemaCtx.getText(), nameCtx.getText());
-                con.setNotValid(ctx.nocheck_add != null);
+                con.setNotValid(ctx.alter_table_action().nocheck_add != null);
                 IdContext id = constrCtx.id();
                 if (id != null) {
                     addSafe(table, con, Arrays.asList(schemaCtx, nameCtx, id));
@@ -149,9 +149,10 @@ public class AlterMsTable extends MsTableAbstract {
     protected PgObjLocation fillQueryLocation(ParserRuleContext ctx) {
         PgObjLocation loc = super.fillQueryLocation(ctx);
         Alter_tableContext alterTblCtx  = ((Schema_alterContext) ctx).alter_table();
-        if (alterTblCtx.DROP() != null && alterTblCtx.COLUMN() != null) {
+        var tableActionCtx = alterTblCtx.alter_table_action();
+        if (tableActionCtx.DROP() != null && tableActionCtx.COLUMN() != null) {
             loc.setWarning(DangerStatement.DROP_COLUMN);
-        } else if (alterTblCtx.ALTER() != null && alterTblCtx.COLUMN() != null) {
+        } else if (tableActionCtx.ALTER() != null && tableActionCtx.COLUMN() != null) {
             loc.setWarning(DangerStatement.ALTER_COLUMN);
         }
         return loc;

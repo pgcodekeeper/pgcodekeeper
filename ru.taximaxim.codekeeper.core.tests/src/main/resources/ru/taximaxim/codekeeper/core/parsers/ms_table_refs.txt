@@ -78,3 +78,32 @@ Reference: Object = t1 (TABLE), action = CREATE, offset = 7211, line number = 26
 Reference: Object = t1 (TABLE), action = CREATE, offset = 7323, line number = 272, charPositionInLine = 13
 Reference: Object = t1 (TABLE), action = CREATE, offset = 7453, line number = 279, charPositionInLine = 13
 Reference: Object = t1 (TABLE), action = CREATE, offset = 7519, line number = 285, charPositionInLine = 13
+Reference: Object = "AccessControl" (SCHEMA), action = null, offset = 7669, line number = 292, charPositionInLine = 13
+Reference: Object = "AccessControl"."KeyCardEvents" (TABLE), action = CREATE, offset = 7685, line number = 292, charPositionInLine = 29
+Reference: Object = "HR" (SCHEMA), action = null, offset = 8437, line number = 314, charPositionInLine = 13
+Reference: Object = "HR"."Employees" (TABLE), action = CREATE, offset = 8442, line number = 314, charPositionInLine = 18
+Reference: Object = "Department" (TABLE), action = CREATE, offset = 8617, line number = 323, charPositionInLine = 13
+Reference: Object = dbo (SCHEMA), action = null, offset = 9066, line number = 336, charPositionInLine = 13
+Reference: Object = dbo.data_retention_table (TABLE), action = CREATE, offset = 9072, line number = 336, charPositionInLine = 19
+Reference: Object = "Customers" (TABLE), action = CREATE, offset = 9302, line number = 345, charPositionInLine = 13
+Reference: Object = "Department" (TABLE), action = CREATE, offset = 9823, line number = 362, charPositionInLine = 13
+Reference: Object = dbo (SCHEMA), action = null, offset = 10348, line number = 378, charPositionInLine = 13
+Reference: Object = dbo."Department" (TABLE), action = CREATE, offset = 10352, line number = 378, charPositionInLine = 17
+Reference: Object = "T1" (TABLE), action = CREATE, offset = 10919, line number = 396, charPositionInLine = 13
+Reference: Object = dbo (SCHEMA), action = null, offset = 11112, line number = 405, charPositionInLine = 13
+Reference: Object = dbo."T1" (TABLE), action = CREATE, offset = 11116, line number = 405, charPositionInLine = 17
+Reference: Object = dbo (SCHEMA), action = null, offset = 11233, line number = 413, charPositionInLine = 13
+Reference: Object = dbo."T1" (TABLE), action = CREATE, offset = 11237, line number = 413, charPositionInLine = 17
+Reference: Object = "HumanResources" (SCHEMA), action = null, offset = 11358, line number = 421, charPositionInLine = 13
+Reference: Object = "HumanResources"."EmployeeResumes" (TABLE), action = CREATE, offset = 11373, line number = 421, charPositionInLine = 28
+Reference: Object = "Department" (TABLE), action = CREATE, offset = 11561, line number = 429, charPositionInLine = 13
+Reference: Object = "Department" (TABLE), action = CREATE, offset = 12078, line number = 446, charPositionInLine = 13
+Reference: action = CREATE EXTERNAL TABLE, offset = 12595, line number = 463, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL TABLE, offset = 12927, line number = 477, charPositionInLine = 0
+Reference: action = CREATE EXTERNAL TABLE, offset = 13177, line number = 486, charPositionInLine = 0
+Reference: Object = "InsurancePolicy" (TABLE), action = ALTER, offset = 13425, line number = 499, charPositionInLine = 12
+Reference: Object = "Department" (TABLE), action = ALTER, offset = 13548, line number = 503, charPositionInLine = 12
+Reference: Object = "Department" (TABLE), action = ALTER, offset = 13611, line number = 507, charPositionInLine = 12
+Reference: Object = "ProjectTask" (TABLE), action = ALTER, offset = 13773, line number = 512, charPositionInLine = 12
+Reference: Object = "InsurancePolicy" (TABLE), action = ALTER, offset = 13861, line number = 516, charPositionInLine = 12
+Reference: action = CREATE EXTERNAL TABLE, offset = 14143, line number = 522, charPositionInLine = 0

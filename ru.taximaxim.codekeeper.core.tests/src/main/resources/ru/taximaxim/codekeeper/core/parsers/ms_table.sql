@@ -287,3 +287,240 @@ CREATE TABLE t1
     c1 INT,
     INDEX index_name2 UNIQUE NONCLUSTERED ([c1]) with (fillfactor=10)
 );
+
+--create table with LEDGER (since mssql 2022)
+CREATE TABLE [AccessControl].[KeyCardEvents]
+(
+    EmployeeID INT NOT NULL,
+    AccessOperationDescription NVARCHAR (MAX) NOT NULL,
+    [Timestamp] Datetime2 NOT NULL,
+    StartTransactionId BIGINT GENERATED ALWAYS AS TRANSACTION_ID START HIDDEN NOT NULL,
+    StartSequenceNumber BIGINT GENERATED ALWAYS AS SEQUENCE_NUMBER START HIDDEN NOT NULL
+)
+WITH (
+    LEDGER = ON (
+        LEDGER_VIEW = [AccessControl].[KeyCardEventsLedger] (
+            TRANSACTION_ID_COLUMN_NAME = TransactionId,
+            SEQUENCE_NUMBER_COLUMN_NAME = SequenceNumber,
+            OPERATION_TYPE_COLUMN_NAME = OperationId,
+            OPERATION_TYPE_DESC_COLUMN_NAME = OperationTypeDescription
+        ),
+        APPEND_ONLY = ON
+    )
+);
+GO
+
+--create table with LEDGER, SYSTEM_VERSIONING
+CREATE TABLE [HR].[Employees]
+(
+    EmployeeID INT NOT NULL,
+    Salary Money NOT NULL
+)
+WITH (SYSTEM_VERSIONING = ON, LEDGER = ON);
+GO
+
+--create table with PERIOD FOR SYSTEM_TIME
+CREATE TABLE Department
+(
+    DepartmentNumber CHAR(10) NOT NULL PRIMARY KEY CLUSTERED,
+    DepartmentName VARCHAR(50) NOT NULL,
+    ManagerID INT NULL,
+    ParentDepartmentNumber CHAR(10) NULL,
+    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
+    ValidTo DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
+    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+)
+WITH (SYSTEM_VERSIONING = ON);
+
+--create table with DATA_DELETION
+CREATE TABLE [dbo].[data_retention_table]
+(
+  [dbdatetime2] datetime2(7),
+  [product_code] int,
+  [value] char(10)
+)
+WITH (DATA_DELETION = ON ( FILTER_COLUMN = [dbdatetime2], RETENTION_PERIOD = 1 WEEKS ))
+
+--create table with ENCRYPTED
+CREATE TABLE Customers (
+    CustName NVARCHAR(60)
+        ENCRYPTED WITH (
+            COLUMN_ENCRYPTION_KEY = MyCEK,
+            ENCRYPTION_TYPE = RANDOMIZED,
+            ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'
+        ),
+    SSN VARCHAR(11) COLLATE Latin1_General_BIN2
+        ENCRYPTED WITH (
+            COLUMN_ENCRYPTION_KEY = MyCEK,
+            ENCRYPTION_TYPE = DETERMINISTIC ,
+            ALGORITHM = 'AEAD_AES_256_CBC_HMAC_SHA_256'
+        ),
+    Age INT NULL
+);
+
+--create table with DATA_CONSISTENCY_CHECK
+CREATE TABLE Department
+(
+    DepartmentNumber CHAR(10) NOT NULL PRIMARY KEY CLUSTERED,
+    DepartmentName VARCHAR(50) NOT NULL,
+    ManagerID INT NULL,
+    ParentDepartmentNumber CHAR(10) NULL,
+    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
+    ValidTo DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
+    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+)
+WITH
+(
+    SYSTEM_VERSIONING = ON (HISTORY_TABLE = dbo.Department_History, DATA_CONSISTENCY_CHECK = ON)
+);
+
+--create table with other options
+CREATE TABLE dbo.Department
+(
+    DepartmentNumber CHAR(10) NOT NULL PRIMARY KEY NONCLUSTERED,
+    DepartmentName VARCHAR(50) NOT NULL,
+    ManagerID INT NULL,
+    ParentDepartmentNumber CHAR(10) NULL,
+    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
+    ValidTo DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
+    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+)
+WITH
+(
+    MEMORY_OPTIMIZED = ON,
+    DURABILITY = SCHEMA_AND_DATA,
+    SYSTEM_VERSIONING = ON (HISTORY_TABLE = History.DepartmentHistory)
+);
+
+--create table with COLUMN_SET option
+CREATE TABLE T1
+(
+    c1 INT PRIMARY KEY,
+    c2 VARCHAR(50) SPARSE NULL,
+    c3 INT SPARSE NULL
+    --CSet XML COLUMN_SET FOR ALL_SPARSE_COLUMNS
+);
+
+--create table with XML_COMPRESSION option
+CREATE TABLE dbo.T1
+(
+    c1 INT,
+    c2 XML
+)
+WITH (XML_COMPRESSION = ON);
+
+--create table with DATA_COMPRESSION option
+CREATE TABLE dbo.T1
+(
+    c1 INT,
+    c2 NVARCHAR(200)
+)
+WITH (DATA_COMPRESSION = ROW);
+
+--create table with xml column type
+CREATE TABLE HumanResources.EmployeeResumes
+(
+    LName nvarchar(25),
+    FName nvarchar(25),
+    Resume xml(DOCUMENT HumanResources.HRResumeSchemaCollection)
+);
+
+--create table with REMOTE_DATA_ARCHIVE
+CREATE TABLE Department
+(
+    DepartmentNumber CHAR(10) NOT NULL PRIMARY KEY CLUSTERED,
+    DepartmentName VARCHAR(50) NOT NULL,
+    ManagerID INT NULL,
+    ParentDepartmentNumber CHAR(10) NULL,
+    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
+    ValidTo DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
+    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+)
+WITH
+(
+    REMOTE_DATA_ARCHIVE = ON (FILTER_PREDICATE = function1,
+ 	MIGRATION_STATE = INBOUND)
+);
+
+--create table with DATA_DELETION
+CREATE TABLE Department
+(
+    DepartmentNumber CHAR(10) NOT NULL PRIMARY KEY CLUSTERED,
+    DepartmentName VARCHAR(50) NOT NULL,
+    ManagerID INT NULL,
+    ParentDepartmentNumber CHAR(10) NULL,
+    ValidFrom DATETIME2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
+    ValidTo DATETIME2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
+    PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo)
+)
+WITH
+(DATA_DELETION = ON
+           (FILTER_COLUMN = ManagerID,
+            RETENTION_PERIOD = 5 DAYS) 
+);
+
+--create EXTERNAL TABLE with AS SELECT
+CREATE EXTERNAL TABLE dbo.FactInternetSalesNew
+    WITH (
+            LOCATION = '/files/Customer',
+            DATA_SOURCE = customer_ds,
+            FILE_FORMAT = customer_ff
+            ) AS
+
+SELECT T1.*
+FROM dbo.FactInternetSales T1
+INNER JOIN dbo.DimCustomer T2
+    ON (T1.CustomerKey = T2.CustomerKey)
+OPTION (HASH JOIN);
+GO
+
+CREATE EXTERNAL TABLE [dbo].[<myexternaltable>] WITH (
+        LOCATION = '<myoutputsubfolder>/',
+        DATA_SOURCE = [SynapseSQLwriteable],
+        FILE_FORMAT = [ParquetFF]
+) AS
+SELECT * FROM [<myview>];
+GO
+
+--EXTERNAL TABLE without AS Select...
+CREATE EXTERNAL TABLE ClickStream (
+    url varchar(50),
+    event_date date,
+    user_IP varchar(50)
+)
+WITH (
+        LOCATION='/webdata/employee.tbl',
+        DATA_SOURCE = mydatasource,
+        FILE_FORMAT = myfileformat
+    )
+;
+GO
+
+ALTER TABLE InsurancePolicy
+SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE = ddd.ggg, HISTORY_RETENTION_PERIOD = 1 YEAR));
+GO
+
+ALTER TABLE Department
+    SET (SYSTEM_VERSIONING = OFF) ;
+GO
+
+ALTER TABLE Department
+    SET (SYSTEM_VERSIONING = ON (HISTORY_TABLE=dbo.DepartmentHistory,
+                                 DATA_CONSISTENCY_CHECK = OFF));
+GO
+
+ALTER TABLE ProjectTask
+ADD PERIOD FOR SYSTEM_TIME ([Changed Date], [Revised Date])
+GO
+
+ALTER TABLE InsurancePolicy
+ADD PERIOD FOR SYSTEM_TIME (ValidFrom, ValidTo),
+ValidFrom datetime2 GENERATED ALWAYS AS ROW START HIDDEN NOT NULL DEFAULT SYSUTCDATETIME(),
+ValidTo datetime2 GENERATED ALWAYS AS ROW END HIDDEN NOT NULL DEFAULT CONVERT(DATETIME2, '9999-12-31 23:59:59.99999999')
+GO
+
+CREATE EXTERNAL TABLE dbo.FactInternetSalesNew (c1, c2)
+WITH (LOCATION = '/files/Customer', DATA_SOURCE = customer_ds, FILE_FORMAT = customer_ff)
+AS
+SELECT T1.* FROM dbo.FactInternetSales T1 INNER JOIN dbo.DimCustomer T2 ON (T1.CustomerKey = T2.CustomerKey) OPTION (HASH JOIN);
+GO

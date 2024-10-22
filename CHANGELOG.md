@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for MSSQL 2019-2022 versions.
 - Added support for new options for INDEX in MS SQL.
 
 ### Changed
