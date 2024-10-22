@@ -266,4 +266,93 @@ CREATE SYNONYM dbo.CorrectOrder
 FOR dbo.OrderDozen;
 GO
 
+BACKUP CERTIFICATE Shipping04 TO FILE = 'c:\storedcerts\shipping04cert.pfx'
+WITH  
+    FORMAT = 'PFX',  
+    PRIVATE KEY ( 
+ENCRYPTION BY PASSWORD = '9n34khUbhk$w4ecJH5gh'
+    )
+GO
 
+RESTORE SYMMETRIC KEY symmetric_key
+   FROM FILE = 'c:\temp_backups\keys\symmetric_key' 
+   DECRYPTION BY PASSWORD = '3dH85Hhk003#GHkf02597gheij04'   
+   ENCRYPTION BY PASSWORD = '259087M#MyjkFkjhywiyedfgGDFD';
+GO
+
+RESTORE SYMMETRIC KEY symmetric_key 
+   FROM URL = 'https://mydocsteststorage.blob.core.windows.net/mytestcontainer/symmetric_key.bak'
+   DECRYPTION BY PASSWORD = '3dH85Hhk003#GHkf02597gheij04'   
+   ENCRYPTION BY PASSWORD = '259087M#MyjkFkjhywiyedfgGDFD';
+GO
+
+CREATE EXTERNAL DATA SOURCE MyOracleServer
+WITH (
+    LOCATION = 'oracle://145.145.145.145:1521',
+    CREDENTIAL = OracleProxyAccount,
+    PUSHDOWN = ON
+);
+GO
+
+--CREATE EXTERNAL DATA 2022
+CREATE DATABASE SCOPED CREDENTIAL [OracleProxyCredential]
+    WITH IDENTITY = 'oracle_username',
+    SECRET = 'oracle_password';
+
+CREATE EXTERNAL DATA SOURCE [OracleSalesSrvr]
+WITH (
+    LOCATION = 'oracle://145.145.145.145:1521',
+    CONNECTION_OPTIONS = 'ImpersonateUser=%CURRENT_USER',
+    CREDENTIAL = [OracleProxyCredential]
+);
+
+--CREATE EXTERNAL LANGUAGE 2022
+CREATE EXTERNAL LANGUAGE Java 
+FROM (CONTENT = N'<path-to-zip>', FILE_NAME = 'javaextension.dll');
+GO
+
+CREATE EXTERNAL LANGUAGE Java
+FROM
+(CONTENT = N'<path-to-zip>', FILE_NAME = 'javaextension.dll', PLATFORM = WINDOWS),
+(CONTENT = N'<path-to-tar.gz>', FILE_NAME = 'javaextension.so', PLATFORM = LINUX);
+GO
+
+ALTER EXTERNAL LANGUAGE Java 
+SET (CONTENT = N'<path-to-zip>', FILE_NAME = 'javaextension.dll');
+GO
+
+CREATE EXTERNAL FILE FORMAT parquetfile1
+WITH (
+    FORMAT_TYPE = PARQUET,
+    DATA_COMPRESSION = ''
+);
+
+CREATE EXTERNAL FILE FORMAT skipHeader_CSV
+WITH (FORMAT_TYPE = DELIMITEDTEXT,
+      FORMAT_OPTIONS(
+          FIELD_TERMINATOR = ',',
+          STRING_DELIMITER = '"',
+          FIRST_ROW = 2,
+          USE_TYPE_DEFAULT = True)
+);
+
+CREATE EXTERNAL FILE FORMAT DeltaFileFormat
+WITH (
+    FORMAT_TYPE = DELTA
+);
+
+CREATE EXTERNAL FILE FORMAT textdelimited1
+WITH (
+    FORMAT_TYPE = DELIMITEDTEXT,
+    FORMAT_OPTIONS (
+        FIELD_TERMINATOR = '|',
+        DATE_FORMAT = 'MM/dd/yyyy' ),
+    DATA_COMPRESSION = 'org.apache.hadoop.io.compress.GzipCodec'
+);
+
+CREATE EXTERNAL FILE FORMAT rcfile1
+WITH (
+    FORMAT_TYPE = RCFILE,
+    SERDE_METHOD = 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe',
+    DATA_COMPRESSION = 'org.apache.hadoop.io.compress.DefaultCodec'
+);

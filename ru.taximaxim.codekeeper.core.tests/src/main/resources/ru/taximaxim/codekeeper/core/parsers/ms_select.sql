@@ -1559,3 +1559,27 @@ FOR XML RAW ('ns1:Prod'), ELEMENTS;
 WITH XMLNAMESPACES ('urn:schemas-microsoft-com:xml-sql' as sql)
 SELECT 'SELECT * FROM Customers FOR XML AUTO, ROOT("a")' AS "sql:query"
 FOR XML PATH('sql:root');
+
+--WINDOW clause
+SELECT win AS [Row Number],
+    p.LastName,
+    s.SalesYTD,
+    a.PostalCode
+FROM Sales.SalesPerson AS s
+INNER JOIN Person.Person AS p  ON s.BusinessEntityID = p.BusinessEntityID
+INNER JOIN Person.Address AS a ON a.AddressID = p.BusinessEntityID
+WHERE TerritoryID IS NOT NULL AND SalesYTD <> 0
+WINDOW win AS (PARTITION BY PostalCode ORDER BY SalesYTD DESC)
+ORDER BY PostalCode;
+GO
+
+SELECT SalesOrderID AS OrderNumber,
+    ProductID,
+    OrderQty AS Qty,
+    SUM(OrderQty) OVER win AS Total,
+    AVG(OrderQty) OVER (win PARTITION BY SalesOrderID) AS Avg,
+    COUNT(OrderQty) OVER (win ROWS BETWEEN UNBOUNDED PRECEDING AND 1 FOLLOWING) AS Count
+FROM Sales.SalesOrderDetail
+WHERE SalesOrderID IN (43659, 43664) AND ProductID LIKE '71%' 
+WINDOW win AS (ORDER BY SalesOrderID, ProductID);
+GO

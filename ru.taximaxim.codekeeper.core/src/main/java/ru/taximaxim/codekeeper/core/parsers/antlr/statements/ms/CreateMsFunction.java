@@ -25,10 +25,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsFuncProcTrigAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_specifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Batch_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_or_alter_functionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Func_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Func_returnContext;
@@ -38,6 +36,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Procedure
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sql_clausesContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_elementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_elementsContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.Argument;
@@ -152,16 +152,25 @@ public class CreateMsFunction extends BatchContextProcessor {
     }
 
     private void analyzeReturn(Func_returnContext ret, AbstractFunction function) {
-        Column_def_table_constraintsContext cons = ret.column_def_table_constraints();
-        if (cons != null) {
-            for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
-                Data_typeContext dt = con.data_type();
+        var typeCtx = ret.data_type();
+        if (typeCtx != null) {
+            addTypeDepcy(typeCtx, function);
+            return;
+        }
+
+        Table_elementsContext elements = ret.table_elements();
+        if (elements == null) {
+            return;
+        }
+
+        for (Table_elementContext element : elements.table_element()) {
+            Column_defContext colCtx = element.column_def();
+            if (colCtx != null) {
+                var dt = colCtx.data_type();
                 if (dt != null) {
                     addTypeDepcy(dt, function);
                 }
             }
-        } else if (ret.data_type() != null) {
-            addTypeDepcy(ret.data_type(), function);
         }
     }
 

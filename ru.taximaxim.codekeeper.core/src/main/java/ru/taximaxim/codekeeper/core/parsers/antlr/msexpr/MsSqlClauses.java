@@ -22,8 +22,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Another_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Block_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Cfl_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Cursor_commonContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Cursor_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
@@ -53,6 +51,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_st
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Set_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sql_clausesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.St_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_elementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Top_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Truncate_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Try_catch_statementContext;
@@ -298,12 +297,15 @@ public class MsSqlClauses extends MsAbstractExpr {
             }
         }
 
-        Column_def_table_constraintsContext cons = dec.column_def_table_constraints();
-        if (cons != null) {
-            for (Column_def_table_constraintContext con : cons.column_def_table_constraint()) {
-                Data_typeContext dt = con.data_type();
-                if (dt != null) {
-                    addTypeDepcy(dt);
+        var elementsCtx = dec.table_elements();
+        if (elementsCtx != null) {
+            for (Table_elementContext elementCtx : elementsCtx.table_element()) {
+                var colCtx = elementCtx.column_def();
+                if (colCtx != null) {
+                    var dt = colCtx.data_type();
+                    if (dt != null) {
+                        addTypeDepcy(dt);
+                    }
                 }
             }
         }

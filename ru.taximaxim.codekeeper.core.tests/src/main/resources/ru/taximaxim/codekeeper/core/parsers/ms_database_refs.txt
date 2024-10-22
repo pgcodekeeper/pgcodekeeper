@@ -48,3 +48,4 @@ Reference: action = ALTER DATABASE, offset = 4697, line number = 226, charPositi
 Reference: action = ALTER DATABASE, offset = 4768, line number = 230, charPositionInLine = 0
 Reference: action = ALTER DATABASE, offset = 4856, line number = 235, charPositionInLine = 0
 Reference: action = ALTER DATABASE, offset = 5031, line number = 244, charPositionInLine = 0
+Reference: action = CREATE DATABASE, offset = 5162, line number = 248, charPositionInLine = 0

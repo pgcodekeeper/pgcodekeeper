@@ -24,12 +24,15 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ClusteredContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_def_table_constraintContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Column_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Columnstore_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_tableContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraintContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_element_extendedContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_optionsContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
@@ -81,7 +84,7 @@ public class CreateMsTable extends MsTableAbstract {
             fillOptions(table, options.index_option());
         }
 
-        for (Column_def_table_constraintContext colCtx : ctx.column_def_table_constraints().column_def_table_constraint()) {
+        for (Table_element_extendedContext colCtx : ctx.table_elements_extended().table_element_extended()) {
             fillColumn(colCtx, table);
         }
 
@@ -89,54 +92,74 @@ public class CreateMsTable extends MsTableAbstract {
         addSafe(getSchemaSafe(ids), table, ids);
     }
 
-    private void fillColumn(Column_def_table_constraintContext colCtx, MsTable table) {
+    private void fillColumn(Table_element_extendedContext tableElementCtx, MsTable table) {
         IdContext schemaCtx = ctx.qualified_name().schema;
         IdContext tableCtx = ctx.qualified_name().name;
+        String schemaName = schemaCtx == null ? null : schemaCtx.getText();
+        String tableName = tableCtx.getText();
 
-        if (colCtx.table_constraint() != null) {
-            table.addChild(getMsConstraint(colCtx.table_constraint(),
-                    schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText()));
-        } else if (colCtx.table_index() != null) {
-            Table_indexContext indCtx = colCtx.table_index();
-            MsIndex index = new MsIndex(indCtx.ind_name.getText());
+        Column_defContext colCtx = tableElementCtx.column_def();
+        Table_indexContext indCtx;
+        Table_constraintContext constrCtx;
 
-            var restCtx = indCtx.index_rest();
-            if (restCtx != null) {
-                index.setUnique(indCtx.UNIQUE() != null);
-                ClusteredContext cluster = indCtx.clustered();
-                index.setClustered(cluster != null && cluster.CLUSTERED() != null);
-                parseIndex(restCtx, index, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
-            } else {
-                var columnstoreIndCtx = indCtx.columnstore_index();
-                index.setColumnstore(true);
-                index.setClustered(columnstoreIndCtx.CLUSTERED() != null);
-                parseColumnstoreIndex(indCtx.columnstore_index(), index, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
-                parseIndexOptions(index, indCtx.index_where(), indCtx.index_options(), ctx.id());
-            }
-
-            if (index.getTablespace() == null) {
-                index.setTablespace(table.getTablespace());
-            }
-
-            table.addChild(index);
+        if (colCtx != null) {
+            parseColumnDef(colCtx, table);
+        } else if ((constrCtx = tableElementCtx.table_constraint()) != null) {
+            table.addChild(getMsConstraint(constrCtx, schemaName, tableName));
+        } else if ((indCtx = tableElementCtx.table_index()) != null) {
+            parseTableIndex(indCtx, table, schemaName, tableName);
         } else {
-            MsColumn col = new MsColumn(colCtx.id().getText());
-            if (colCtx.data_type() != null) {
-                Data_typeContext dt = colCtx.data_type();
-                addTypeDepcy(dt, col);
-                col.setType(getFullCtxText(dt));
-            } else {
-                var expr = colCtx.expression();
-                col.setExpression(getFullCtxTextWithCheckNewLines(expr));
-                db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, expr, fileName));
-            }
-
-            for (Column_optionContext option : colCtx.column_option()) {
-                fillColumnOption(option, col, table);
-            }
-
-            table.addColumn(col);
+            // TODO add COLUMN_SET and PERIOD FOR SYSTEM_TIME support
         }
+    }
+
+    private void parseTableIndex(Table_indexContext indCtx, MsTable table, String schemaName, String tableName) {
+        MsIndex index = new MsIndex(indCtx.ind_name.getText());
+
+        var restCtx = indCtx.index_rest();
+        if (restCtx != null) {
+            index.setUnique(indCtx.UNIQUE() != null);
+            ClusteredContext cluster = indCtx.clustered();
+            index.setClustered(cluster != null && cluster.CLUSTERED() != null);
+            parseIndex(restCtx, index, schemaName, tableName);
+        } else {
+            var columnstoreIndCtx = indCtx.columnstore_index();
+            index.setColumnstore(true);
+            index.setClustered(columnstoreIndCtx.CLUSTERED() != null);
+            parseColumnstoreIndex(indCtx.columnstore_index(), index, schemaName, tableName);
+            parseIndexOptions(index, indCtx.index_where(), indCtx.index_options(), ctx.id());
+        }
+
+        if (index.getTablespace() == null) {
+            index.setTablespace(table.getTablespace());
+        }
+
+        table.addChild(index);
+    }
+
+    private void parseColumnDef(Column_defContext colCtx, MsTable table) {
+        if (colCtx == null) {
+            return;
+        }
+
+        MsColumn col = new MsColumn(colCtx.id().getText());
+        Data_typeContext dataType;
+        ExpressionContext expr;
+        if ((dataType = colCtx.data_type()) != null) {
+            addTypeDepcy(dataType, col);
+            col.setType(getFullCtxText(dataType));
+        } else if ((expr = colCtx.expression()) != null) {
+            col.setExpression(getFullCtxTextWithCheckNewLines(expr));
+            db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, expr, fileName));
+        } else {
+            // TODO add xml analyzator
+        }
+
+        for (Column_optionContext option : colCtx.column_option()) {
+            fillColumnOption(option, col, table);
+        }
+
+        table.addColumn(col);
     }
 
     private void parseColumnstoreIndex(Columnstore_indexContext ctx, AbstractIndex index, String schema, String table) {
