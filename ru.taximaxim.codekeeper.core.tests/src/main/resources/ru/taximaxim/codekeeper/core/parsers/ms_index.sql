@@ -93,3 +93,51 @@ ALTER INDEX [ind1] on [t1] RESUME WITH (MAXDOP = 4);
 ALTER INDEX [ind1] on [t1] ABORT;
 ALTER INDEX [ind1] on [t1] RESUME WITH (MAXDOP = 2, MAX_DURATION = 240 MINUTES, WAIT_AT_LOW_PRIORITY (MAX_DURATION = 10, ABORT_AFTER_WAIT = BLOCKERS));
 ALTER INDEX i ON t REBUILD PARTITION = 1 WITH (XML_COMPRESSION = OFF ON PARTITIONS (1), XML_COMPRESSION = ON ON PARTITIONS (2 to 3, 5 to 7));
+
+-- SPATIAL INDEX
+CREATE SPATIAL INDEX SIndxgeometry_col1
+   ON t1(geometry_col)
+   WITH (BOUNDING_BOX = (0, 0, 500, 200));
+GO
+
+CREATE SPATIAL INDEX SIndx_geometry_col2
+   ON t1(geometry_col)
+   USING GEOMETRY_GRID
+   WITH (
+    BOUNDING_BOX = (xmin=0, ymin=0, xmax=500, ymax=200),
+    GRIDS = (LOW, LOW, MEDIUM, HIGH),
+    CELLS_PER_OBJECT = 64,
+    PAD_INDEX  = ON);
+GO
+
+CREATE SPATIAL INDEX SIndx_geometry_col3
+   ON t1(geometry_col)
+   WITH (
+    BOUNDING_BOX = (0, 0, 500, 200),
+    GRIDS = (LEVEL_4 = HIGH, LEVEL_3 = MEDIUM));
+GO
+
+CREATE SPATIAL INDEX SIndx_geography_col3
+   ON t1(geography_col)
+   WITH (BOUNDING_BOX = (0, 0, 500, 200),
+        GRIDS = (LEVEL_3 = LOW),
+        DROP_EXISTING = ON);
+GO
+
+CREATE SPATIAL INDEX SIndx_geography_col1
+   ON t1(object);
+GO
+
+CREATE SPATIAL INDEX SIndx_geography_col2
+   ON t1(object)
+   USING GEOGRAPHY_GRID
+   WITH (
+    GRIDS = (MEDIUM, LOW, MEDIUM, HIGH),
+    CELLS_PER_OBJECT = 64,
+    PAD_INDEX  = ON);
+GO
+
+CREATE SPATIAL INDEX SIndx_geography_col3
+   ON t1(object)
+   WITH (GRIDS = (LEVEL_3 = HIGH, LEVEL_2 = HIGH));
+GO

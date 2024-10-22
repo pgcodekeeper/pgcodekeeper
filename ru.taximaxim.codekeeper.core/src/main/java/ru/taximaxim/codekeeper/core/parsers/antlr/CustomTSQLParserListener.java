@@ -326,7 +326,8 @@ implements TSqlContextProcessor {
                     || createCtx.create_server_audit() != null
                     || createCtx.create_server_role() != null
                     || createCtx.create_workload_group() != null
-                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null && xmlIdxCtx.PRIMARY() == null)) {
+                    || ((xmlIdxCtx = createCtx.create_xml_index()) != null && xmlIdxCtx.PRIMARY() == null)
+                    || createCtx.create_spatial_index() != null) {
                 descrWordsCount = 3;
             } else if (createCtx.create_column_encryption_key() != null
                     || createCtx.create_column_master_key() != null

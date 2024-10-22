@@ -166,6 +166,7 @@ schema_create
     | create_server_audit_specification
     | create_server_role
     | create_service
+    | create_spatial_index
     | create_statistics
     | create_synonym
     | create_table
@@ -1549,6 +1550,26 @@ named_promoted_node_path_item
 string_id_local_id
     : id
     | string_or_local_id
+    ;
+
+create_spatial_index
+    : SPATIAL INDEX index_name LR_BRACKET id RR_BRACKET
+     ((USING id)? WITH LR_BRACKET spatial_index_option (COMMA spatial_index_option)* RR_BRACKET)?
+     (ON id)?
+    ;
+
+spatial_index_option
+    : GRIDS EQUAL LR_BRACKET spatial_index_grid (COMMA spatial_index_grid)* RR_BRACKET
+    | BOUNDING_BOX EQUAL LR_BRACKET spatial_index_coordinate (COMMA spatial_index_coordinate)* RR_BRACKET
+    | index_option
+    ;
+
+spatial_index_coordinate
+    : (simple_id EQUAL)? DECIMAL
+    ;
+
+spatial_index_grid
+    : (simple_id EQUAL)? (LOW | MEDIUM | HIGH)
     ;
 
 create_xml_index
@@ -3371,6 +3392,7 @@ simple_id
     | BLOCKERS
     | BLOCKING_HIERARCHY
     | BLOCKSIZE
+    | BOUNDING_BOX
     | BROKER
     | BROKER_INSTANCE
     | BUFFER
@@ -3536,10 +3558,11 @@ simple_id
     | FULLSCAN
     | FULLTEXT
     | GB
-    | GET
     | GENERATED
+    | GET
     | GLOBAL
     | GOVERNOR
+    | GRIDS
     | GROUP_MAX_REQUESTS
     | GROUPING
     | HADR
@@ -3905,6 +3928,7 @@ simple_id
     | SOFTNUMA
     | SOURCE
     | SPARSE
+    | SPATIAL
     | SPATIAL_WINDOW_MAX_CELLS
     | SPECIFICATION
     | SPLIT
