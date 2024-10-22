@@ -68,3 +68,10 @@ Reference: action = ALTER INDEX, offset = 4185, line number = 92, charPositionIn
 Reference: action = ALTER INDEX, offset = 4238, line number = 93, charPositionInLine = 0
 Reference: action = ALTER INDEX, offset = 4272, line number = 94, charPositionInLine = 0
 Reference: action = ALTER INDEX, offset = 4424, line number = 95, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 4584, line number = 98, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 4694, line number = 103, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 4939, line number = 113, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 5103, line number = 120, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 5277, line number = 127, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 5341, line number = 131, charPositionInLine = 0
+Reference: action = CREATE SPATIAL INDEX, offset = 5528, line number = 140, charPositionInLine = 0
