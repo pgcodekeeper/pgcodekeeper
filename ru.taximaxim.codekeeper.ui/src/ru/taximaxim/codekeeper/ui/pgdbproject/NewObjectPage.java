@@ -75,6 +75,7 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParserWrapper;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -156,6 +157,12 @@ public final class NewObjectPage extends WizardPage {
         type = allowedTypes.stream()
                 .filter(e -> resource.getName().equals(WorkDirs.getDirectoryNameForType(dbType, e)))
                 .findAny().orElse(null);
+
+        if (dbType == DatabaseType.MS) {
+            schema = "dbo";
+            return;
+        }
+
         IContainer cont = resource.getParent();
         var dbContName = WorkDirs.getDirectoryNameForType(dbType, DbObjType.SCHEMA);
         if (cont != null) {
@@ -175,7 +182,7 @@ public final class NewObjectPage extends WizardPage {
             PgStatement st = UIProjectLoader.parseStatement((IFile) resource, types);
             if (st != null) {
                 type = st.getStatementType();
-                if (st instanceof ISearchPath path) {
+                if (st instanceof ISearchPath path && !(st instanceof ChFunction)) {
                     schema = path.getSchemaName();
                 }
 
@@ -342,21 +349,16 @@ public final class NewObjectPage extends WizardPage {
 
     private void setDefaultName() {
         String path;
-        name = EXPECTED_NAME;
-        if (dbType != null) {
-            schema = setDefaultSchema();
-        }
         switch (ObjectLevel.getLevel(dbType, type)) {
         case SCHEMA:
             path = name;
             expectedFormat = EXPECTED_NAME;
             break;
         case CONTAINER:
+            path = schema + '.' + name;
             if (type == DbObjType.OPERATOR) {
-                path = schema + '.' + EXPECTED_OP_NAME;
                 expectedFormat = EXPECTED_SCHEMA + '.' + EXPECTED_OP_NAME;
             } else {
-                path = schema + '.' + name;
                 expectedFormat = EXPECTED_SCHEMA + '.' + EXPECTED_NAME;
             }
             break;
@@ -369,15 +371,6 @@ public final class NewObjectPage extends WizardPage {
         }
         txtName.setText(path);
         txtName.setSelection(path.length());
-    }
-
-    private String setDefaultSchema() {
-        return switch (dbType) {
-            case PG -> "public"; //$NON-NLS-1$
-            case MS -> "dbo"; //$NON-NLS-1$
-            case CH -> "default"; //$NON-NLS-1$
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        };
     }
 
     @Override
@@ -591,10 +584,10 @@ public final class NewObjectPage extends WizardPage {
 
     private String getTemplateType() {
         return switch (dbType) {
-            case CH -> SQLEditorTemplateContextType.CONTEXT_TYPE_CH;
-            case MS -> SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
-            case PG -> SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        case CH -> SQLEditorTemplateContextType.CONTEXT_TYPE_CH;
+        case MS -> SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
+        case PG -> SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         };
     }
 
