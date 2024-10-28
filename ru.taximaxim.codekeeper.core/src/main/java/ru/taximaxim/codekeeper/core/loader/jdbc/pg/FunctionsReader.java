@@ -442,16 +442,12 @@ public class FunctionsReader extends JdbcReader {
     }
 
     private ModifyType getModifyType(String modifier, AggKinds kind) {
-        switch (modifier) {
-        case "r":
-            return AggKinds.NORMAL == kind ? null : ModifyType.READ_ONLY;
-        case "s":
-            return ModifyType.SHAREABLE;
-        case "w":
-            return AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
-        default:
-            throw new IllegalStateException("FinalFuncModifier '" + modifier + "' doesn't support by AGGREGATE!");
-        }
+        return switch (modifier) {
+            case "r" -> AggKinds.NORMAL == kind ? null : ModifyType.READ_ONLY;
+            case "s" -> ModifyType.SHAREABLE;
+            case "w" -> AggKinds.NORMAL != kind ? null : ModifyType.READ_WRITE;
+            default -> throw new IllegalStateException("FinalFuncModifier '" + modifier + "' doesn't support by AGGREGATE!");
+        };
     }
 
     /**
@@ -525,6 +521,17 @@ public class FunctionsReader extends JdbcReader {
     }
 
     @Override
+    protected String getExtensionCte() {
+        return """
+
+            \s   SELECT objid
+                FROM pg_catalog.pg_depend
+                WHERE classid = %s::pg_catalog.regclass
+                  AND deptype IN ('e', 'i')
+            """;
+    }
+
+    @Override
     protected void fillQueryBuilder(QueryBuilder builder) {
         addExtensionDepsCte(builder);
         addDescriptionPart(builder);
@@ -541,7 +548,6 @@ public class FunctionsReader extends JdbcReader {
         .column("res.proretset")
         .column("array(select pg_catalog.unnest(res.proargtypes))::bigint[] as argtypes")
         .from("pg_catalog.pg_proc res")
-        .where("NOT EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.classid = 'pg_catalog.pg_proc'::pg_catalog.regclass AND dp.objid = res.oid AND dp.deptype = 'i')")
 
         // for functions/procedures
         .column("l.lanname AS lang_name")
@@ -637,7 +643,9 @@ public class FunctionsReader extends JdbcReader {
         }
 
         if (SupportedPgVersion.VERSION_14.isLE(loader.getVersion())) {
-            builder.column("pg_get_function_sqlbody(res.oid) AS prosqlbody");
+            builder.column("""
+                case when (res.prosrc is null or res.prosrc='') and l.lanname = 'sql'
+                    then pg_get_function_sqlbody(res.oid) end as prosqlbody""");
         }
 
         if (loader.isGreenplumDb()) {
