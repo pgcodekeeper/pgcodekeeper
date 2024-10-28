@@ -44,8 +44,13 @@ public abstract class AbstractStatementReader {
             ) aa (acl)""";
 
 
-    private static final String EXTENSION_DEPS_CTE =
-            "SELECT objid FROM pg_catalog.pg_depend WHERE classid = {0}::pg_catalog.regclass AND deptype = ''e''";
+    private static final String EXTENSION_DEPS_CTE = """
+
+        \s   SELECT objid
+            FROM pg_catalog.pg_depend
+            WHERE classid = %s::pg_catalog.regclass
+              AND deptype = 'e'
+        """;
 
     // join extension data with a left join
     private static final String EXTENSION_JOIN =
@@ -100,8 +105,12 @@ public abstract class AbstractStatementReader {
     }
 
     protected void addExtensionDepsCte(QueryBuilder builder) {
-        builder.with("extension_deps", MessageFormat.format(EXTENSION_DEPS_CTE, classId));
+        builder.with("extension_deps", getExtensionCte().formatted(classId));
         builder.where("res.oid NOT IN (SELECT objid FROM extension_deps)");
+    }
+
+    protected String getExtensionCte() {
+        return EXTENSION_DEPS_CTE;
     }
 
     protected void addDescriptionPart(QueryBuilder builder) {
