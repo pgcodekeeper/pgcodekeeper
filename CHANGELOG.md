@@ -9,13 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added support for MSSQL 2019-2022 versions.
 - Added support for new options for INDEX in MS SQL.
 
 ### Changed
 
+- Improved parser rules for MS SQL.
+
 ### Fixed
 
+- Fixed a bug with auto-substitution of the name when creating an SQL object.
 - Fixed error text in CLI version.
 
 ### Removed
