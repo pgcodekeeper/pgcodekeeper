@@ -9,6 +9,16 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.2.0] - 2024-10-29
+
+### Добавлено
+
 - Добавлена поддержка новых опций у INDEX в MS SQL.
 
 ### Изменено
@@ -20,8 +30,6 @@
 
 - Исправлена ошибка при автоподстановке имени при создании SQL объекта.
 - Исправлен текст ошибок в CLI версии.
-
-### Удалено
 
 ## [10.1.0] - 2024-10-15
 
@@ -2084,7 +2092,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.2.0...HEAD
+[10.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...v10.2.0
 [10.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...v10.1.0
 [10.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.14.0...v10.0.0
 [9.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v9.13.2...v9.14.0
