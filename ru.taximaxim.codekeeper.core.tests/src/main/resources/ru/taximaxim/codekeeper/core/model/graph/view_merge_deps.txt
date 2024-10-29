@@ -1,1 +1,0 @@
-FUNCTION public.f1(integer)

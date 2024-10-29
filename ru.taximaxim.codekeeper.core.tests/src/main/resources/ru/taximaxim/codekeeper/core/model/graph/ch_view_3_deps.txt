@@ -1,1 +1,0 @@
-VIEW default.goal_view

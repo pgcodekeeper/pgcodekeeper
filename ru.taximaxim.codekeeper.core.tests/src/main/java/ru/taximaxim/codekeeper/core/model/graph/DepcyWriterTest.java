@@ -33,19 +33,38 @@ public class DepcyWriterTest {
 
     @ParameterizedTest
     @CsvSource({
+            "ch_view, default.revenue0",
+            "ch_view_2, default.TestView",
+            "ch_view_3, default.goal_view",
+            "ch_view_4, default.view_join_inner_table",
+            "ch_view_5, default.view_aaa_bbb",
+            "ch_view_6, default.view_columns_transformers",
+            "ch_view_7, default.ch_view_7",
+            // test analysis work on merge statement
+            "function_merge, public.f1",
+            // test analysis work on window statement
+            "ms_view_window, dbo.v1",
+            // "ms_insert_name, public.sales5",
+            "ms_procedure, \\[dbo\\].\\[test_poc\\]",
+            // same test searching deps of object by name without quotes for MS
+            "ms_procedure, dbo.test_poc",
+            "ch_dictionary, default.dict",
+            // test searching deps of object by name without quotes and case insensitive mode for MS
+            "ms_UPPER_CASE, dbo.TEST_POC",
+            "view, public.v1",
+    })
+    void compareReverseGraph(String fileName, String objectName) throws IOException, InterruptedException {
+        compareGraph(fileName, FILES_POSTFIX.DEPS_REVERSE_TXT, objectName, true);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
         "table, public.t1",
         "regex, public\\.t.",
         //test searching deps of object "MyTable" by name without quotes and case insensitive mode for PG
         "quotes, public.mytable",
         //test searching deps of object "MyTable" by name with quotes for PG
         "quotes, public.\"mytable\"",
-        "view, public.v1",
-        // "ms_insert_name, public.sales5",
-        "ms_procedure, \\[dbo\\].\\[test_poc\\]",
-        //same test searching deps of object by name without quotes for MS
-        "ms_procedure, dbo.test_poc",
-        //test searching deps of object by name without quotes and case insensitive mode for MS
-        "ms_UPPER_CASE, dbo.TEST_POC",
         // test searching deps of function by full name
         "function_circle, public.f1\\(\\)",
         //test searching deps of function by name with regex for PG
@@ -56,18 +75,8 @@ public class DepcyWriterTest {
         "function_circle_quotes, 'public\\.\"Func1\"\\(.*'",
         //test searching deps of quoted function by name without quotes and parens for PG
         "function_circle_quotes, 'public\\.func1'",
-        "ch_dictionary, default.dict",
-        "ch_view, default.revenue0",
-        "ch_view_2, default.TestView",
-        "ch_view_3, default.goal_view",
-        "ch_view_4, default.view_join_inner_table",
-        "ch_view_5, default.view_aaa_bbb",
-        "ch_view_6, default.view_columns_transformers",
-        "ch_view_7, default.ch_view_7",
-        // test analysis work on merge statement
-        "view_merge, public.f1",
     })
-    void compareGraph(String fileName, String objectName) throws IOException, InterruptedException {
+    void compareBothGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, FILES_POSTFIX.DEPS_TXT, objectName, false);
         compareGraph(fileName, FILES_POSTFIX.DEPS_REVERSE_TXT, objectName, true);
     }

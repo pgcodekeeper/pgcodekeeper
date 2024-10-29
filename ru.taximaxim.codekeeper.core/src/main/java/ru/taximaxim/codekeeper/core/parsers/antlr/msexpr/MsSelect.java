@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_st
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_stmt_no_parensContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_value_constructorContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Top_clauseContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Window_specificationContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.With_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.MsSelectOps;
 import ru.taximaxim.codekeeper.core.parsers.antlr.rulectx.MsSelectStmt;
@@ -141,6 +142,8 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
             }
         }
 
+        window(query.window_specification());
+
         MsValueExpr vex = new MsValueExpr(this);
         List<String> ret = new ArrayList<>();
 
@@ -198,6 +201,16 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
         }
 
         return ret;
+    }
+
+    private void window(Window_specificationContext windowCtx) {
+        if (windowCtx == null) {
+            return;
+        }
+
+        var expr = new MsValueExpr(this);
+        expr.expressionList(windowCtx.expression_list());
+        expr.orderBy(windowCtx.order_by_clause());
     }
 
     void from(From_itemContext item) {
