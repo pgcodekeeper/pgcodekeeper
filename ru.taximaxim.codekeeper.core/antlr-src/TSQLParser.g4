@@ -2757,10 +2757,10 @@ query_specification
     (INTO qualified_name)?
     (FROM from_item (COMMA from_item)*)?
     (WHERE where=search_condition)?
-    window_specification?
     // https://msdn.microsoft.com/en-us/library/ms177673.aspx
     (GROUP BY group_by_clause)?
     (HAVING having=search_condition)?
+    window_specification?
     order_by_clause?
     | table_value_constructor
     ;
