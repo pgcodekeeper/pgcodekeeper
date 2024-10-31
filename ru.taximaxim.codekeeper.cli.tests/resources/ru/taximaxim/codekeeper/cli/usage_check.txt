@@ -32,7 +32,7 @@ Usage
                                           source database taking into account
                                           the FK dependencies;
                                           VERIFY - to check code style;
-                                           (default: DIFF)
+                                          (default: DIFF)
  -s (--source) <path or JDBC>           : source of schema changes
  -t (--target) <path or JDBC>           : destination for schema changes (diff
                                           mode only)
@@ -156,14 +156,14 @@ Usage
  --graph-name <name>                    : name of start object in graph mode
                                           specify multiple times to use several
                                           names
- --graph-filter-object <OBJECT_TYPE>    : show these object types, hide  other
+ --graph-filter-object <OBJECT_TYPE>    : show these object types, hide other
                                           objects types
  --graph-invert-filter                  : invert graph filter object types:
                                           hide objects specified by the filter
  --insert-name <name>                   : name of start object in data insert
                                           mode
- --insert-filter <filter>               : value of where for script of select
-                                          for start object
+ --insert-filter <filter>               : value of WHERE expression for initial
+                                          select in insert mode
  --verify-source <path>                 : path to file or directory for code
                                           verification
                                           specify multiple times to use several

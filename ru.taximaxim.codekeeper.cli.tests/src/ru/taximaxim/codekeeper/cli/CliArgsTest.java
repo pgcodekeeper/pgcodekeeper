@@ -40,13 +40,13 @@ class CliArgsTest {
                     + "Cannot work with MS database as PG project.",
 
             "--graph --graph-name public.test jdbc:postgresql:q jdbc:postgresql:q2;"
-                    + "option \"-t (--target)\" cannot be used with mode: GRAPH",
+                    + "-t (--target) cannot be used with --mode GRAPH option",
 
             "--graph --graph-name test;"
-                    + "Please specify SCHEMA.",
+                    + "Please specify SOURCE.",
 
             "--mode PARSE --graph-filter-object COLUMN jdbc:postgresql:q;"
-                    + "option \"--graph-filter-object\" cannot be used with mode: PARSE",
+                    + "--graph-filter-object cannot be used with --mode PARSE option",
 
             "jdbc:postgresql:q;"
                     + "Please specify both SOURCE and DEST.",
@@ -59,13 +59,13 @@ class CliArgsTest {
 
             "jdbc:postgresql:q2 jdbc:sqlserver:f;"
                     + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
-                    
+
             "jdbc:sqlserver:f jdbc:ch:c;"
                     + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
-               
+
             "jdbc:ch:c jdbc:sqlserver:f;"
                     + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
-                    
+
             "jdbc:sqlserver:f jdbc:clickhouse:c;"
                     + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
 
@@ -83,16 +83,16 @@ class CliArgsTest {
 
             "jdbc:clickhouse:c jdbc:postgresql:q2;"
                     + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
-                    
+
             "jdbc:sqlserver:f filename;"
                     + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
 
             "filename jdbc:sqlserver:f;"
                     + "Source (PG) and target (MS) are of different types, possibly missing --db-type parameter.",
-                    
+
             "jdbc:sqlserver:f filename --db-type CH;"
                     + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
-                    
+
             "filename jdbc:sqlserver:f --db-type CH;"
                     + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
 
@@ -101,19 +101,19 @@ class CliArgsTest {
 
             "filename jdbc:postgresql:q2 --db-type MS;"
                     + "Source (MS) and target (PG) are of different types, possibly missing --db-type parameter.",
-                    
+
             "jdbc:postgresql:q2 filename --db-type CH;"
                     + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
-                    
+
             "filename jdbc:postgresql:q2 --db-type CH;"
                     + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
-                    
+
             "filename jdbc:ch:c;"
                     + "Source (PG) and target (CH) are of different types, possibly missing --db-type parameter.",
 
             "jdbc:ch:c filename;"
                     + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
-                    
+
             "filename jdbc:ch:c --db-type MS;"
                     + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
 
@@ -125,7 +125,7 @@ class CliArgsTest {
 
             "jdbc:clickhouse:c filename;"
                     + "Source (CH) and target (PG) are of different types, possibly missing --db-type parameter.",
-                    
+
             "filename jdbc:clickhouse:c --db-type MS;"
                     + "Source (MS) and target (CH) are of different types, possibly missing --db-type parameter.",
 
@@ -133,25 +133,25 @@ class CliArgsTest {
                     + "Source (CH) and target (MS) are of different types, possibly missing --db-type parameter.",
 
             "-r filename filename;"
-                    + "Cannot run script on non-database target.",
+                    + "Script can be applied only to database.",
 
             "-R filename filename filename;"
                     + "Option -R (--run-on) must specify JDBC connection string.",
 
             "filename filename --simplify-views --db-type MS;"
-                    + "option \"--simplify-views\" cannot be used with dbType: MS",
+                    + "--simplify-views cannot be used with --db-type MS option",
 
             "--mode INSERT jdbc:postgresql:q;"
                     + "Please specify argument \"--insert-name\"",
 
             "--insert-name table_name --insert-filter filter jdbc:postgresql:q;"
-                    + "option \"--insert-name\" cannot be used with mode: DIFF",
+                    + "--insert-name cannot be used with --mode DIFF option",
 
             "--mode INSERT --insert-name table_name --db-type CH jdbc:ch:q;"
                     + "option \"--insert-name\" requires the option(s) [--insert-filter]",
 
             "--mode INSERT filename;"
-                    + "Cannot run work with non-database source.",
+                    + "Source must be a database.",
 
             "--parse --mode INSERT -o filename;"
                     + "option \"--parse\" cannot be used with the option(s) [--mode]",

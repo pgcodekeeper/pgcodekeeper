@@ -55,7 +55,7 @@ public class Activator implements BundleActivator {
             jc.setContext(loggerContext);
             loggerContext.reset();
 
-            URL logbackConfigFileUrl = FileLocator.find(bundle, new Path("logback.xml"), null);
+            URL logbackConfigFileUrl = FileLocator.find(bundle, new Path("logback.xml"), null); //$NON-NLS-1$
             jc.doConfigure(logbackConfigFileUrl.openStream());
         }
     }

@@ -13,19 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.cli;
+package ru.taximaxim.codekeeper.core;
 
-import org.osgi.framework.BundleContext;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
-import ru.taximaxim.codekeeper.cli.localizations.Messages;
+public enum SourceFormat {
+    DB, PARSED, DUMP;
 
-public class Utils {
-
-    public static String getVersion() {
-        BundleContext ctx = Activator.getContext();
-        return ctx == null ? Messages.Utils_error_get_version : ctx.getBundle().getVersion().toString();
-    }
-
-    private Utils() {
+    public static SourceFormat parsePath(String source) {
+        if (source.startsWith("jdbc:")) { // $NON-NLS-1$
+            return DB;
+        }
+        if (Files.isDirectory(Paths.get(source))) {
+            return PARSED;
+        }
+        return DUMP;
     }
 }

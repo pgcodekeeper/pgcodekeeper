@@ -36,13 +36,13 @@ public class DbObjTypeOptionHandler extends EnumOptionHandler<DbObjType> {
 
     @Override
     public String getDefaultMetaVariable() {
-        return "<OBJECT_TYPE>";
+        return "<OBJECT_TYPE>"; //$NON-NLS-1$
     }
 
     public static String getMetaVariable() {
         return Arrays.stream(DbObjType.values())
                 .filter(e -> !HIDE.contains(e))
                 .map(DbObjType::name)
-                .collect(Collectors.joining(" | ", "OBJECT_TYPE : [", "]"));
+                .collect(Collectors.joining(" | ", "OBJECT_TYPE : [", "]")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

@@ -33,12 +33,12 @@ public class DangerStatementOptionHandler extends EnumOptionHandler<DangerStatem
 
     @Override
     public String getDefaultMetaVariable() {
-        return "<DANGER_STATEMENT>";
+        return "<DANGER_STATEMENT>"; //$NON-NLS-1$
     }
 
     public static String getMetaVariable() {
         return Arrays.stream(DangerStatement.values())
                 .map(DangerStatement::name)
-                .collect(Collectors.joining(" | ", "DANGER_STATEMENT : [", "]"));
+                .collect(Collectors.joining(" | ", "DANGER_STATEMENT : [", "]")); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 }

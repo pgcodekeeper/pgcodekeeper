@@ -31,8 +31,8 @@ public class PgDiffArguments {
 
     private String newSrc;
     private String oldSrc;
-    private String newSrcFormat;
-    private String oldSrcFormat;
+    private SourceFormat newSrcFormat;
+    private SourceFormat oldSrcFormat;
     private String inCharsetName = Consts.UTF_8;
     private boolean ignorePrivileges;
     private boolean keepNewlines;
@@ -135,20 +135,20 @@ public class PgDiffArguments {
         return this.oldSrc;
     }
 
-    public void setNewSrcFormat(final String newSrcFormat) {
+    public void setNewSrcFormat(final SourceFormat newSrcFormat) {
         this.newSrcFormat = newSrcFormat;
     }
 
-    public String getNewSrcFormat() {
-        return this.newSrcFormat;
+    public SourceFormat getNewSrcFormat() {
+        return newSrcFormat;
     }
 
-    public void setOldSrcFormat(final String oldSrcFormat) {
+    public void setOldSrcFormat(final SourceFormat oldSrcFormat) {
         this.oldSrcFormat = oldSrcFormat;
     }
 
-    public String getOldSrcFormat() {
-        return this.oldSrcFormat;
+    public SourceFormat getOldSrcFormat() {
+        return oldSrcFormat;
     }
 
     public void setAddTransaction(final boolean addTransaction) {
