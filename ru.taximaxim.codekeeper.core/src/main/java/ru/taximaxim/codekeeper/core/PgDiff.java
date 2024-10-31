@@ -100,9 +100,9 @@ public class PgDiff {
         assertErrors();
     }
 
-    private void loadOverrides(AbstractDatabase db, String format, String source)
+    private void loadOverrides(AbstractDatabase db, SourceFormat format, String source)
             throws InterruptedException, IOException, PgCodekeeperException {
-        if (!"parsed".equals(format)) {
+        if (SourceFormat.PARSED != format) {
             return;
         }
 
@@ -191,23 +191,20 @@ public class PgDiff {
      *
      * @return the loaded database
      */
-    public AbstractDatabase loadDatabaseSchema(String format, String srcPath)
+    public AbstractDatabase loadDatabaseSchema(SourceFormat format, String srcPath)
             throws InterruptedException, IOException {
-        DatabaseLoader loader;
+
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
         if (arguments.getIgnoreSchemaList() != null) {
             ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
         }
-        if ("dump".equals(format)) {
-            loader = new PgDumpLoader(Paths.get(srcPath), arguments);
-        } else if ("parsed".equals(format)) {
-            loader = new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
-        } else if ("db".equals(format)) {
-            loader = LoaderFactory.createJdbcLoader(arguments, srcPath, ignoreSchemaList);
-        } else {
-            throw new UnsupportedOperationException(MessageFormat.format(Messages.UnknownDBFormat, format));
-        }
+        DatabaseLoader loader = switch (format) {
+            case DB -> LoaderFactory.createJdbcLoader(arguments, srcPath, ignoreSchemaList);
+            case DUMP -> new PgDumpLoader(Paths.get(srcPath), arguments);
+            case PARSED -> new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
+            default -> throw new UnsupportedOperationException(MessageFormat.format(Messages.UnknownDBFormat, format));
+        };
 
         try {
             return loader.load();
@@ -221,16 +218,12 @@ public class PgDiff {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
 
-        switch (arguments.getDbType()) {
-        case MS:
-            return diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
-        case PG:
-            return diffPgDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
-        case CH:
-            return diffChDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        }
+        return switch (arguments.getDbType()) {
+            case MS -> diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
+            case PG -> diffPgDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
+            case CH -> diffChDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        };
     }
 
     /**
@@ -241,19 +234,15 @@ public class PgDiff {
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
-        switch (arguments.getDbType()) {
-        case MS:
-            return diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
-                    additionalDepciesSource, additionalDepciesTarget, null);
-        case PG:
-            return diffPgDatabaseSchemas(root, oldDbFull, newDbFull,
-                    additionalDepciesSource, additionalDepciesTarget, null);
-        case CH:
-            return diffChDatabaseSchemas(root, oldDbFull, newDbFull,
-                    additionalDepciesSource, additionalDepciesTarget, null);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        }
+        return switch (arguments.getDbType()) {
+            case MS -> diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
+                                additionalDepciesSource, additionalDepciesTarget, null);
+            case PG -> diffPgDatabaseSchemas(root, oldDbFull, newDbFull,
+                                additionalDepciesSource, additionalDepciesTarget, null);
+            case CH -> diffChDatabaseSchemas(root, oldDbFull, newDbFull,
+                                additionalDepciesSource, additionalDepciesTarget, null);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        };
     }
 
     private String diffPgDatabaseSchemas(

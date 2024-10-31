@@ -91,18 +91,17 @@ public final class Main {
                 return diff(writer, arguments);
             }
         } catch (CmdLineException | NotAllowedObjectException ex) {
-            System.err.println(ex.getLocalizedMessage());
+            writeMessage(ex.getLocalizedMessage());
             return false;
         } catch (Exception e) {
             if (arguments.isDebug()) {
                 e.printStackTrace(System.err);
             } else {
-                System.err.println(e.getLocalizedMessage());
-                System.err.println("Use -E to see exception stacktrace");
+                writeMessage(e.getLocalizedMessage());
+                writeMessage(Messages.Main_show_stacktrace);
             }
 
-            Status error = new Status(IStatus.ERROR, Consts.PLUGIN_ID,
-                    "pgCodeKeeper error", e);
+            Status error = new Status(IStatus.ERROR, Consts.PLUGIN_ID, "pgCodeKeeper error", e); //$NON-NLS-1$
             Platform.getLog(Activator.getContext().getBundle()).log(error);
             return false;
         }
@@ -116,11 +115,11 @@ public final class Main {
             try {
                 text = diff.createDiff();
             } catch (PgCodekeeperException ex) {
-                diff.getErrors().forEach(System.err::println);
+                diff.getErrors().forEach(Main::writeMessage);
                 return false;
             }
 
-            ScriptParser parser = new ScriptParser("CLI", text, arguments.getDbType());
+            ScriptParser parser = new ScriptParser("CLI", text, arguments.getDbType()); //$NON-NLS-1$
 
             if (arguments.isSafeMode()) {
                 Set<DangerStatement> dangerTypes =
@@ -129,7 +128,7 @@ public final class Main {
                 if (!dangerTypes.isEmpty()) {
                     String msg = MessageFormat.format(Messages.Main_danger_statements,
                             dangerTypes.stream().map(DangerStatement::name)
-                            .collect(Collectors.joining(", ")));
+                            .collect(Collectors.joining(", "))); //$NON-NLS-1$
                     writer.println(msg);
                     if (encodedWriter != null) {
                         encodedWriter.println("-- " + msg);
@@ -173,7 +172,7 @@ public final class Main {
                         arguments.getDbType(), arguments.getOutCharsetName()).exportFull();
             }
         } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(System.err::println);
+            diff.getErrors().forEach(Main::writeMessage);
             return false;
         }
         return true;
@@ -186,7 +185,7 @@ public final class Main {
         try {
             db = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(System.err::println);
+            diff.getErrors().forEach(Main::writeMessage);
             return false;
         }
 
@@ -199,7 +198,7 @@ public final class Main {
             String url = arguments.getRunOnDb();
             if (url != null) {
                 new JdbcRunner().runBatches(new UrlJdbcConnector(url),
-                        new ScriptParser("CLI", script, arguments.getDbType()).batch(), null);
+                        new ScriptParser("CLI", script, arguments.getDbType()).batch(), null); //$NON-NLS-1$
             } else if (pw == null) {
                 writer.println(script);
             }
@@ -214,7 +213,7 @@ public final class Main {
         try {
             d = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(System.err::println);
+            diff.getErrors().forEach(Main::writeMessage);
             return false;
         }
 
@@ -243,10 +242,14 @@ public final class Main {
     }
 
     private static void clearCache() throws IOException {
-        Path metaPath = Paths.get(System.getProperty("user.home"))
-                .resolve(".pgcodekeeper-cli").resolve("dependencies");
+        Path metaPath = Paths.get(System.getProperty("user.home")) //$NON-NLS-1$
+                .resolve(".pgcodekeeper-cli").resolve("dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
         FileUtils.deleteRecursive(metaPath);
-        System.err.println("Clear cached libraries");
+        writeMessage(Messages.Main_cach_clear);
+    }
+
+    private static void writeMessage(Object message) {
+        System.err.println(message);
     }
 
     private Main() {

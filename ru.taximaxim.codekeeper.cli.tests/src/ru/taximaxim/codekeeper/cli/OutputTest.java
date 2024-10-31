@@ -776,7 +776,7 @@ class FailGraphDepthArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"--graph-depth\" cannot be used with mode: DIFF\n";
+        return "--graph-depth cannot be used with --mode DIFF option\n";
     }
 }
 
@@ -792,7 +792,7 @@ class FailGraphNameArgumentsProvider extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"--graph-name\" cannot be used with mode: DIFF\n";
+        return "--graph-name cannot be used with --mode DIFF option\n";
     }
 }
 
@@ -860,6 +860,6 @@ class FailGenerateExistDoBlock extends ArgumentsProvider {
 
     @Override
     public String output() {
-        return "option \"-do (--generate-exist-do-block)\" cannot be used with dbType: MS\n";
+        return "-do (--generate-exist-do-block) cannot be used with --db-type MS option\n";
     }
 }
