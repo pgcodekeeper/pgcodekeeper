@@ -64,8 +64,8 @@ public class CreateMsIndex extends MsTableAbstract {
             parseColumnstoreIndex(ctx, ind, schemaCtx == null ? null : schemaCtx.getText(), tableCtx.getText());
         }
 
-        PgStatementContainer table = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
-        addSafe(table, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
+        PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer, schema, tableCtx);
+        addSafe(cont, ind, Arrays.asList(schemaCtx, tableCtx, nameCtx));
     }
 
     private void parseColumnstoreIndex(Create_indexContext ctx, AbstractIndex index, String schema, String table) {

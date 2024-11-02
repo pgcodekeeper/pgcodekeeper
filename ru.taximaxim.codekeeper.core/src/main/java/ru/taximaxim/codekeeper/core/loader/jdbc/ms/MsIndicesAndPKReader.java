@@ -32,7 +32,6 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
 import ru.taximaxim.codekeeper.core.loader.ms.SupportedMsVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -62,7 +61,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
         String filter = res.getString("filter_definition");
 
         String parent = res.getString("table_name");
-        AbstractTable t = schema.getTable(parent);
+        var cont = schema.getStatementContainer(parent);
 
         if (type == DbObjType.CONSTRAINT) {
             var constrPk = new MsConstraintPk(name, isPrimaryKey);
@@ -74,7 +73,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             constrPk.setClustered(isClustered);
             constrPk.setDataSpace(dataSpace);
             options.forEach(constrPk::addOption);
-            t.addChild(constrPk);
+            cont.addChild(constrPk);
         } else {
             var index = new MsIndex(name);
             var columnstore = res.getInt("index_type");
@@ -94,7 +93,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             index.setWhere(filter);
             index.setTablespace(MsDiffUtils.quoteName(dataSpace));
             options.forEach(index::addOption);
-            t.addChild(index);
+            cont.addChild(index);
         }
     }
 
@@ -173,7 +172,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
         builder
         .column("o.name AS table_name")
-        .column("o.is_memory_optimized")
+        .column("t.is_memory_optimized")
         .column("res.name")
         .column("res.is_primary_key")
         .column("res.is_unique")
@@ -195,10 +194,11 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .join("LEFT JOIN sys.filegroups f WITH (NOLOCK) ON res.data_space_id = f.data_space_id")
         .join("LEFT JOIN sys.data_spaces d WITH (NOLOCK) ON res.data_space_id = d.data_space_id")
         .join("JOIN sys.stats st WITH (NOLOCK) ON res.name = st.name AND res.object_id = st.object_id AND res.index_id = st.stats_id")
-        .join("JOIN sys.tables o WITH (NOLOCK) ON res.object_id = o.object_id")
+        .join("JOIN sys.objects o WITH (NOLOCK) ON res.object_id = o.object_id")
+        .join("LEFT JOIN sys.tables t WITH (NOLOCK) ON o.object_id = t.object_id")
         .join("LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = res.object_id")
         .join("JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = res.object_id AND sp.index_id = res.index_id AND sp.partition_number = 1")
-        .where("o.type = 'U'")
+        .where("o.type IN ('U', 'V')")
         .where("res.type IN (1, 2, 5, 6)");
 
         if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
