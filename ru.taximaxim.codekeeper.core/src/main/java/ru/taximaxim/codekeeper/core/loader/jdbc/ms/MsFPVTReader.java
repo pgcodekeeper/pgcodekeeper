@@ -50,7 +50,6 @@ public class MsFPVTReader extends JdbcReader {
         String name = res.getString("name");
 
         String type = res.getString("type");
-        DbObjType tt;
 
         // TR - SQL trigger
         // V - View
@@ -58,20 +57,13 @@ public class MsFPVTReader extends JdbcReader {
         // IF - SQL inline table-valued function
         // FN - SQL scalar function
         // TF - SQL table-valued-function
-        switch (type) {
-        case "TR":
-            tt = DbObjType.TRIGGER;
-            break;
-        case "V ":
-            tt = DbObjType.VIEW;
-            break;
-        case "P ":
-            tt = DbObjType.PROCEDURE;
-            break;
-        default:
-            tt = DbObjType.FUNCTION;
-            break;
-        }
+
+        DbObjType tt = switch (type) {
+        case "TR" -> DbObjType.TRIGGER;
+        case "V " -> DbObjType.VIEW;
+        case "P " -> DbObjType.PROCEDURE;
+        default -> DbObjType.FUNCTION;
+        };
 
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, tt));
         boolean an = res.getBoolean("ansi_nulls");
@@ -94,14 +86,15 @@ public class MsFPVTReader extends JdbcReader {
                 tr.setDisable(isDisable);
             });
         } else if (tt == DbObjType.VIEW) {
+            MsView view = new MsView(name);
+            schema.addChild(view);
+            loader.setOwner(view, owner);
+            loader.setPrivileges(view, acls);
+
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
                 return new CreateMsView(ctx, db, an, qi, (CommonTokenStream) p.getInputStream());
-            }, creator -> {
-                MsView st = creator.getObject(schema, true);
-                loader.setOwner(st, owner);
-                loader.setPrivileges(st, acls);
-            });
+            }, creator -> creator.fillObject(view));
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();

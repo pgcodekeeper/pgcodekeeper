@@ -25,10 +25,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsViewAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Batch_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_or_alter_viewContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
-import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 
@@ -62,14 +59,16 @@ public class CreateMsView extends BatchContextProcessor {
 
     @Override
     public void parseObject() {
-        Qualified_nameContext qname = ctx.qualified_name();
-        getObject(getSchemaSafe(Arrays.asList(qname.schema, qname.name)), false);
+        var qnameCtx = ctx.qualified_name();
+        var nameCtx = qnameCtx.name;
+        List<ParserRuleContext> ids = Arrays.asList(qnameCtx.schema, nameCtx);
+
+        MsView view = new MsView(nameCtx.getText());
+        fillObject(view);
+        addSafe(getSchemaSafe(ids), view, ids);
     }
 
-    public MsView getObject(AbstractSchema schema, boolean isJdbc) {
-        IdContext nameCtx = ctx.qualified_name().name;
-        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
-        MsView view = new MsView(nameCtx.getText());
+    public void fillObject(MsView view) {
         view.setAnsiNulls(ansiNulls);
         view.setQuotedIdentified(quotedIdentifier);
 
@@ -86,13 +85,6 @@ public class CreateMsView extends BatchContextProcessor {
         if (vQuery != null) {
             db.addAnalysisLauncher(new MsViewAnalysisLauncher(view, vQuery, fileName));
         }
-
-        if (isJdbc && schema != null) {
-            schema.addView(view);
-        } else {
-            addSafe(schema, view, ids);
-        }
-        return view;
     }
 
     @Override
