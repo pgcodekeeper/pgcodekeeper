@@ -2606,7 +2606,8 @@ declare_cursor_partial
 // https://msdn.microsoft.com/en-us/library/ms190356.aspx
 // Runtime check.
 set_special
-    : SET name=id (id | constant_LOCAL_ID | ON | OFF)
+    : SET id (id | constant_LOCAL_ID)
+    | SET name_list on_off
     // https://msdn.microsoft.com/en-us/library/ms173763.aspx
     | SET (TRAN | TRANSACTION) ISOLATION LEVEL
       (READ UNCOMMITTED | READ COMMITTED | REPEATABLE READ | SNAPSHOT | SERIALIZABLE | DECIMAL)

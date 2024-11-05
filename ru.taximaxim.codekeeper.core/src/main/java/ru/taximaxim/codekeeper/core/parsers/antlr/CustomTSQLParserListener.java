@@ -263,28 +263,18 @@ implements TSqlContextProcessor {
 
     private void set(Set_statementContext setCtx) {
         Set_specialContext ctx = setCtx.set_special();
-        if(ctx == null || ctx.name == null) {
+        if (ctx == null || ctx.name_list() == null) {
             return;
         }
 
-        String set = ctx.name.getText();
-        switch (set.toLowerCase(Locale.ROOT)) {
-        case "ansi_nulls":
-            if (ctx.ON() != null) {
-                ansiNulls = true;
-            } else if (ctx.OFF() != null) {
-                ansiNulls = false;
+        for (var nameCtx : ctx.name_list().id()) {
+            String set = nameCtx.getText();
+            boolean isOn = ctx.on_off().ON() != null;
+            if ("ansi_nulls".equalsIgnoreCase(set)) {
+                ansiNulls = isOn;
+            } else if ("quoted_identifier".equalsIgnoreCase(set)) {
+                quotedIdentifier = isOn;
             }
-            break;
-        case "quoted_identifier":
-            if (ctx.ON() != null) {
-                quotedIdentifier = true;
-            } else if (ctx.OFF() != null) {
-                quotedIdentifier = false;
-            }
-            break;
-        default:
-            break;
         }
     }
 
