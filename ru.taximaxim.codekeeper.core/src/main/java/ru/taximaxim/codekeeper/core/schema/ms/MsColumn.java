@@ -228,24 +228,25 @@ public class MsColumn extends AbstractColumn {
 
     private void compareDefaults(String oldDefaultName, String oldDefault,
             String newDefaultName, String newDefault, StringBuilder sb) {
-        if (!Objects.equals(oldDefault, newDefault)
-                || !Objects.equals(oldDefaultName, newDefaultName)) {
-            if (oldDefault != null) {
-                sb.append(getAlterTable(true, false));
-                sb.append("\n\tDROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
-                sb.append(GO);
-            }
+        if (Objects.equals(oldDefault, newDefault) && Objects.equals(oldDefaultName, newDefaultName)) {
+            return;
+        }
 
-            if (newDefault != null) {
-                sb.append(getAlterTable(true, false));
-                sb.append("\n\tADD");
-                if (newDefaultName != null) {
-                    sb.append(" CONSTRAINT ").append(MsDiffUtils.quoteName(newDefaultName));
-                }
-                sb.append(" DEFAULT ").append(newDefault);
-                sb.append(" FOR ").append(MsDiffUtils.quoteName(name));
-                sb.append(GO);
+        if (oldDefault != null) {
+            sb.append(getAlterTable(true, false));
+            sb.append("\n\tDROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
+            sb.append(GO);
+        }
+
+        if (newDefault != null) {
+            sb.append(getAlterTable(true, false));
+            sb.append("\n\tADD");
+            if (newDefaultName != null) {
+                sb.append(" CONSTRAINT ").append(MsDiffUtils.quoteName(newDefaultName));
             }
+            sb.append(" DEFAULT ").append(newDefault);
+            sb.append(" FOR ").append(MsDiffUtils.quoteName(name));
+            sb.append(GO);
         }
     }
 
@@ -316,11 +317,15 @@ public class MsColumn extends AbstractColumn {
     @Override
     public String getDropSQL(boolean optionExists) {
         final StringBuilder sbString = new StringBuilder();
-        sbString.append(getAlterTable(false, false)).append("\n\tDROP COLUMN ");
+        // we need to drop default
+        compareDefaults(getDefaultName(), getDefaultValue(), null, null, sbString);
+        boolean nextLine = sbString.length() > 0;
+
+        sbString.append(getAlterTable(nextLine, false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
             sbString.append(IF_EXISTS);
         }
-        sbString.append(MsDiffUtils.getQuotedName(getName())).append(GO);
+        sbString.append(MsDiffUtils.quoteName(name)).append(GO);
         return sbString.toString();
     }
 

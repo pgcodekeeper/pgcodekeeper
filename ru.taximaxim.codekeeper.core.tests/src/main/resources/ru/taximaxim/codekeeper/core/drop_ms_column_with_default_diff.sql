@@ -1,0 +1,7 @@
+ALTER TABLE [dbo].[Tab]
+	DROP CONSTRAINT [DF_Tab_DefData]
+GO
+
+ALTER TABLE [dbo].[Tab]
+	DROP COLUMN [DefData]
+GO
