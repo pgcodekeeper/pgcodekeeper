@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Improved parser rules for MS SQL.
+
 ### Fixed
 
 ### Removed

@@ -101,3 +101,5 @@ Reference: action = CREATE EXTERNAL, offset = 9875, line number = 330, charPosit
 Reference: action = CREATE EXTERNAL, offset = 10107, line number = 339, charPositionInLine = 0
 Reference: action = CREATE EXTERNAL, offset = 10186, line number = 344, charPositionInLine = 0
 Reference: action = CREATE EXTERNAL, offset = 10429, line number = 353, charPositionInLine = 0
+Reference: action = SET, offset = 10655, line number = 360, charPositionInLine = 0
+Reference: action = SET, offset = 10693, line number = 361, charPositionInLine = 0

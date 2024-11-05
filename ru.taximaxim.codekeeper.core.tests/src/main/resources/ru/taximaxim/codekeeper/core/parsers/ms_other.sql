@@ -356,3 +356,6 @@ WITH (
     SERDE_METHOD = 'org.apache.hadoop.hive.serde2.columnar.LazyBinaryColumnarSerDe',
     DATA_COMPRESSION = 'org.apache.hadoop.io.compress.DefaultCodec'
 );
+
+SET QUOTED_IDENTIFIER, ANSI_NULLS ON;
+set nocount, xact_abort on;
