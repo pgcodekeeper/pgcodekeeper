@@ -1,21 +1,21 @@
 -- DEPCY: This COLUMN depends on the COLUMN: [dbo].[t1].[a]
 
 ALTER TABLE [dbo].[t1]
-	DROP COLUMN c
+	DROP COLUMN [c]
 GO
 
 ALTER TABLE [dbo].[t1]
-	DROP COLUMN a
+	DROP COLUMN [a]
 GO
 
 -- DEPCY: This COLUMN depends on the COLUMN: [dbo].[t2].[a]
 
 ALTER TABLE [dbo].[t2]
-	DROP COLUMN c
+	DROP COLUMN [c]
 GO
 
 ALTER TABLE [dbo].[t2]
-	DROP COLUMN a
+	DROP COLUMN [a]
 GO
 
 -- DEPCY: This COLUMN is a dependency of COLUMN: [dbo].[t1].[c]

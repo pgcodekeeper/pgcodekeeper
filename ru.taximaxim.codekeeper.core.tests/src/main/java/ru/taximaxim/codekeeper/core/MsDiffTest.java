@@ -256,6 +256,8 @@ class MsDiffTest {
             "drop_ms_column",
             // Tests scenario where MS COLUMN with index dependency is dropped from MS TABLE.
             "drop_ms_column_with_idx",
+            // Tests scenario where MS COLUMN with default dependency is dropped from MS TABLE.
+            "drop_ms_column_with_default",
             // Tests scenario where MS COLUMN not null value is added.
             "modify_ms_column_add_not_null",
             // Tests scenario where MS COLUMN not null value is dropped.

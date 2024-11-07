@@ -1,5 +1,5 @@
 ALTER TABLE [dbo].[testtable]
-	DROP COLUMN c1
+	DROP COLUMN [c1]
 GO
 
 ALTER TABLE [dbo].[testtable]
