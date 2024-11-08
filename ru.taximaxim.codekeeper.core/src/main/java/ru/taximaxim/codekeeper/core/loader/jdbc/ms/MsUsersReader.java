@@ -69,22 +69,7 @@ public class MsUsersReader extends AbstractStatementReader {
     }
 
     @Override
-    protected void addMsPriviligesPart(QueryBuilder builder) {
-        String acl = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT
-                      perm.state_desc AS sd,
-                      perm.permission_name AS pn,
-                      roleprinc.name AS r
-                    FROM sys.database_principals roleprinc WITH (NOLOCK)
-                    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
-                    WHERE major_id = res.principal_id AND perm.class = 4
-                  ) cc\s
-                  FOR XML RAW, ROOT
-                ) aa (acl)""";
-
-        builder.column("aa.acl");
-        builder.join(acl);
+    protected String getFormattedMsPriviliges() {
+        return MS_PRIVILIGES_JOIN.formatted("", "principal_id", 4);
     }
 }

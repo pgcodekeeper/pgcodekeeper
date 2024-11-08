@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
+import ru.taximaxim.codekeeper.core.loader.ms.SupportedMsVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -150,38 +151,22 @@ public class MsTypesReader extends JdbcReader {
         .column("CASE WHEN basetypes.name IN (N'nchar', N'nvarchar') AND res.max_length >= 0 THEN res.max_length/2 ELSE res.max_length END AS size")
         .column("res.precision")
         .column("res.scale")
-        .column("ttt.is_memory_optimized")
         .from("sys.types res WITH (NOLOCK)")
         .join("LEFT JOIN sys.types basetypes WITH (NOLOCK) ON res.system_type_id=basetypes.system_type_id AND basetypes.system_type_id=basetypes.user_type_id")
         .join("LEFT JOIN sys.assembly_types ay WITH (NOLOCK) ON ay.user_type_id=res.user_type_id")
         .join("LEFT JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=ay.assembly_id")
-        .join("LEFT JOIN sys.table_types ttt WITH (NOLOCK) ON ttt.user_type_id=res.user_type_id")
         .where("res.is_user_defined=1");
+        
+        if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
+            builder
+            .column("ttt.is_memory_optimized")
+            .join("LEFT JOIN sys.table_types ttt WITH (NOLOCK) ON ttt.user_type_id=res.user_type_id");
+        }
 
         // after join ttt
         addMsConstraintsPart(builder);
         addMsColumnsPart(builder);
         addMsIndicesPart(builder);
-    }
-
-    @Override
-    protected void addMsPriviligesPart(QueryBuilder builder) {
-        String acl = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT \s
-                      perm.state_desc AS sd,
-                      perm.permission_name AS pn,
-                      roleprinc.name AS r
-                    FROM sys.database_principals roleprinc WITH (NOLOCK)
-                    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
-                    WHERE major_id = res.user_type_id AND perm.class = 6
-                  ) aa\s
-                  FOR XML RAW, ROOT
-                ) aa (acl)""";
-
-        builder.column("aa.acl");
-        builder.join(acl);
     }
 
     private void addMsConstraintsPart(QueryBuilder builder) {
@@ -192,7 +177,7 @@ public class MsTypesReader extends JdbcReader {
                   WHERE c.parent_object_id=ttt.type_table_object_id
                   FOR XML RAW, ROOT
                 ) ch (checks)""";
-
+        
         builder.column("ch.checks");
         builder.join(checks);
     }
@@ -276,5 +261,10 @@ public class MsTypesReader extends JdbcReader {
     @Override
     protected String getSchemaColumn() {
         return "res.schema_id";
+    }
+
+    @Override
+    protected String getFormattedMsPriviliges() {
+        return MS_PRIVILIGES_JOIN.formatted("", "user_type_id", 6);
     }
 }

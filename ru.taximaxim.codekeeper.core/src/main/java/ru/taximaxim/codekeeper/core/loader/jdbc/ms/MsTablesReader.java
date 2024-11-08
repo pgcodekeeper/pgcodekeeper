@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
+import ru.taximaxim.codekeeper.core.loader.ms.SupportedMsVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -45,12 +46,14 @@ public class MsTablesReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
         MsTable table = new MsTable(tableName);
 
-        if (res.getBoolean("is_memory_optimized")) {
-            table.addOption("MEMORY_OPTIMIZED", "ON");
-        }
+        if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
+            if (res.getBoolean("is_memory_optimized")) {
+                table.addOption("MEMORY_OPTIMIZED", "ON");
+            }
 
-        if (res.getBoolean("durability")) {
-            table.addOption("DURABILITY", res.getString("durability_desc"));
+            if (res.getBoolean("durability")) {
+                table.addOption("DURABILITY", res.getString("durability_desc"));
+            }
         }
 
         if (res.getBoolean("data_compression")) {
@@ -114,9 +117,11 @@ public class MsTablesReader extends JdbcReader {
         column.setRowGuidCol(col.getBoolean("rgc"));
         column.setPersisted(col.getBoolean("ps"));
 
-        String maskingFunction = col.getString("mf");
-        if (maskingFunction != null) {
-            column.setMaskingFunction("'" + maskingFunction + "'");
+        if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
+            String maskingFunction = col.getString("mf");
+            if (maskingFunction != null) {
+                column.setMaskingFunction("'" + maskingFunction + "'");
+            }
         }
 
         if (col.getBoolean("ii")) {
@@ -154,9 +159,6 @@ public class MsTablesReader extends JdbcReader {
         .column("ds.name AS file_stream")
         .column("dsx.name AS text_image")
         .column("res.uses_ansi_nulls")
-        .column("res.is_memory_optimized")
-        .column("res.durability")
-        .column("res.durability_desc")
         .column("sp.data_compression")
         .column("sp.data_compression_desc")
         .from("sys.tables res WITH (NOLOCK)")
@@ -167,6 +169,13 @@ public class MsTablesReader extends JdbcReader {
         .join("LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = res.object_id")
         .join("LEFT JOIN sys.columns c WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id")
         .where("res.type = 'U'");
+
+        if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
+            builder
+            .column("res.is_memory_optimized")
+            .column("res.durability")
+            .column("res.durability_desc");
+        }
     }
 
     private void addMsColumnsPart(QueryBuilder builder) {
@@ -193,26 +202,34 @@ public class MsTablesReader extends JdbcReader {
                       c.is_rowguidcol AS rgc,
                       cc.is_persisted AS ps,
                       t.is_user_defined AS ud,
-                      mc.masking_function AS mf,
                       cc.definition AS def,
                       CASE WHEN t.name IN ('GEOMETRY', 'GEOGRAPHY')
                         OR TYPE_NAME(t.system_type_id) IN ('TEXT', 'NTEXT','IMAGE' ,'XML')
                         OR (TYPE_NAME(t.system_type_id) IN ('VARCHAR', 'NVARCHAR', 'VARBINARY') AND c.max_length = -1)
-                        THEN 1 ELSE 0 END AS ti
+                        THEN 1 ELSE 0 END AS ti%s
                       FROM sys.columns c WITH (NOLOCK)
                       JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
                       LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
-                      LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id
                       LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
                       LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id
-                      LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id
+                      LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id%s
                       WHERE c.object_id = res.object_id
                   ) cc ORDER BY cc.id
                   FOR XML RAW, ROOT
                 ) cc (cols)""";
 
+        String col;
+        String join;
+        if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
+            col = ",\n      mc.masking_function AS mf";
+            join = "\n      LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id";
+        } else {
+            col = "";
+            join = "";
+        }
+
         builder.column("cc.cols");
-        builder.join(cols);
+        builder.join(cols.formatted(col, join));
     }
 
     private void addMsTablespacePart(QueryBuilder builder) {

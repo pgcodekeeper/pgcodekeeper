@@ -115,7 +115,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
     }
 
     private Map<String, String> readOption(ResultSet res) throws SQLException {
-        boolean isMemoryOptimized = res.getBoolean("is_memory_optimized");
+        boolean isMemoryOptimized = SupportedMsVersion.VERSION_14.isLE(loader.getVersion()) && res.getBoolean("is_memory_optimized");
 
         // cannot be used in memory_optimized tables
         boolean allowRowLocks = isMemoryOptimized || res.getBoolean("allow_row_locks");
@@ -172,7 +172,6 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
         builder
         .column("o.name AS table_name")
-        .column("t.is_memory_optimized")
         .column("res.name")
         .column("res.is_primary_key")
         .column("res.is_unique")
@@ -195,16 +194,18 @@ public class MsIndicesAndPKReader extends JdbcReader {
         .join("LEFT JOIN sys.data_spaces d WITH (NOLOCK) ON res.data_space_id = d.data_space_id")
         .join("JOIN sys.stats st WITH (NOLOCK) ON res.name = st.name AND res.object_id = st.object_id AND res.index_id = st.stats_id")
         .join("JOIN sys.objects o WITH (NOLOCK) ON res.object_id = o.object_id")
-        .join("LEFT JOIN sys.tables t WITH (NOLOCK) ON o.object_id = t.object_id")
         .join("LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = res.object_id")
         .join("JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = res.object_id AND sp.index_id = res.index_id AND sp.partition_number = 1")
         .where("o.type IN ('U', 'V')")
         .where("res.type IN (1, 2, 5, 6)");
 
         if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
-            builder.column("st.is_incremental");
+            builder
+            .column("st.is_incremental")
+            .column("t.is_memory_optimized")
+            .join("LEFT JOIN sys.tables t WITH (NOLOCK) ON o.object_id = t.object_id");
         }
-
+        
         if (SupportedMsVersion.VERSION_19.isLE(loader.getVersion())) {
             builder.column("res.optimize_for_sequential_key");
         }

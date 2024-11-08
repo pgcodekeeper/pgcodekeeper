@@ -27,22 +27,20 @@ public abstract class AbstractStatementReader {
 
     private static final String PG_CATALOG = "pg_catalog.";
 
-    private static final String MS_PRIVILIGES_JOIN = """
+    protected static final String MS_PRIVILIGES_JOIN = """
             CROSS APPLY (
               SELECT * FROM (
                 SELECT
                   perm.state_desc AS sd,
                   perm.permission_name AS pn,
-                  roleprinc.name AS r,
-                  col.name AS c
+                  roleprinc.name AS r%s
                 FROM sys.database_principals roleprinc  WITH (NOLOCK)
                 JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
                 LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id AND col.column_id = perm.minor_id
-                WHERE major_id = res.object_id AND perm.class = 1
-              ) cc
+                WHERE major_id = res.%s AND perm.class = %s
+              ) aa
               FOR XML RAW, ROOT
             ) aa (acl)""";
-
 
     private static final String EXTENSION_DEPS_CTE = """
 
@@ -124,8 +122,13 @@ public abstract class AbstractStatementReader {
     }
 
     protected void addMsPriviligesPart(QueryBuilder builder) {
-        builder.column("aa.acl");
-        builder.join(MS_PRIVILIGES_JOIN);
+        builder
+        .column("aa.acl")
+        .join(getFormattedMsPriviliges());
+    }
+
+    protected String getFormattedMsPriviliges() {
+        return MS_PRIVILIGES_JOIN.formatted(",\n      col.name AS c", "object_id", 1);
     }
 
     protected void addMsOwnerPart(QueryBuilder builder) {
