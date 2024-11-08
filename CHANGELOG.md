@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed code generation when deleting column with a default value in MS SQL.
+- Fixed a bug when reading from a database in MS SQL.
 
 ### Removed
 

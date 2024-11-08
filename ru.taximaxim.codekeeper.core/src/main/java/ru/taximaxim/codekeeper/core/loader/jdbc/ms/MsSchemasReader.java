@@ -72,23 +72,7 @@ public class MsSchemasReader extends AbstractStatementReader {
     }
 
     @Override
-    protected void addMsPriviligesPart(QueryBuilder builder) {
-        String acl = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT
-                      perm.state_desc AS sd,
-                      perm.permission_name AS pn,
-                      roleprinc.name AS r
-                    FROM sys.database_principals roleprinc WITH (NOLOCK)
-                    JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
-                    WHERE major_id = res.schema_id AND perm.class = 3
-                  ) cc
-                  FOR XML RAW, ROOT
-                ) aa (acl)""";
-
-        builder.column("aa.acl");
-        builder.join(acl);
+    protected String getFormattedMsPriviliges() {
+        return MS_PRIVILIGES_JOIN.formatted("", "schema_id", 3);
     }
-
 }
