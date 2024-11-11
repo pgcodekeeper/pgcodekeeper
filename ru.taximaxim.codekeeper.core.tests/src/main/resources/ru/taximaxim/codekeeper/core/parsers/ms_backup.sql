@@ -62,4 +62,17 @@ MIRROR TO TAPE = '\\.\tape2', TAPE = '\\.\tape3'
 WITH
    NOINIT,
    MEDIANAME = 'AdventureWorksSet1';
-
+BACKUP DATABASE @dbName  
+TO DISK='X:\SQLServerBackups\AdventureWorks1.bak',   
+DISK='Y:\SQLServerBackups\AdventureWorks2.bak',   
+DISK='Z:\SQLServerBackups\AdventureWorks3.bak'  
+WITH FORMAT,  
+   MEDIANAME = 'AdventureWorksStripedSet0',  
+   MEDIADESCRIPTION = 'Striped media set for AdventureWorks2012 database';  
+GO
+BACKUP LOG AdventureWorks2012
+TO TAPE = '\\.\tape0', TAPE = '\\.\tape1'
+MIRROR TO TAPE = '\\.\tape2', TAPE = '\\.\tape3'
+WITH
+   NOINIT,
+   MEDIANAME = 'AdventureWorksSet1';

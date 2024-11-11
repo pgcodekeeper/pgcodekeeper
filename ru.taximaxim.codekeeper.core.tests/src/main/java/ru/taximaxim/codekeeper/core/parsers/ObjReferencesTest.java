@@ -163,6 +163,7 @@ class ObjReferencesTest {
             "ms_other",
             "ms_predicates",
             "ms_procedures",
+            "ms_restore",
             "ms_roles",
             "ms_rule",
             "ms_schema",

@@ -201,7 +201,12 @@ backup_statement
     ;
 
 restore_statement
-    : restore_symmetric_key
+    : RESTORE (restore_symmetric_key
+    | restore_database
+    | restore_log
+    | restore_master_key
+    | restore_service_master_key
+    | restore_other)
     ;
 
 // Control-of-Flow Language: https://docs.microsoft.com/en-us/sql/t-sql/language-elements/control-of-flow
@@ -1552,6 +1557,11 @@ string_id_local_id
     | string_or_local_id
     ;
 
+decimal_id_local_id
+    : id
+    | decimal_or_local_id
+    ;
+
 create_spatial_index
     : SPATIAL INDEX index_name LR_BRACKET id RR_BRACKET
      ((USING id)? WITH LR_BRACKET spatial_index_option (COMMA spatial_index_option)* RR_BRACKET)?
@@ -2023,22 +2033,21 @@ cursor_statement
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/backup-transact-sql
 backup_database
-    : BACKUP DATABASE id
+    : BACKUP DATABASE (LOCAL_ID | id)
     (READ_WRITE_FILEGROUPS (COMMA? (FILE|FILEGROUP) EQUAL STRING)*)? (COMMA? (FILE|FILEGROUP) EQUAL STRING)*
-    TO backup_device (COMMA backup_device)* mirror_to* (WITH backup_option (COMMA backup_option)*)?
+    TO backup_devices mirror_to* (WITH backup_option (COMMA backup_option)*)?
     ;
 
 backup_log
-    : BACKUP LOG id TO backup_device (COMMA backup_device)* mirror_to* (WITH backup_option (COMMA backup_option)*)?
+    : BACKUP LOG (id | LOCAL_ID) TO backup_devices mirror_to* (WITH backup_option (COMMA backup_option)*)?
     ;
 
 mirror_to
-    : MIRROR TO backup_device (COMMA backup_device)*
+    : MIRROR TO backup_devices
     ;
 
 backup_device
-    : id
-    | (DISK | TAPE | URL) EQUAL (STRING | id)
+    : ((DISK | TAPE | URL) EQUAL)? (STRING | id | LOCAL_ID)
     ;
 
 backup_option
@@ -2105,9 +2114,100 @@ backup_symmetric_key
     : BACKUP SYMMETRIC KEY id TO (FILE | URL) EQUAL STRING ENCRYPTION BY PASSWORD EQUAL STRING
     ;
 
+// https://learn.microsoft.com/ru-ru/sql/t-sql/statements/restore-statements-transact-sql
+restore_database
+    : DATABASE (LOCAL_ID | id) files_or_filegroups? (FROM backup_devices)? restore_options?
+    | DATABASE (LOCAL_ID | id) FROM DATABASE_SNAPSHOT EQUAL STRING
+    | DATABASE (LOCAL_ID | id) PAGE EQUAL STRING (COMMA files_or_filegroups)? (FROM backup_devices)? restore_options?
+    ;
+
+restore_log
+    : LOG (LOCAL_ID | id)
+    ((file_or_filegroup | PAGE EQUAL STRING) (COMMA (file_or_filegroup | PAGE EQUAL STRING))*)?
+    (FROM backup_devices)?
+    restore_options?
+    ;
+
+restore_other
+    : (HEADERONLY | LABELONLY | FILELISTONLY) FROM backup_device restore_options?
+    | REWINDONLY FROM backup_devices (WITH (UNLOAD | NONLOAD))?
+    | VERIFYONLY FROM backup_devices restore_options?
+    ;
+
+restore_master_key
+    : MASTER KEY FROM
+    (FILE | URL) EQUAL STRING
+    DECRYPTION BY PASSWORD EQUAL STRING
+    ENCRYPTION BY PASSWORD EQUAL STRING
+    FORCE?
+    ;
+
+restore_service_master_key
+    : SERVICE MASTER KEY FROM FILE EQUAL STRING DECRYPTION BY PASSWORD EQUAL STRING FORCE?
+    ;
+
+restore_options
+    : WITH restore_option (COMMA restore_option)*
+    ;
+
+backup_devices
+    : backup_device (COMMA backup_device)*
+    ;
+
+file_or_filegroup
+    : (FILE | FILEGROUP) EQUAL string_or_local_id
+    | READ_WRITE_FILEGROUPS
+    ;
+
+files_or_filegroups
+    : file_or_filegroup (COMMA file_or_filegroup)*
+    ;
+
+restore_option
+    : RECOVERY
+    | NORECOVERY
+    | PARTIAL
+    | STANDBY EQUAL string_id_local_id
+    | MOVE string_id_local_id TO string_id_local_id
+    | REPLACE
+    | RESTART
+    | RESTRICTED_USER
+    | CREDENTIAL
+    | FILE EQUAL decimal_or_local_id
+    | PASSWORD EQUAL string_or_local_id
+    | METADATA_ONLY
+    | SNAPSHOT
+    | DBNAME EQUAL string_or_local_id
+    | MEDIANAME EQUAL string_or_local_id
+    | MEDIAPASSWORD EQUAL string_or_local_id
+    | BLOCKSIZE EQUAL decimal_or_local_id
+    | BUFFERCOUNT EQUAL decimal_or_local_id
+    | MAXTRANSFERSIZE EQUAL decimal_or_local_id
+    | MAXTRANSFER EQUAL decimal_or_local_id
+    | NO_CHECKSUM
+    | CHECKSUM
+    | STOP_ON_ERROR
+    | CONTINUE_AFTER_ERROR
+    | STATS (EQUAL decimal_or_local_id)?
+    | REWIND
+    | NOREWIND
+    | LOAD
+    | NOUNLOAD
+    | KEEP_REPLICATION
+    | KEEP_CDC
+    | FILESTREAM LR_BRACKET DIRECTORY_NAME EQUAL STRING RR_BRACKET
+    | ENABLE_BROKER
+    | ERROR_BROKER_CONVERSATIONS
+    | NEW_BROKER
+    | STOPAT EQUAL string_or_local_id
+    | STOPATMARK EQUAL STRING (AFTER STRING)?
+    | STOPBEFOREMARK EQUAL STRING (AFTER STRING)?
+    | LOADHISTORY
+    ;
+
 //https://learn.microsoft.com/en-us/sql/t-sql/statements/restore-symmetric-key-transact-sql?view=sql-server-ver16
 restore_symmetric_key
-    : RESTORE SYMMETRIC KEY id FROM (FILE | URL) EQUAL STRING
+    : SYMMETRIC KEY id FROM (FILE | URL) EQUAL STRING
     DECRYPTION BY PASSWORD EQUAL STRING
     ENCRYPTION BY PASSWORD EQUAL STRING
     ;
@@ -3459,11 +3559,13 @@ simple_id
     | DATA_DELETION
     | DATA_SOURCE
     | DATABASE_MIRRORING
+    | DATABASE_SNAPSHOT
     | DATASPACE
     | DATE_CORRELATION_OPTIMIZATION
     | DATE_FORMAT
     | DAY
     | DAYS
+    | DBNAME
     | DB_CHAINING
     | DB_FAILOVER
     | DDL
@@ -3539,6 +3641,7 @@ simple_id
     | FILEPATH
     | FILESTREAM
     | FILESTREAM_ON
+    | FILELISTONLY
     | FILLFACTOR // technically, keyword
     | FILTER
     | FILTER_COLUMN
@@ -3569,6 +3672,7 @@ simple_id
     | HADR
     | HASH
     | HASHED
+    | HEADERONLY
     | HEALTH_CHECK_TIMEOUT
     | HEALTHCHECKTIMEOUT
     | HIDDEN_KEYWORD
@@ -3606,12 +3710,15 @@ simple_id
     | KB
     | KEEP
     | KEEPFIXED
+    | KEEP_CDC
+    | KEEP_REPLICATION
     | KERBEROS
     | KEY_PATH
     | KEY_SOURCE
     | KEY_STORE_PROVIDER_NAME
     | KEYS
     | KEYSET
+    | LABELONLY
     | LANGUAGE
     | LAST
     | LAST_NODE
@@ -3627,6 +3734,7 @@ simple_id
     | LISTENER_IP
     | LISTENER_PORT
     | LISTENER_URL
+    | LOADHISTORY
     | LOB_COMPACTION
     | LOCAL
     | LOCAL_SERVICE_NAME
@@ -3668,6 +3776,7 @@ simple_id
     | MB
     | MEDIADESCRIPTION
     | MEDIANAME
+    | MEDIAPASSWORD
     | MEDIUM
     | MEMBER
     | MEMORY_OPTIMIZED
@@ -3677,6 +3786,7 @@ simple_id
     | MESSAGE
     | MESSAGE_FORWARD_SIZE
     | MESSAGE_FORWARDING
+    | METADATA_ONLY
     | MIGRATION_STATE
     | MIN_ACTIVE_ROWVERSION
     | MIN_CPU_PERCENT
@@ -3716,6 +3826,7 @@ simple_id
     | NON_TRANSACTED_ACCESS
     | NONE
     | NOLOCK
+    | NONLOAD
     | NORECOMPUTE
     | NORECOVERY
     | NOREWIND
@@ -3749,6 +3860,7 @@ simple_id
     | OVERRIDE
     | OWNER
     | OWNERSHIP
+    | PAGE
     | PAGE_VERIFY
     | PAGLOCK
     | PARAMETERS
@@ -3799,13 +3911,6 @@ simple_id
     | PROVIDER
     | PROVIDER_KEY_NAME
     | PUSHDOWN
-    | RANDOMIZED
-    | READCOMMITTED
-    | READCOMMITTEDLOCK
-    | READPAST
-    | READUNCOMMITTED
-    | REPEATABLEREAD
-    | ROWLOCK
     | QUERY
     | QUERYTRACEON
     | QUEUE
@@ -3825,7 +3930,11 @@ simple_id
     | READ_WRITE
     | READ_WRITE_FILEGROUPS
     | READ_WRITE_ROUTING_URL
+    | READCOMMITTED
+    | READCOMMITTEDLOCK
     | READONLY
+    | READPAST
+    | READUNCOMMITTED
     | READWRITE
     | REBUILD
     | RECEIVE
@@ -3842,6 +3951,8 @@ simple_id
     | REMOVE
     | REORGANIZE
     | REPEATABLE
+    | REPEATABLEREAD
+    | REPLACE
     | REPLICA
     | REQUEST_MAX_CPU_TIME_SEC
     | REQUEST_MAX_MEMORY_GRANT_PERCENT
@@ -3862,6 +3973,7 @@ simple_id
     | RETAINDAYS
     | RETENTION
     | RETENTION_PERIOD
+    | REWINDONLY
     | RETURNS
     | REWIND
     | ROBUST
@@ -3871,6 +3983,7 @@ simple_id
     | ROUTE
     | ROW
     | ROWGUID
+    | ROWLOCK
     | ROWS
     | RSA_1024
     | RSA_2048
@@ -3949,6 +4062,9 @@ simple_id
     | STATS
     | STATUS
     | STOP
+    | STOPAT
+    | STOPATMARK
+    | STOPBEFOREMARK
     | STOP_ON_ERROR
     | STOPLIST
     | STOPPED
@@ -4004,6 +4120,7 @@ simple_id
     | UNDEFINED
     | UNKNOWN
     | UNLIMITED
+    | UNLOAD
     | UNLOCK
     | UNMASK
     | UNSAFE
@@ -4016,6 +4133,7 @@ simple_id
     | VALIDATION
     | VALUE
     | VERBOSELOGGING
+    | VERIFYONLY
     | VERSION
     | VIEW_METADATA
     | VIEWS
