@@ -107,3 +107,4 @@ Reference: Object = "Department" (TABLE), action = ALTER, offset = 13611, line n
 Reference: Object = "ProjectTask" (TABLE), action = ALTER, offset = 13773, line number = 512, charPositionInLine = 12
 Reference: Object = "InsurancePolicy" (TABLE), action = ALTER, offset = 13861, line number = 516, charPositionInLine = 12
 Reference: action = CREATE EXTERNAL TABLE, offset = 14143, line number = 522, charPositionInLine = 0
+Reference: Object = "RestoreDbTable" (TABLE), action = CREATE, offset = 14438, line number = 528, charPositionInLine = 13
