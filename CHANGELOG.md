@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Removed
 
+## [10.3.1] - 2024-11-12
+
+### Fixed
+
+- Fixed a bug when reading from a database in MS SQL.
+
 ## [10.3.0] - 2024-11-12
 
 ### Added
@@ -2106,7 +2112,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...HEAD
+[10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
 [10.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.2.0...v10.3.0
 [10.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...v10.2.0
 [10.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...v10.1.0

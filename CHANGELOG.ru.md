@@ -15,6 +15,12 @@
 
 ### Удалено
 
+## [10.3.1] - 2024-11-12
+
+### Исправлено
+
+- Исправлена ошибка при чтении из базы данных в MS SQL.
+
 ## [10.3.0] - 2024-11-12
 
 ### Добавлено
@@ -28,7 +34,7 @@
 ### Исправлено
 
 - Исправлена генерация кода при удалении колонки с дефолтным значением в MS SQL.
-- Исправлена ошибка при чтении из базы в MS SQL.
+- Исправлена ошибка при чтении из базы данных в MS SQL.
 
 ## [10.2.0] - 2024-10-29
 
@@ -2107,7 +2113,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...HEAD
+[10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
 [10.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.2.0...v10.3.0
 [10.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...v10.2.0
 [10.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.0.0...v10.1.0
