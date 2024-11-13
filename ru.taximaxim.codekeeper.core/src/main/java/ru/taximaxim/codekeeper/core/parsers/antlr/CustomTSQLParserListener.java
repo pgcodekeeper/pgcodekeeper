@@ -62,6 +62,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsProcedur
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsRole;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsSequence;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsStatistics;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsTrigger;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.CreateMsType;
@@ -220,6 +221,8 @@ implements TSqlContextProcessor {
             p = new CreateMsUser(ctx.create_user(), db);
         } else if (ctx.create_type() != null) {
             p = new CreateMsType(ctx.create_type(), db);
+        } else if (ctx.create_statistics() != null) {
+            p = new CreateMsStatistics(ctx.create_statistics(), db);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;

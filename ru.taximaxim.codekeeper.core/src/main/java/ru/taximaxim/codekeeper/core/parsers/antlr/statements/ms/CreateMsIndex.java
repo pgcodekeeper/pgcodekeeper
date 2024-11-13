@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 
-public class CreateMsIndex extends MsTableAbstract {
+public final class CreateMsIndex extends MsParserAbstract {
 
     private final Create_indexContext ctx;
 

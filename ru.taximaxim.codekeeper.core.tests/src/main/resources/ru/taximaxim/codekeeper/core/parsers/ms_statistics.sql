@@ -1,0 +1,15 @@
+CREATE STATISTICS stat
+    ON schema0.table0 (col1, col2)
+    WITH FULLSCAN, NORECOMPUTE;
+
+CREATE STATISTICS stat1
+    ON schema1.table1 (col1, col2, col3)
+WHERE col2 = 2
+WITH SAMPLE 50 PERCENT;
+GO
+
+CREATE STATISTICS stat2
+    ON db2.schema2.table2 (col1, col2)
+    WITH FULLSCAN, PERSIST_SAMPLE_PERCENT = ON;
+
+CREATE STATISTICS stat3 ON table2 (col1, col2) WITH AUTO_DROP = ON;

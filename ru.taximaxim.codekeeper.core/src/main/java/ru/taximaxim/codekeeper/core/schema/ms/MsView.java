@@ -15,12 +15,18 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
@@ -38,6 +44,8 @@ public class MsView extends AbstractView implements SourceStatement {
 
     private String firstPart;
     private String secondPart;
+
+    private final Map<String, MsStatistics> statistics = new HashMap<>();
 
     public MsView(String name) {
         super(name);
@@ -122,6 +130,47 @@ public class MsView extends AbstractView implements SourceStatement {
         view.setQuotedIdentified(isQuotedIdentified());
         view.setSchemaBinding(isSchemaBinding());
         return view;
+    }
+
+    @Override
+    public void addChild(IStatement st) {
+        if (st instanceof MsStatistics stat) {
+            addStatistics(stat);
+        } else {
+            super.addChild(st);
+        }
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        if (DbObjType.STATISTICS == type) {
+            return statistics.get(name);
+        }
+        return super.getChild(name, type);
+    }
+
+    @Override
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        super.fillChildrenList(l);
+        l.add(statistics.values());
+    }
+
+    public void addStatistics(final MsStatistics stat) {
+        addUnique(statistics, stat);
+    }
+
+    @Override
+    public boolean compareChildren(PgStatement obj) {
+        if (obj instanceof MsView view && super.compareChildren(obj)) {
+            return statistics.equals(view.statistics);
+        }
+        return false;
+    }
+
+    @Override
+    public void computeChildrenHash(Hasher hasher) {
+        super.computeChildrenHash(hasher);
+        hasher.putUnordered(statistics);
     }
 
     public void setAnsiNulls(boolean ansiNulls) {

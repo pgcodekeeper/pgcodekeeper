@@ -133,7 +133,7 @@ public final class WorkDirs {
             case FUNCTION -> MS_FUNCTIONS;
             case PROCEDURE -> MS_PROCEDURES;
             case TYPE -> MS_TYPES;
-            case CONSTRAINT, INDEX, TRIGGER, COLUMN -> null;
+            case CONSTRAINT, INDEX, TRIGGER, COLUMN, STATISTICS -> null;
             default -> throw new IllegalStateException(Messages.DbObjType_unsupported_type + type);
         };
     }

@@ -310,6 +310,14 @@ class MsDiffTest {
             "modify_ms_table_schemabinding",
             // Tests scenario where MS SCHEMAS is compared.
             "compare_ms_schemas",
+            // Tests scenario where MS STATISTICS added
+            "add_ms_statistics",
+            // Tests scenario where MS STATISTICS altered
+            "alter_ms_statistics",
+            // Test scenario where MS STATISTICS compared without diffs
+            "compare_ms_statistics",
+            // Test scenario where MS STATISTICS dropped
+            "drop_ms_statistics",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);

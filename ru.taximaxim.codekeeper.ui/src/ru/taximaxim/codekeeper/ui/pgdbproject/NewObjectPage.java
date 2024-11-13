@@ -178,21 +178,23 @@ public final class NewObjectPage extends WizardPage {
         Set<DbObjType> types = ObjectLevel.getTypes(dbType, false, ObjectLevel.SCHEMA, ObjectLevel.CONTAINER);
         types.remove(DbObjType.SCHEMA);
 
+        PgStatement st = null;
         try {
-            PgStatement st = UIProjectLoader.parseStatement((IFile) resource, types);
-            if (st != null) {
-                type = st.getStatementType();
-                if (st instanceof ISearchPath path && !(st instanceof ChFunction)) {
-                    schema = path.getSchemaName();
-                }
-
-                if (type.in(DbObjType.TABLE, DbObjType.VIEW)) {
-                    container = st.getName();
-                    parentIsTable = type != DbObjType.VIEW;
-                }
-            }
+            st = UIProjectLoader.parseStatement((IFile) resource, types);
         } catch (IOException | InterruptedException | CoreException ex) {
             Log.log(Log.LOG_ERROR, "Error while parsing selection", ex); //$NON-NLS-1$
+        }
+        if (st == null) {
+            return;
+        }
+
+        type = st.getStatementType();
+        if (st instanceof ISearchPath path && !(st instanceof ChFunction)) {
+            schema = path.getSchemaName();
+        }
+        if (type.in(DbObjType.TABLE, DbObjType.VIEW)) {
+            container = st.getName();
+            parentIsTable = type != DbObjType.VIEW;
         }
     }
 
@@ -436,7 +438,8 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private boolean isHaveChoise() {
-        return type.in(DbObjType.TRIGGER, DbObjType.RULE, DbObjType.INDEX);
+        return type.in(DbObjType.TRIGGER, DbObjType.RULE, DbObjType.INDEX)
+                || (DatabaseType.MS == dbType && DbObjType.STATISTICS == type);
     }
 
     private boolean isSubElement() {

@@ -335,8 +335,9 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         case FTS_TEMPLATE:
         case FTS_DICTIONARY:
         case FTS_CONFIGURATION:
-        case STATISTICS:
             return s.getChild(gc.table, type);
+        case STATISTICS:
+            return resolveStatistics(s, gc, type);
         case TYPE:
             return (PgStatement) resolveTypeCall(s, gc.table);
         case FUNCTION:
@@ -362,6 +363,10 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         default:
             throw new IllegalStateException("Unhandled DbObjType: " + type);
         }
+    }
+
+    protected PgStatement resolveStatistics(AbstractSchema s, GenericColumn gc, DbObjType type) {
+        return s.getChild(gc.table, type);
     }
 
     private IStatement resolveTypeCall(AbstractSchema s, String table) {
