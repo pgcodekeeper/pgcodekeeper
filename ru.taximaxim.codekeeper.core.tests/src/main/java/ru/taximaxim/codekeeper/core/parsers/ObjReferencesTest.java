@@ -180,6 +180,7 @@ class ObjReferencesTest {
             "ms_users",
             "ms_view",
             "ms_xml_data_type",
+            "ms_statistics",
     })
     void compareMsReferences(final String fileNameTemplate) throws IOException, InterruptedException {
         compareReferences(fileNameTemplate, DatabaseType.MS);
@@ -235,7 +236,7 @@ class ObjReferencesTest {
                 sb.append("offset = ").append(loc.getOffset()).append(", ");
                 sb.append("line number = ").append(loc.getLineNumber()).append(", ");
                 sb.append("charPositionInLine = ").append(loc.getCharPositionInLine());
-                sb.append(System.lineSeparator());
+                sb.append('\n');
             });
         }
 

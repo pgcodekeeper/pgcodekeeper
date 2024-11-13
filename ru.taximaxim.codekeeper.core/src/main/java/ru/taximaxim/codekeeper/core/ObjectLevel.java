@@ -31,7 +31,7 @@ public enum ObjectLevel {
             case ROLE, USER -> dbType != DatabaseType.PG ? ObjectLevel.SCHEMA : ObjectLevel.UNKNOWN;
             case SERVER, CAST, EVENT_TRIGGER, EXTENSION, FOREIGN_DATA_WRAPPER, USER_MAPPING ->
                     dbType == DatabaseType.PG ? ObjectLevel.SCHEMA : ObjectLevel.UNKNOWN;
-            case STATISTICS, AGGREGATE, COLLATION, DOMAIN, FTS_CONFIGURATION, FTS_DICTIONARY, FTS_TEMPLATE, FTS_PARSER,
+            case AGGREGATE, COLLATION, DOMAIN, FTS_CONFIGURATION, FTS_DICTIONARY, FTS_TEMPLATE, FTS_PARSER,
                     OPERATOR -> dbType == DatabaseType.PG ? ObjectLevel.CONTAINER : ObjectLevel.UNKNOWN;
             case TABLE, VIEW -> ObjectLevel.CONTAINER;
             case FUNCTION -> DatabaseType.CH == dbType ? ObjectLevel.SCHEMA : ObjectLevel.CONTAINER;
@@ -44,6 +44,11 @@ public enum ObjectLevel {
             case POLICY -> switch (dbType) {
                 case CH -> ObjectLevel.SCHEMA;
                 case PG -> ObjectLevel.SUB_ELEMENT;
+                default -> ObjectLevel.UNKNOWN;
+            };
+            case STATISTICS -> switch (dbType) {
+                case PG -> ObjectLevel.CONTAINER;
+                case MS -> ObjectLevel.SUB_ELEMENT;
                 default -> ObjectLevel.UNKNOWN;
             };
             default -> UNKNOWN;

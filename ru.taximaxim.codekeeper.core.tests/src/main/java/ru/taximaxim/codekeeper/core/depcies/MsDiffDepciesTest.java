@@ -40,6 +40,9 @@ class MsDiffDepciesTest {
             // пользователь изменил constraintPk
             // пользователь выбрал только таблицу с измененным constraintPk
             "change_ms_constrPk_usr",
+            // changed: t1, stat1, stat2
+            // user: t1
+            "change_ms_table_with_stat_usr",
     })
     void testDepcy(String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, false);

@@ -9,3 +9,7 @@ Reference: Object = "Sales" (SCHEMA), action = null, offset = 323, line number =
 Reference: Object = "Sales"."Region" (TABLE), action = CREATE, offset = 329, line number = 16, charPositionInLine = 19
 Reference: Object = "Production" (SCHEMA), action = CREATE, offset = 443, line number = 21, charPositionInLine = 14
 Reference: action = ALTER PARTITION SCHEME, offset = 488, line number = 24, charPositionInLine = 0
+Reference: action = CREATE PARTITION SCHEME, offset = 547, line number = 28, charPositionInLine = 0
+Reference: action = CREATE PARTITION SCHEME, offset = 636, line number = 33, charPositionInLine = 0
+Reference: action = CREATE PARTITION SCHEME, offset = 752, line number = 38, charPositionInLine = 0
+Reference: action = CREATE PARTITION SCHEME, offset = 839, line number = 43, charPositionInLine = 0

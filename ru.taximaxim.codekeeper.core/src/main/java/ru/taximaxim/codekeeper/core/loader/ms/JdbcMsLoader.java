@@ -36,6 +36,7 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsIndicesAndPKReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsRolesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsSchemasReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsSequencesReader;
+import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsStatisticsReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsTablesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsTypesReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsUsersReader;
@@ -85,6 +86,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             new MsAssembliesReader(this, d).read();
             new MsRolesReader(this, d).read();
             new MsUsersReader(this, d).read();
+            new MsStatisticsReader(this).read();
 
             finishLoaders();
 

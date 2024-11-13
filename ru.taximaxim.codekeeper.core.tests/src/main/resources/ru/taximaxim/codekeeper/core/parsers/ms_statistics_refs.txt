@@ -1,0 +1,11 @@
+Reference: Object = schema0.stat (STATISTICS), action = CREATE, offset = 18, line number = 1, charPositionInLine = 18
+Reference: Object = schema0 (SCHEMA), action = null, offset = 30, line number = 2, charPositionInLine = 7
+Reference: Object = schema0.table0 (TABLE), action = null, offset = 38, line number = 2, charPositionInLine = 15
+Reference: Object = schema1.stat1 (STATISTICS), action = CREATE, offset = 109, line number = 5, charPositionInLine = 18
+Reference: Object = schema1 (SCHEMA), action = null, offset = 122, line number = 6, charPositionInLine = 7
+Reference: Object = schema1.table1 (TABLE), action = null, offset = 130, line number = 6, charPositionInLine = 15
+Reference: Object = schema2.stat2 (STATISTICS), action = CREATE, offset = 217, line number = 11, charPositionInLine = 18
+Reference: Object = schema2 (SCHEMA), action = null, offset = 234, line number = 12, charPositionInLine = 11
+Reference: Object = schema2.table2 (TABLE), action = null, offset = 242, line number = 12, charPositionInLine = 19
+Reference: Object = stat3 (STATISTICS), action = CREATE, offset = 329, line number = 15, charPositionInLine = 18
+Reference: Object = table2 (TABLE), action = null, offset = 338, line number = 15, charPositionInLine = 27

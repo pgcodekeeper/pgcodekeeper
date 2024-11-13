@@ -104,6 +104,14 @@ GO</template>
 GO</template>
 
 <template 
+    name="create_statistics"
+    description="%create.statistics.desc" 
+    context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 
+    id="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs.createstatistics"
+    >CREATE STATISTICS ${objectName} ON ${schemaName}.${parentName} (columnName);
+GO</template>
+
+<template 
     name="create_trigger"
     description="%create.trigger.desc" 
     context="ru.taximaxim.codekeeper.ui.sqlEditorContextTypeMs" 

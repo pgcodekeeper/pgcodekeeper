@@ -307,6 +307,7 @@ class ExportTableOrder implements Comparator<PgStatement> {
             case RULE -> 3;
             case CONSTRAINT -> 4;
             case POLICY -> 5;
+            case STATISTICS -> 6;
             default -> 0;
         };
     }

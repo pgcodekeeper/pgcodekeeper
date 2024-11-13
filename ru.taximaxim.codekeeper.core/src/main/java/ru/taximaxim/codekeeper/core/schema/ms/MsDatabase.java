@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -200,4 +201,11 @@ public class MsDatabase extends AbstractDatabase {
     public DatabaseType getDbType() {
         return DatabaseType.MS;
     }
+
+    @Override
+    protected PgStatement resolveStatistics(AbstractSchema s, GenericColumn gc, DbObjType type) {
+        var cont = s.getStatementContainer(gc.table);
+        return cont != null ? cont.getChild(gc.column, type) : null;
+    }
+
 }

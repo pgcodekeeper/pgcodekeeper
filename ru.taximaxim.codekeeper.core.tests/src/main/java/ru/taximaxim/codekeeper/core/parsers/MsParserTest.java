@@ -83,6 +83,7 @@ class MsParserTest {
             "ms_update",
             "ms_users",
             "ms_view",
+            "ms_statistics",
     })
     void parse(final String fileNameTemplate) throws IOException {
         parse(fileNameTemplate, 0);

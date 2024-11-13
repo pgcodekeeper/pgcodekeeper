@@ -930,7 +930,7 @@ alter_partition_function
     ;
 
 create_partition_scheme
-    : PARTITION SCHEME id AS PARTITION id ALL? TO LR_BRACKET id_or_primary (COMMA id_or_primary)* RR_BRACKET
+    : PARTITION SCHEME id AS PARTITION id ALL? TO LR_BRACKET (id | STRING) (COMMA (id | STRING))* RR_BRACKET
     ;
 
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-partition-scheme-transact-sql
@@ -1724,7 +1724,7 @@ function_option
 
 // https://msdn.microsoft.com/en-us/library/ms188038.aspx
 create_statistics
-    : STATISTICS id ON table_name_with_hint name_list_in_brackets
+    : STATISTICS id ON table_name_with_hint name_list_in_brackets index_where?
     (WITH update_statistics_with_option (COMMA update_statistics_with_option)*)?
     ;
 
@@ -1734,8 +1734,8 @@ update_statistics
     ;
 
 update_statistics_with_option
-    : FULLSCAN (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
-    | SAMPLE DECIMAL (PERCENT | ROWS) (COMMA PERSIST_SAMPLE_PERSENT EQUAL on_off)?
+    : FULLSCAN (COMMA PERSIST_SAMPLE_PERCENT EQUAL on_off)?
+    | SAMPLE DECIMAL (PERCENT | ROWS) (COMMA PERSIST_SAMPLE_PERCENT EQUAL on_off)?
     | RESAMPLE on_partition_clause
     | NORECOMPUTE
     | INCREMENTAL EQUAL on_off
@@ -1755,11 +1755,6 @@ create_table
 id_or_default
     : id
     | DEFAULT
-    ;
-
-id_or_primary
-    : id
-    | PRIMARY
     ;
 
 table_options
@@ -3882,7 +3877,7 @@ simple_id
     | PERCENTILE_DISC
     | PERIOD
     | PERMISSION_SET
-    | PERSIST_SAMPLE_PERSENT
+    | PERSIST_SAMPLE_PERCENT
     | PERSISTED
     | PERSISTENT_LOG_BUFFER
     | PLATFORM

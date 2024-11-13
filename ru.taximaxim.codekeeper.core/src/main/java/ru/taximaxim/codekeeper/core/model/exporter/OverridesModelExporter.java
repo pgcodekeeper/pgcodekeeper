@@ -68,16 +68,8 @@ public class OverridesModelExporter extends ModelExporter {
         for (TreeElement el : changeList) {
             if (el.getSide() == DiffSide.BOTH) {
                 switch (el.getType()) {
-                case CONSTRAINT:
-                case DATABASE:
-                case INDEX:
-                case TRIGGER:
-                case RULE:
-                case POLICY:
-                case EXTENSION:
-                case EVENT_TRIGGER:
-                case CAST:
-                case COLUMN:
+                case CONSTRAINT, DATABASE, INDEX, TRIGGER, RULE, POLICY, EXTENSION, EVENT_TRIGGER, CAST, COLUMN,
+                        STATISTICS:
                     break;
                 default:
                     PgStatement stInNew = el.getPgStatement(newDb);

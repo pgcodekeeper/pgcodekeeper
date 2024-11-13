@@ -16,8 +16,11 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -26,10 +29,12 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -53,6 +58,8 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     private String textImage;
     private String fileStream;
     private String tablespace;
+
+    private final Map<String, MsStatistics> statistics = new HashMap<>();
 
     public MsTable(String name) {
         super(name);
@@ -290,5 +297,46 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     @Override
     public DatabaseType getDbType() {
         return DatabaseType.MS;
+    }
+
+    @Override
+    public void addChild(IStatement st) {
+        if (st instanceof MsStatistics stat) {
+            addStatistics(stat);
+        } else {
+            super.addChild(st);
+        }
+    }
+
+    @Override
+    public PgStatement getChild(String name, DbObjType type) {
+        if (DbObjType.STATISTICS == type) {
+            return statistics.get(name);
+        }
+        return super.getChild(name, type);
+    }
+
+    @Override
+    protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
+        super.fillChildrenList(l);
+        l.add(statistics.values());
+    }
+
+    public void addStatistics(final MsStatistics stat) {
+        addUnique(statistics, stat);
+    }
+
+    @Override
+    public boolean compareChildren(PgStatement obj) {
+        if (obj instanceof MsTable table && super.compareChildren(obj)) {
+            return statistics.equals(table.statistics);
+        }
+        return false;
+    }
+
+    @Override
+    public void computeChildrenHash(Hasher hasher) {
+        super.computeChildrenHash(hasher);
+        hasher.putUnordered(statistics);
     }
 }
