@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Added support object STATISTICS in MS SQL.
 - Added CREDITS.md file.
+- Added the ability to sort by library in the diff table of the project editor.
 
 ### Changed
 
