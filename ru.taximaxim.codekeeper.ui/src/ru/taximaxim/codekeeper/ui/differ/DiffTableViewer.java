@@ -156,6 +156,7 @@ public class DiffTableViewer extends Composite {
 
     private final boolean showGitUser;
     private boolean showDbUser;
+    private boolean showLibrary;
 
     private final Image iSideBoth;
     private final Image iSideLeft;
@@ -186,6 +187,7 @@ public class DiffTableViewer extends Composite {
     private TreeViewerColumn columnGitUser;
     private TreeViewerColumn columnDbUser;
     private TreeViewerColumn columnLocation;
+    private TreeViewerColumn columnLibrary;
 
     private DbSource dbProject;
     private DbSource dbRemote;
@@ -197,7 +199,7 @@ public class DiffTableViewer extends Composite {
     private final List<ICheckStateListener> programmaticCheckListeners = new ArrayList<>();
 
     private enum Columns {
-        CHECK, NAME, TYPE, CHANGE, LOCATION, GIT_USER, DB_USER
+        CHECK, LIBRARY, NAME, TYPE, CHANGE, LOCATION, GIT_USER, DB_USER,
     }
 
     public StructuredViewer getViewer() {
@@ -572,13 +574,12 @@ public class DiffTableViewer extends Composite {
     private void initColumns() {
         ColumnViewerToolTipSupport.enableFor(viewer);
 
-        columnCheck = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnCheck.getColumn().setResizable(!viewOnly);
-        columnCheck.getColumn().setMoveable(!viewOnly);
+        columnCheck = createColumn(Columns.CHECK);
+        columnCheck.setLabelProvider(new ColumnLabelProvider());
 
-        columnCheck.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHECK));
-
-        columnCheck.setLabelProvider(new ColumnLabelProvider() {
+        columnLibrary = createColumn(Columns.LIBRARY);
+        columnLibrary.getColumn().setImage(Activator.getRegisteredImage(ProjectIcon.LIB));
+        columnLibrary.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
             public String getText(Object element) {
@@ -588,8 +589,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public Image getImage(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta != null && meta.getLibLocation() != null ?
-                        Activator.getRegisteredImage(ProjectIcon.LIB) : null;
+                return meta.getLibLocation() != null ? Activator.getRegisteredImage(ProjectIcon.LIB) : null;
             }
 
             @Override
@@ -606,50 +606,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-        columnType = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnChange = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnName = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnLocation = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnDbUser = new TreeViewerColumn(viewer, SWT.LEFT);
-        columnGitUser = new TreeViewerColumn(viewer, SWT.LEFT);
-
-        columnName.getColumn().setResizable(true);
-        columnName.getColumn().setMoveable(true);
-
-        columnType.getColumn().setResizable(true);
-        columnType.getColumn().setMoveable(true);
-
-        columnChange.getColumn().setResizable(true);
-        columnChange.getColumn().setMoveable(true);
-
-        columnLocation.getColumn().setResizable(true);
-        columnLocation.getColumn().setMoveable(true);
-
-        columnGitUser.getColumn().setResizable(true);
-        columnGitUser.getColumn().setMoveable(true);
-
-        columnDbUser.getColumn().setResizable(true);
-        columnDbUser.getColumn().setMoveable(true);
-
-        setColumnHeaders();
-
-        columnCheck.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnDbUser.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnGitUser.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnName.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnType.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnChange.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-        columnLocation.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
-
-        columnName.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.NAME));
-        columnDbUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.DB_USER));
-        columnGitUser.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.GIT_USER));
-        columnType.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.TYPE));
-        columnChange.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.CHANGE));
-        columnLocation.getColumn().addSelectionListener(getHeaderSelectionAdapter(Columns.LOCATION));
-
-        updateColumnsWidth();
-
+        columnName = createColumn(Columns.NAME);
         columnName.setLabelProvider(new StyledCellLabelProvider(){
 
             @Override
@@ -671,6 +628,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
+        columnType = createColumn(Columns.TYPE);
         columnType.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
@@ -688,29 +646,31 @@ public class DiffTableViewer extends Composite {
             }
         });
 
+        columnChange = createColumn(Columns.CHANGE);
         columnChange.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
             public String getText(Object element) {
-                switch (((TreeElement) element).getSide()) {
-                case BOTH: return isApplyToProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
-                case LEFT: return isApplyToProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
-                case RIGHT: return isApplyToProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
-                default: return null;
-                }
+                return switch (((TreeElement) element).getSide()) {
+                    case BOTH -> isApplyToProj ? "edit" : "ALTER"; //$NON-NLS-1$ //$NON-NLS-2$
+                    case LEFT -> isApplyToProj ? "delete" : "CREATE"; //$NON-NLS-1$ //$NON-NLS-2$
+                    case RIGHT -> isApplyToProj ? "add" : "DROP"; //$NON-NLS-1$ //$NON-NLS-2$
+                    default -> null;
+                };
             }
 
             @Override
             public Image getImage(Object element) {
-                switch (((TreeElement) element).getSide()) {
-                case BOTH: return iSideBoth;
-                case LEFT: return isApplyToProj ? iSideLeft : iSideRight;
-                case RIGHT: return isApplyToProj ? iSideRight : iSideLeft;
-                default: return null;
-                }
+                return switch (((TreeElement) element).getSide()) {
+                    case BOTH -> iSideBoth;
+                    case LEFT -> isApplyToProj ? iSideLeft : iSideRight;
+                    case RIGHT -> isApplyToProj ? iSideRight : iSideLeft;
+                    default -> null;
+                };
             }
         });
 
+        columnGitUser = createColumn(Columns.GIT_USER);
         columnGitUser.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
@@ -725,6 +685,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
+        columnDbUser = createColumn(Columns.DB_USER);
         columnDbUser.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
@@ -734,7 +695,7 @@ public class DiffTableViewer extends Composite {
             }
         });
 
-
+        columnLocation = createColumn(Columns.LOCATION);
         columnLocation.setLabelProvider(new ColumnLabelProvider() {
 
             @Override
@@ -742,10 +703,24 @@ public class DiffTableViewer extends Composite {
                 return ((TreeElement) element).getContainerQName();
             }
         });
+
+        setColumnHeaders();
+        updateColumnsWidth();
+    }
+
+    private TreeViewerColumn createColumn(Columns columnType) {
+        TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
+        column.getColumn().setResizable(true);
+        column.getColumn().setMoveable(true);
+        column.getColumn().addSelectionListener(getHeaderSelectionAdapter(columnType));
+        column.getColumn().setToolTipText(Messages.DiffTableViewer_reset_sorting);
+
+        return column;
     }
 
     private void setColumnHeaders(){
         columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
+        columnLibrary.getColumn().setText(""); //$NON-NLS-1$
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(getChangeTypeMessage());
@@ -764,7 +739,8 @@ public class DiffTableViewer extends Composite {
 
     private void updateColumnsWidth() {
         PixelConverter pc = new PixelConverter(viewer.getControl());
-        columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(10));
+        columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(5));
+        columnLibrary.getColumn().setWidth(showLibrary && !viewOnly ? pc.convertWidthInCharsToPixels(5) : 0);
         columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
         columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(30));
         // name column will take third of the space
@@ -808,6 +784,9 @@ public class DiffTableViewer extends Composite {
             case CHECK:
                 sb.setLength(sb.length() - 1);
                 columnCheck.getColumn().setText(sb.append('✓').toString());
+                break;
+            case LIBRARY:
+                columnLibrary.getColumn().setText(sb.toString());
                 break;
             case TYPE:
                 columnType.getColumn().setText(sb.append(Messages.diffTableViewer_object_type).toString());
@@ -870,7 +849,6 @@ public class DiffTableViewer extends Composite {
     public void setAutoExpand(boolean enabled) {
         viewer.setAutoExpandLevel(enabled ? AbstractTreeViewer.ALL_LEVELS : 0);
     }
-
 
     public void setInput(DbSource dbProject, DbSource dbRemote,
             TreeElement diffTree, IgnoreList ignoreList) {
@@ -935,6 +913,7 @@ public class DiffTableViewer extends Composite {
     }
 
     private void setLibLocations() {
+    	showLibrary = false;
         for (Entry<TreeElement, ElementMetaInfo> entry : elementInfoMap.entrySet()) {
             if (entry.getKey().getSide() == DiffSide.RIGHT) {
                 continue;
@@ -944,7 +923,7 @@ public class DiffTableViewer extends Composite {
             if (!st.isLib()) {
                 continue;
             }
-
+            showLibrary = true;
             String name = null;
             String type = null;
             String loc = null;
@@ -988,7 +967,6 @@ public class DiffTableViewer extends Composite {
             }
         });
     }
-
 
     private void readGitUsers() {
         Job job = new Job(Messages.DiffTableViewer_reading_git_history) {
@@ -1181,11 +1159,11 @@ public class DiffTableViewer extends Composite {
 
         @Override
         public Object[] getChildren(Object parentElement) {
-            if (!(parentElement instanceof TreeElement)) {
+            if (!(parentElement instanceof TreeElement el)) {
                 // process as root input (Collection of elements)
                 return getElements(parentElement);
             }
-            TreeElement el = (TreeElement) parentElement;
+
             if (el.isContainer() && el.hasChildren()) {
                 List<TreeElement> children = el.getChildren();
                 List<TreeElement> childrenInInput = new ArrayList<>(children.size());
@@ -1195,9 +1173,9 @@ public class DiffTableViewer extends Composite {
                     }
                 }
                 return childrenInInput.toArray();
-            } else {
-                return EMPTY_ARRAY;
             }
+
+            return EMPTY_ARRAY;
         }
 
         @Override
@@ -1368,7 +1346,6 @@ public class DiffTableViewer extends Composite {
         public int compare(Viewer v, Object e1, Object e2) {
             TreeElement el1 = (TreeElement) e1;
             TreeElement el2 = (TreeElement) e2;
-
             Iterator<SortingColumn> it = sortOrder.descendingIterator();
             while (it.hasNext()) {
                 SortingColumn c = it.next();
@@ -1376,6 +1353,9 @@ public class DiffTableViewer extends Composite {
                 switch (c.col) {
                 case CHANGE:
                     res = el1.getSide().toString().compareTo(el2.getSide().toString());
+                    break;
+                case LIBRARY:
+                    res = compareLibs(el1, el2);
                     break;
                 case GIT_USER:
                     res = compareUsers(c.col, el1, el2);
@@ -1435,6 +1415,12 @@ public class DiffTableViewer extends Composite {
             }
 
             return getter.apply(el1Meta).compareTo(getter.apply(el2Meta));
+        }
+
+        private int compareLibs(TreeElement el1, TreeElement el2) {
+            var el1HasLib = elementInfoMap.get(el1).getLibLocation() != null;
+            var el2HasLib = elementInfoMap.get(el2).getLibLocation() != null;
+            return -Boolean.compare(el1HasLib, el2HasLib);
         }
     }
 
