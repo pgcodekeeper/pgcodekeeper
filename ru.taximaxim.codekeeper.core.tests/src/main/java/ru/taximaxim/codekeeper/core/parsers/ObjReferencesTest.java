@@ -152,6 +152,7 @@ class ObjReferencesTest {
             "ms_database",
             "ms_delete",
             "ms_drop",
+            "ms_endpoint",
             "ms_event",
             "ms_full_width_chars",
             "ms_function",
