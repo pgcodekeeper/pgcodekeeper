@@ -148,6 +148,7 @@ import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
  */
 public class DiffTableViewer extends Composite {
 
+    private static final String EMPRY_STRING = ""; //$NON-NLS-1$
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
 
@@ -575,7 +576,12 @@ public class DiffTableViewer extends Composite {
         ColumnViewerToolTipSupport.enableFor(viewer);
 
         columnCheck = createColumn(Columns.CHECK);
-        columnCheck.setLabelProvider(new ColumnLabelProvider());
+        columnCheck.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return EMPRY_STRING;
+            }
+        });
 
         columnLibrary = createColumn(Columns.LIBRARY);
         columnLibrary.getColumn().setImage(Activator.getRegisteredImage(ProjectIcon.LIB));
@@ -583,13 +589,12 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public String getText(Object element) {
-                return ""; //$NON-NLS-1$
+                return EMPRY_STRING;
             }
 
             @Override
             public Image getImage(Object element) {
-                ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta.getLibLocation() != null ? Activator.getRegisteredImage(ProjectIcon.LIB) : null;
+                return isLibElement(element) ? Activator.getRegisteredImage(ProjectIcon.LIB) : null;
             }
 
             @Override
@@ -676,7 +681,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta != null ? meta.getGitUser() : ""; //$NON-NLS-1$
+                return meta != null ? meta.getGitUser() : EMPRY_STRING;
             }
 
             @Override
@@ -691,7 +696,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta != null ? meta.getDbUser() : ""; //$NON-NLS-1$
+                return meta != null ? meta.getDbUser() : EMPRY_STRING;
             }
         });
 
@@ -720,7 +725,7 @@ public class DiffTableViewer extends Composite {
 
     private void setColumnHeaders(){
         columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
-        columnLibrary.getColumn().setText(""); //$NON-NLS-1$
+        columnLibrary.getColumn().setText(EMPRY_STRING);
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(getChangeTypeMessage());
@@ -739,7 +744,7 @@ public class DiffTableViewer extends Composite {
 
     private void updateColumnsWidth() {
         PixelConverter pc = new PixelConverter(viewer.getControl());
-        columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(5));
+        columnCheck.getColumn().setWidth(viewOnly ? 0 : pc.convertWidthInCharsToPixels(9));
         columnLibrary.getColumn().setWidth(showLibrary && !viewOnly ? pc.convertWidthInCharsToPixels(5) : 0);
         columnType.getColumn().setWidth(pc.convertWidthInCharsToPixels(19));
         columnChange.getColumn().setWidth(pc.convertWidthInCharsToPixels(30));
@@ -952,7 +957,7 @@ public class DiffTableViewer extends Composite {
 
             entry.getValue().setLibLocation(Messages.DiffTableViewer_library + name
                     + '\n' + Messages.DiffTableViewer_type + type
-                    + (loc == null ? "" : ('\n' + Messages.DiffTableViewer_path + loc))); //$NON-NLS-1$
+                    + (loc == null ? EMPRY_STRING : ('\n' + Messages.DiffTableViewer_path + loc)));
         }
     }
 
@@ -1142,6 +1147,11 @@ public class DiffTableViewer extends Composite {
     public void setApplyToProj(boolean isApplyToProj) {
         this.isApplyToProj = isApplyToProj;
         updateSortIndexes();
+    }
+
+    private boolean isLibElement(Object el) {
+        ElementMetaInfo meta = elementInfoMap.get(el);
+        return meta != null && meta.getLibLocation() != null;
     }
 
     private class DiffContentProvider implements ITreeContentProvider {
@@ -1355,7 +1365,7 @@ public class DiffTableViewer extends Composite {
                     res = el1.getSide().toString().compareTo(el2.getSide().toString());
                     break;
                 case LIBRARY:
-                    res = compareLibs(el1, el2);
+                    res = -Boolean.compare(isLibElement(el1), isLibElement(el2));
                     break;
                 case GIT_USER:
                     res = compareUsers(c.col, el1, el2);
@@ -1415,12 +1425,6 @@ public class DiffTableViewer extends Composite {
             }
 
             return getter.apply(el1Meta).compareTo(getter.apply(el2Meta));
-        }
-
-        private int compareLibs(TreeElement el1, TreeElement el2) {
-            var el1HasLib = elementInfoMap.get(el1).getLibLocation() != null;
-            var el2HasLib = elementInfoMap.get(el2).getLibLocation() != null;
-            return -Boolean.compare(el1HasLib, el2HasLib);
         }
     }
 
@@ -1602,16 +1606,6 @@ public class DiffTableViewer extends Composite {
 
                 return el.isContainer() && el.getChildren().stream().filter(elementInfoMap::containsKey)
                         .map(elementInfoMap::get).anyMatch(m -> m != null && m.isChanged());
-            }
-
-            return false;
-        }
-
-        private boolean isLibElement(TreeElement el) {
-            ElementMetaInfo meta = elementInfoMap.get(el);
-
-            if (meta != null) {
-                return meta.getLibLocation() != null;
             }
 
             return false;
