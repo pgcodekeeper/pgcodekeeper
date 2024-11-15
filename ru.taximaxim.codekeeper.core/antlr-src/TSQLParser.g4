@@ -134,6 +134,7 @@ schema_create
     | create_database_scoped_credential
     | create_default
     | create_db_role
+    | create_endpoint
     | create_event_notification
     | create_external_data_source
     | create_external_language
@@ -1904,43 +1905,57 @@ change_tracking_option_list
 // https://docs.microsoft.com/en-us/sql/t-sql/statements/alter-endpoint-transact-sql
 alter_endpoint
     : ENDPOINT id (AUTHORIZATION id)?
-        (STATE EQUAL (STARTED | STOPPED | DISABLED))?
-                AS TCP LR_BRACKET
-                LISTENER_PORT EQUAL port=DECIMAL
-                    (COMMA LISTENER_IP EQUAL (ALL | IPV4_ADDR | IPV6_ADDR | STRING))?
-                    RR_BRACKET
-                (TSQL
-                |
-                    FOR SERVICE_BROKER LR_BRACKET
-                    AUTHENTICATION EQUAL
-                            (WINDOWS (NTLM |KERBEROS | NEGOTIATE)?  (CERTIFICATE cert_name=id)?
-                            | CERTIFICATE cert_name=id  WINDOWS? (NTLM |KERBEROS | NEGOTIATE)?
-                           )
-                    (COMMA? ENCRYPTION EQUAL (DISABLED |SUPPORTED | REQUIRED)
-                        (ALGORITHM (AES | RC4 | AES RC4 | RC4 AES))?
-                   )?
-
-                    (COMMA? MESSAGE_FORWARDING EQUAL (ENABLED | DISABLED))?
-                    (COMMA? MESSAGE_FORWARD_SIZE EQUAL DECIMAL)?
-                    RR_BRACKET
-                |
-                FOR DATABASE_MIRRORING LR_BRACKET
-                    AUTHENTICATION EQUAL
-                            (WINDOWS (NTLM |KERBEROS | NEGOTIATE)?  (CERTIFICATE cert_name=id)?
-                            | CERTIFICATE cert_name=id  WINDOWS? (NTLM |KERBEROS | NEGOTIATE)?
-                           )
-
-                    (COMMA? ENCRYPTION EQUAL (DISABLED |SUPPORTED | REQUIRED)
-                        (ALGORITHM (AES | RC4 | AES RC4 | RC4 AES))?
-                   )?
-
-                    COMMA? ROLE EQUAL (WITNESS | PARTNER | ALL)
-                    RR_BRACKET
-               )
+    (STATE EQUAL (STARTED | STOPPED | DISABLED))?
+    (AS TCP LR_BRACKET tcp_options RR_BRACKET)?
+    (FOR (tsql | service_broker | database_mirroring))?
     ;
 
-// https://docs.microsoft.com/en-us/sql/t-sql/statements/create-endpoint-transact-sql
-// todo: not implemented
+// https://learn.microsoft.com/ru-ru/sql/t-sql/statements/create-endpoint-transact-sql
+create_endpoint
+    : ENDPOINT id (AUTHORIZATION id)?
+    (STATE EQUAL (STARTED | STOPPED | DISABLED))?
+    AS TCP LR_BRACKET tcp_options RR_BRACKET
+    FOR (tsql | service_broker | database_mirroring)
+    ;
+
+tsql
+    : TSQL LR_BRACKET RR_BRACKET
+    ;
+
+tcp_options:
+    LISTENER_PORT EQUAL port=DECIMAL
+    (COMMA LISTENER_IP EQUAL (ALL | LR_BRACKET ( IPV4_ADDR | IPV6_ADDR | STRING) RR_BRACKET))?
+    ;
+
+database_mirroring
+    : DATABASE_MIRRORING LR_BRACKET authentication? encryption?
+    COMMA? ROLE EQUAL (WITNESS | PARTNER | ALL)
+    RR_BRACKET
+    ;
+
+service_broker
+    : SERVICE_BROKER LR_BRACKET authentication? encryption?
+    (COMMA? MESSAGE_FORWARDING EQUAL (ENABLED | DISABLED))?
+    (COMMA? MESSAGE_FORWARD_SIZE EQUAL DECIMAL)?
+    RR_BRACKET
+    ;
+
+authentication
+    : AUTHENTICATION EQUAL (windows_auth (CERTIFICATE id)? | CERTIFICATE id windows_auth?);
+
+windows_auth
+    : WINDOWS windows_auth_option?
+    ;
+
+encryption
+    : COMMA? ENCRYPTION EQUAL
+    (DISABLED | (SUPPORTED | REQUIRED) (ALGORITHM (AES | RC4 | AES RC4 | RC4 AES))?);
+
+windows_auth_option
+    : NTLM
+    | KERBEROS
+    | NEGOTIATE
+    ;
 
 /* Will visit later
 */

@@ -111,14 +111,6 @@ DBCC SHRINKLOG;
 DBCC PDW_SHOWSPACEUSED ( "AdventureWorksPDW2012..FactInternetSales" );
 DBCC PROCCACHE  WITH NO_INFOMSGS
 DBCC SHOWCONTIG (@id, @indid);
-ALTER ENDPOINT ENDPOINT_MIRRORING
-    STATE = STARTED  
-    AS TCP ( LISTENER_PORT = 7022 )  
-    FOR DATABASE_MIRRORING (  
-       AUTHENTICATION = WINDOWS KERBEROS,  
-       ENCRYPTION = SUPPORTED,  
-       ROLE=ALL);  
-GO  
 lock table xyz in exclusive mode wait 30
 print "Error!"
 print "Error: %1!", @anfEnd

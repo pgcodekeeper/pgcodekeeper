@@ -1,0 +1,9 @@
+Reference: action = ALTER ENDPOINT, offset = 0, line number = 1, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 227, line number = 9, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 457, line number = 17, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 588, line number = 23, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 718, line number = 28, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 930, line number = 36, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 1059, line number = 40, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 1321, line number = 49, charPositionInLine = 0
+Reference: action = CREATE ENDPOINT, offset = 1442, line number = 54, charPositionInLine = 0
