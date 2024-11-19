@@ -36,4 +36,9 @@ public class RootLibrary extends AbstractLibrary {
     protected String getDescriptionRecursive() {
         return ""; //$NON-NLS-1$
     }
+
+    @Override
+    public String getDescription() {
+        return Messages.LibraryContainer_root;
+    }
 }

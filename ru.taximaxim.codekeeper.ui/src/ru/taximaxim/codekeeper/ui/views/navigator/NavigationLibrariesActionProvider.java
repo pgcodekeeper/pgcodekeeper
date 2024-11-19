@@ -34,6 +34,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.libraries.CacheableLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
+import ru.taximaxim.codekeeper.ui.libraries.RootLibrary;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class NavigationLibrariesActionProvider extends CommonActionProvider {
@@ -119,7 +120,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
             ISelection selection = getContext().getSelection();
             if (!selection.isEmpty()) {
                 Object sel = ((IStructuredSelection) selection).getFirstElement();
-                return sel instanceof CacheableLibrary lib && lib.exists();
+                return sel instanceof CacheableLibrary lib && lib.getParent() instanceof RootLibrary && lib.exists();
             }
 
             return false;
@@ -150,7 +151,7 @@ public class NavigationLibrariesActionProvider extends CommonActionProvider {
         @Override
         public boolean isEnabled() {
             IStructuredSelection selection = (IStructuredSelection) getContext().getSelection();
-            return selection.getFirstElement() instanceof CacheableLibrary;
+            return selection.getFirstElement() instanceof CacheableLibrary cl && cl.getParent() instanceof RootLibrary;
         }
 
         @Override

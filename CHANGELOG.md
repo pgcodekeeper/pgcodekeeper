@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed errors when working with libraries in the project tree.
+
 ### Removed
 
 ## [10.3.1] - 2024-11-12
