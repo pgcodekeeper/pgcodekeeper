@@ -87,6 +87,7 @@ public class UiLibraryLoader {
         case URL:
             try {
                 UrlLibrary url = new UrlLibrary(root, new URI(path), project, dbType);
+                url.load();
                 readPath(url, url.getPath());
             } catch (URISyntaxException e) {
                 // shouldn't happen, already checked by getSource
@@ -104,10 +105,15 @@ public class UiLibraryLoader {
             path = xmlPath.resolveSibling(path).normalize();
         }
 
+        if (Files.notExists(path)) {
+            return;
+        }
+
         if (Files.isDirectory(path)) {
             readDir(new DirectoryLibrary(parent, path), path);
         } else if (FileUtils.isZipFile(path)) {
             ZipLibrary zip = new ZipLibrary(parent, path, project, dbType);
+            zip.load();
             readPath(zip, zip.getPath());
         } else {
             new FileLibrary(parent, path, project, dbType);
@@ -115,10 +121,6 @@ public class UiLibraryLoader {
     }
 
     private void readDir(AbstractLibrary parent, Path path) throws IOException {
-        if (Files.notExists(path)) {
-            return;
-        }
-
         if (Files.exists(path.resolve(Consts.FILENAME_WORKING_DIR_MARKER))) {
             readProject(parent, path);
             return;

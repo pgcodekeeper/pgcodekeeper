@@ -16,26 +16,16 @@
 package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.FileAlreadyExistsException;
-import java.nio.file.FileSystem;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.security.SecureRandom;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -49,8 +39,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class LibraryLoader extends DatabaseLoader {
-
-    private static final Random RANDOM = new SecureRandom();
 
     private final AbstractDatabase database;
     private final Path metaPath;
@@ -169,7 +157,7 @@ public class LibraryLoader extends DatabaseLoader {
     private AbstractDatabase loadZip(Path path, PgDiffArguments args, boolean isIgnorePriv)
             throws InterruptedException, IOException {
         Path dir = FileUtils.getUnzippedFilePath(metaPath, path);
-        return getLibrary(unzip(path, dir), args, isIgnorePriv);
+        return getLibrary(FileUtils.unzip(path, dir), args, isIgnorePriv);
     }
 
     private AbstractDatabase loadJdbc(PgDiffArguments args, String path) throws IOException, InterruptedException {
@@ -192,84 +180,12 @@ public class LibraryLoader extends DatabaseLoader {
 
         Path dir = metaPath.resolve(name);
 
-        // do nothing if directory already exists
-        if (!Files.exists(dir)) {
-
-            Path file = dir.resolve(fileName);
-
-            try (InputStream in = uri.toURL().openStream()) {
-                Files.createDirectories(dir);
-                Files.copy(in, file);
-            } catch (FileAlreadyExistsException e) {
-                // someone else won the race and created the file
-            } catch (IOException e) {
-                IOException ioe = new IOException(
-                        MessageFormat.format("Error while read library from URI : {0} - {1} ",
-                                uri, e.getLocalizedMessage()), e);
-
-                try {
-                    Files.deleteIfExists(file);
-                } catch (IOException ex) {
-                    ioe.addSuppressed(ex);
-                }
-
-                try {
-                    Files.deleteIfExists(dir);
-                } catch (IOException ex) {
-                    ioe.addSuppressed(ex);
-                }
-
-                throw ioe;
-            }
-        }
+        FileUtils.loadURI(uri, fileName, dir);
 
         return getLibrary(dir.toString(), args, isIgnorePriv);
     }
 
-    private String unzip(Path zip, Path dir) throws IOException {
-        // return output directory if it exists
-        if (Files.exists(dir)) {
-            return dir.toString();
-        }
-        // create a directory with a unique name to avoid problems with parallel downloads
-        Path tempDir = dir.resolveSibling(dir.getFileName() + "_" + RANDOM.nextInt());
 
-        Files.createDirectories(tempDir);
-        Path destDir = tempDir.toRealPath();
-
-        try (FileSystem fs = FileSystems.newFileSystem(zip, (ClassLoader) null)) {
-            final Path root = fs.getPath("/");
-
-            // walk the zip file tree and copy files to the destination
-            Files.walkFileTree(root, new SimpleFileVisitor<Path>(){
-
-                @Override
-                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                    Path destFile = Paths.get(destDir.toString(), file.toString());
-                    Files.copy(file, destFile, StandardCopyOption.REPLACE_EXISTING);
-                    return FileVisitResult.CONTINUE;
-                }
-
-                @Override
-                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                    Path dirToCreate = Paths.get(destDir.toString(), dir.toString());
-                    if (Files.notExists(dirToCreate)){
-                        Files.createDirectory(dirToCreate);
-                    }
-
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        }
-
-        // data racing
-        if (!Files.exists(dir)) {
-            // rename to expected name
-            Files.move(tempDir, dir, StandardCopyOption.REPLACE_EXISTING);
-        }
-
-        return dir.toRealPath().toString();
-    }
 
     private void readStatementsFromDirectory(Path f, AbstractDatabase db)
             throws IOException, InterruptedException {

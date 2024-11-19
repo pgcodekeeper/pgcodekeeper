@@ -48,9 +48,12 @@ public abstract class CacheableLibrary extends AbstractLibrary {
 
     public void refresh() throws IOException {
         children.clear();
+        load();
         // do not refresh nested libs, they're not nested in UI tree
         new UiLibraryLoader(project, dbType, false, null).readLib(this, path.toString());
     }
+
+    protected abstract void load() throws IOException;
 
     private void clearAllChildren(List<AbstractLibrary> children) throws IOException {
         for (AbstractLibrary child : children) {

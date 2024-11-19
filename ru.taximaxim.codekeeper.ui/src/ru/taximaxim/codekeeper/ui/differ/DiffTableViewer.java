@@ -148,7 +148,7 @@ import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
  */
 public class DiffTableViewer extends Composite {
 
-    private static final String EMPRY_STRING = ""; //$NON-NLS-1$
+    private static final String EMPTY_STRING = ""; //$NON-NLS-1$
     private static final Pattern REGEX_SPECIAL_CHARS = Pattern.compile("[\\[\\\\\\^$.|?*+()]"); //$NON-NLS-1$
     private static final String GITLABEL_PROP = "GITLABEL_PROP"; //$NON-NLS-1$
 
@@ -579,7 +579,7 @@ public class DiffTableViewer extends Composite {
         columnCheck.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return EMPRY_STRING;
+                return EMPTY_STRING;
             }
         });
 
@@ -589,7 +589,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public String getText(Object element) {
-                return EMPRY_STRING;
+                return EMPTY_STRING;
             }
 
             @Override
@@ -681,7 +681,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta != null ? meta.getGitUser() : EMPRY_STRING;
+                return meta != null ? meta.getGitUser() : EMPTY_STRING;
             }
 
             @Override
@@ -696,7 +696,7 @@ public class DiffTableViewer extends Composite {
             @Override
             public String getText(Object element) {
                 ElementMetaInfo meta = elementInfoMap.get(element);
-                return meta != null ? meta.getDbUser() : EMPRY_STRING;
+                return meta != null ? meta.getDbUser() : EMPTY_STRING;
             }
         });
 
@@ -725,7 +725,7 @@ public class DiffTableViewer extends Composite {
 
     private void setColumnHeaders(){
         columnCheck.getColumn().setText("✓"); //$NON-NLS-1$
-        columnLibrary.getColumn().setText(EMPRY_STRING);
+        columnLibrary.getColumn().setText(EMPTY_STRING);
         columnName.getColumn().setText(Messages.diffTableViewer_object_name);
         columnType.getColumn().setText(Messages.diffTableViewer_object_type);
         columnChange.getColumn().setText(getChangeTypeMessage());
@@ -957,7 +957,7 @@ public class DiffTableViewer extends Composite {
 
             entry.getValue().setLibLocation(Messages.DiffTableViewer_library + name
                     + '\n' + Messages.DiffTableViewer_type + type
-                    + (loc == null ? EMPRY_STRING : ('\n' + Messages.DiffTableViewer_path + loc)));
+                    + (loc == null ? EMPTY_STRING : ('\n' + Messages.DiffTableViewer_path + loc)));
         }
     }
 

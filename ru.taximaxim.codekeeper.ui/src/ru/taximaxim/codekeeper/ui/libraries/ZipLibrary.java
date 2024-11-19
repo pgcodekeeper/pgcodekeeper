@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.libraries;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
 import org.eclipse.swt.graphics.Image;
@@ -26,9 +27,12 @@ import ru.taximaxim.codekeeper.ui.ProjectIcon;
 
 public class ZipLibrary extends CacheableLibrary {
 
+    private Path sourcePath;
+
     ZipLibrary(AbstractLibrary parent, Path path, String project, DatabaseType dbType) {
         super(parent, FileUtils.getUnzippedFilePath(LibraryUtils.META_PATH, path),
                 path.getFileName().toString(), path.toString(), project, dbType);
+        this.sourcePath = path;
     }
 
     @Override
@@ -48,5 +52,20 @@ public class ZipLibrary extends CacheableLibrary {
     @Override
     public Image getImage() {
         return Activator.getRegisteredImage(ProjectIcon.ZIP);
+    }
+
+    @Override
+    protected void load() throws IOException {
+        FileUtils.unzip(sourcePath, path);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

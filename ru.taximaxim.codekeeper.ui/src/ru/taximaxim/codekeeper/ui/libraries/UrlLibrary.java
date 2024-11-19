@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.libraries;
 
+import java.io.IOException;
 import java.net.URI;
 
 import org.eclipse.swt.graphics.Image;
@@ -26,9 +27,12 @@ import ru.taximaxim.codekeeper.ui.ProjectIcon;
 
 public class UrlLibrary extends CacheableLibrary {
 
+    private URI uri;
+
     UrlLibrary(AbstractLibrary parent, URI uri, String project, DatabaseType dbType) {
         super(parent, FileUtils.getLoadedFilePath(LibraryUtils.META_PATH, uri),
                 FileUtils.getNameFromUri(uri), uri.toString(), project, dbType);
+        this.uri = uri;
     }
 
     @Override
@@ -48,5 +52,20 @@ public class UrlLibrary extends CacheableLibrary {
     @Override
     public Image getImage() {
         return Activator.getRegisteredImage(ProjectIcon.CLOUD);
+    }
+
+    @Override
+    protected void load() throws IOException {
+        FileUtils.loadURI(uri, name, path);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }
