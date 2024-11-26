@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -147,9 +146,7 @@ public final class NewObjectPage extends WizardPage {
     private void fillAllowedTypes() {
         allowedTypes.clear();
         if (dbType != null) {
-            allowedTypes.addAll(ObjectLevel.getTypes(dbType, false,
-                    ObjectLevel.SCHEMA, ObjectLevel.CONTAINER, ObjectLevel.SUB_ELEMENT));
-            allowedTypes.sort(Comparator.comparing(DbObjType::name));
+            allowedTypes.addAll(ObjectLevel.getAllTypesForDbType(dbType, false));
         }
     }
 

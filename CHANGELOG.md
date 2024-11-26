@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Improved parser rules for MS SQL.
+- Items that do not correspond to the current database type have been removed from the object type filter.
 
 ### Fixed
 

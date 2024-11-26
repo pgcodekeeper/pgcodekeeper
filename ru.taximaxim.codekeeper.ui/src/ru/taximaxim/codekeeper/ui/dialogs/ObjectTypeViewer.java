@@ -16,7 +16,9 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.List;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
@@ -30,29 +32,34 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.ObjectLevel;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ObjectTypeViewer {
 
-    private static final Object[] TYPES_SORTED = EnumSet
+    private static final List<DbObjType> TYPES_SORTED = EnumSet
             .complementOf(EnumSet.of(DbObjType.DATABASE, DbObjType.COLUMN))
-            .stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
-    private static final Object[] ALL_TYPES_SORTED = EnumSet.allOf(DbObjType.class)
-            .stream().sorted((e1, e2) -> e1.name().compareTo(e2.name())).toArray();
+            .stream().sorted(Comparator.comparing(DbObjType::getTypeName))
+            .toList();
+
+    private static final List<DbObjType> ALL_TYPES_SORTED = EnumSet.allOf(DbObjType.class)
+            .stream().sorted(Comparator.comparing(DbObjType::getTypeName))
+            .toList();
 
     private CheckboxTableViewer objViewer;
 
     public ObjectTypeViewer(Composite parent, String text, boolean needSelectButtons, boolean needAllTypes,
-            Collection<DbObjType> types) {
-        createTypesPart(parent, text, needAllTypes, types);
+            Collection<DbObjType> types, DatabaseType dbType) {
+        createTypesPart(parent, text, needAllTypes, types, dbType);
         if (needSelectButtons) {
             addSelectBtns(parent);
         }
     }
 
     private void createTypesPart(Composite parent, String text, boolean needAllTypes,
-            Collection<DbObjType> types) {
+            Collection<DbObjType> types, DatabaseType dbType) {
         new Label(parent, SWT.NONE).setText(text);
 
         objViewer = CheckboxTableViewer.newCheckList(parent, SWT.BORDER);
@@ -65,7 +72,13 @@ public class ObjectTypeViewer {
             }
         });
 
-        objViewer.add(needAllTypes ? ALL_TYPES_SORTED : TYPES_SORTED);
+        List<DbObjType> specificDbTypes;
+        if (dbType != null) {
+            specificDbTypes = ObjectLevel.getAllTypesForDbType(dbType, needAllTypes);
+        } else {
+            specificDbTypes = needAllTypes ? ALL_TYPES_SORTED : TYPES_SORTED;
+        }
+        objViewer.add(specificDbTypes.toArray());
         objViewer.setCheckedElements(types.toArray());
         objViewer.getControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
     }
@@ -92,6 +105,7 @@ public class ObjectTypeViewer {
                 objViewer.setAllChecked(true);
             }
         });
+
         Button btnClearAll = new Button(btnContainer, SWT.BUTTON1);
         btnClearAll.setText(Messages.clear_all);
         btnClearAll.addSelectionListener(new SelectionAdapter() {

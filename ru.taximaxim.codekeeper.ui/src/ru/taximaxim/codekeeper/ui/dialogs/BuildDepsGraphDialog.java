@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -48,12 +49,14 @@ public class BuildDepsGraphDialog extends Dialog {
     private int graphDepth;
     private boolean isReverse;
     private Set<DbObjType> types = EnumSet.noneOf(DbObjType.class);
+    private DatabaseType dbType;
 
-    public BuildDepsGraphDialog(Shell shell, String objName, boolean isProject, boolean isBothEnabled) {
+    public BuildDepsGraphDialog(Shell shell, String objName, boolean isProject, boolean isBothEnabled, DatabaseType dbType) {
         super(shell);
         this.objName = objName;
         this.isProject = isProject;
         this.isBothEnabled = isBothEnabled;
+        this.dbType = dbType;
     }
 
     @Override
@@ -97,7 +100,7 @@ public class BuildDepsGraphDialog extends Dialog {
         GridData g = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
         g.heightHint = 300;
         container.setLayoutData(g);
-        objTypeViewer = new ObjectTypeViewer(container, Messages.diffTableViewer_object_type, true, true, types);
+        objTypeViewer = new ObjectTypeViewer(container, Messages.diffTableViewer_object_type, true, true, types, dbType);
         return composite;
     }
 

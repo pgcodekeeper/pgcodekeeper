@@ -34,6 +34,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -63,6 +65,7 @@ public class FilterDialog extends Dialog {
     private final AtomicBoolean isLocalChange;
     private final AtomicBoolean isHideLibs;
     private final boolean isApplyToProj;
+    private final DatabaseType dbType;
 
     private Text txtCode;
     private Text txtSchema;
@@ -112,7 +115,7 @@ public class FilterDialog extends Dialog {
             AbstractFilter gitUserFilter, AbstractFilter dbUserFilter,
             Collection<DbObjType> types, Collection<DiffSide> sides,
             AtomicBoolean isLocalChange, AtomicBoolean isHideLibs,
-            boolean isApplyToProj) {
+            boolean isApplyToProj, DatabaseType dbType) {
         super(parentShell);
         this.codeFilter = codeFilter;
         this.schemaFilter = schemaFilter;
@@ -123,6 +126,7 @@ public class FilterDialog extends Dialog {
         this.isLocalChange = isLocalChange;
         this.isHideLibs = isHideLibs;
         this.isApplyToProj = isApplyToProj;
+        this.dbType = dbType;
     }
 
     @Override
@@ -142,7 +146,7 @@ public class FilterDialog extends Dialog {
         Composite leftComposite = new Composite(container, SWT.NONE);
         leftComposite.setLayout(new GridLayout());
         leftComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
-        objTypeViewer = new ObjectTypeViewer(leftComposite, Messages.FilterDialog_show_object_types, false, false, types);
+        objTypeViewer = new ObjectTypeViewer(leftComposite, Messages.FilterDialog_show_object_types, false, false, types, dbType);
 
         Composite rightComposite = new Composite(container, SWT.NONE);
         rightComposite.setLayout(new GridLayout(2, false));

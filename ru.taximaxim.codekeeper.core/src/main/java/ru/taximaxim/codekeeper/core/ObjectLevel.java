@@ -15,7 +15,9 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -70,5 +72,13 @@ public enum ObjectLevel {
         }
 
         return res;
+    }
+
+    public static List<DbObjType> getAllTypesForDbType(DatabaseType dbType, boolean addAllTypes) {
+        List<DbObjType> types = new ArrayList<>();
+        types.addAll(
+                getTypes(dbType, addAllTypes, ObjectLevel.SCHEMA, ObjectLevel.CONTAINER, ObjectLevel.SUB_ELEMENT));
+        types.sort(Comparator.comparing(DbObjType::getTypeName));
+        return types;
     }
 }
