@@ -81,7 +81,7 @@ public class NewIgnoredObjectDialog extends InputDialog {
             }
 
             types = objInitial == null ? EnumSet.noneOf(DbObjType.class) : objInitial.getObjTypes();
-            objTypeViewer = new ObjectTypeViewer(c, Messages.ignoredObjectPrefListEditor_type, true, false, types);
+            objTypeViewer = new ObjectTypeViewer(c, Messages.ignoredObjectPrefListEditor_type, true, false, types, null);
         }
         if (objInitial != null) {
             btnPattern.setSelection(objInitial.isRegular());

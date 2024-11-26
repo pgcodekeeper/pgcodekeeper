@@ -123,7 +123,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 return;
             }
 
-            pagePartial.setData(treediffer, pageDiff.getIgnoreList());
+            pagePartial.setData(treediffer, pageDiff.getIgnoreList(), pageDiff.getSelectedDbType());
         }
     }
 
@@ -380,7 +380,7 @@ class PagePartial extends WizardPage {
     private Label lblTarget;
     private DiffTableViewer diffTable;
 
-    public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList) {
+    public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList, DatabaseType dbType) {
         this.treeDiffer = treeDiffer;
         DbSource source = treeDiffer.getDbSource();
         DbSource target = treeDiffer.getDbTarget();
@@ -388,6 +388,7 @@ class PagePartial extends WizardPage {
         lblTarget.setText(target.getOrigin());
         lblSource.getParent().layout();
         diffTable.setInput(source, target, treeDiffer.getDiffTree(), ignoreList);
+        diffTable.setDbType(dbType);
     }
 
     public TreeDiffer getTreeDiffer() {
@@ -409,7 +410,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false);
+        diffTable = new DiffTableViewer(container, false, null);
         diffTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         setControl(container);

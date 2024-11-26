@@ -107,6 +107,7 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -192,6 +193,7 @@ public class DiffTableViewer extends Composite {
 
     private DbSource dbProject;
     private DbSource dbRemote;
+    private DatabaseType dbType;
 
     private boolean isApplyToProj = true;
 
@@ -211,15 +213,17 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly) {
-        this(parent, viewOnly, null, null);
+    public DiffTableViewer(Composite parent, boolean viewOnly, DatabaseType databaseType) {
+        this(parent, viewOnly, null, null, databaseType);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
+    public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
+            DatabaseType databaseType) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
         this.location = location;
+        this.dbType = databaseType;
         showGitUser = location != null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
@@ -289,7 +293,7 @@ public class DiffTableViewer extends Composite {
                             viewerFilter.gitUserFilter, viewerFilter.dbUserFilter,
                             viewerFilter.types, viewerFilter.sides,
                             viewerFilter.isLocalChange, viewerFilter.isHideLibs,
-                            isApplyToProj);
+                            isApplyToProj, dbType);
                     if (dialog.open() == Window.OK) {
                         setImageDescriptor(Activator.getRegisteredDescriptor(
                                 viewerFilter.isAdvancedEmpty() ? ProjectIcon.EMPTY_FILTER : ProjectIcon.FILTER));
@@ -537,7 +541,7 @@ public class DiffTableViewer extends Composite {
         boolean isBothEnabled = el.getSide() == DiffSide.BOTH;
         boolean isProject = el.getSide() == DiffSide.LEFT;
 
-        BuildDepsGraphDialog graphDlg = new BuildDepsGraphDialog(getShell(), objName, isProject, isBothEnabled);
+        BuildDepsGraphDialog graphDlg = new BuildDepsGraphDialog(getShell(), objName, isProject, isBothEnabled, dbType);
         if (graphDlg.open() != Window.OK) {
             return;
         }
@@ -853,6 +857,10 @@ public class DiffTableViewer extends Composite {
 
     public void setAutoExpand(boolean enabled) {
         viewer.setAutoExpandLevel(enabled ? AbstractTreeViewer.ALL_LEVELS : 0);
+    }
+
+    public void setDbType(DatabaseType dbType) {
+        this.dbType = dbType;
     }
 
     public void setInput(DbSource dbProject, DbSource dbRemote,

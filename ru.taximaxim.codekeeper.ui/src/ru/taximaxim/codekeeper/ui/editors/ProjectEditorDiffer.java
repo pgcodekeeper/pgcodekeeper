@@ -1033,7 +1033,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         private ImageDescriptor imgDescrDb;
 
         public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
-            super(parent, viewOnly, lineManager, location);
+            super(parent, viewOnly, lineManager, location, dbType);
         }
 
         @Override
