@@ -137,7 +137,9 @@ public final class RowData {
     }
 
     private void appendCommonInsertPrefix(StringBuilder sb) {
-        sb.append("INSERT INTO ").append(tableName).append(" (");
+        sb.append("-- table: ").append(tableName).append(", filter: ");
+        appendColData(idCols, DELIMITER_AND, sb);
+        sb.append("\nINSERT INTO ").append(tableName).append(" (");
         for (var cols : data.keySet()) {
             sb.append(cols).append(", ");
         }

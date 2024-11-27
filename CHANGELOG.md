@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added comments before INSERT commands in --insert mode.
+
 ### Changed
 
 ### Fixed
