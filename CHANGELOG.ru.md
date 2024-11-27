@@ -9,6 +9,16 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.4.0] - 2024-11-27
+
+### Добавлено
+
 - Добавлена поддержка объекта STATISTICS в MS SQL.
 - Добавлен файл CREDITS.md.
 - Добавлена возможность сортировки по библиотекам в таблице различий редактора проекта.
@@ -21,8 +31,6 @@
 ### Исправлено
 
 - Исправлены ошибки при работе с библиотеками в дереве проекта.
-
-### Удалено
 
 ## [10.3.1] - 2024-11-12
 
@@ -2122,7 +2130,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...HEAD
+[10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
 [10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
 [10.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.2.0...v10.3.0
 [10.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.1.0...v10.2.0
