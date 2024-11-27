@@ -47,12 +47,12 @@
         <sonar.exclusions>**/*.sql, **/*.xml, **/generated/**, **/Messages.java</sonar.exclusions>
 
         <java.version>17</java.version>
-        <tycho.version>4.0.9</tycho.version>
+        <tycho.version>4.0.10</tycho.version>
         <jacoco.version>0.8.12</jacoco.version>
         <antlr.version>4.13.1</antlr.version>
-        <maven.surefire.version>3.2.5</maven.surefire.version>
-        <maven.enforcer.version>3.4.1</maven.enforcer.version>
-        <maven.jarsigner.version>3.0.0</maven.jarsigner.version>
+        <maven.surefire.version>3.5.2</maven.surefire.version>
+        <maven.enforcer.version>3.5.0</maven.enforcer.version>
+        <maven.jarsigner.version>3.1.0</maven.jarsigner.version>
 
         <keystore>/tmp/keystore.jks</keystore>
     </properties>
