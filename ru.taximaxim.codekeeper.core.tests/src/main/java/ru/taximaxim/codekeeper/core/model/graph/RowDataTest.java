@@ -33,6 +33,7 @@ public class RowDataTest {
     @Test
     void compareInsertScriptPG() {
         var expected = """
+            -- table: test.table, filter: col1 = 15
             INSERT INTO test.table (col1, col2, col3)
             VALUES (15, NULL, 'some String')
             ON CONFLICT DO NOTHING;
@@ -51,13 +52,14 @@ public class RowDataTest {
     @Test
     void compareInsertScriptMultiReplacementPG() {
         var expected = """
+            -- table: test.table, filter: col1 = 15 AND col2 = 439
             INSERT INTO test.table (col1, col2, col3)
             VALUES (15, NULL, NULL)
             ON CONFLICT DO NOTHING;
 
             """;
 
-        var rowData = createRowData(Arrays.asList("col2", "col3"));
+        var rowData = createRowDataFewPK(Arrays.asList("col2", "col3"));
         rowData.addReplacement("col2");
         rowData.addReplacement("col3");
 
@@ -70,6 +72,7 @@ public class RowDataTest {
     @Test
     void compareInsertScriptPGWithIncrement() {
         var expected = """
+            -- table: test.table, filter: col1 = 15
             INSERT INTO test.table (col1, col2, col3)
             OVERRIDING SYSTEM VALUE
             VALUES (15, NULL, 'some String')
@@ -122,6 +125,7 @@ public class RowDataTest {
     @Test
     void compareInsertScriptMS() {
         var expected = """
+            -- table: test.table, filter: col1 = 15
             INSERT INTO test.table (col1, col2, col3)
             SELECT 15, NULL, 'some String'
             WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));
@@ -141,6 +145,7 @@ public class RowDataTest {
     @Test
     void compareInsertScriptMultiReplacementMS() {
         var expected = """
+            -- table: test.table, filter: col1 = 15
             INSERT INTO test.table (col1, col2, col3)
             SELECT 15, NULL, NULL
             WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));
@@ -164,6 +169,7 @@ public class RowDataTest {
             SET IDENTITY_INSERT test.table ON;
             GO
 
+            -- table: test.table, filter: col1 = 15
             INSERT INTO test.table (col1, col2, col3)
             SELECT 15, NULL, 'some String'
             WHERE NOT EXISTS (SELECT 1 FROM test.table WHERE (col1 = 15));
@@ -244,6 +250,16 @@ public class RowDataTest {
     private RowData createRowData(List<String> pkCols) {
         String name = "test.table";
         List<String> fkCols = Arrays.asList("col1");
+        Map<String, String> map = new LinkedHashMap<>();
+        map.put("col1", "15");
+        map.put("col2", "439");
+        map.put("col3", "'some String'");
+        return new RowData(name, null, map, pkCols, fkCols);
+    }
+
+    private RowData createRowDataFewPK(List<String> pkCols) {
+        String name = "test.table";
+        List<String> fkCols = Arrays.asList("col1", "col2");
         Map<String, String> map = new LinkedHashMap<>();
         map.put("col1", "15");
         map.put("col2", "439");
