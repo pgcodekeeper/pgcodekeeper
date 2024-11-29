@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -29,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Stores table rule information.
@@ -102,8 +104,8 @@ public class PgRule extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        final SQLAction sbSQL = new SQLAction();
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
         sbSQL.append(" AS\n    ON ").append(getEvent());
@@ -130,25 +132,16 @@ public class PgRule extends PgStatement implements ISearchPath {
             }
             sbSQL.append(')');
         }
-        sbSQL.append(';');
+        createActions.add(sbSQL);
 
         if (enabledState != null) {
-            sbSQL.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(enabledState)
-            .append(" RULE ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
+            addAlterTable(enabledState, this, createActions);
         }
-
-        return sbSQL.toString();
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgRule newRule = (PgRule) newCondition;
 
         if (!compareUnalterable(newRule)) {
@@ -160,17 +153,22 @@ public class PgRule extends PgStatement implements ISearchPath {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
-            sb.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(newEnabledState)
-            .append(" RULE ")
-            .append(PgDiffUtils.getQuotedName(newRule.getName()))
-            .append(';');
+            addAlterTable(newEnabledState, newRule, alterActions);
         }
-        compareComments(sb, newRule);
+        appendAlterComments(newRule, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
+    }
+
+    private void addAlterTable(String enabledState, PgRule rule, Collection<SQLAction> sqlActions) {
+        SQLAction sql = new SQLAction();
+        sql.append(ALTER_TABLE)
+        .append(getParent().getQualifiedName())
+        .append(' ')
+        .append(enabledState)
+        .append(" RULE ")
+        .append(PgDiffUtils.getQuotedName(rule.getName()));
+        sqlActions.add(sql);
     }
 
     @Override

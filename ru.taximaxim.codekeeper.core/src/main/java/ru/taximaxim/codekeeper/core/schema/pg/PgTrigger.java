@@ -19,6 +19,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
@@ -30,6 +31,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PgTrigger extends AbstractTrigger {
 
@@ -77,8 +79,8 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        final SQLAction sbSQL = new SQLAction();
         sbSQL.append("CREATE");
         if (isConstraint()) {
             sbSQL.append(" CONSTRAINT");
@@ -110,7 +112,7 @@ public class PgTrigger extends AbstractTrigger {
                     sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
                     sbSQL.append(", ");
                 }
-                sbSQL.setLength(sbSQL.length() - 2);
+                sbSQL.reduce(2);
             }
         }
 
@@ -170,25 +172,16 @@ public class PgTrigger extends AbstractTrigger {
 
         sbSQL.append("\n\tEXECUTE PROCEDURE ");
         sbSQL.append(getFunction());
-        sbSQL.append(';');
+        createActions.add(sbSQL);
 
         if (enabledState != null) {
-            sbSQL.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(enabledState)
-            .append(" TRIGGER ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
+            addAlterTable(enabledState, this, createActions);
         }
-
-        return sbSQL.toString();
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgTrigger newTrg = (PgTrigger) newCondition;
         if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
@@ -199,17 +192,22 @@ public class PgTrigger extends AbstractTrigger {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
-            sb.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(newEnabledState)
-            .append(" TRIGGER ")
-            .append(PgDiffUtils.getQuotedName(newTrg.getName()))
-            .append(';');
+            addAlterTable(newEnabledState, newTrg, alterActions);
         }
-        compareComments(sb, newTrg);
+        appendAlterComments(newTrg, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
+    }
+
+    private void addAlterTable(String enabledState, PgTrigger trigger, Collection<SQLAction> sqlActions) {
+        SQLAction sql = new SQLAction();
+        sql.append(ALTER_TABLE)
+        .append(getParent().getQualifiedName())
+        .append(' ')
+        .append(enabledState)
+        .append(" TRIGGER ")
+        .append(PgDiffUtils.getQuotedName(trigger.getName()));
+        sqlActions.add(sql);
     }
 
     @Override

@@ -16,12 +16,14 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -37,6 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -57,29 +60,36 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbOption = new StringBuilder();
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        List<SQLAction> alterTableActions = new ArrayList<>();
+
         final StringBuilder sbSQL = new StringBuilder();
+
         appendName(sbSQL);
-        appendColumns(sbSQL, sbOption);
+        appendColumns(sbSQL, alterTableActions);
         appendInherit(sbSQL);
         appendOptions(sbSQL);
-        sbSQL.append(sbOption);
-        appendAlterOptions(sbSQL);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        appendColumnsPriliges(sbSQL);
-        appendColumnsStatistics(sbSQL);
+        createActions.add(new SQLAction(sbSQL));
 
-        return sbSQL.toString();
+        createActions.addAll(alterTableActions);
+        appendAlterOptions(createActions);
+
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
+        appendColumnsPriliges(createActions);
+        appendColumnsStatistics(createActions);
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
-        super.appendComments(sb);
+    public void appendComments(Collection<SQLAction> sqlActions) {
+        super.appendComments(sqlActions);
+        appendChildrenComments(sqlActions);
+    }
 
+    @Override
+    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (final AbstractColumn column : getColumns()) {
-            column.appendComments(sb);
+            column.appendComments(sqlActions);
         }
     }
 
@@ -92,7 +102,7 @@ public abstract class AbstractPgTable extends AbstractTable {
      *
      * @param sbSQL - StringBuilder for statement
      */
-    protected abstract void appendName(StringBuilder sbSQL);
+    protected abstract void appendName(StringBuilder sbSQl);
 
     /**
      * Fills columns and their options to create table statement. Options will
@@ -100,9 +110,9 @@ public abstract class AbstractPgTable extends AbstractTable {
      * Must be overridden by subclasses
      *
      * @param sbSQL - StringBuilder for columns
-     * @param sbOption - StringBuilder for options
+     * @param alterTableActions - collection for options
      */
-    protected abstract void appendColumns(StringBuilder sbSQL, StringBuilder sbOption);
+    protected abstract void appendColumns(StringBuilder sbSQL, Collection<SQLAction> alterTableActions);
 
     /**
      * Fills tables parents, parents are stored in 'inherits' list.<br>
@@ -127,8 +137,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     /**
-     * Appends table storage parameters or server options, part of create statement,
-     * must be finished with ';' character;
+     * Appends table storage parameters or server options, part of create statement;
      *
      * @param sbSQL - StringBuilder for options
      */
@@ -143,23 +152,24 @@ public abstract class AbstractPgTable extends AbstractTable {
      * <br>
      * @param sbSQL - StringBuilder for options
      */
-    protected abstract void appendAlterOptions(StringBuilder sbSQL);
+    protected abstract void appendAlterOptions(Collection<SQLAction> sqlActions);
 
-    protected void appendColumnsStatistics(StringBuilder sbSQL) {
+    protected void appendColumnsStatistics(Collection<SQLAction> createActions) {
         columns.stream().map(PgColumn.class::cast).filter(c -> c.getStatistics() != null)
         .forEach(column -> {
-            sbSQL.append(getAlterTable(true, true));
-            sbSQL.append(ALTER_COLUMN);
-            sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
-            sbSQL.append(" SET STATISTICS ");
-            sbSQL.append(column.getStatistics());
-            sbSQL.append(';');
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(true));
+            sql.append(ALTER_COLUMN);
+            sql.append(PgDiffUtils.getQuotedName(column.getName()));
+            sql.append(" SET STATISTICS ");
+            sql.append(column.getStatistics());
+            createActions.add(sql);
         });
     }
 
     protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
         PgSequence sequence = column.getSequence();
-        sbOption.append(getAlterTable(newLine, false))
+        sbOption.append(getAlterTable(false))
         .append(ALTER_COLUMN)
         .append(PgDiffUtils.getQuotedName(column.getName()))
         .append(" ADD GENERATED ")
@@ -172,9 +182,8 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -182,14 +191,15 @@ public abstract class AbstractPgTable extends AbstractTable {
             return ObjectState.RECREATE;
         }
 
-        compareTableTypes(newTable, sb);
-        compareInherits(newTable, sb);
-        compareOptions(newTable, sb);
-        compareOwners(newTable, sb);
-        compareTableOptions(newTable, sb);
-        alterPrivileges(newTable, sb);
-        compareComments(sb, newTable);
-        return getObjectState(sb, startLength);
+        compareTableTypes(newTable, alterActions);
+        compareInherits(newTable, alterActions);
+        compareOptions(newTable, alterActions);
+        compareOwners(newTable, alterActions);
+        compareTableOptions(newTable, alterActions);
+        alterPrivileges(newTable, alterActions);
+        appendAlterComments(newTable, alterActions);
+
+        return getObjectState(alterActions);
     }
 
     @Override
@@ -252,39 +262,37 @@ public abstract class AbstractPgTable extends AbstractTable {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, Collection<SQLAction> createActions) {
         if (hasOids != newTable.getHasOids()) {
-            sb.append(getAlterTable(true, true))
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(true))
             .append(" SET ")
             .append(newTable.getHasOids() ? "WITH" : "WITHOUT")
-            .append(" OIDS;");
+            .append(" OIDS");
+            createActions.add(sql);
         }
     }
 
-    protected void compareInherits(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
         List<Inherits> newInherits = newTable.getInherits();
 
         if (newTable instanceof PartitionPgTable) {
             return;
         }
 
-        for (final Inherits tableName : inherits) {
-            if (!newInherits.contains(tableName)) {
-                sb.append(getAlterTable(true, false))
-                .append("\n\tNO INHERIT ")
-                .append(tableName.getQualifiedName())
-                .append(';');
-            }
-        }
+        sqlActions.addAll(inherits.stream()
+                .filter(e -> !newInherits.contains(e))
+                .map(e -> getInheritsActions(e, "\n\tNO INHERIT "))
+                .collect(Collectors.toSet()));
 
-        for (final Inherits tableName : newInherits) {
-            if (!inherits.contains(tableName)) {
-                sb.append(getAlterTable(true, false))
-                .append("\n\tINHERIT ")
-                .append(tableName.getQualifiedName())
-                .append(';');
-            }
-        }
+        sqlActions.addAll(newInherits.stream()
+                .filter(e -> !inherits.contains(e))
+                .map(e -> getInheritsActions(e, "\n\tINHERIT "))
+                .collect(Collectors.toSet()));
+    }
+
+    private SQLAction getInheritsActions(Inherits inh, String state) {
+        return new SQLAction().append(getAlterTable(false)).append(state).append(inh.getQualifiedName());
     }
 
     public void addInherits(final String schemaName, final String tableName) {
@@ -330,93 +338,99 @@ public abstract class AbstractPgTable extends AbstractTable {
         resetHash();
     }
 
-    protected void writeColumn(PgColumn column, StringBuilder sbSQL,
-            StringBuilder sbOption) {
-
+    protected void writeColumn(PgColumn column, StringBuilder sbSQL, Collection<SQLAction> alterTableActions) {
         boolean isInherit = column.isInherit();
         if (isInherit) {
-            fillInheritOptions(column, sbOption);
+            fillInheritOptions(column, alterTableActions);
         } else {
             sbSQL.append("\t");
             sbSQL.append(column.getFullDefinition());
             sbSQL.append(",\n");
         }
-
         if (column.getStorage() != null) {
-            sbOption.append(getAlterTable(true, isInherit))
+            SQLAction action = new SQLAction();
+            action.append(getAlterTable(isInherit))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET STORAGE ")
-            .append(column.getStorage())
-            .append(';');
+            .append(column.getStorage());
+            alterTableActions.add(action);
         }
 
-        writeOptions(column, sbOption, isInherit);
+        writeOptions(column, alterTableActions, isInherit);
         AbstractSequence sequence = column.getSequence();
         if (sequence != null) {
+            StringBuilder sbSeq = new StringBuilder();
             if (getDatabaseArguments().isGenerateExistDoBlock()) {
-                StringBuilder sbSeq = new StringBuilder();
-                writeSequences(column, sbSeq, false);
-                PgDiffUtils.appendSqlWrappedInDo(sbOption, sbSeq, Consts.DUPLICATE_RELATION);
+                StringBuilder tmpSb = new StringBuilder();
+                writeSequences(column, tmpSb, false);
+                PgDiffUtils.appendSqlWrappedInDo(sbSeq, tmpSb, Consts.DUPLICATE_RELATION);
             } else {
-                writeSequences(column, sbOption, true);
+                writeSequences(column, sbSeq, true);
+                sbSeq.setLength(sbSeq.length() - 1);
             }
+            alterTableActions.add(new SQLAction(sbSeq));
         }
     }
 
-    private void fillInheritOptions(AbstractColumn column, StringBuilder sb) {
+    private void fillInheritOptions(AbstractColumn column, Collection<SQLAction> alterTableActions) {
         if (!column.getNullValue()) {
-            sb.append(getAlterTable(true, true))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.getName()))
-            .append(" SET NOT NULL;");
+            alterTableActions.add(getAlterColumn(column).append(" SET NOT NULL"));
         }
         if (column.getDefaultValue() != null) {
-            sb.append(getAlterTable(true, true))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.getName()))
-            .append(" SET DEFAULT ")
-            .append(column.getDefaultValue())
-            .append(';');
+            SQLAction action = getAlterColumn(column)
+                    .append(" SET DEFAULT ")
+                    .append(column.getDefaultValue());
+            alterTableActions.add(action);
         }
     }
 
-    private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {
+    private SQLAction getAlterColumn(AbstractColumn column) {
+        SQLAction action = new SQLAction();
+        return action.append(getAlterTable(true)).append(ALTER_COLUMN)
+                .append(PgDiffUtils.getQuotedName(column.getName()));
+    }
+
+    private void writeOptions(PgColumn column, Collection<SQLAction> alterTableActions, boolean isInherit) {
         Map<String, String> opts = column.getOptions();
         Map<String, String> fOpts = column.getForeignOptions();
 
         if (!opts.isEmpty()) {
-            sbOption.append(getAlterTable(true, isInherit))
+            SQLAction action = new SQLAction();
+            action.append(getAlterTable(isInherit))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET (");
 
             for (Entry<String, String> option : opts.entrySet()) {
-                sbOption.append(option.getKey());
+                action.append(option.getKey());
                 if (!option.getValue().isEmpty()) {
-                    sbOption.append('=').append(option.getValue());
+                    action.append('=').append(option.getValue());
                 }
-                sbOption.append(", ");
+                action.append(", ");
             }
-            sbOption.setLength(sbOption.length() - 2);
-            sbOption.append(");");
+            action.reduce(2);
+            action.append(")");
+            alterTableActions.add(action);
         }
 
         if (!fOpts.isEmpty()) {
-            sbOption.append(getAlterTable(true, isInherit))
+            SQLAction action = new SQLAction();
+            action.append(getAlterTable(isInherit))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" OPTIONS (");
 
             for (Entry<String, String> option : fOpts.entrySet()) {
-                sbOption.append(option.getKey());
+                action.append(option.getKey());
                 if (!option.getValue().isEmpty()) {
-                    sbOption.append(' ').append(option.getValue());
+                    action.append(' ').append(option.getValue());
                 }
-                sbOption.append(", ");
+                action.append(", ");
             }
-            sbOption.setLength(sbOption.length() - 2);
-            sbOption.append(");");
+            action.reduce(2);
+            action.append(")");
+            alterTableActions.add(action);
         }
     }
 
@@ -426,7 +440,7 @@ public abstract class AbstractPgTable extends AbstractTable {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected abstract void compareTableTypes(AbstractPgTable newTable, StringBuilder sb);
+    protected abstract void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> alterActions);
 
     @Override
     public boolean compare(PgStatement obj) {

@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -32,6 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class ChDictionary extends PgStatement implements IRelation {
@@ -145,7 +147,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         var sb = new StringBuilder();
         sb.append("CREATE DICTIONARY ");
         appendIfNotExists(sb);
@@ -180,8 +182,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(';');
-        return sb.toString();
+        createActions.add(new SQLAction(sb));
     }
 
     private void appendColumns(StringBuilder sb) {
@@ -198,7 +199,8 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies,
+            Collection<SQLAction> alterActions) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
@@ -244,11 +246,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChDictionary)) {
-            return false;
-        }
-        var dictn = (ChDictionary) obj;
-        return super.compare(dictn)
+        return obj instanceof ChDictionary dictn && super.compare(dictn)
                 && Objects.equals(sourceType, dictn.sourceType)
                 && Objects.equals(lifeTime, dictn.lifeTime)
                 && Objects.equals(layOut, dictn.layOut)
@@ -260,12 +258,12 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(Collection<SQLAction> sqlActions) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
         // no impl
     }
 

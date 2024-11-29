@@ -73,108 +73,108 @@ public class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
-        sbSQL.append("CREATE AGGREGATE ");
-        appendFullName(sbSQL);
+    protected void appendFunctionFullSQL(StringBuilder sb, boolean isCreate) {
+        sb.append("CREATE AGGREGATE ");
+        appendFullName(sb);
 
-        sbSQL.append(" (\n\tSFUNC").append(" = ");
-        sbSQL.append(sFunc);
-        sbSQL.append(",\n\tSTYPE = ");
-        sbSQL.append(sType);
+        sb.append(" (\n\tSFUNC").append(" = ");
+        sb.append(sFunc);
+        sb.append(",\n\tSTYPE = ");
+        sb.append(sType);
 
         if (sSpace != 0) {
-            sbSQL.append(",\n\tSSPACE = ");
-            sbSQL.append(sSpace);
+            sb.append(",\n\tSSPACE = ");
+            sb.append(sSpace);
         }
 
         if (finalFunc != null) {
-            sbSQL.append(",\n\tFINALFUNC").append(" = ");
-            sbSQL.append(finalFunc);
+            sb.append(",\n\tFINALFUNC").append(" = ");
+            sb.append(finalFunc);
         }
 
         if (isFinalFuncExtra) {
-            sbSQL.append(",\n\tFINALFUNC_EXTRA");
+            sb.append(",\n\tFINALFUNC_EXTRA");
         }
 
         if (finalFuncModify != null) {
-            sbSQL.append(",\n\tFINALFUNC_MODIFY = ");
-            sbSQL.append(finalFuncModify);
+            sb.append(",\n\tFINALFUNC_MODIFY = ");
+            sb.append(finalFuncModify);
         }
 
         if (combineFunc != null) {
-            sbSQL.append(",\n\tCOMBINEFUNC").append(" = ");
-            sbSQL.append(combineFunc);
+            sb.append(",\n\tCOMBINEFUNC").append(" = ");
+            sb.append(combineFunc);
         }
 
         if (serialFunc != null) {
-            sbSQL.append(",\n\tSERIALFUNC").append(" = ");
-            sbSQL.append(serialFunc);
+            sb.append(",\n\tSERIALFUNC").append(" = ");
+            sb.append(serialFunc);
         }
 
         if (deserialFunc != null) {
-            sbSQL.append(",\n\tDESERIALFUNC").append(" = ");
-            sbSQL.append(deserialFunc);
+            sb.append(",\n\tDESERIALFUNC").append(" = ");
+            sb.append(deserialFunc);
         }
 
         if (initCond != null) {
-            sbSQL.append(",\n\tINITCOND = ");
-            sbSQL.append(initCond);
+            sb.append(",\n\tINITCOND = ");
+            sb.append(initCond);
         }
 
         if (mSFunc != null) {
-            sbSQL.append(",\n\tMSFUNC").append(" = ");
-            sbSQL.append(mSFunc);
+            sb.append(",\n\tMSFUNC").append(" = ");
+            sb.append(mSFunc);
         }
 
         if (mInvFunc != null) {
-            sbSQL.append(",\n\tMINVFUNC").append(" = ");
-            sbSQL.append(mInvFunc);
+            sb.append(",\n\tMINVFUNC").append(" = ");
+            sb.append(mInvFunc);
         }
 
         if (mSType != null) {
-            sbSQL.append(",\n\tMSTYPE = ");
-            sbSQL.append(mSType);
+            sb.append(",\n\tMSTYPE = ");
+            sb.append(mSType);
         }
 
         if (mSSpace != 0) {
-            sbSQL.append(",\n\tMSSPACE = ");
-            sbSQL.append(mSSpace);
+            sb.append(",\n\tMSSPACE = ");
+            sb.append(mSSpace);
         }
 
         if (mFinalFunc != null) {
-            sbSQL.append(",\n\tMFINALFUNC").append(" = ");
-            sbSQL.append(mFinalFunc);
+            sb.append(",\n\tMFINALFUNC").append(" = ");
+            sb.append(mFinalFunc);
         }
 
         if (isMFinalFuncExtra) {
-            sbSQL.append(",\n\tMFINALFUNC_EXTRA");
+            sb.append(",\n\tMFINALFUNC_EXTRA");
         }
 
         if (mFinalFuncModify != null) {
-            sbSQL.append(",\n\tMFINALFUNC_MODIFY = ");
-            sbSQL.append(mFinalFuncModify);
+            sb.append(",\n\tMFINALFUNC_MODIFY = ");
+            sb.append(mFinalFuncModify);
         }
 
         if (mInitCond != null) {
-            sbSQL.append(",\n\tMINITCOND = ");
-            sbSQL.append(mInitCond);
+            sb.append(",\n\tMINITCOND = ");
+            sb.append(mInitCond);
         }
 
         if (sortOp != null) {
-            sbSQL.append(",\n\tSORTOP = ");
-            sbSQL.append(sortOp);
+            sb.append(",\n\tSORTOP = ");
+            sb.append(sortOp);
         }
 
         if (getParallel() != null) {
-            sbSQL.append(",\n\tPARALLEL = ");
-            sbSQL.append(getParallel());
+            sb.append(",\n\tPARALLEL = ");
+            sb.append(getParallel());
         }
 
         if (AggKinds.HYPOTHETICAL == kind) {
-            sbSQL.append(",\n\tHYPOTHETICAL");
+            sb.append(",\n\tHYPOTHETICAL");
         }
 
-        sbSQL.append("\n);");
+        sb.append("\n)");
     }
 
     @Override

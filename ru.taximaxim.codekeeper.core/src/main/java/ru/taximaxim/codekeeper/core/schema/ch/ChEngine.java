@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -26,6 +27,7 @@ import java.util.Set;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Subclass when need to reset hashes
@@ -131,16 +133,17 @@ public final class ChEngine implements Serializable, IHashable {
         }
     }
 
-    public void appendAlterSQL(StringBuilder sb, ChEngine newEngine, String prefix) {
-        compareSampleBy(sb, newEngine.sampleBy, prefix);
-        compareTtl(sb, newEngine.ttl, prefix);
-        compareOptions(sb, newEngine.options, prefix);
+    public void appendAlterSQL(ChEngine newEngine, String prefix, Collection<SQLAction> alterActions) {
+        compareSampleBy(newEngine.sampleBy, prefix, alterActions);
+        compareTtl(newEngine.ttl, prefix, alterActions);
+        compareOptions(newEngine.options, prefix, alterActions);
     }
 
-    private void compareSampleBy(StringBuilder sb, String newSampleBy, String prefix) {
+    private void compareSampleBy(String newSampleBy, String prefix, Collection<SQLAction> sqlActions) {
         if (Objects.equals(sampleBy, newSampleBy)) {
             return;
         }
+        StringBuilder sb = new StringBuilder();
         if (newSampleBy == null) {
             sb.append(prefix);
             sb.append("\n\tREMOVE SAMPLE BY");
@@ -148,24 +151,26 @@ public final class ChEngine implements Serializable, IHashable {
             sb.append(prefix);
             sb.append("\n\tMODIFY SAMPLE BY ").append(newSampleBy);
         }
-        sb.append(';');
+        sqlActions.add(new SQLAction(sb));
     }
 
-    private void compareTtl(StringBuilder sb, String newTtl, String prefix) {
+    private void compareTtl(String newTtl, String prefix, Collection<SQLAction> sqlActions) {
         if (Objects.equals(ttl, newTtl)) {
             return;
         }
+
+        StringBuilder sb = new StringBuilder();
         sb.append(prefix);
         if (newTtl == null) {
             sb.append("\n\tREMOVE TTL");
         } else {
             sb.append("\n\tMODIFY TTL ").append(newTtl);
         }
-        sb.append(';');
+        sqlActions.add(new SQLAction(sb));
     }
 
-    private void compareOptions(StringBuilder sb, Map<String, String> newOptions,
-            String prefix) {
+    private void compareOptions(Map<String, String> newOptions,
+            String prefix, Collection<SQLAction> sqlActions) {
         if (options.equals(newOptions)) {
             return;
         }
@@ -195,30 +200,32 @@ public final class ChEngine implements Serializable, IHashable {
             }
         }
 
-        appendAlterOptions(sb, resetOptions, modifyOptions, prefix);
+        appendAlterOptions(resetOptions, modifyOptions, prefix, sqlActions);
     }
 
-    private void appendAlterOptions(StringBuilder sb, Set<String> resetOptions,
-            Map<String, String> modifyOptions, String prefix) {
+    private void appendAlterOptions(Set<String> resetOptions,
+            Map<String, String> modifyOptions, String prefix, Collection<SQLAction> sqlActions) {
         if (!resetOptions.isEmpty()) {
-            sb.append(prefix).append("\n\tRESET SETTING");
+            SQLAction action = new SQLAction();
+            action.append(prefix).append("\n\tRESET SETTING");
             for(String key : resetOptions) {
-                sb.append(' ').append(key).append(',');
+                action.append(' ').append(key).append(',');
             }
-            sb.setLength(sb.length() - 1);
-            sb.append(';');
+            action.reduce(1);
+            sqlActions.add(action);
         }
 
         if (modifyOptions.isEmpty()) {
             return;
         }
 
-        sb.append(prefix).append("\n\tMODIFY SETTING");
+        SQLAction action = new SQLAction();
+        action.append(prefix).append("\n\tMODIFY SETTING");
         for (Entry<String, String> option : modifyOptions.entrySet()) {
-            sb.append(' ').append(option.getKey()).append('=').append(option.getValue()).append(',');
+            action.append(' ').append(option.getKey()).append('=').append(option.getValue()).append(',');
         }
-        sb.setLength(sb.length() - 1);
-        sb.append(';');
+        action.reduce(1);
+        sqlActions.add(action);
     }
 
     public boolean containsOption(String key) {
@@ -254,12 +261,7 @@ public final class ChEngine implements Serializable, IHashable {
             return true;
         }
 
-        if (!(obj instanceof ChEngine)) {
-            return false;
-        }
-
-        final ChEngine engine = (ChEngine) obj;
-        return compareUnalterable(engine)
+        return obj instanceof final ChEngine engine && compareUnalterable(engine)
                 && Objects.equals(sampleBy, engine.getSampleBy())
                 && Objects.equals(ttl, engine.getTtl())
                 && Objects.equals(options, engine.options);

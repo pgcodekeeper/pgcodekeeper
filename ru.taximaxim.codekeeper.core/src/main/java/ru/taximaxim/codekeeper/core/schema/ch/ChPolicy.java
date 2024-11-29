@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -27,6 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractPolicy;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public final class ChPolicy extends AbstractPolicy {
 
@@ -46,13 +48,13 @@ public final class ChPolicy extends AbstractPolicy {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
-        appendFullSQL(sbSQL, true);
-        return sbSQL.toString();
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        appendFullSQL(createActions, true);
     }
 
-    private void appendFullSQL(StringBuilder sbSQL, boolean isCreate) {
+    private void appendFullSQL(Collection<SQLAction> sqlActions, boolean isCreate) {
+        final StringBuilder sbSQL = new StringBuilder();
+
         sbSQL.append(isCreate ? "CREATE" : "ALTER").append(" POLICY ");
 
         if (isCreate) {
@@ -83,20 +85,18 @@ public final class ChPolicy extends AbstractPolicy {
         if (!excepts.isEmpty()) {
             sbSQL.append(" EXCEPT ").append(String.join(", ", excepts));
         }
-
-        sbSQL.append(getSeparator());
+        sqlActions.add(new SQLAction(sbSQL));
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         ChPolicy police = (ChPolicy) newCondition;
 
         if (!compare(police)) {
-            police.appendFullSQL(sb, false);
+            police.appendFullSQL(alterActions, false);
         }
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override

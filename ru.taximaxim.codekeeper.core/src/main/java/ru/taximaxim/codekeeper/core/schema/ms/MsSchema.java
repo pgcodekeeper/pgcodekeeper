@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,6 +24,7 @@ import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * MS SQL schema code generation.
@@ -34,28 +36,25 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
-        sbSQL.append(GO);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
+        appendPrivileges(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         if (!Objects.equals(getOwner(), newCondition.getOwner())) {
-            newCondition.alterOwnerSQL(sb);
+            newCondition.alterOwnerSQL(alterActions);
         }
-        alterPrivileges(newCondition, sb);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newCondition, alterActions);
+        return getObjectState(alterActions);
     }
 
     @Override

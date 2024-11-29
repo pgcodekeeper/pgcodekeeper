@@ -34,6 +34,7 @@ import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Postgres schema code generation.
@@ -54,32 +55,28 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
+        createActions.add(new SQLAction(sbSQL));
 
-        sbSQL.append(';');
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         if (!Objects.equals(getOwner(), newCondition.getOwner())) {
-            newCondition.alterOwnerSQL(sb);
+            newCondition.alterOwnerSQL(alterActions);
         }
 
-        alterPrivileges(newCondition, sb);
-        compareComments(sb, newCondition);
+        alterPrivileges(newCondition, alterActions);
+        appendAlterComments(newCondition, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     public PgDomain getDomain(String name) {
@@ -193,26 +190,17 @@ public class PgSchema extends AbstractSchema {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case DOMAIN:
-            return getDomain(name);
-        case FTS_PARSER:
-            return getFtsParser(name);
-        case FTS_TEMPLATE:
-            return getFtsTemplate(name);
-        case FTS_DICTIONARY:
-            return getFtsDictionary(name);
-        case FTS_CONFIGURATION:
-            return getFtsConfiguration(name);
-        case OPERATOR:
-            return getOperator(name);
-        case COLLATION:
-            return getCollation(name);
-        case STATISTICS:
-            return getStatistics(name);
-        default:
-            return super.getChild(name, type);
-        }
+        return switch (type) {
+            case DOMAIN -> getDomain(name);
+            case FTS_PARSER -> getFtsParser(name);
+            case FTS_TEMPLATE -> getFtsTemplate(name);
+            case FTS_DICTIONARY -> getFtsDictionary(name);
+            case FTS_CONFIGURATION -> getFtsConfiguration(name);
+            case OPERATOR -> getOperator(name);
+            case COLLATION -> getCollation(name);
+            case STATISTICS -> getStatistics(name);
+            default -> super.getChild(name, type);
+        };
     }
 
     @Override

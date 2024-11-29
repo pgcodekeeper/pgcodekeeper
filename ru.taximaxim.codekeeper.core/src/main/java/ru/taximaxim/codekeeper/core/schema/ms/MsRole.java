@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -28,6 +29,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class MsRole extends PgStatement {
 
@@ -48,70 +50,63 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
-        sbSQL.append(GO);
+        createActions.add(new SQLAction(sbSQL));
 
         for (String member : members) {
-            sbSQL.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
-            sbSQL.append(" ADD MEMBER ").append(MsDiffUtils.quoteName(member));
-            sbSQL.append(GO);
+            appendAlterRole(member, createActions, true);
         }
 
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        appendPrivileges(createActions);
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder sb = new StringBuilder();
-
+    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
         for (String member : members) {
-            sb.append("ALTER ROLE ").append(MsDiffUtils.quoteName(name));
-            sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(member));
-            sb.append(GO).append('\n');
+            appendAlterRole(member, dropActions, false);
         }
-        sb.append(super.getDropSQL(optionExists));
-        return sb.toString();
+        super.getDropSQL(dropActions, optionExists);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsRole newRole = (MsRole) newCondition;
 
         if (!Objects.equals(getOwner(), newRole.getOwner())) {
-            newRole.alterOwnerSQL(sb);
+            newRole.alterOwnerSQL(alterActions);
         }
 
         if (!Objects.equals(members, newRole.members)) {
             for (String newMember : newRole.members) {
                 if (!members.contains(newMember)) {
-                    sb.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
-                    sb.append(" ADD MEMBER ").append(MsDiffUtils.quoteName(newMember));
-                    sb.append(GO);
+                    appendAlterRole(newMember, alterActions, true);
                 }
             }
 
             for (String oldMember : members) {
                 if (!newRole.members.contains(oldMember)) {
-                    sb.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
-                    sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(oldMember));
-                    sb.append(GO);
+                    appendAlterRole(oldMember, alterActions, false);
                 }
             }
         }
 
-        alterPrivileges(newRole, sb);
+        alterPrivileges(newRole, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
+    }
+
+    public void appendAlterRole(String member, Collection<SQLAction> sqlActions, boolean needAddMember) {
+        SQLAction sql = new SQLAction();
+        sql.append("ALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
+        sql.append(needAddMember ? " ADD " : " DROP ").append("MEMBER ").append(MsDiffUtils.quoteName(member));
+        sqlActions.add(sql);
     }
 
     public void addMember(String member) {
@@ -142,11 +137,8 @@ public class MsRole extends PgStatement {
             return true;
         }
 
-        if (obj instanceof MsRole role && super.compare(obj)) {
-            return Objects.equals(members, role.members);
-        }
-
-        return false;
+        return obj instanceof MsRole role && super.compare(obj)
+                && Objects.equals(members, role.members);
     }
 
     @Override

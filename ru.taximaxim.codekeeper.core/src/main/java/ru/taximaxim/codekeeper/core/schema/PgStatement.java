@@ -41,6 +41,7 @@ import ru.taximaxim.codekeeper.core.hashers.ShaHasher;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
+import ru.taximaxim.codekeeper.core.schema.SQLAction.SQLActionType;
 
 /**
  * The superclass for general pgsql statement.
@@ -52,6 +53,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationExcept
 public abstract class PgStatement implements IStatement, IHashable {
 
     protected static final String IF_EXISTS = "IF EXISTS ";
+    protected static final String ALTER_TABLE = "ALTER TABLE ";
 
     //TODO move to MS SQL statement abstract class.
     public static final String GO = "\nGO";
@@ -207,9 +209,9 @@ public abstract class PgStatement implements IStatement, IHashable {
         setComment(args.isKeepNewlines() ? comment : comment.replace("\r", ""));
     }
 
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(Collection<SQLAction> sqlActions) {
         if (checkComments()) {
-            appendCommentSql(sb);
+            appendCommentSql(sqlActions);
         }
     }
 
@@ -217,23 +219,29 @@ public abstract class PgStatement implements IStatement, IHashable {
         return comment != null && !comment.isEmpty();
     }
 
-    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
+    public void appendAlterComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
         if (!Objects.equals(getComment(), newObj.getComment())) {
-            newObj.appendCommentSql(sb);
+            newObj.appendCommentSql(sqlActions);
         }
     }
 
-    public void compareComments(StringBuilder sb, PgStatement newObj) {
-        if (!Objects.equals(getComment(), newObj.getComment())) {
-            sb.setLength(sb.length() + 1);
-        }
-    }
-
-    protected void appendCommentSql(StringBuilder sb) {
-        sb.append("\n\n").append("COMMENT ON ").append(getTypeName()).append(' ');
+    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("COMMENT ON ").append(getTypeName()).append(' ');
         appendFullName(sb);
         sb.append(" IS ")
-        .append(checkComments() ? comment : "NULL").append(';');
+        .append(checkComments() ? comment : "NULL");
+        sqlActions.add(new SQLAction(sb, getCommentsOrder()));
+    }
+
+    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
+    }
+
+    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
+    }
+
+    protected SQLActionType getCommentsOrder() {
+        return getDatabaseArguments().isCommentsToEnd() ? SQLActionType.COMMENT : SQLActionType.MID;
     }
 
     public Set<PgPrivilege> getPrivileges() {
@@ -274,21 +282,10 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     private void addPrivilegeFiltered(PgPrivilege privilege, String locOwner) {
         if ("PUBLIC".equals(privilege.getRole())) {
-            boolean isFunc;
-            switch (getStatementType()) {
-            // revoke public is non-default for funcs etc
-            // grant public is default for them
-            case FUNCTION:
-            case PROCEDURE:
-            case AGGREGATE:
-            case DOMAIN:
-            case TYPE:
-                isFunc = true;
-                break;
-            default:
-                isFunc = false;
-                break;
-            }
+            boolean isFunc = switch (getStatementType()) {
+            case FUNCTION, PROCEDURE, AGGREGATE, DOMAIN, TYPE -> true;
+            default -> false;
+            };
             if (isFunc != privilege.isRevoke()) {
                 return;
             }
@@ -313,29 +310,16 @@ public abstract class PgStatement implements IStatement, IHashable {
         resetHash();
     }
 
-    protected StringBuilder appendPrivileges(StringBuilder sb) {
-        PgPrivilege.appendPrivileges(privileges, getDbType(), sb);
-        return sb;
+    protected void appendPrivileges(Collection<SQLAction> sqlActions) {
+        PgPrivilege.appendPrivileges(privileges, sqlActions);
     }
 
-    public String getSeparator() {
-        switch (getDbType()) {
-        case PG:
-        case CH:
-            return ";";
-        case MS:
-            return GO;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
-        }
-    }
-
-    protected void alterPrivileges(PgStatement newObj, StringBuilder sb) {
+    protected void alterPrivileges(PgStatement newObj, Collection<SQLAction> alterActions) {
         // first drop (revoke) missing grants
         Set<PgPrivilege> newPrivileges = newObj.getPrivileges();
         for (PgPrivilege privilege : privileges) {
             if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
-                sb.append('\n').append(privilege.getDropSQL()).append(getSeparator());
+                alterActions.add(new SQLAction(privilege.getDropSQL()));
             }
         }
 
@@ -347,9 +331,9 @@ public abstract class PgStatement implements IStatement, IHashable {
                 // we may have revoked implicit owner GRANT in the previous step, it needs to be restored
                 // any privileges in non-default state will be set to their final state in the next step
                 // this solution also requires the least amount of handling code: no edge cases
-                PgPrivilege.appendDefaultPostgresPrivileges(newObj, sb);
+                PgPrivilege.appendDefaultPostgresPrivileges(newObj,  alterActions/*, sb*/);
             }
-            newObj.appendPrivileges(sb);
+            newObj.appendPrivileges(alterActions);
         }
     }
 
@@ -362,13 +346,10 @@ public abstract class PgStatement implements IStatement, IHashable {
         resetHash();
     }
 
-    protected StringBuilder appendOwnerSQL(StringBuilder sb) {
-        return appendOwnerSQL(this, owner, true, sb);
-    }
-
-    public StringBuilder alterOwnerSQL(StringBuilder sb) {
+    public void alterOwnerSQL(Collection<SQLAction> sqlActions) {
         if (getDbType() == DatabaseType.MS && owner == null) {
-            sb.append("\n\nALTER AUTHORIZATION ON ");
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER AUTHORIZATION ON ");
             DbObjType type = getStatementType();
             if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
                     || DbObjType.ASSEMBLY == type) {
@@ -383,58 +364,55 @@ public abstract class PgStatement implements IStatement, IHashable {
                 sb.append("SCHEMA OWNER");
             }
 
-            sb.append(GO);
+            sqlActions.add(new SQLAction(sb));
         } else {
-            appendOwnerSQL(sb);
+            appendOwnerSQL(sqlActions);
         }
-        return sb;
     }
 
-    public static StringBuilder appendOwnerSQL(PgStatement st, String owner,
-            boolean addNewLine, StringBuilder sb) {
-        if (owner == null || !st.isOwned()) {
-            return sb;
+    public void appendOwnerSQL(Collection<SQLAction> createSql) {
+        if (owner == null || !isOwned()) {
+            return;
         }
-        if (addNewLine) {
-            sb.append("\n\n");
-        }
+        StringBuilder sb = new StringBuilder();
         sb.append("ALTER ");
 
-        switch (st.getDbType()) {
+        switch (getDbType()) {
         case PG:
-            sb.append(st.getTypeName()).append(' ');
-            st.appendFullName(sb);
+            sb.append(getTypeName()).append(' ');
+            appendFullName(sb);
             sb.append(" OWNER TO ")
-            .append(PgDiffUtils.getQuotedName(owner))
-            .append(';');
+            .append(PgDiffUtils.getQuotedName(owner));
             break;
         case MS:
             sb.append("AUTHORIZATION ON ");
-            DbObjType type = st.getStatementType();
+            DbObjType type = getStatementType();
             if (DbObjType.TYPE == type || DbObjType.SCHEMA == type
                     || DbObjType.ASSEMBLY == type) {
                 sb.append(type).append("::");
             }
 
-            sb.append(st.getQualifiedName()).append(" TO ")
-            .append(MsDiffUtils.quoteName(owner)).append(GO);
+            sb.append(getQualifiedName()).append(" TO ")
+            .append(MsDiffUtils.quoteName(owner));
             break;
         default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + st.getDbType());
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + getDbType());
         }
-        return sb;
+        createSql.add(new SQLAction(sb));
     }
 
-    public abstract String getCreationSQL();
+    public abstract void getCreationSQL(Collection<SQLAction> createActions);
 
-    public String getFullSQL() {
-        StringBuilder sb = new StringBuilder(getCreationSQL());
-        appendComments(sb);
-        return sb.toString();
+    public Set<SQLAction> getFullSQL() {
+        Set<SQLAction> createActions = new LinkedHashSet<>();
+        getCreationSQL(createActions);
+        appendComments(createActions);
+        return createActions;
     }
 
     public String getFullFormattedSQL() {
-        return formatSQL(getFullSQL());
+        Set<SQLAction> createActions = getFullSQL();
+        return formatSQL(PgDiffUtils.getText(createActions, getDbType()));
     }
 
     private String formatSQL(String sql) {
@@ -446,8 +424,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         return fileForm.formatText();
     }
 
-    public final String getDropSQL() {
-        return getDropSQL(getDatabaseArguments().isGenerateExists());
+    public void getDropSQL(Collection<SQLAction> dropActions) {
+        getDropSQL(dropActions, getDatabaseArguments().isGenerateExists());
     }
 
     public final boolean isDropBeforeCreate() {
@@ -458,15 +436,14 @@ public abstract class PgStatement implements IStatement, IHashable {
         return false;
     }
 
-    public String getDropSQL(boolean generateExists) {
-        final StringBuilder sbString = new StringBuilder();
-        sbString.append("DROP ").append(getTypeName()).append(' ');
+    public void getDropSQL(Collection<SQLAction> dropActions, boolean generateExists) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("DROP ").append(getTypeName()).append(' ');
         if (generateExists) {
-            sbString.append(IF_EXISTS);
+            sb.append(IF_EXISTS);
         }
-        appendFullName(sbString);
-        sbString.append(getSeparator());
-        return sbString.toString();
+        appendFullName(sb);
+        dropActions.add(new SQLAction(sb));
     }
 
     protected void appendIfNotExists(StringBuilder sb) {
@@ -500,12 +477,11 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
 
     //return object state to choise further operation
-    public abstract ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies);
+    public abstract ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions);
 
-    public ObjectState getObjectState(StringBuilder sb, int startLength)
-    {
-        return sb.length() > startLength ? ObjectState.ALTER : ObjectState.NOTHING;
+    public ObjectState getObjectState(Collection<SQLAction> alterActions) {
+        return !alterActions.isEmpty() ? ObjectState.ALTER : ObjectState.NOTHING;
     }
 
     /**
@@ -740,6 +716,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
         return sb.toString();
     }
+
 
     @Override
     public String toString() {

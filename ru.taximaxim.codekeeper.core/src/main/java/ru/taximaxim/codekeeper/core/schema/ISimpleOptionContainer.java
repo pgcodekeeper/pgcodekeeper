@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
+import java.util.Collection;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -23,7 +24,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 public interface ISimpleOptionContainer extends IOptionContainer {
 
     @Override
-    default void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    default void compareOptions(IOptionContainer newContainer, Collection<SQLAction> sqlActions) {
         Map <String, String> oldOptions = getOptions();
         Map <String, String> newOptions = newContainer.getOptions();
 
@@ -60,55 +61,57 @@ public interface ISimpleOptionContainer extends IOptionContainer {
         }
 
         if (setOptions.length() > 0 || resetOptions.length() > 0) {
-            appendOptions(newContainer, setOptions, resetOptions, sb);
+            appendOptions(newContainer, setOptions, resetOptions,  sqlActions);
         }
     }
 
     default void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
-            StringBuilder resetOptions, StringBuilder sb) {
+            StringBuilder resetOptions,  Collection<SQLAction> sqlActions) {
         DbObjType type = getStatementType();
         String typeName = type == DbObjType.VIEW ? ((PgStatement) newContainer).getTypeName() : type.name();
 
         if (setOptions.length() > 0) {
             setOptions.setLength(setOptions.length() - 2);
-            sb.append("\n\nALTER ");
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER ");
             if (type == DbObjType.COLUMN) {
-                sb.append("TABLE ONLY ")
+                sql.append("TABLE ONLY ")
                 .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
             }
-            sb.append(typeName).append(' ');
+            sql.append(typeName).append(' ');
             if (type != DbObjType.COLUMN) {
                 IStatement parent = getParent();
                 if (type == DbObjType.INDEX) {
                     parent = parent.getParent();
                 }
-                sb.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
+                sql.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
             }
-            sb.append(PgDiffUtils.getQuotedName(getName())).append(" SET (")
-            .append(setOptions).append(");");
+            sql.append(PgDiffUtils.getQuotedName(getName())).append(" SET (").append(setOptions).append(")");
+            sqlActions.add(sql);
         }
 
         if (resetOptions.length() > 0) {
+            SQLAction sql = new SQLAction();
             resetOptions.setLength(resetOptions.length() - 2);
-            sb.append("\n\nALTER ");
+            sql.append("ALTER ");
             if (type == DbObjType.COLUMN) {
-                sb.append("TABLE ONLY ")
+                sql.append("TABLE ONLY ")
                 .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
                 .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append(" ALTER ");
             }
-            sb.append(typeName).append(' ');
+            sql.append(typeName).append(' ');
             if (type != DbObjType.COLUMN) {
                 IStatement parent = getParent();
                 if (type == DbObjType.INDEX) {
                     parent = parent.getParent();
                 }
-                sb.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
+                sql.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
             }
-            sb.append(PgDiffUtils.getQuotedName(getName()))
-            .append(" RESET (").append(resetOptions).append(");");
+            sql.append(PgDiffUtils.getQuotedName(getName())).append(" RESET (").append(resetOptions).append(")");
+            sqlActions.add(sql);
         }
     }
 }

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class ChConstraint extends AbstractConstraint {
 
@@ -56,16 +58,16 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sb = new StringBuilder();
-        appendAlterTable(sb, false);
-        sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition())
-        .append(getSeparator());
-        return sb.toString();
+        appendAlterTable(sb);
+        sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition());
+        createActions.add(new SQLAction(sb));
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
@@ -75,15 +77,15 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
-        appendAlterTable(sb, false);
+        appendAlterTable(sb);
         sb.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
-        return sb.toString();
+        sb.append(ChDiffUtils.getQuotedName(getName()));
+        dropActions.add(new SQLAction(sb));
     }
 
     private boolean compareUnalterable(ChConstraint newConstr) {
@@ -108,11 +110,8 @@ public class ChConstraint extends AbstractConstraint {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChConstraint)) {
-            return false;
-        }
-        var constr = (ChConstraint) obj;
-        return super.compare(constr) && compareUnalterable(constr);
+        return obj instanceof ChConstraint constr && super.compare(constr)
+                && compareUnalterable(constr);
     }
 
     @Override

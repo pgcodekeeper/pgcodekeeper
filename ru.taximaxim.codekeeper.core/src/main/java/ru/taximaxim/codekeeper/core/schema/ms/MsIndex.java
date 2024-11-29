@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,6 +29,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
@@ -58,11 +60,11 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public String getCreationSQL() {
-        return getCreationSQL(false);
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        getCreationSQL(createActions, false);
     }
 
-    private String getCreationSQL(boolean dropExisting) {
+    private void getCreationSQL(Collection<SQLAction> createActions, boolean dropExisting) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
         if (isUnique()) {
@@ -77,9 +79,7 @@ public class MsIndex extends AbstractIndex {
         if (getTablespace() != null) {
             sbSQL.append("\nON ").append(getTablespace());
         }
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
     }
 
     public String getDefinition(boolean isTypeIndex, boolean dropExisting) {
@@ -153,15 +153,14 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
 
             MsIndex newIndex = (MsIndex) newCondition;
             if (!isClustered() || newIndex.isClustered()) {
-                sb.append("\n\n")
-                .append(newIndex.getCreationSQL(true));
+                newIndex.getCreationSQL(alterActions, true);
                 return ObjectState.ALTER;
             }
 

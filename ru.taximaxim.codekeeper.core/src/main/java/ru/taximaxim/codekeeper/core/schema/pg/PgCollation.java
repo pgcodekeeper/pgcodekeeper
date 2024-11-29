@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PgCollation extends PgStatement implements ISearchPath {
 
@@ -93,7 +95,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE COLLATION ");
         appendIfNotExists(sbSQL);
@@ -115,17 +117,15 @@ public class PgCollation extends PgStatement implements ISearchPath {
             sbSQL.append(", RULES = ").append(getRules());
         }
 
-        sbSQL.append(");");
+        sbSQL.append(")");
+        createActions.add(new SQLAction(sbSQL));
 
-        appendOwnerSQL(sbSQL);
-
-        return sbSQL.toString();
+        appendOwnerSQL(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgCollation newCollation = (PgCollation) newCondition;
 
         if (!compareUnalterable(newCollation)) {
@@ -134,11 +134,11 @@ public class PgCollation extends PgStatement implements ISearchPath {
         }
 
         if (!Objects.equals(getOwner(), newCollation.getOwner())) {
-            newCollation.alterOwnerSQL(sb);
+            newCollation.alterOwnerSQL(alterActions);
         }
-        compareComments(sb, newCollation);
+        appendAlterComments(newCollation, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override

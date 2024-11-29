@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,6 +28,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PgServer extends PgStatement implements PgForeignOptionContainer {
 
@@ -41,7 +43,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
 
     @Override
     public String getAlterHeader() {
-        return "\n\nALTER SERVER " + getQualifiedName();
+        return "ALTER SERVER " + getQualifiedName();
     }
 
     public String getType() {
@@ -115,7 +117,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE SERVER ");
         appendIfNotExists(sb);
@@ -131,17 +133,14 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
             sb.append(' ');
         }
         appendOptions(sb);
-        sb.append(';');
-        appendOwnerSQL(sb);
-        appendPrivileges(sb);
-
-        return sb.toString();
+        createActions.add(new SQLAction(sb));
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgServer newServer = (PgServer) newCondition;
         if (!Objects.equals(newServer.getFdw(), getFdw()) ||
                 !Objects.equals(newServer.getType(), getType())) {
@@ -150,22 +149,23 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
         }
 
         if (!Objects.equals(newServer.getVersion(), getVersion())) {
-            sb.append(getAlterHeader());
-            sb.append(" VERSION ").append(newServer.getVersion())
-            .append(';');
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterHeader());
+            sql.append(" VERSION ").append(newServer.getVersion());
+            alterActions.add(sql);
         }
 
         if (!Objects.equals(newServer.getOptions(), getOptions())) {
-            compareOptions(newServer, sb);
+            compareOptions(newServer, alterActions);
         }
 
         if (!Objects.equals(newServer.getOwner(), getOwner())) {
-            newServer.appendOwnerSQL(sb);
+            newServer.appendOwnerSQL(alterActions);
         }
-        alterPrivileges(newCondition, sb);
-        compareComments(sb, newServer);
+        alterPrivileges(newCondition, alterActions);
+        appendAlterComments(newServer, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override

@@ -15,8 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
+
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Simple foreign table object
@@ -37,12 +40,12 @@ public class SimpleForeignPgTable extends AbstractForeignTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> alterTableActions) {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn((PgColumn) column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, alterTableActions);
         }
 
         if (start != sbSQL.length()) {

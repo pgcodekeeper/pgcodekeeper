@@ -31,12 +31,14 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.sql.Keyword;
 import ru.taximaxim.codekeeper.core.sql.Keyword.KeywordCategory;
 
@@ -275,11 +277,15 @@ public final class PgDiffUtils {
         return "PLPGSQL".equalsIgnoreCase(language) || "SQL".equalsIgnoreCase(language);
     }
 
+    public static String getText(Set<SQLAction> sqlActions, DatabaseType dbType) {
+        return sqlActions.stream().map(action -> action.getSQL(dbType)).collect(Collectors.joining("\n\n"));
+    }
+
     public static void appendSqlWrappedInDo(StringBuilder sbResult, StringBuilder sbSQL, String expectedErrCode) {
         String body = sbSQL.toString().replace("\n", "\n\t");
 
         sbResult
-        .append("\n\nDO $$")
+        .append("DO $$")
         .append("\nBEGIN")
         .append("\n\t").append(body)
         .append("\nEXCEPTION WHEN OTHERS THEN")
@@ -289,7 +295,7 @@ public final class PgDiffUtils {
         .append("\n\t\tRAISE;")
         .append("\n\tEND IF;")
         .append("\nEND; $$")
-        .append("\nLANGUAGE 'plpgsql';");
+        .append("\nLANGUAGE 'plpgsql'");
     }
 
     private PgDiffUtils() {

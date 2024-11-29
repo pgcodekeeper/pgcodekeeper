@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -26,6 +27,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public final class PgConstraintFk extends PgConstraint implements IConstraintFk {
@@ -150,15 +152,18 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     }
 
     @Override
-    protected void compareExtraOptions(StringBuilder sb, PgConstraint newConstr) {
+    protected void compareExtraOptions(PgConstraint newConstr, Collection<SQLAction> sqlActions) {
         if (!compareCommonFields(newConstr)) {
-            appendAlterTable(sb, true);
+            StringBuilder sb = new StringBuilder();
+            appendAlterTable(sb);
             sb.append("\n\tALTER CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
             if (isDeferrable() != newConstr.isDeferrable() && !newConstr.isDeferrable()) {
-                sb.append(" NOT DEFERRABLE;");
+                sb.append(" NOT DEFERRABLE");
+                sqlActions.add(new SQLAction(sb));
                 return;
             }
-            sb.append(" DEFERRABLE INITIALLY ").append(newConstr.isInitially() ? "DEFERRED" : "IMMEDIATE").append(';');
+            sb.append(" DEFERRABLE INITIALLY ").append(newConstr.isInitially() ? "DEFERRED" : "IMMEDIATE");
+            sqlActions.add(new SQLAction(sb));
         }
     }
 

@@ -8,6 +8,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PartitionTemplateContainer implements IHashable {
 
@@ -34,30 +35,30 @@ public class PartitionTemplateContainer implements IHashable {
         return !subElements.isEmpty();
     }
 
-    public void appendCreateSQL(StringBuilder sb) {
-        appendPartitionName(sb);
-        sb.append(SET_SUBPARTITION).append("\n");
-        appendTemplateOptions(sb);
+    public void appendCreateSQL(SQLAction sql) {
+        appendPartitionName(sql);
+        sql.append(SET_SUBPARTITION).append("\n");
+        appendTemplateOptions(sql);
     }
 
-    public void appendDropSql(StringBuilder sb) {
-        appendPartitionName(sb);
-        sb.append(SET_SUBPARTITION).append(");");
+    public void appendDropSql(SQLAction sql) {
+        appendPartitionName(sql);
+        sql.append(SET_SUBPARTITION).append(")");
     }
 
-    private void appendPartitionName(StringBuilder sbSQL) {
+    private void appendPartitionName(SQLAction sql) {
         if (partitionName != null) {
-            sbSQL.append(" ALTER PARTITION ").append(partitionName);
+            sql.append(" ALTER PARTITION ").append(partitionName);
         }
     }
 
-    protected void appendTemplateOptions(StringBuilder sbSQL) {
+    protected void appendTemplateOptions(SQLAction sbSQL) {
         for (var elem : subElements) {
             sbSQL.append("  ").append(elem).append(",").append("\n");
         }
-        sbSQL.setLength(sbSQL.length() - 2);
+        sbSQL.reduce(2);
         sbSQL.append("\n");
-        sbSQL.append(");");
+        sbSQL.append(")");
     }
 
     @Override

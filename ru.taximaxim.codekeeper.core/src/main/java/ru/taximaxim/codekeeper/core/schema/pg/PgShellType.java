@@ -19,7 +19,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public final class PgShellType extends AbstractType{
+public final class PgShellType extends AbstractType {
 
     public PgShellType(String name) {
         super(name);
@@ -37,7 +37,7 @@ public final class PgShellType extends AbstractType{
 
     @Override
     protected void appendDef(StringBuilder sb) {
-        sb.append(';');
+        // no body
     }
 
     @Override

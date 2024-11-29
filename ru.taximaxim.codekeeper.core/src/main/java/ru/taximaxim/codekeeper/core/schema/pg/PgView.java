@@ -21,6 +21,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -49,8 +51,9 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  */
 public class PgView extends AbstractView implements ISimpleOptionContainer {
 
-    private static final String COLUMN_COMMENT = "\n\nCOMMENT ON COLUMN {0}.{1} IS {2};";
+    private static final String COLUMN_COMMENT = "COMMENT ON COLUMN {0}.{1} IS {2}";
     public static final String CHECK_OPTION = "check_option";
+    private static final String ALTER_COLUMN = " ALTER COLUMN ";
 
     private String query;
     private String normalizedQuery;
@@ -68,7 +71,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder(getQuery().length() * 2);
         sbSQL.append("CREATE ");
         sbSQL.append(getTypeName()).append(' ');
@@ -123,31 +126,36 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
             }
             sbSQL.append(" CHECK OPTION");
         }
-        sbSQL.append(';');
 
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
+        createActions.add(new SQLAction(sbSQL));
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
 
         for (final Entry<String, String> defaultValue : getDefaultValues().entrySet()) {
-            sbSQL.append("\n\nALTER VIEW ");
-            sbSQL.append(getQualifiedName());
-            sbSQL.append(" ALTER COLUMN ");
-            sbSQL.append(PgDiffUtils.getQuotedName(defaultValue.getKey()));
-            sbSQL.append(" SET DEFAULT ");
-            sbSQL.append(defaultValue.getValue());
-            sbSQL.append(';');
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER VIEW ");
+            sql.append(getQualifiedName());
+            sql.append(ALTER_COLUMN);
+            sql.append(PgDiffUtils.getQuotedName(defaultValue.getKey()));
+            sql.append(" SET DEFAULT ");
+            sql.append(defaultValue.getValue());
+            createActions.add(sql);
         }
-
-        return sbSQL.toString();
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
-        super.appendComments(sb);
+    public void appendComments(Collection<SQLAction> sqlActions) {
+        super.appendComments(sqlActions);
+        appendChildrenComments(sqlActions);
+    }
 
+    @Override
+    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (final Entry<String, String> columnComment : columnComments.entrySet()) {
-            sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+            StringBuilder sql = new StringBuilder();
+            sql.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                     PgDiffUtils.getQuotedName(columnComment.getKey()), columnComment.getValue()));
+            sqlActions.add(new SQLAction(sql, getCommentsOrder()));
         }
     }
 
@@ -170,9 +178,8 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgView newView = (PgView) newCondition;
 
         if (isViewModified(newView) || isMatView() != newView.isMatView()
@@ -183,66 +190,57 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
         }
 
         if (!Objects.equals(getTablespace(), newView.getTablespace())) {
-            sb.append("\n\nALTER TABLE ").append(newView.getQualifiedName())
+            SQLAction sql = new SQLAction();
+            sql.append(ALTER_TABLE).append(newView.getQualifiedName())
             .append("\n\tSET TABLESPACE ");
 
             String newSpace = newView.getTablespace();
-            sb.append(newSpace == null ? Consts.PG_DEFAULT : newSpace).append(';');
+            sql.append(newSpace == null ? Consts.PG_DEFAULT : newSpace);
+            alterActions.add(sql);
         }
 
         if (!Objects.equals(isWithData(), newView.isWithData())) {
-            sb.append("\n\nREFRESH MATERIALIZED VIEW ").append(newView.getQualifiedName());
+            SQLAction sql = new SQLAction();
+            sql.append("REFRESH MATERIALIZED VIEW ").append(newView.getQualifiedName());
             if (newView.isWithData() == Boolean.FALSE) {
-                sb.append(" WITH NO DATA");
+                sql.append(" WITH NO DATA");
             }
-
-            sb.append(';');
+            alterActions.add(sql);
         }
 
-        alterDefaultValues(sb, newView);
+        alterDefaultValues(newView, alterActions);
 
         if (!Objects.equals(getOwner(), newView.getOwner())) {
-            newView.alterOwnerSQL(sb);
+            newView.alterOwnerSQL(alterActions);
         }
 
-        alterPrivileges(newView, sb);
-        compareOptions(newView, sb);
-        compareComments(sb, newView);
+        alterPrivileges(newView, alterActions);
+        compareOptions(newView, alterActions);
+        appendAlterComments(newView, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override
-    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
+    public void appendAlterComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
         PgView newView = (PgView) newObj;
-        super.appendAlterComments(sb, newView);
-        alterColumnComments(sb, newView);
+        super.appendAlterComments(newView, sqlActions);
+        appendAlterChildrenComments(newObj, sqlActions);
     }
 
     @Override
-    public boolean canDropBeforeCreate() {
-        return true;
-    }
-
-    @Override
-    public void compareComments(StringBuilder sb, PgStatement newObj) {
-        super.compareComments(sb, newObj);
-
+    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
         PgView newView = (PgView) newObj;
-        if (!Objects.equals(columnComments, newView.columnComments)) {
-            sb.setLength(sb.length() + 1);
-        }
-    }
-
-    private void alterColumnComments(final StringBuilder sb, final PgView newView) {
         for (final Entry<String, String> newColumnComment : newView.columnComments.entrySet()) {
             String newColumn = newColumnComment.getKey();
             String newValue = newColumnComment.getValue();
 
             String oldValue = columnComments.get(newColumn);
             if (!Objects.equals(oldValue, newValue)) {
+                StringBuilder sb = new StringBuilder();
                 sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                         PgDiffUtils.getQuotedName(newColumn), newValue));
+                sqlActions.add(new SQLAction(sb, getCommentsOrder()));
             }
         }
 
@@ -250,28 +248,34 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
             String oldColumn = columnComment.getKey();
 
             if (!newView.columnComments.containsKey(oldColumn)) {
+                StringBuilder sb = new StringBuilder();
                 sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                         PgDiffUtils.getQuotedName(oldColumn), "NULL"));
+                sqlActions.add(new SQLAction(sb, getCommentsOrder()));
             }
         }
+    }
+
+    @Override
+    public boolean canDropBeforeCreate() {
+        return true;
     }
 
     /**
      * Compares default values with values in new view.
      *
-     * @param sb               writer
+     * @param sqlActions for collect sql statements
      * @param newView          new view
      */
-    private void alterDefaultValues(final StringBuilder sb, final PgView newView) {
+    private void alterDefaultValues(final PgView newView, Collection<SQLAction> sqlActions) {
         for (final Entry<String, String> columnComment : newView.defaultValues.entrySet()) {
             String newColumn = columnComment.getKey();
             String newValue = columnComment.getValue();
 
             String oldValue = defaultValues.get(newColumn);
             if (!Objects.equals(oldValue, newValue)) {
-                sb.append("\n\nALTER TABLE ").append(getQualifiedName())
-                .append(" ALTER COLUMN ").append(PgDiffUtils.getQuotedName(newColumn))
-                .append(" SET DEFAULT ").append(newValue).append(';');
+                SQLAction sql = addAlterTable(newColumn, " SET", sqlActions).append(' ').append(newValue);
+                sqlActions.add(sql);
             }
         }
 
@@ -279,11 +283,17 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
             String oldColumn = columnComment.getKey();
 
             if (!newView.defaultValues.containsKey(oldColumn)) {
-                sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append(" ALTER COLUMN ")
-                .append(PgDiffUtils.getQuotedName(oldColumn))
-                .append(" DROP DEFAULT;");
+                sqlActions.add(addAlterTable(oldColumn, " DROP", sqlActions));
             }
         }
+    }
+
+    private SQLAction addAlterTable(String column, String state, Collection<SQLAction> sqlActions) {
+        SQLAction sql = new SQLAction();
+        return sql.append(ALTER_TABLE).append(getQualifiedName())
+                .append(ALTER_COLUMN)
+                .append(PgDiffUtils.getQuotedName(column))
+                .append(state).append(" DEFAULT");
     }
 
     /**

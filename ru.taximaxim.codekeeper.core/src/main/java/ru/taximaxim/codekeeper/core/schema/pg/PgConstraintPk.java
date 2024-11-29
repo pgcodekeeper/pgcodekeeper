@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -29,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public final class PgConstraintPk extends PgConstraint implements IConstraintPk, PgIndexParamContainer {
@@ -148,22 +150,26 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     @Override
     protected void appendExtraOptions(StringBuilder sbSQL) {
         if (isClustered()) {
-            appendAlterTable(sbSQL, true);
+            sbSQL.append("\n\n");
+            appendAlterTable(sbSQL);
             sbSQL.append(" CLUSTER ON ").append(getName()).append(";");
         }
     }
 
     @Override
-    protected void compareExtraOptions(StringBuilder sb, PgConstraint obj) {
+    protected void compareExtraOptions(PgConstraint obj, Collection<SQLAction> sqlActions) {
         PgConstraintPk newConstr = (PgConstraintPk) obj;
 
         if (newConstr.isClustered() != isClustered()) {
+            StringBuilder sb = new StringBuilder();
             if (newConstr.isClustered()) {
-                appendAlterTable(sb, true);
-                sb.append(" CLUSTER ON ").append(getName()).append(";");
+                appendAlterTable(sb);
+                sb.append(" CLUSTER ON ").append(getName());
+                sqlActions.add(new SQLAction(sb));
             } else if (!((PgStatementContainer) newConstr.getParent()).isClustered()) {
-                appendAlterTable(sb, true);
-                sb.append(" SET WITHOUT CLUSTER;");
+                appendAlterTable(sb);
+                sb.append(" SET WITHOUT CLUSTER");
+                sqlActions.add(new SQLAction(sb));
             }
         }
     }

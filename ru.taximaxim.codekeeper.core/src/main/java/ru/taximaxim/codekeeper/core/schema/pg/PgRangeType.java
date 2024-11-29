@@ -44,7 +44,7 @@ public final class PgRangeType extends AbstractType {
         appendStringOption(sb, "canonical", canonical);
         appendStringOption(sb, "subtype_diff", subtypeDiff);
         appendStringOption(sb, "multirange_type_name", multirange);
-        sb.append("\n);");
+        sb.append("\n)");
     }
 
     public String getSubtype() {

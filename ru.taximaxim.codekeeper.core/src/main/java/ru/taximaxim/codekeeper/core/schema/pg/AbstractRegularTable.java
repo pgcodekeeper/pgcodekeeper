@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -25,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Base implementation of regular table
@@ -59,12 +61,9 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
+    public String getAlterTable(boolean only) {
         StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        sb.append("ALTER TABLE ");
+        sb.append(ALTER_TABLE);
         if (only) {
             sb.append("ONLY ");
         }
@@ -73,18 +72,17 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     }
 
     @Override
-    protected void appendOptions(StringBuilder sbSQL) {
-        StringBuilder sb = new StringBuilder();
-
+    protected void appendOptions(StringBuilder sql) {
         if (partitionBy != null) {
-            sbSQL.append("\nPARTITION BY ");
-            sbSQL.append(partitionBy);
+            sql.append("\nPARTITION BY ");
+            sql.append(partitionBy);
         }
 
         if (!Consts.HEAP.equals(getMethod())) {
-            sbSQL.append("\nUSING ").append(PgDiffUtils.getQuotedName(getMethod()));
+            sql.append("\nUSING ").append(PgDiffUtils.getQuotedName(getMethod()));
         }
 
+        StringBuilder sb = new StringBuilder();
         for (Entry <String, String> entry : options.entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();
@@ -102,34 +100,37 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
 
         if (sb.length() > 0){
             sb.setLength(sb.length() - 2);
-            sbSQL.append("\nWITH (").append(sb).append(")");
+            sql.append("\nWITH (").append(sb).append(")");
         }
 
         if (tablespace != null && !tablespace.isEmpty()) {
-            sbSQL.append("\nTABLESPACE ");
-            sbSQL.append(tablespace);
+            sql.append("\nTABLESPACE ");
+            sql.append(tablespace);
         }
 
         if (distribution != null) {
-            sbSQL.append("\n").append(distribution);
+            sql.append("\n").append(distribution);
         }
-
-        sbSQL.append(';');
     }
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
+    protected void appendAlterOptions(Collection<SQLAction> sqlActions) {
         // since 9.5 PostgreSQL
         if (isRowSecurity) {
-            sbSQL.append(getAlterTable(true, false));
-            sbSQL.append(" ENABLE ROW LEVEL SECURITY;");
+            addRowLevel("ENABLE", sqlActions, false);
         }
 
         // since 9.5 PostgreSQL
         if (isForceSecurity) {
-            sbSQL.append(getAlterTable(true, true));
-            sbSQL.append(" FORCE ROW LEVEL SECURITY;");
+            addRowLevel("FORCE", sqlActions, true);
         }
+    }
+
+    private void addRowLevel(String securityType, Collection<SQLAction> sqlActions, boolean only) {
+        SQLAction sql = new SQLAction();
+        sql.append(getAlterTable(only));
+        sql.append(String.format(" %s ROW LEVEL SECURITY", securityType));
+        sqlActions.add(sql);
     }
 
     public String getMethod() {
@@ -142,64 +143,73 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     }
 
     @Override
-    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
-        super.compareTableOptions(newTable, sb);
+    protected void compareTableOptions(AbstractPgTable newTable, Collection<SQLAction> alterActions) {
+        super.compareTableOptions(newTable, alterActions);
 
         AbstractRegularTable newRegTable = (AbstractRegularTable) newTable;
         if (!Objects.equals(tablespace, newRegTable.getTablespace())) {
-            sb.append(getAlterTable(true, false))
+            SQLAction sql = new SQLAction();
+
+            sql.append(getAlterTable(false))
             .append("\n\tSET TABLESPACE ");
 
             String newSpace = newRegTable.getTablespace();
-            sb.append(newSpace == null ? Consts.PG_DEFAULT : newSpace).append(';');
+            sql.append(newSpace == null ? Consts.PG_DEFAULT : newSpace);
+            alterActions.add(sql);
         }
 
         // since 9.5 PostgreSQL
         if (isLogged != newRegTable.isLogged) {
-            sb.append(getAlterTable(true, false))
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(false))
             .append("\n\tSET ")
-            .append(newRegTable.isLogged ? "LOGGED" : "UNLOGGED")
-            .append(';');
+            .append(newRegTable.isLogged ? "LOGGED" : "UNLOGGED");
+            alterActions.add(sql);
         }
 
         // since 9.5 PostgreSQL
         if (isRowSecurity != newRegTable.isRowSecurity) {
-            sb.append(getAlterTable(true, false))
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(false))
             .append(newRegTable.isRowSecurity ? " ENABLE" : " DISABLE")
-            .append(" ROW LEVEL SECURITY;");
+            .append(" ROW LEVEL SECURITY");
+            alterActions.add(sql);
         }
 
         // since 9.5 PostgreSQL
         if (isForceSecurity != newRegTable.isForceSecurity) {
-            sb.append(getAlterTable(true, true))
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(true))
             .append(newRegTable.isForceSecurity ? "" : " NO")
-            .append(" FORCE ROW LEVEL SECURITY;");
+            .append(" FORCE ROW LEVEL SECURITY");
+            alterActions.add(sql);
         }
 
         // greenplum
         if (!Objects.equals(distribution, newRegTable.distribution)) {
-            sb.append(getAlterTable(true, false));
-            sb.append(" SET ");
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(false));
+            sql.append(" SET ");
             String newDistribution = newRegTable.getDistribution();
             if (distribution != null && distribution.startsWith("DISTRIBUTED BY")
                     && (newDistribution == null || !newDistribution.startsWith("DISTRIBUTED REPLICATED"))) {
-                sb.append("WITH (REORGANIZE=true) ");
+                sql.append("WITH (REORGANIZE=true) ");
             }
 
             if (newDistribution != null) {
-                sb.append(newDistribution);
+                sql.append(newDistribution);
             } else {
-                appendDefaultDistribution(newRegTable, sb);
+                appendDefaultDistribution(newRegTable, sql);
             }
-            sb.append(";");
+            alterActions.add(sql);
         }
     }
 
     /**
      * append default value for greenplum db DISTRIBUTED clause
      */
-    protected void appendDefaultDistribution(AbstractRegularTable newTable, StringBuilder sb) {
-        sb.append("DISTRIBUTED ");
+    protected void appendDefaultDistribution(AbstractRegularTable newTable, SQLAction sql) {
+        sql.append("DISTRIBUTED ");
 
         String columnName = null;
         // search DISTRIBUTED column(s)
@@ -222,13 +232,13 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         }
 
         if (columnName != null) {
-            sb.append("BY (").append(columnName).append(")");
+            sql.append("BY (").append(columnName).append(")");
         } else {
-            sb.append("RANDOMLY");
+            sql.append("RANDOMLY");
         }
     }
 
-    protected abstract void convertTable(StringBuilder sb);
+    protected abstract void convertTable(Collection<SQLAction> createActions);
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
@@ -236,11 +246,10 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
             return true;
         }
 
-        if (!(newTable instanceof AbstractRegularTable)) {
+        if (!(newTable instanceof AbstractRegularTable regTable)) {
             return true;
         }
 
-        AbstractRegularTable regTable = (AbstractRegularTable) newTable;
         return !Objects.equals(getMethod(), regTable.getMethod())
                 || !Objects.equals(getPartitionBy(), regTable.getPartitionBy());
     }

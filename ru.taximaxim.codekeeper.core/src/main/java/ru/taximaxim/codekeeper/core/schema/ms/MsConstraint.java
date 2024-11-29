@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -23,6 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public abstract class MsConstraint extends AbstractConstraint {
 
@@ -33,9 +35,9 @@ public abstract class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendAlterTable(sbSQL, false);
+        appendAlterTable(sbSQL);
         if (isNotValid()) {
             sbSQL.append(" WITH NOCHECK");
         }
@@ -44,74 +46,71 @@ public abstract class MsConstraint extends AbstractConstraint {
             sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
         }
         sbSQL.append(getDefinition());
-        sbSQL.append(GO);
+        createActions.add(new SQLAction(sbSQL));
 
         // 1) if is not valid, after adding it is disabled by default
         // 2) can't be valid if disabled
         if (isNotValid()) {
-            appendAlterTable(sbSQL, true);
-            sbSQL.append(' ');
+            StringBuilder sb = new StringBuilder();
+            appendAlterTable(sb);
+            sb.append(' ');
             if (isDisabled()) {
-                sbSQL.append("NO");
+                sb.append("NO");
             }
-            sbSQL.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(getName()))
-            .append(GO);
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(getName()));
+            createActions.add(new SQLAction(sb));
         }
-
-        return sbSQL.toString();
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        int startSize = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsConstraint newConstr = (MsConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
+        compareOptions(newConstr, alterActions);
 
-        compareOptions(newConstr, sb);
         if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
-            appendAlterTable(sb, true);
-            sb.append(" WITH ");
+            StringBuilder sbSQl = new StringBuilder();
+            appendAlterTable(sbSQl);
+            sbSQl.append(" WITH ");
             if (newConstr.isNotValid()) {
-                sb.append("NO");
+                sbSQl.append("NO");
             }
-            sb.append("CHECK ");
+            sbSQl.append("CHECK ");
             if (newConstr.isDisabled()) {
-                sb.append("NO");
+                sbSQl.append("NO");
             }
-            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()))
-            .append(GO);
+            sbSQl.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()));
+            alterActions.add(new SQLAction(sbSQl));
         }
 
-        return getObjectState(sb, startSize);
+        return getObjectState(alterActions);
     }
 
     protected abstract boolean compareUnalterable(MsConstraint newConstr);
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
+        appendSpecialDropSQL(dropActions);
         final StringBuilder sbSQL = new StringBuilder();
-        appendSpecialDropSQL(sbSQL);
-        appendAlterTable(sbSQL, false);
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append(IF_EXISTS);
         }
         sbSQL.append(MsDiffUtils.quoteName(getName()));
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        dropActions.add(new SQLAction(sbSQL));
     }
 
-    protected void compareOptions(MsConstraint newConstr, StringBuilder sb) {
+    protected void compareOptions(MsConstraint newConstr, Collection<SQLAction> sqlActions) {
         // subclasses will override if needed
     }
 
-    protected void appendSpecialDropSQL(StringBuilder sbSQL) {
+    protected void appendSpecialDropSQL(Collection<SQLAction> dropActions) {
         // subclasses will override if needed
     }
 

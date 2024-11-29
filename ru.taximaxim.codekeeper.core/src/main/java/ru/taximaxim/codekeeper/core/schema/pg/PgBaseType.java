@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -22,6 +23,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public final class PgBaseType extends AbstractType implements ICompressOptionContainer {
 
@@ -78,21 +80,23 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
         appendStringOption(sb, "ELEMENT", element);
         appendStringOption(sb, "DELIMITER", delimiter);
         appendStringOption(sb, "COLLATABLE", collatable);
-        sb.append("\n);");
-
-        if (checkGreenplumOptions()) {
-            appendGreenplumOptions(this, sb);
-        }
+        sb.append("\n)");
     }
 
     @Override
-    protected void compareType(AbstractType newType, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
         PgBaseType newBaseType = (PgBaseType) newType;
         if (!Objects.equals(newBaseType.getCompressType(), getCompressType())
                 || newBaseType.getCompressLevel() != getCompressLevel()
                 || newBaseType.getBlockSize() != getBlockSize()) {
-            appendGreenplumOptions(newBaseType, sb);
+            appendGreenplumOptions(newBaseType, sqlActions);
+        }
+    }
+
+    @Override
+    protected void appendOptions(Collection<SQLAction> createActions) {
+        if (checkGreenplumOptions()) {
+            appendGreenplumOptions(this, createActions);
         }
     }
 
@@ -102,13 +106,16 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
                 || !Objects.equals(DEFAULT_COMPESS_TYPE, compressType);
     }
 
-    private void appendGreenplumOptions(PgBaseType type, StringBuilder sb) {
-        sb.append("\n\nALTER TYPE ").append(getQualifiedName())
+    private void appendGreenplumOptions(PgBaseType type, Collection<SQLAction> sqlCommands/*, StringBuilder sb*/) {
+        SQLAction sbSQL = new SQLAction();
+        sbSQL.append("ALTER TYPE ").append(getQualifiedName())
         .append(" SET DEFAULT ENCODING (")
         .append("COMPRESSTYPE = ").append(type.getCompressType()).append(", ")
         .append("COMPRESSLEVEL = ").append(type.getCompressLevel()).append(", ")
         .append("BLOCKSIZE = ").append(type.getBlockSize())
-        .append(");");
+        .append(")");
+
+        sqlCommands.add(sbSQL);
     }
 
     public String getInputFunction() {

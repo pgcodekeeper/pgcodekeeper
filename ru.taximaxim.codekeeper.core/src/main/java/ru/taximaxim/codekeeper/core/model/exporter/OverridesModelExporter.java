@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -38,6 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class OverridesModelExporter extends ModelExporter {
 
@@ -69,7 +72,7 @@ public class OverridesModelExporter extends ModelExporter {
             if (el.getSide() == DiffSide.BOTH) {
                 switch (el.getType()) {
                 case CONSTRAINT, DATABASE, INDEX, TRIGGER, RULE, POLICY, EXTENSION, EVENT_TRIGGER, CAST, COLUMN,
-                        STATISTICS:
+                STATISTICS:
                     break;
                 default:
                     PgStatement stInNew = el.getPgStatement(newDb);
@@ -93,20 +96,19 @@ public class OverridesModelExporter extends ModelExporter {
 
     @Override
     protected String getDumpSql(PgStatement st) {
-        StringBuilder sb = new StringBuilder();
+        Set<SQLAction> sqlActions = new LinkedHashSet<>();
         Set<PgPrivilege> privs = st.getPrivileges();
-        PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
-        PgPrivilege.appendPrivileges(privs, st.getDbType(), sb);
+        st.appendOwnerSQL(sqlActions);
+        PgPrivilege.appendPrivileges(privs, sqlActions);
         if (privs.isEmpty() && st.getDbType() == DatabaseType.PG) {
-            PgPrivilege.appendDefaultPostgresPrivileges(st, sb);
+            PgPrivilege.appendDefaultPostgresPrivileges(st, sqlActions);
         }
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                PgPrivilege.appendPrivileges(col.getPrivileges(), col.getDbType(), sb);
+                PgPrivilege.appendPrivileges(col.getPrivileges(), sqlActions);
             }
         }
-
-        return sb.toString();
+        return PgDiffUtils.getText(sqlActions, st.getDbType());
     }
 }
