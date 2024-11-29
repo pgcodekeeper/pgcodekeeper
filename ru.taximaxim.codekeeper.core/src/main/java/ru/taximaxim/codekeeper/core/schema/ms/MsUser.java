@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class MsUser extends PgStatement {
 
@@ -50,7 +52,7 @@ public class MsUser extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE USER ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
@@ -70,18 +72,13 @@ public class MsUser extends PgStatement {
             }
             sbSQL.setLength(sbSQL.length() - 2);
         }
-
-        sbSQL.append(GO);
-
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
+        appendPrivileges(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsUser newUser = (MsUser) newCondition;
 
         StringBuilder sbSql = new StringBuilder();
@@ -109,13 +106,15 @@ public class MsUser extends PgStatement {
 
         if (sbSql.length() > 0) {
             sbSql.setLength(sbSql.length() - 2);
-            sb.append("ALTER USER ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH ").append(sbSql).append(GO);
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER USER ").append(MsDiffUtils.quoteName(name))
+            .append(" WITH ").append(sbSql);
+            alterActions.add(sql);
         }
 
-        alterPrivileges(newUser, sb);
+        alterPrivileges(newUser, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     public String getSchema() {

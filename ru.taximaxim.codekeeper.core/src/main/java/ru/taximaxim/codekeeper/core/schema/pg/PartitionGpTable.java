@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PartitionGpTable extends AbstractRegularTable {
 
@@ -50,12 +51,12 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> alterTableActions) {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn((PgColumn) column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, alterTableActions);
         }
 
         if (start != sbSQL.length()) {
@@ -88,23 +89,24 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void convertTable(StringBuilder sb) {
+    protected void convertTable(Collection<SQLAction> createActions) {
         // available in 7 version
     }
 
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
         super.appendOptions(sbSQL);
-        sbSQL.setLength(sbSQL.length() - 1);
-        sbSQL.append("\n").append(partitionGpBounds).append(";");
+        sbSQL.append("\n").append(partitionGpBounds);
     }
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
-        super.appendAlterOptions(sbSQL);
+    protected void appendAlterOptions(Collection<SQLAction> sqlActions) {
+        super.appendAlterOptions(sqlActions);
         for (var template : templates.values()) {
-            sbSQL.append(getAlterTable(true, false));
-            template.appendCreateSQL(sbSQL);
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(false));
+            template.appendCreateSQL(sql);
+            sqlActions.add(sql);
         }
     }
 
@@ -118,44 +120,51 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
-        super.compareTableOptions(newTable, sb);
+    protected void compareTableOptions(AbstractPgTable newTable, Collection<SQLAction> alterActions) {
+        super.compareTableOptions(newTable, alterActions);
 
         PartitionGpTable newPartGptable = (PartitionGpTable) newTable;
         if (!Objects.equals(normalizedPartitionGpBounds, newPartGptable.getNormalizedPartitionGpBounds())) {
-            sb.append("\n --The PARTTITION clause have differences. Add ALTER statement manually");
+            SQLAction sql = new SQLAction();
+            sql.append("\n --The PARTTITION clause have differences. Add ALTER statement manually");
+            alterActions.add(sql);
         }
-        compareTemplates(newPartGptable, sb);
+        compareTemplates(newPartGptable, alterActions);
     }
 
-    private void compareTemplates(PartitionGpTable newTable, StringBuilder sb) {
+    private void compareTemplates(PartitionGpTable newTable, Collection<SQLAction> alterActions) {
         if (Objects.equals(templates, newTable.templates)) {
             return;
         }
 
         templates.forEach((key, value) -> {
             PartitionTemplateContainer newValue = newTable.templates.get(key);
-            if (newValue != null) {
-                if (!value.equals(newValue)) {
-                    sb.append(getAlterTable(true, false));
-                    newValue.appendCreateSQL(sb);
-                }
-            } else {
-                sb.append(getAlterTable(true, false));
-                value.appendDropSql(sb);
+            SQLAction sql;
+            if (newValue == null) {
+                sql = new SQLAction();
+                sql.append(getAlterTable(false));
+                value.appendDropSql(sql);
+                alterActions.add(sql);
+            } else if (!value.equals(newValue)) {
+                sql = new SQLAction();
+                sql.append(getAlterTable(false));
+                newValue.appendCreateSQL(sql);
+                alterActions.add(sql);
             }
         });
 
         newTable.templates.forEach((key, value) -> {
             if (!templates.containsKey(key)) {
-                sb.append(getAlterTable(true, false));
-                value.appendCreateSQL(sb);
+                SQLAction sql = new SQLAction();
+                sql.append(getAlterTable(false));
+                value.appendCreateSQL(sql);
+                alterActions.add(sql);
             }
         });
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> alterActions) {
         // no implements
     }
 

@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Base MS SQL table class
@@ -66,22 +67,21 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        appendColumnsPriliges(sbSQL);
+        createActions.add(new SQLAction(sbSQL));
 
-        return sbSQL.toString();
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
+        appendColumnsPriliges(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -89,11 +89,11 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newTable, sb);
-        compareOwners(newTable, sb);
-        alterPrivileges(newTable, sb);
+        compareOptions(newTable, alterActions);
+        compareOwners(newTable, alterActions);
+        alterPrivileges(newTable, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     protected void appendName(StringBuilder sbSQL) {
@@ -184,8 +184,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             sb.setLength(sb.length() - 2);
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
-
-        sbSQL.append(GO);
     }
 
     @Override
@@ -204,14 +202,8 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        sb.append("ALTER TABLE ");
-        sb.append(getQualifiedName());
-        return sb.toString();
+    public String getAlterTable(boolean only) {
+        return ALTER_TABLE + getQualifiedName();
     }
 
     public String getFileStream() {

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Stores extension information.
@@ -67,7 +69,7 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE EXTENSION ");
         appendIfNotExists(sbSQL);
@@ -78,32 +80,31 @@ public class PgExtension extends PgStatement {
             sbSQL.append(getSchema());
         }
 
-        sbSQL.append(';');
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgExtension newExt = (PgExtension) newCondition;
 
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
             if (!isRelocatable()) {
                 return ObjectState.RECREATE;
             }
-            sb.append("\n\nALTER EXTENSION ")
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER EXTENSION ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(" SET SCHEMA ")
-            .append(newExt.getSchema())
-            .append(';');
+            .append(newExt.getSchema());
+            alterActions.add(sql);
             isNeedDepcies.set(true);
         }
         // TODO ALTER EXTENSION UPDATE TO ?
-        compareComments(sb, newExt);
 
-        return getObjectState(sb, startLength);
+        appendAlterComments(newExt, alterActions);
+
+        return getObjectState(alterActions);
     }
 
     @Override

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PgFtsParser extends PgStatement implements ISearchPath {
 
@@ -50,8 +52,8 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
-        StringBuilder sbSql = new StringBuilder();
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        SQLAction sbSql = new SQLAction();
         sbSql.append("CREATE TEXT SEARCH PARSER ")
         .append(getQualifiedName()).append(" (\n\t")
         .append("START = ").append(startFunction).append(NEW_LINE)
@@ -62,23 +64,21 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
         }
         sbSql.append("LEXTYPES = ").append(lexTypesFunction);
 
-        sbSql.append(" );");
-
-        return sbSql.toString();
+        sbSql.append(" )");
+        createActions.add(sbSql);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
 
         if (!compareUnalterable((PgFtsParser) newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        compareComments(sb, newCondition);
+        appendAlterComments(newCondition, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override

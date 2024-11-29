@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -26,9 +27,10 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
-public final class PgCompositeType extends AbstractType{
+public final class PgCompositeType extends AbstractType {
 
     private static final String COLLATE = " COLLATE ";
 
@@ -53,15 +55,20 @@ public final class PgCompositeType extends AbstractType{
         if (!attrs.isEmpty()) {
             sb.setLength(sb.length() - 1);
         }
-        sb.append("\n);");
+        sb.append("\n)");
+
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
-        super.appendComments(sb);
+    public void appendComments(Collection<SQLAction> sqlActions) {
+        super.appendComments(sqlActions);
+        appendChildrenComments(sqlActions);
+    }
 
+    @Override
+    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (final AbstractColumn column : attrs) {
-            column.appendComments(sb);
+            column.appendComments(sqlActions);
         }
     }
 
@@ -71,8 +78,7 @@ public final class PgCompositeType extends AbstractType{
     }
 
     @Override
-    protected void compareType(AbstractType newType, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
         PgCompositeType newCompositeType = (PgCompositeType) newType;
         StringBuilder attrSb = new StringBuilder();
         for (AbstractColumn attr : newCompositeType.getAttrs()) {
@@ -94,38 +100,28 @@ public final class PgCompositeType extends AbstractType{
         if (attrSb.length() > 0) {
             // remove last comma
             attrSb.setLength(attrSb.length() - 1);
-            sb.append("\n\nALTER TYPE ").append(getQualifiedName())
-            .append(attrSb).append(';');
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER TYPE ").append(getQualifiedName()).append(attrSb);
+            sqlActions.add(sql);
             isNeedDepcies.set(true);
         }
     }
 
     @Override
-    public void compareComments(StringBuilder sb, PgStatement newObj) {
-        super.compareComments(sb, newObj);
-
-        PgCompositeType newType = (PgCompositeType) newObj;
-        for (AbstractColumn newAttr : newType.getAttrs()) {
-            AbstractColumn oldAttr = getAttr(newAttr.getName());
-            if (oldAttr != null) {
-                oldAttr.compareComments(sb, newAttr);
-            } else if (newAttr.checkComments()) {
-                sb.setLength(sb.length() + 1);
-            }
-        }
+    public void appendAlterComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
+        super.appendAlterComments(newObj, sqlActions);
+        appendAlterChildrenComments(newObj, sqlActions);
     }
 
     @Override
-    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
-        super.appendAlterComments(sb, newObj);
-
+    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
         PgCompositeType newType = (PgCompositeType) newObj;
         for (AbstractColumn newAttr : newType.getAttrs()) {
             AbstractColumn oldAttr = getAttr(newAttr.getName());
             if (oldAttr != null) {
-                oldAttr.appendAlterComments(sb, newAttr);
+                oldAttr.appendAlterComments(newAttr, sqlActions);
             } else {
-                newAttr.appendComments(sb);
+                newAttr.appendComments(sqlActions);
             }
         }
     }
@@ -135,7 +131,7 @@ public final class PgCompositeType extends AbstractType{
         attrSb.append("\n\t").append(action).append(" ATTRIBUTE ")
         .append(PgDiffUtils.getQuotedName(attr.getName()))
         .append(delimiter);
-        if (!action.equals("DROP")) {
+        if (!"DROP".equals(action)) {
             attrSb.append(attr.getType());
             if (attr.getCollation() != null) {
                 attrSb.append(COLLATE)

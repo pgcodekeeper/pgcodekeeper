@@ -37,7 +37,6 @@ public class MsProcedure extends AbstractMsFunction {
         sbSQL.append(GO).append('\n');
 
         appendSourceStatement(isCreate, sbSQL);
-        sbSQL.append(GO);
     }
 
     @Override

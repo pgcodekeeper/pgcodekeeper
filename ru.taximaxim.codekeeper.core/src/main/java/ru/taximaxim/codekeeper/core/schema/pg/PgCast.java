@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PgCast extends PgStatement implements ICast {
 
@@ -99,8 +101,8 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        SQLAction sbSQL = new SQLAction();
         sbSQL.append("CREATE CAST ").append(getQualifiedName());
 
         switch (method) {
@@ -126,23 +128,20 @@ public class PgCast extends PgStatement implements ICast {
             break;
         }
 
-        sbSQL.append(';');
-
-        return sbSQL.toString();
+        createActions.add(sbSQL);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgCast newCast = (PgCast) newCondition;
 
         if (!compareUnalterable(newCast)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        compareComments(sb, newCast);
-        return getObjectState(sb, startLength);
+        appendAlterComments(newCast, alterActions);
+        return getObjectState(alterActions);
     }
 
     private boolean compareUnalterable(PgCast cast) {

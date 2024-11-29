@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractStatistics;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public final class MsStatistics extends AbstractStatistics {
@@ -43,7 +45,7 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         var sb = new StringBuilder("CREATE STATISTICS ");
         sb.append(name).append(" ON ").append(getParent().getQualifiedName());
         if (!cols.isEmpty()) {
@@ -54,8 +56,7 @@ public final class MsStatistics extends AbstractStatistics {
             sb.append("\nWHERE ").append(filter);
         }
         appendOptions(sb, options);
-        sb.append(getSeparator());
-        return sb.toString();
+        createActions.add(new SQLAction(sb));
     }
 
     private void appendOptions(StringBuilder sb, Map<String, String> options) {
@@ -81,20 +82,21 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         var newStat = (MsStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
             return ObjectState.RECREATE;
         }
-        int startLenght = sb.length();
         if (!Objects.equals(newStat.getOptions(), options)) {
-            sb.append("\n\nUPDATE STATISTICS ")
+            StringBuilder sql = new StringBuilder();
+            sql.append("UPDATE STATISTICS ")
             .append(getParent().getQualifiedName()).append(" (").append(getName()).append(")");
-            appendOptions(sb, newStat.getOptions());
-            sb.append(getSeparator());
+            appendOptions(sql, newStat.getOptions());
+            alterActions.add(new SQLAction(sql));
         }
-        
-        return getObjectState(sb, startLenght);
+
+        return getObjectState(alterActions);
     }
 
     @Override
@@ -117,7 +119,7 @@ public final class MsStatistics extends AbstractStatistics {
         }
         return false;
     }
-    
+
     private boolean compareUnalterable (MsStatistics stat) {
         return Objects.equals(filter, stat.filter)
                 && Objects.equals(cols, stat.cols);

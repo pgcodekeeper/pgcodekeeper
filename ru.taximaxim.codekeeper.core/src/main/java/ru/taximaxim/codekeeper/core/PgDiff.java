@@ -250,23 +250,22 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) throws IOException {
-        PgDiffScript script = new PgDiffScript();
+        PgDiffScript script = new PgDiffScript(arguments.getDbType());
 
         for (String preFilePath : arguments.getPreFilePath()) {
             addPrePostPath(script, preFilePath);
         }
 
         if (arguments.getTimeZone() != null) {
-            script.addStatement("SET TIMEZONE TO "
-                    + PgDiffUtils.quoteString(arguments.getTimeZone()) + ';');
+            script.addStatement("SET TIMEZONE TO " + PgDiffUtils.quoteString(arguments.getTimeZone()));
         }
 
         if (arguments.isDisableCheckFunctionBodies()) {
-            script.addStatement("SET check_function_bodies = false;");
+            script.addStatement("SET check_function_bodies = false");
         }
 
         if (arguments.isAddTransaction()) {
-            script.addStatement("START TRANSACTION;");
+            script.addStatement("START TRANSACTION");
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
@@ -275,12 +274,12 @@ public class PgDiff {
                 additionalDepciesSource, additionalDepciesTarget);
 
         if (!depRes.getActions().isEmpty()) {
-            script.addStatement("SET search_path = pg_catalog;");
+            script.addStatement("SET search_path = pg_catalog");
         }
         new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull)
         .fillScript(selected);
         if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT TRANSACTION;");
+            script.addStatement("COMMIT TRANSACTION");
         }
 
         for (String postFilePath : arguments.getPostFilePath()) {
@@ -320,10 +319,10 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
-        PgDiffScript script = new PgDiffScript();
+        PgDiffScript script = new PgDiffScript(arguments.getDbType());
 
         if (arguments.isAddTransaction()) {
-            script.addStatement("BEGIN TRANSACTION\nGO");
+            script.addStatement("BEGIN TRANSACTION");
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
@@ -334,7 +333,7 @@ public class PgDiff {
                 arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT\nGO");
+            script.addStatement("COMMIT");
         }
 
         return script.getText();
@@ -345,7 +344,7 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
-        PgDiffScript script = new PgDiffScript();
+        PgDiffScript script = new PgDiffScript(arguments.getDbType());
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);

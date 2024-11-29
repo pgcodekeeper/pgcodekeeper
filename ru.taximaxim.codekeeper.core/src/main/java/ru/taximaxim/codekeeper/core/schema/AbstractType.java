@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,22 +28,26 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TYPE ").append(getQualifiedName());
         appendDef(sb);
-        appendOwnerSQL(sb);
-        appendPrivileges(sb);
-
-        return sb.toString();
+        createActions.add(new SQLAction(sb));
+        appendOptions(createActions);
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
     }
+
 
     protected abstract void appendDef(StringBuilder sb);
 
+    protected void appendOptions(Collection<SQLAction> createActions) {
+        // subclasses will override if needed
+    }
+
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         AbstractType newType = (AbstractType) newCondition;
 
         if (isNeedRecreate(newType)) {
@@ -50,14 +55,14 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        compareType(newType, sb, isNeedDepcies);
+        compareType(newType, isNeedDepcies, alterActions);
 
         if (!Objects.equals(getOwner(), newType.getOwner())) {
-            newType.alterOwnerSQL(sb);
+            newType.alterOwnerSQL(alterActions);
         }
-        alterPrivileges(newType, sb);
-        compareComments(sb, newType);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newType, alterActions);
+        appendAlterComments(newType, alterActions);
+        return getObjectState(alterActions);
     }
 
     private final boolean isNeedRecreate(AbstractType newType) {
@@ -66,8 +71,7 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
 
     protected abstract boolean compareUnalterable(AbstractType newType);
 
-    protected void compareType(AbstractType newType, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         // subclasses may override if needed
     }
 

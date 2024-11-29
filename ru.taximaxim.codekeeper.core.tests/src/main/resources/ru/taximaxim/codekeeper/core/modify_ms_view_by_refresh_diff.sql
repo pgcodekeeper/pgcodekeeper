@@ -16,7 +16,7 @@ CREATE TABLE [dbo].[t1](
 )
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v1]' 
+EXEC sys.sp_refreshsqlmodule '[dbo].[v1]'
 GO
 
 -- DEPCY: This VIEW is a dependency of VIEW: [dbo].[v3]
@@ -29,5 +29,5 @@ CREATE VIEW [dbo].[v2] AS
     SELECT * FROM [dbo].[v1]
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v3]' 
+EXEC sys.sp_refreshsqlmodule '[dbo].[v3]'
 GO

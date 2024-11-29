@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.util.Collection;
-
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
@@ -27,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -162,7 +162,8 @@ public final class DiffPaneViewer extends Composite {
             return ((MsAssembly) st).getPreview();
         }
 
-        String result = isFormatted ? st.getFullFormattedSQL() : st.getFullSQL();
+        String sql = PgDiffUtils.getText(st.getFullSQL(), st.getDbType());
+        String result = isFormatted ? st.getFullFormattedSQL() : sql ;
         if (!el.isContainer() || !store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return result;
         }

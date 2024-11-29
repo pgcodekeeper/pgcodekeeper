@@ -50,7 +50,6 @@ public class PgPrivilege implements IHashable {
         this.dbType = dbType;
     }
 
-
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
         sb.append(state).append(' ').append(permission);
@@ -76,26 +75,14 @@ public class PgPrivilege implements IHashable {
         return new PgPrivilege("REVOKE", permission, name, role, isGrantOption, dbType).getCreationSQL();
     }
 
-    public static StringBuilder appendPrivileges(Collection<PgPrivilege> privileges,
-            DatabaseType dbType, StringBuilder sb) {
-        if (privileges.isEmpty()) {
-            return sb;
-        }
-
-        if (sb.length() != 0) {
-            sb.append("\n\n");
-        }
-
+    public static void appendPrivileges(Collection<PgPrivilege> privileges,
+            Collection<SQLAction> sqlActions) {
         for (PgPrivilege priv : privileges) {
-            sb.append(priv.getCreationSQL()).append(dbType != DatabaseType.MS ? ';' : PgStatement.GO).append('\n');
+            sqlActions.add(new SQLAction(priv.getCreationSQL()));
         }
-
-        sb.setLength(sb.length() - 1);
-
-        return sb;
     }
 
-    public static StringBuilder appendDefaultPostgresPrivileges(PgStatement newObj, StringBuilder sb) {
+    public static void appendDefaultPostgresPrivileges(PgStatement newObj, Collection<SQLAction> sqlActions) {
         DbObjType type = newObj.getStatementType();
         boolean isFunctionOrTypeOrDomain = false;
         String typeName;
@@ -126,7 +113,7 @@ public class PgPrivilege implements IHashable {
             typeName = type.name();
             break;
         default:
-            return sb;
+            return;
         }
 
         StringBuilder sbName = new StringBuilder()
@@ -145,21 +132,22 @@ public class PgPrivilege implements IHashable {
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
                 "ALL", name, "PUBLIC", false, DatabaseType.PG);
-        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        sqlActions.add(new SQLAction(priv.getCreationSQL()));
 
         String owner = newObj.getOwner();
         if (owner == null) {
-            return sb;
+            return;
         }
         owner = PgDiffUtils.getQuotedName(owner);
 
-        priv = new PgPrivilege("REVOKE", "ALL", name, owner, false, DatabaseType.PG);
-        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        addDefPostgresPrivileges(sqlActions, "REVOKE", name, owner);
+        addDefPostgresPrivileges(sqlActions, "GRANT", name, owner);
+    }
 
-        priv = new PgPrivilege("GRANT", "ALL", name, owner, false, DatabaseType.PG);
-        sb.append('\n').append(priv.getCreationSQL()).append(';');
-
-        return sb;
+    private static void addDefPostgresPrivileges(Collection<SQLAction> sqlActions, String state,
+            String name, String owner) {
+        PgPrivilege priv = new PgPrivilege(state, "ALL", name, owner, false, DatabaseType.PG);
+        sqlActions.add(new SQLAction(priv.getCreationSQL()));
     }
 
     @Override

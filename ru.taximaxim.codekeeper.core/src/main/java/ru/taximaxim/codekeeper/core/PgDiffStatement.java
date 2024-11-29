@@ -15,8 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core;
 
+import java.util.Collection;
+
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * A diff-script statement.
@@ -29,25 +32,25 @@ class PgDiffStatement {
 
     private final DiffStatementType type;
     private final String objname;
-    private final String statement;
+    private final Collection<SQLAction> statements;
     private final DbObjType statementType;
 
     public enum DiffStatementType {
         DROP, CREATE, OTHER
     }
 
-    public PgDiffStatement(DiffStatementType type, PgStatement obj, String statement) {
-        if (obj == null && type != DiffStatementType.OTHER){
+    public PgDiffStatement(DiffStatementType type, PgStatement obj, Collection<SQLAction> statements) {
+        if (obj == null && type != DiffStatementType.OTHER) {
             throw new IllegalArgumentException("null obj is only permitted when type is OTHER!");
         }
         this.type = type;
         this.objname = (obj == null) ? null : obj.getQualifiedName();
-        this.statement = statement;
+        this.statements = statements;
         this.statementType = (obj == null) ? null : obj.getStatementType();
     }
 
-    public String getStatement() {
-        return statement;
+    public Collection<SQLAction> getStatements() {
+        return statements;
     }
 
     @Override
@@ -58,7 +61,7 @@ class PgDiffStatement {
 
         if (obj instanceof PgDiffStatement st) {
             if (st.type == DiffStatementType.OTHER) {
-                return statement.equals(st.statement);
+                return statements.equals(st.statements);
             }
 
             return type == st.type
@@ -74,7 +77,7 @@ class PgDiffStatement {
         final int prime = 31;
         int result = 1;
         if (type == DiffStatementType.OTHER) {
-            result = prime * result + ((statement == null) ? 0 : statement.hashCode());
+            result = prime * result + ((statements == null) ? 0 : statements.hashCode());
         } else {
             result = prime * result + ((type == null) ? 0 : type.hashCode());
             result = prime * result + ((objname == null) ? 0 : objname.hashCode());

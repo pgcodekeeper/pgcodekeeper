@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer {
 
@@ -45,7 +47,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(IOptionContainer newContainer, Collection<SQLAction> sqlActions) {
         // no impl
     }
 
@@ -63,7 +65,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> sqlActions) {
         sbSQL.append(" (");
         for (AbstractColumn column : columns) {
             sbSQL.append("\n\t").append(column.getName()).append(" ")
@@ -121,13 +123,11 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         if (isWritable && distribution != null) {
             sbSQL.append("\n").append(distribution);
         }
-
-        sbSQL.append(";");
     }
 
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
+    protected void appendAlterOptions(Collection<SQLAction> sqlActions) {
         // no impl
     }
 
@@ -140,7 +140,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
         // untransformable
     }
 
@@ -150,12 +150,8 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        return sb.append("ALTER EXTERNAL TABLE ").append(getQualifiedName()).toString();
+    public String getAlterTable(boolean only) {
+        return "ALTER EXTERNAL TABLE " + getQualifiedName();
     }
 
     @Override

@@ -302,13 +302,13 @@ class ExportTableOrder implements Comparator<PgStatement> {
 
     private int getTableSubelementRank(PgStatement el) {
         return switch (el.getStatementType()) {
-            case INDEX -> 1;
-            case TRIGGER -> 2;
-            case RULE -> 3;
-            case CONSTRAINT -> 4;
-            case POLICY -> 5;
-            case STATISTICS -> 6;
-            default -> 0;
+        case INDEX -> 1;
+        case TRIGGER -> 2;
+        case RULE -> 3;
+        case CONSTRAINT -> 4;
+        case POLICY -> 5;
+        case STATISTICS -> 6;
+        default -> 0;
         };
     }
 

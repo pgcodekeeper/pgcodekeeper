@@ -3,6 +3,7 @@ GO
 
 GRANT UPDATE ON [dbo].[table1] ([c1]) TO [test_user]
 GO
+
 GRANT REFERENCES ON [dbo].[table1] ([c1]) TO [test_user]
 GO
 

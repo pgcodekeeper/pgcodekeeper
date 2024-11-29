@@ -15,12 +15,14 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Typed table object
@@ -39,7 +41,7 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> alterTableActions) {
         sbSQL.append(" OF ").append(ofType);
 
         if (!columns.isEmpty()) {
@@ -47,7 +49,7 @@ public class TypedPgTable extends AbstractRegularTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn((PgColumn) column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, alterTableActions);
             }
 
             if (start != sbSQL.length()) {
@@ -62,22 +64,23 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
+        SQLAction sql = new SQLAction();
         if (newTable instanceof TypedPgTable typedTable) {
             String newType = typedTable.getOfType();
             if (!Objects.equals(ofType, newType)) {
-                sb.append(getAlterTable(true, false))
+                sql.append(getAlterTable(false))
                 .append(" OF ")
-                .append(newType)
-                .append(';');
+                .append(newType);
+                sqlActions.add(sql);
             }
         } else {
-            sb.append(getAlterTable(true, false))
-            .append(" NOT OF")
-            .append(';');
+            sql.append(getAlterTable(false))
+            .append(" NOT OF");
+            sqlActions.add(sql);
 
             if (newTable instanceof AbstractRegularTable regTable) {
-                regTable.convertTable(sb);
+                regTable.convertTable(sqlActions);
             }
         }
     }
@@ -108,8 +111,10 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void convertTable(StringBuilder sb) {
-        sb.append(getAlterTable(true, false))
-        .append(" OF ").append(getOfType()).append(';');
+    protected void convertTable(Collection<SQLAction> sqlActions) {
+        SQLAction sql = new SQLAction();
+        sql.append(getAlterTable(false))
+        .append(" OF ").append(getOfType());
+        sqlActions.add(sql);
     }
 }

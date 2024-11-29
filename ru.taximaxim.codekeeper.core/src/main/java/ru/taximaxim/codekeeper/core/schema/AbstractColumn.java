@@ -101,8 +101,8 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
         getMeta().setLocation(location);
     }
 
-    protected String getAlterTable(boolean nextLine, boolean only) {
-        return ((AbstractTable) getParent()).getAlterTable(nextLine, only);
+    protected String getAlterTable(boolean only) {
+        return ((AbstractTable) getParent()).getAlterTable(only);
     }
 
     @Override

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -32,5 +33,5 @@ public interface IOptionContainer extends IStatement {
 
     void addOption(String key, String value);
     Map<String, String> getOptions();
-    void compareOptions(IOptionContainer newContainer, StringBuilder sb);
+    void compareOptions(IOptionContainer newContainer, Collection<SQLAction> alterActions);
 }

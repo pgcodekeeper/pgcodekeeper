@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 
 public class MsTrigger extends AbstractTrigger implements SourceStatement {
@@ -40,30 +42,25 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getTriggerFullSQL(true));
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        addTriggerFullSQL(createActions, true);
 
         if (isDisable()) {
+            StringBuilder sb = new StringBuilder();
             sb.append("\nDISABLE TRIGGER ");
             appendName(sb);
-            sb.append(GO);
+            createActions.add(new SQLAction(sb));
         }
-
-        return sb.toString();
     }
 
-    private String getTriggerFullSQL(boolean isCreate) {
+    private void addTriggerFullSQL(Collection<SQLAction> createActions, boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-
         appendSourceStatement(isCreate, sbSQL);
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
     }
 
     @Override
@@ -77,28 +74,28 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsTrigger newTrigger = (MsTrigger) newCondition;
-        final int startLength = sb.length();
 
         if (isAnsiNulls() != newTrigger.isAnsiNulls()
                 || isQuotedIdentified() != newTrigger.isQuotedIdentified()
                 || !Objects.equals(getFirstPart(), newTrigger.getFirstPart())
                 || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
-            sb.append(newTrigger.getTriggerFullSQL(false));
+            newTrigger.addTriggerFullSQL(alterActions, false);
             isNeedDepcies.set(true);
         }
 
         if (isDisable() != newTrigger.isDisable()) {
-            sb.append('\n');
-            sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
-            sb.append(" TRIGGER ");
-            appendName(sb);
-            sb.append(GO);
+            StringBuilder sbSQL = new StringBuilder();
+            sbSQL.append('\n');
+            sbSQL.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
+            sbSQL.append(" TRIGGER ");
+            appendName(sbSQL);
+            alterActions.add(new SQLAction(sbSQL));
         }
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override

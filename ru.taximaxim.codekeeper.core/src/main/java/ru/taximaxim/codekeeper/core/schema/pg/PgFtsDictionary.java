@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -29,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class PgFtsDictionary extends PgStatement
 implements ISimpleOptionContainer, ISearchPath {
@@ -51,24 +53,21 @@ implements ISimpleOptionContainer, ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
         .append(getQualifiedName());
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
 
         options.forEach((k,v) -> sbSql.append(",\n\t").append(k).append(" = ").append(v));
-        sbSql.append(" );");
-
-        appendOwnerSQL(sbSql);
-
-        return sbSql.toString();
+        sbSql.append(" )");
+        createActions.add(new SQLAction(sbSql));
+        appendOwnerSQL(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
 
         if (!newDictionary.getTemplate().equals(template)) {
@@ -76,29 +75,30 @@ implements ISimpleOptionContainer, ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newDictionary, sb);
-        compareComments(sb, newDictionary);
+        compareOptions(newDictionary, alterActions);
+        appendAlterComments(newDictionary, alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override
     public void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
-            StringBuilder resetOptions, StringBuilder sb) {
-        sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
-        sb.append(getQualifiedName());
-        sb.append("\n\t(");
+            StringBuilder resetOptions, Collection<SQLAction> sqlActions) {
+        SQLAction action = new SQLAction();
+        action.append("ALTER TEXT SEARCH DICTIONARY ");
+        action.append(getQualifiedName());
+        action.append("\n\t(");
 
         if (setOptions.length() > 0) {
-            sb.append(setOptions);
+            action.append(setOptions);
         }
 
         if (resetOptions.length() > 0) {
-            sb.append(resetOptions);
+            action.append(resetOptions);
         }
-
-        sb.setLength(sb.length() - 2);
-        sb.append(");");
+        action.reduce(2);
+        action.append(")");
+        sqlActions.add(action);
     }
 
     public void setTemplate(final String template) {

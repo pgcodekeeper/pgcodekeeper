@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class ChUser extends PgStatement {
 
@@ -65,7 +66,7 @@ public class ChUser extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE USER ");
         appendIfNotExists(sbSQL);
@@ -87,9 +88,8 @@ public class ChUser extends PgStatement {
         //append grantees's names
         appendRoles(grantees, exGrantees, "GRANTEES ", "ANY", true, sbSQL);
 
-        sbSQL.append(";");
-        appendPrivileges(sbSQL);
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
+        appendPrivileges(createActions);
     }
 
     private void appendRoles(Collection<String> roles, Collection<String> excepts, String prefix, String allText,
@@ -110,9 +110,8 @@ public class ChUser extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         ChUser newUser = (ChUser) newCondition;
 
         StringBuilder sbSql = new StringBuilder();
@@ -129,16 +128,20 @@ public class ChUser extends PgStatement {
         }
 
         if (sbSql.length() > 0) {
-            sb.append("ALTER USER ").append(getQualifiedName()).append(sbSql).append(";");
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER USER ").append(getQualifiedName()).append(sbSql);
+            alterActions.add(sql);
         }
 
         if (!Objects.equals(storageType, newUser.getStorageType())) {
-            sb.append(DELIM).append("MOVE ROLE ")
+            SQLAction sql = new SQLAction();
+            sql.append("MOVE ROLE ")
             .append(getQualifiedName()).append(" TO ")
-            .append(newUser.getStorageType()).append(";");
+            .append(newUser.getStorageType());
+            alterActions.add(sql);
         }
-        alterPrivileges(newCondition, sb);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newCondition, alterActions);
+        return getObjectState(alterActions);
     }
 
     private void compareHosts(List<String> oldHosts, List<String> newHosts, StringBuilder sb) {

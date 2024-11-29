@@ -20,7 +20,6 @@ package ru.taximaxim.codekeeper.core.schema;
  * separated in two parts by CREATE ZZZZ schema.name
  */
 public interface SourceStatement extends ISearchPath {
-
     String getFirstPart();
     void setFirstPart(String firstPart);
     String getSecondPart();

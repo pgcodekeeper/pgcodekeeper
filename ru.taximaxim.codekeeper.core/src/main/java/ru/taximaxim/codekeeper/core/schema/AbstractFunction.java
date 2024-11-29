@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,13 +57,12 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     }
 
     @Override
-    public final String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         appendFunctionFullSQL(sbSQL, true);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
     }
 
     @Override
@@ -71,9 +71,9 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+
         AbstractFunction newFunction = (AbstractFunction) newCondition;
 
         if (!compareUnalterable(newFunction)) {
@@ -85,17 +85,18 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
             if (getDbType() == DatabaseType.MS) {
                 isNeedDepcies.set(true);
             }
-
-            newFunction.appendFunctionFullSQL(sb, false);
+            StringBuilder sbSQL = new StringBuilder();
+            newFunction.appendFunctionFullSQL(sbSQL, false);
+            alterActions.add(new SQLAction(sbSQL));
         }
 
         if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            newFunction.alterOwnerSQL(sb);
+            newFunction.alterOwnerSQL(alterActions);
         }
 
-        alterPrivileges(newFunction, sb);
-        compareComments(sb, newFunction);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newFunction, alterActions);
+        appendAlterComments(newFunction, alterActions);
+        return getObjectState(alterActions);
     }
 
     protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate);

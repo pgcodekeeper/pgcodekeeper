@@ -85,7 +85,7 @@ GO
 DROP TABLE [dbo].[tbl_randomly_generated_part]
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v]' 
+EXEC sys.sp_refreshsqlmodule '[dbo].[v]'
 GO
 
 ALTER TABLE [dbo].[tbl]

@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.PgDiffStatement.DiffStatementType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 /**
  * Contains list of SQL statements.<br>
@@ -39,8 +41,18 @@ public class PgDiffScript {
     // also String caches hashcodes, so that's a minor performance plus
     private final Set<PgDiffStatement> unique = new HashSet<>();
 
+    private final DatabaseType dbType;
+
+    public PgDiffScript(DatabaseType dbType) {
+        this.dbType = dbType;
+    }
+
     public void addStatement(String statement) {
-        PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, statement.trim());
+        addStatement(List.of(new SQLAction(statement)));
+    }
+
+    public void addStatement(Collection<SQLAction> sqlActions) {
+        PgDiffStatement st = new PgDiffStatement(DiffStatementType.OTHER, null, sqlActions);
         if (statements.isEmpty()) {
             statements.add(st);
             return;
@@ -52,27 +64,25 @@ public class PgDiffScript {
         }
     }
 
-    public void addDrop(PgStatement obj, String comment, String statement) {
-        addStatementUnique(DiffStatementType.DROP, obj, comment, statement, false);
+    public void addDrop(PgStatement obj, String comment, Collection<SQLAction> sqlActions) {
+        addStatementUnique(DiffStatementType.DROP, obj, comment, sqlActions, false);
     }
 
-    public void addCreate(PgStatement obj, String comment, String statement,
-            boolean replaceExisting) {
-        addStatementUnique(DiffStatementType.CREATE, obj, comment, statement,
-                replaceExisting);
+    public void addCreate(PgStatement obj, String comment, Collection<SQLAction> sqlActions, boolean replaceExisting) {
+        addStatementUnique(DiffStatementType.CREATE, obj, comment, sqlActions, replaceExisting);
     }
 
     /**
      * Adds statement only if it's not present in the statements list.
      */
     private void addStatementUnique(DiffStatementType type, PgStatement obj,
-            String comment, String statement, boolean replaceExisting) {
+            String comment, Collection<SQLAction> sqlActions, boolean replaceExisting) {
         if (type != DiffStatementType.DROP && type != DiffStatementType.CREATE) {
             throw new IllegalArgumentException(
                     "Only DROPs and CREATEs can be tracked as unique statements!");
         }
 
-        PgDiffStatement st = new PgDiffStatement(type, obj, statement);
+        PgDiffStatement st = new PgDiffStatement(type, obj, sqlActions);
         if (!unique.contains(st)) {
             if (comment != null){
                 addStatement(comment);
@@ -86,8 +96,9 @@ public class PgDiffScript {
 
     public String getText() {
         return statements.stream()
-                .map(st -> st.getStatement().trim())
-                .filter(st -> !st.isBlank()) // sequence and comments change may be empty
+                .flatMap(t -> t.getStatements().stream())
+                .sorted((e1, e2) -> e1.getType().compareTo(e2.getType()))
+                .map(el -> el.getSQL(dbType))
                 .collect(Collectors.joining("\n\n"));
     }
 }

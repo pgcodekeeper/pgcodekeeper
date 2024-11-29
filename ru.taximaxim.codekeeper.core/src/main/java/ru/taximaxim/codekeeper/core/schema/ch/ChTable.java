@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -31,6 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class ChTable extends AbstractTable {
 
@@ -66,7 +68,7 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         var sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         appendIfNotExists(sb);
@@ -90,14 +92,12 @@ public class ChTable extends AbstractTable {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(';');
-
-        return sb.toString();
+        createActions.add(new SQLAction(sb));
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         ChTable newTable = (ChTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -105,13 +105,13 @@ public class ChTable extends AbstractTable {
             return ObjectState.RECREATE;
         }
 
-        comparePojections(sb, newTable.getProjections());
-        engine.appendAlterSQL(sb, newTable.getEngine(), getAlterTable(true, false));
-        compareComment(sb, newTable.getComment());
-        return getObjectState(sb, startLength);
+        compareProjections(newTable.getProjections(), alterActions);
+        engine.appendAlterSQL(newTable.getEngine(), getAlterTable(false), alterActions);
+        compareComment(newTable.getComment(), alterActions);
+        return getObjectState(alterActions);
     }
 
-    private void comparePojections(StringBuilder sb, Map<String, String> newProjections) {
+    private void compareProjections(Map<String, String> newProjections, Collection<SQLAction> sqlActions) {
         if (Objects.equals(projections, newProjections)) {
             return;
         }
@@ -136,43 +136,42 @@ public class ChTable extends AbstractTable {
             }
         }
 
-        appendAlterProjections(sb, toDrops, toAdds);
+        appendAlterProjections(toDrops, toAdds, sqlActions);
     }
 
-    private void appendAlterProjections(StringBuilder sb, Set<String> toDrops, Map<String, String> toAdds) {
+    private void appendAlterProjections(Set<String> toDrops, Map<String, String> toAdds,
+            Collection<SQLAction> sqlActions) {
         for (String toDrop : toDrops) {
-            sb.append(getAlterTable(true, false)).append("\n\tDROP PROJECTION IF EXISTS ").append(toDrop)
-            .append(getSeparator());
+            SQLAction sql = new SQLAction();
+            sql.append(getAlterTable(false)).append("\n\tDROP PROJECTION IF EXISTS ").append(toDrop);
+            sqlActions.add(sql);
         }
         for (Entry<String, String> toAdd : toAdds.entrySet()) {
-            sb.append(getAlterTable(true, false)).append("\n\tADD PROJECTION ");
+            StringBuilder sb = new StringBuilder();
+            sb.append(getAlterTable(false)).append("\n\tADD PROJECTION ");
             appendIfNotExists(sb);
-            sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue()).append(getSeparator());
+            sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue());
+            sqlActions.add(new SQLAction(sb));
         }
     }
 
-    private void compareComment(StringBuilder sb, String newComment) {
+    private void compareComment(String newComment, Collection<SQLAction> sqlActions) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
-        sb.append(getAlterTable(true, false)).append("\n\tMODIFY COMMENT ");
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false)).append("\n\tMODIFY COMMENT ");
         if (newComment == null) {
             sb.append("''");
         } else {
             sb.append(newComment);
         }
-        sb.append(getSeparator());
+        sqlActions.add(new SQLAction(sb));
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        sb.append("ALTER TABLE ");
-        sb.append(getQualifiedName());
-        return sb.toString();
+    public String getAlterTable(boolean only) {
+        return ALTER_TABLE + getQualifiedName();
     }
 
     @Override
@@ -199,11 +198,7 @@ public class ChTable extends AbstractTable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChTable)) {
-            return false;
-        }
-        var table = (ChTable) obj;
-        return super.compare(table)
+        return obj instanceof ChTable table && super.compare(table)
                 && Objects.equals(projections, table.projections)
                 && Objects.equals(engine, table.getEngine());
     }
@@ -217,17 +212,17 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(Collection<SQLAction> sqlActions) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
         // no impl
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(IOptionContainer newContainer, Collection<SQLAction> alterActions) {
         // no impl
     }
 }

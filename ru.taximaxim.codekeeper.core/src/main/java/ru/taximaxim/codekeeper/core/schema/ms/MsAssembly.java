@@ -16,18 +16,23 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class MsAssembly extends PgStatement {
 
@@ -52,64 +57,64 @@ public class MsAssembly extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
-        return getAssemblyFullSQL(false);
+    public void getCreationSQL(Collection<SQLAction> createActions) {
+        getAssemblyFullSQL(false, createActions);
     }
 
     /**
      * Returns assembly definition without full binaries
      */
     public String getPreview() {
-        return getAssemblyFullSQL(true);
+        Set<SQLAction> sqlActions = new LinkedHashSet<>();
+        getAssemblyFullSQL(true, sqlActions);
+        return PgDiffUtils.getText(sqlActions, getDbType());
     }
 
-    private String getAssemblyFullSQL(boolean isPreview) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
+    private void getAssemblyFullSQL(boolean isPreview, Collection<SQLAction> sqlActions) {
+        SQLAction sql = new SQLAction();
+
+        sql.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
         if (owner != null) {
-            sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
+            sql.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
 
-        sb.append("\nFROM ");
+        sql.append("\nFROM ");
         String bin = String.join(",\n", binaries);
 
         if (isPreview && bin.length() > PREVIEW_LENGTH) {
-            sb.append(bin.substring(0, PREVIEW_LENGTH)).append("\n<... PREVIEW TRIMMED>");
+            sql.append(bin.substring(0, PREVIEW_LENGTH)).append("\n<... PREVIEW TRIMMED>");
         } else {
-            sb.append(bin);
+            sql.append(bin);
         }
 
-        sb.append("\nWITH PERMISSION_SET = ").append(permission);
-        sb.append(GO);
-
+        sql.append("\nWITH PERMISSION_SET = ").append(permission);
+        sqlActions.add(sql);
         if (!isVisible) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH VISIBILITY = OFF").append(GO);
+            SQLAction sqlVisible = new SQLAction();
+            sqlVisible.append("ALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
+            .append(" WITH VISIBILITY = OFF");
+            sqlActions.add(sqlVisible);
         }
 
-        appendPrivileges(sb);
-
-        return sb.toString();
+        appendPrivileges(sqlActions);
     }
 
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP ASSEMBLY ");
         if (optionExists) {
             dropSb.append(IF_EXISTS);
         }
         dropSb.append(MsDiffUtils.quoteName(name))
-        .append(" WITH NO DEPENDENTS")
-        .append(GO);
-        return dropSb.toString();
+        .append(" WITH NO DEPENDENTS");
+        dropActions.add(new SQLAction(dropSb));
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsAssembly newAss = (MsAssembly) newCondition;
 
         // https://docs.microsoft.com/ru-ru/sql/t-sql/statements/alter-assembly-transact-sql?view=sql-server-2016
@@ -120,20 +125,24 @@ public class MsAssembly extends PgStatement {
         }
 
         if (!Objects.equals(getOwner(), newAss.getOwner())) {
-            newAss.alterOwnerSQL(sb);
+            newAss.alterOwnerSQL(alterActions);
         }
 
         if (newAss.isVisible() != isVisible()) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH VISIBILITY = ").append(newAss.isVisible() ? "ON" : "OFF").append(GO);
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
+            .append(" WITH VISIBILITY = ").append(newAss.isVisible() ? "ON" : "OFF");
+            alterActions.add(sql);
         }
 
         if (!Objects.equals(newAss.getPermission(), getPermission())) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH PERMISSION_SET = ").append(newAss.getPermission()).append(GO);
+            StringBuilder sb = new StringBuilder();
+            sb.append("ALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
+            .append(" WITH PERMISSION_SET = ").append(newAss.getPermission());
+            alterActions.add(new SQLAction(sb));
         }
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
     @Override

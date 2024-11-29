@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -24,6 +25,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class MsSequence extends AbstractSequence {
 
@@ -35,7 +37,7 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
@@ -43,12 +45,9 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("\n\tAS ").append(getDataType());
 
         fillSequenceBody(sbSQL);
-        sbSQL.append(GO);
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
+        appendOwnerSQL(createActions);
+        appendPrivileges(createActions);
     }
 
 
@@ -83,9 +82,8 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsSequence newSequence = (MsSequence) newCondition;
 
         if (!newSequence.getDataType().equals(getDataType())) {
@@ -95,15 +93,17 @@ public class MsSequence extends AbstractSequence {
 
         StringBuilder sbSQL = new StringBuilder();
         if (compareSequenceBody(newSequence, sbSQL)) {
-            sb.append("\n\nALTER SEQUENCE " + getQualifiedName() + sbSQL.toString() + GO);
+            SQLAction sql = new SQLAction();
+            sql.append("ALTER SEQUENCE " + getQualifiedName() + sbSQL.toString());
+            alterActions.add(sql);
         }
 
         if (!Objects.equals(getOwner(), newSequence.getOwner())) {
-            newSequence.alterOwnerSQL(sb);
+            newSequence.alterOwnerSQL(alterActions);
         }
 
-        alterPrivileges(newSequence, sb);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newSequence, alterActions);
+        return getObjectState(alterActions);
     }
 
     private boolean compareSequenceBody(MsSequence newSequence, StringBuilder sbSQL) {

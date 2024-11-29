@@ -16,14 +16,16 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.text.MessageFormat;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public interface PgForeignOptionContainer extends IOptionContainer {
 
-    static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
+    static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3})";
     static final String DELIM = ",\n    ";
 
     String getAlterHeader();
@@ -44,7 +46,7 @@ public interface PgForeignOptionContainer extends IOptionContainer {
     }
 
     @Override
-    default void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    default void compareOptions(IOptionContainer newContainer, Collection<SQLAction> alterActions) {
         Map <String, String> oldForeignOptions = getOptions();
         Map <String, String> newForeignOptions = newContainer.getOptions();
         if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
@@ -52,19 +54,25 @@ public interface PgForeignOptionContainer extends IOptionContainer {
                 String newValue = newForeignOptions.get(key);
                 if (newValue != null) {
                     if (!value.equals(newValue)) {
-                        sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
+                        SQLAction sql = new SQLAction();
+                        sql.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
                                 getAlterHeader(), "SET", key, newValue));
+                        alterActions.add(sql);
                     }
                 } else {
-                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
+                    SQLAction sql = new SQLAction();
+                    sql.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
                             getAlterHeader(), "DROP", key, ""));
+                    alterActions.add(sql);
                 }
             });
 
             newForeignOptions.forEach((key, value) -> {
                 if (!oldForeignOptions.containsKey(key)) {
-                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
+                    SQLAction sql = new SQLAction();
+                    sql.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
                             getAlterHeader(), "ADD", key, value));
+                    alterActions.add(sql);
                 }
             });
         }

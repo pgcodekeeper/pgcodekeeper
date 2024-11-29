@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class ChFunction extends PgStatement implements IFunction {
 
@@ -67,15 +69,12 @@ public class ChFunction extends PgStatement implements IFunction {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CREATE FUNCTION ")
-        .append(ChDiffUtils.getQuotedName(getName())).append(" AS ");
+        sb.append("CREATE FUNCTION ").append(ChDiffUtils.getQuotedName(getName())).append(" AS ");
         fillArgs(sb);
-        sb.append(" -> ")
-        .append(body)
-        .append(";");
-        return sb.toString();
+        sb.append(" -> ").append(body);
+        createActions.add(new SQLAction(sb));
     }
 
     private void fillArgs(StringBuilder sb) {
@@ -91,7 +90,7 @@ public class ChFunction extends PgStatement implements IFunction {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         var newFunction = (ChFunction) newCondition;
         if (!compareUnalterable(newFunction)) {
             isNeedDepcies.set(true);
@@ -126,12 +125,8 @@ public class ChFunction extends PgStatement implements IFunction {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChFunction)) {
-            return false;
-        }
 
-        var func = (ChFunction) obj;
-        return super.compare(func)
+        return obj instanceof ChFunction func && super.compare(func)
                 && compareUnalterable(func);
     }
 

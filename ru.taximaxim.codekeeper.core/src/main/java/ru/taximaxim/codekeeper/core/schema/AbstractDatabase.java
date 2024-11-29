@@ -197,24 +197,22 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     }
 
     @Override
-    public String getCreationSQL() {
-        return null;
+    public void getCreationSQL(Collection<SQLAction> createActions) {
     }
 
     @Override
-    public String getFullSQL() {
-        return null;
+    public Set<SQLAction> getFullSQL() {
+        return Collections.emptySet();
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> createActions) {
         return ObjectState.NOTHING;
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
+    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
     }
 
     @Override

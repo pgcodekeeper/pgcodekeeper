@@ -149,7 +149,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             sbSQL.append("AS ");
         }
         sbSQL.append(getBody());
-        sbSQL.append(';');
     }
 
     /**

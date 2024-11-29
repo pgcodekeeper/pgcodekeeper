@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,6 +26,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public final class ChRole extends PgStatement {
 
@@ -37,7 +39,7 @@ public final class ChRole extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         appendIfNotExists(sbSQL);
@@ -45,23 +47,24 @@ public final class ChRole extends PgStatement {
         if (!DEF_STORAGE.equals(storageType)) {
             sbSQL.append("\n\tIN ").append(storageType);
         }
-        sbSQL.append(";");
-        appendPrivileges(sbSQL);
-        return sbSQL.toString();
+        createActions.add(new SQLAction(sbSQL));
+        appendPrivileges(createActions);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         ChRole newRole = (ChRole) newCondition;
-        final int startLength = sb.length();
 
         if (!Objects.equals(storageType, newRole.getStorageType())) {
-            sb.append("MOVE ROLE ")
+            SQLAction sql = new SQLAction();
+            sql.append("MOVE ROLE ")
             .append(getQualifiedName()).append(" TO ")
-            .append(newRole.getStorageType()).append(";");
+            .append(newRole.getStorageType());
+            alterActions.add(sql);
         }
-        alterPrivileges(newCondition, sb);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newCondition, alterActions);
+        return getObjectState(alterActions);
     }
 
     @Override

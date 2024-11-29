@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -27,6 +28,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.SQLAction;
 
 public class ChView extends AbstractView {
 
@@ -154,7 +156,7 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(Collection<SQLAction> createActions) {
         StringBuilder sb = new StringBuilder(getQuery().length() * 2);
         sb.append("CREATE ").append(type.getSql()).append(" ");
         appendIfNotExists(sb);
@@ -192,8 +194,8 @@ public class ChView extends AbstractView {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(";");
-        return sb.toString();
+
+        createActions.add(new SQLAction(sb));
     }
 
     private void appendColumns(StringBuilder sb) {
@@ -210,8 +212,8 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition,
+            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         ChView newView = (ChView) newCondition;
 
         if (getViewType() != newView.getViewType() || isViewModified(newView)
@@ -220,20 +222,21 @@ public class ChView extends AbstractView {
             return ObjectState.RECREATE;
         }
 
-        compareSqlSecurity(sb, newView);
-        compareSql(sb, newView.getNormalizedQuery());
-        compareComment(sb, newView.getComment());
+        compareSqlSecurity(newView, alterActions);
+        compareSql(newView.getNormalizedQuery(), alterActions);
+        compareComment(newView.getComment(), alterActions);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(alterActions);
     }
 
-    private void compareSqlSecurity(StringBuilder sb, ChView newView) {
+    private void compareSqlSecurity(ChView newView, Collection<SQLAction> sqlActions) {
         if (Objects.equals(getSqlSecurity(), newView.getSqlSecurity())
                 && Objects.equals(getDefiner(), newView.getDefiner())) {
             return;
         }
 
-        sb.append("ALTER TABLE ").append(getQualifiedName()).append("\n\t(MODIFY SQL SECURITY ");
+        StringBuilder sb = new StringBuilder();
+        sb.append(ALTER_TABLE).append(getQualifiedName()).append("\n\t(MODIFY SQL SECURITY ");
         if (newView.getSqlSecurity() != null) {
             sb.append(newView.getSqlSecurity());
         } else if (getViewType() == ChViewType.MATERIALIZED) {
@@ -247,28 +250,33 @@ public class ChView extends AbstractView {
         } else {
             sb.append("CURRENT_USER");
         }
-        sb.append(");");
+        sb.append(")");
+        sqlActions.add(new SQLAction(sb));
     }
 
-    private void compareSql(StringBuilder sb, String newNormalizedSql) {
+    private void compareSql(String newNormalizedSql, Collection<SQLAction> sqlActions) {
         if (normalizedQuery.equals(newNormalizedSql)) {
             return;
         }
-        sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY QUERY ").append(newNormalizedSql)
-        .append(getSeparator());
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(ALTER_TABLE).append(getQualifiedName()).append("\n\tMODIFY QUERY ").append(newNormalizedSql);
+        sqlActions.add(new SQLAction(sb));
     }
 
-    private void compareComment(StringBuilder sb, String newComment) {
+    private void compareComment(String newComment, Collection<SQLAction> sqlActions) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
-        sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY COMMENT ");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(ALTER_TABLE).append(getQualifiedName()).append("\n\tMODIFY COMMENT ");
         if (newComment == null) {
             sb.append("''");
         } else {
             sb.append(newComment);
         }
-        sb.append(getSeparator());
+        sqlActions.add(new SQLAction(sb));
     }
 
     /**
@@ -335,12 +343,12 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(Collection<SQLAction> sqlActions) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
         // no impl
     }
 }
