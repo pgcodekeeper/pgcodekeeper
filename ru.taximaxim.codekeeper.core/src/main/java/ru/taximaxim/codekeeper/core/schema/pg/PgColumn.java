@@ -174,6 +174,8 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
         compareStats(null, getStatistics(), createActions);
         compareIdentity(null, getIdentityType(), null, getSequence(), createActions);
+
+        appendComments(createActions);
     }
 
     private void appendCompressOptions(StringBuilder sb) {

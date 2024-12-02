@@ -26,6 +26,12 @@ CREATE DOMAIN public.dom5 AS integer NOT NULL
 	CONSTRAINT dom5_check1 CHECK ((VALUE <> (-1)))
 	CONSTRAINT dom5_check2 CHECK ((VALUE <> 1));
 
+COMMENT ON CONSTRAINT dom5_check ON DOMAIN public.dom5 IS 'test domain constraint';
+
+COMMENT ON CONSTRAINT dom5_check1 ON DOMAIN public.dom5 IS 'test domain constraint 2';
+
+COMMENT ON DOMAIN public.dom5 IS 'test domain';
+
 ALTER DOMAIN public.dom5 OWNER TO botov_av;
 
 CREATE DOMAIN public.dom6 AS text COLLATE pg_catalog."ru_RU.utf8"

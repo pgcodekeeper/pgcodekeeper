@@ -55,6 +55,7 @@ public class PgIndex extends AbstractIndex {
     @Override
     public void getCreationSQL(Collection<SQLAction> createActions) {
         getCreationSQL(createActions, getName());
+        appendComments(createActions);
     }
 
     private void getCreationSQL(Collection<SQLAction> createActions, String name) {

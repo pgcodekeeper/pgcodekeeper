@@ -121,6 +121,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
         createActions.add(new SQLAction(sbSQL));
 
         appendOwnerSQL(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -133,9 +134,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(getOwner(), newCollation.getOwner())) {
-            newCollation.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newCollation, alterActions);
         appendAlterComments(newCollation, alterActions);
 
         return getObjectState(alterActions);

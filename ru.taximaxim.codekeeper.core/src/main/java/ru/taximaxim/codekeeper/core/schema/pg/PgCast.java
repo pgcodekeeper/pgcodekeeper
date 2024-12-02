@@ -129,6 +129,8 @@ public class PgCast extends PgStatement implements ICast {
         }
 
         createActions.add(sbSQL);
+
+        appendComments(createActions);
     }
 
     @Override

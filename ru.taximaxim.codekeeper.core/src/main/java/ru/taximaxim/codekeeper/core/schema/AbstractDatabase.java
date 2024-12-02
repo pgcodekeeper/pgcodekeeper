@@ -198,11 +198,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     @Override
     public void getCreationSQL(Collection<SQLAction> createActions) {
-    }
-
-    @Override
-    public Set<SQLAction> getFullSQL() {
-        return Collections.emptySet();
+        // no action
     }
 
     @Override

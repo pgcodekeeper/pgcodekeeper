@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.ui.comparetools;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Objects;
-import java.util.Set;
 
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareEditorInput;
@@ -28,7 +27,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class CompareInput extends CompareEditorInput {
@@ -68,25 +66,18 @@ public class CompareInput extends CompareEditorInput {
     }
 
     private DiffNode getFormattedContents(String oldPath, String newPath, PgStatement project, PgStatement remote) {
-        String contentsLeft = project == null ? "" : project.getFullFormattedSQL(); //$NON-NLS-1$
-        String contentsRight = remote == null ? "" : remote.getFullFormattedSQL(); //$NON-NLS-1$
+        String contentsLeft = project == null ? "" : project.getSQL(true); //$NON-NLS-1$
+        String contentsRight = remote == null ? "" : remote.getSQL(true); //$NON-NLS-1$
 
         if (Objects.equals(contentsLeft, contentsRight)) {
-
-            left = new CompareItem(oldPath, project == null ? "" : getScript(project.getFullSQL())); //$NON-NLS-1$
-            right =  new CompareItem(newPath, remote == null ? "" :  getScript(remote.getFullSQL())); //$NON-NLS-1$
+            left = new CompareItem(oldPath, project == null ? "" : project.getSQL(false)); //$NON-NLS-1$
+            right = new CompareItem(newPath, remote == null ? "" : remote.getSQL(false)); //$NON-NLS-1$
         } else {
             left = new CompareItem(oldPath, contentsLeft);
             right =  new CompareItem(newPath, contentsRight);
         }
 
         return new DiffNode(left, right);
-    }
-
-    private String getScript(Set<SQLAction> sqlActions) {
-        StringBuilder sb = new StringBuilder();
-        sqlActions.forEach(sb::append);
-        return sb.toString();
     }
 
     @Override

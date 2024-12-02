@@ -124,6 +124,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
 
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -155,13 +156,8 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             alterActions.add(sql);
         }
 
-        if (!Objects.equals(newForeign.getOptions(), getOptions())) {
-            compareOptions(newForeign, alterActions);
-        }
-
-        if (!Objects.equals(newForeign.getOwner(), getOwner())) {
-            newForeign.appendOwnerSQL(alterActions);
-        }
+        compareOptions(newForeign, alterActions);
+        appendAlterOwner(newForeign, alterActions);
         alterPrivileges(newCondition, alterActions);
         appendAlterComments(newForeign, alterActions);
 

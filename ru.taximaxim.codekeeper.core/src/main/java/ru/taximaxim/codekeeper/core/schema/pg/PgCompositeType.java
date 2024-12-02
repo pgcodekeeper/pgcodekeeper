@@ -65,8 +65,7 @@ public final class PgCompositeType extends AbstractType {
         appendChildrenComments(sqlActions);
     }
 
-    @Override
-    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
+    private void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (final AbstractColumn column : attrs) {
             column.appendComments(sqlActions);
         }
@@ -113,8 +112,7 @@ public final class PgCompositeType extends AbstractType {
         appendAlterChildrenComments(newObj, sqlActions);
     }
 
-    @Override
-    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
+    private void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
         PgCompositeType newType = (PgCompositeType) newObj;
         for (AbstractColumn newAttr : newType.getAttrs()) {
             AbstractColumn oldAttr = getAttr(newAttr.getName());

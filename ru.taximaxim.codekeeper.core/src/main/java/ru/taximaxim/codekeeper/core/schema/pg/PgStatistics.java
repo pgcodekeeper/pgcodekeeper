@@ -66,6 +66,7 @@ public class PgStatistics extends AbstractStatistics {
         }
 
         appendOwnerSQL(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -82,9 +83,7 @@ public class PgStatistics extends AbstractStatistics {
             alterActions.add(appendStatistics(newStat));
         }
 
-        if (!Objects.equals(getOwner(), newStat.getOwner())) {
-            newStat.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newStat, alterActions);
         appendAlterComments(newStat, alterActions);
 
         return getObjectState(alterActions);

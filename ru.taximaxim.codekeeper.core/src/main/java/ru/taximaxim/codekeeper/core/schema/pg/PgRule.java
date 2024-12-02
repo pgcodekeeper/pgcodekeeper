@@ -137,6 +137,7 @@ public class PgRule extends PgStatement implements ISearchPath {
         if (enabledState != null) {
             addAlterTable(enabledState, this, createActions);
         }
+        appendComments(createActions);
     }
 
     @Override

@@ -141,6 +141,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
             sql.append(defaultValue.getValue());
             createActions.add(sql);
         }
+        appendComments(createActions);
     }
 
     @Override
@@ -149,8 +150,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
         appendChildrenComments(sqlActions);
     }
 
-    @Override
-    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
+    private void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (final Entry<String, String> columnComment : columnComments.entrySet()) {
             StringBuilder sql = new StringBuilder();
             sql.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
@@ -210,10 +210,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
 
         alterDefaultValues(newView, alterActions);
 
-        if (!Objects.equals(getOwner(), newView.getOwner())) {
-            newView.alterOwnerSQL(alterActions);
-        }
-
+        appendAlterOwner(newView, alterActions);
         alterPrivileges(newView, alterActions);
         compareOptions(newView, alterActions);
         appendAlterComments(newView, alterActions);
@@ -228,8 +225,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
         appendAlterChildrenComments(newObj, sqlActions);
     }
 
-    @Override
-    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
+    private void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
         PgView newView = (PgView) newObj;
         for (final Entry<String, String> newColumnComment : newView.columnComments.entrySet()) {
             String newColumn = newColumnComment.getKey();
@@ -274,7 +270,7 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
 
             String oldValue = defaultValues.get(newColumn);
             if (!Objects.equals(oldValue, newValue)) {
-                SQLAction sql = addAlterTable(newColumn, " SET", sqlActions).append(' ').append(newValue);
+                SQLAction sql = addAlterTable(newColumn, " SET").append(' ').append(newValue);
                 sqlActions.add(sql);
             }
         }
@@ -283,12 +279,12 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
             String oldColumn = columnComment.getKey();
 
             if (!newView.defaultValues.containsKey(oldColumn)) {
-                sqlActions.add(addAlterTable(oldColumn, " DROP", sqlActions));
+                sqlActions.add(addAlterTable(oldColumn, " DROP"));
             }
         }
     }
 
-    private SQLAction addAlterTable(String column, String state, Collection<SQLAction> sqlActions) {
+    private SQLAction addAlterTable(String column, String state) {
         SQLAction sql = new SQLAction();
         return sql.append(ALTER_TABLE).append(getQualifiedName())
                 .append(ALTER_COLUMN)

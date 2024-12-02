@@ -19,6 +19,7 @@ import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.SQLAction;
@@ -49,6 +50,11 @@ public interface PgForeignOptionContainer extends IOptionContainer {
     default void compareOptions(IOptionContainer newContainer, Collection<SQLAction> alterActions) {
         Map <String, String> oldForeignOptions = getOptions();
         Map <String, String> newForeignOptions = newContainer.getOptions();
+
+        if (Objects.equals(oldForeignOptions, newForeignOptions)) {
+            return;
+        }
+
         if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
             oldForeignOptions.forEach((key, value) -> {
                 String newValue = newForeignOptions.get(key);

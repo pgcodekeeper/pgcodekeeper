@@ -42,6 +42,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.core.schema.SQLAction.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * The superclass for general pgsql statement.
@@ -234,14 +235,14 @@ public abstract class PgStatement implements IStatement, IHashable {
         sqlActions.add(new SQLAction(sb, getCommentsOrder()));
     }
 
-    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
-    }
-
-    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
-    }
-
     protected SQLActionType getCommentsOrder() {
-        return getDatabaseArguments().isCommentsToEnd() ? SQLActionType.COMMENT : SQLActionType.MID;
+        return getDatabaseArguments().isCommentsToEnd() ? SQLActionType.POST : SQLActionType.MID;
+    }
+
+    protected void appendAlterOwner(PgStatement newObj, Collection<SQLAction> sqlActions) {
+        if (!Objects.equals(getOwner(), newObj.getOwner())) {
+            newObj.alterOwnerSQL(sqlActions);
+        }
     }
 
     public Set<PgPrivilege> getPrivileges() {
@@ -346,7 +347,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         resetHash();
     }
 
-    public void alterOwnerSQL(Collection<SQLAction> sqlActions) {
+    private void alterOwnerSQL(Collection<SQLAction> sqlActions) {
         if (getDbType() == DatabaseType.MS && owner == null) {
             StringBuilder sb = new StringBuilder();
             sb.append("ALTER AUTHORIZATION ON ");
@@ -403,26 +404,18 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public abstract void getCreationSQL(Collection<SQLAction> createActions);
 
-    public Set<SQLAction> getFullSQL() {
+    public String getSQL(boolean isFormatted) {
         Set<SQLAction> createActions = new LinkedHashSet<>();
         getCreationSQL(createActions);
-        appendComments(createActions);
-        return createActions;
-    }
-
-    public String getFullFormattedSQL() {
-        Set<SQLAction> createActions = getFullSQL();
-        return formatSQL(PgDiffUtils.getText(createActions, getDbType()));
-    }
-
-    private String formatSQL(String sql) {
+        String sql = SQLScript.getText(createActions, getDbType());
         PgDiffArguments args = getDatabaseArguments();
-        if (!args.isAutoFormatObjectCode()) {
+        if (!isFormatted || !args.isAutoFormatObjectCode()) {
             return sql;
         }
         FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), getDbType());
         return fileForm.formatText();
     }
+
 
     public void getDropSQL(Collection<SQLAction> dropActions) {
         getDropSQL(dropActions, getDatabaseArguments().isGenerateExists());

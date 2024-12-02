@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -64,15 +63,13 @@ public class PgSchema extends AbstractSchema {
 
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition,
             AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
-        if (!Objects.equals(getOwner(), newCondition.getOwner())) {
-            newCondition.alterOwnerSQL(alterActions);
-        }
-
+        appendAlterOwner(newCondition, alterActions);
         alterPrivileges(newCondition, alterActions);
         appendAlterComments(newCondition, alterActions);
 
@@ -191,15 +188,15 @@ public class PgSchema extends AbstractSchema {
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         return switch (type) {
-            case DOMAIN -> getDomain(name);
-            case FTS_PARSER -> getFtsParser(name);
-            case FTS_TEMPLATE -> getFtsTemplate(name);
-            case FTS_DICTIONARY -> getFtsDictionary(name);
-            case FTS_CONFIGURATION -> getFtsConfiguration(name);
-            case OPERATOR -> getOperator(name);
-            case COLLATION -> getCollation(name);
-            case STATISTICS -> getStatistics(name);
-            default -> super.getChild(name, type);
+        case DOMAIN -> getDomain(name);
+        case FTS_PARSER -> getFtsParser(name);
+        case FTS_TEMPLATE -> getFtsTemplate(name);
+        case FTS_DICTIONARY -> getFtsDictionary(name);
+        case FTS_CONFIGURATION -> getFtsConfiguration(name);
+        case OPERATOR -> getOperator(name);
+        case COLLATION -> getCollation(name);
+        case STATISTICS -> getStatistics(name);
+        default -> super.getChild(name, type);
         };
     }
 

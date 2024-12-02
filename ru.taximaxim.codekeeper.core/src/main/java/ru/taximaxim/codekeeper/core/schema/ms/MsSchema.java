@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -50,9 +49,7 @@ public class MsSchema extends AbstractSchema {
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition,
             AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
-        if (!Objects.equals(getOwner(), newCondition.getOwner())) {
-            newCondition.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newCondition, alterActions);
         alterPrivileges(newCondition, alterActions);
         return getObjectState(alterActions);
     }

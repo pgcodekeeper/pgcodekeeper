@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -125,12 +124,6 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         }
 
         return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
-    }
-
-    protected void compareOwners(AbstractTable newTable, Collection<SQLAction> sqlActions) {
-        if (!Objects.equals(owner, newTable.getOwner())) {
-            newTable.alterOwnerSQL(sqlActions);
-        }
     }
 
     protected void appendColumnsPriliges(Collection<SQLAction> createActions) {

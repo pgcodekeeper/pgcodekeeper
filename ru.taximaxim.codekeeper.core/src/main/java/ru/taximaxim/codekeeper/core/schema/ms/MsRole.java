@@ -79,9 +79,7 @@ public class MsRole extends PgStatement {
             AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
         MsRole newRole = (MsRole) newCondition;
 
-        if (!Objects.equals(getOwner(), newRole.getOwner())) {
-            newRole.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newRole, alterActions);
 
         if (!Objects.equals(members, newRole.members)) {
             for (String newMember : newRole.members) {
