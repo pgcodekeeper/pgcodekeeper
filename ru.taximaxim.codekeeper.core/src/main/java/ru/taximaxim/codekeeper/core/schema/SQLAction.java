@@ -27,7 +27,7 @@ public class SQLAction {
     private final SQLActionType type;
 
     public enum SQLActionType {
-        BEGIN, MID, END, COMMENT
+        PRE, BEGIN, MID, END, POST
     }
 
     public SQLAction() {

@@ -137,6 +137,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
 
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -172,13 +173,17 @@ public class PgDomain extends PgStatement implements ISearchPath {
             alterActions.add(sql);
         }
 
+        appendAlterOwner(newDomain, alterActions);
+        alterPrivileges(newDomain, alterActions);
+        appendAlterComments(newDomain, alterActions);
+
         AtomicBoolean needDepcyConstr = new AtomicBoolean();
         for (AbstractConstraint oldConstr : getConstraints()) {
             AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
                 oldConstr.getDropSQL(alterActions);
             } else {
-                ((PgConstraint) oldConstr).appendAlterSQL(newConstr, needDepcyConstr, alterActions, false);
+                ((PgConstraint) oldConstr).appendAlterSQL(newConstr, needDepcyConstr, alterActions);
             }
         }
         for (AbstractConstraint newConstr : newDomain.getConstraints()) {
@@ -187,12 +192,6 @@ public class PgDomain extends PgStatement implements ISearchPath {
             }
         }
 
-        if (!Objects.equals(getOwner(), newDomain.getOwner())) {
-            newDomain.appendOwnerSQL(alterActions);
-        }
-        alterPrivileges(newDomain, alterActions);
-
-        appendAlterComments(newDomain, alterActions);
         return getObjectState(alterActions);
     }
 
@@ -202,30 +201,9 @@ public class PgDomain extends PgStatement implements ISearchPath {
         appendChildrenComments(sqlActions);
     }
 
-    @Override
-    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
+    private void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (AbstractConstraint c : constraints) {
             c.appendComments(sqlActions);
-        }
-    }
-
-    @Override
-    public void appendAlterComments(PgStatement newObj, Collection<SQLAction> alterActions) {
-        PgDomain newDomain = (PgDomain) newObj;
-        super.appendAlterComments(newDomain, alterActions);
-        appendAlterChildrenComments(newObj, alterActions);
-    }
-
-    @Override
-    protected void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> alterActions) {
-        PgDomain newDomain = (PgDomain) newObj;
-        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
-            AbstractConstraint oldConstr = getConstraint(newConstr.getName());
-            if (oldConstr != null) {
-                oldConstr.appendAlterComments(newConstr, alterActions);
-            } else {
-                newConstr.appendComments(alterActions);
-            }
         }
     }
 

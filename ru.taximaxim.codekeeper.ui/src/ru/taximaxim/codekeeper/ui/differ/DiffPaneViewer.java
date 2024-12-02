@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.differ;
 
 import java.util.Collection;
+
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
@@ -26,7 +27,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -162,15 +162,13 @@ public final class DiffPaneViewer extends Composite {
             return ((MsAssembly) st).getPreview();
         }
 
-        String sql = PgDiffUtils.getText(st.getFullSQL(), st.getDbType());
-        String result = isFormatted ? st.getFullFormattedSQL() : sql ;
+        String sql = st.getSQL(isFormatted);
         if (!el.isContainer() || !store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
-            return result;
+            return sql;
         }
 
-        StringBuilder sb = new StringBuilder(result);
-        st.getChildren().forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL)
-                .append(isFormatted ? c.getFullFormattedSQL() : c.getFullSQL()));
+        StringBuilder sb = new StringBuilder(sql);
+        st.getChildren().forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL).append(c.getSQL(isFormatted)));
         return sb.toString();
     }
 }

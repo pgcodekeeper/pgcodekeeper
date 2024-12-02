@@ -236,7 +236,9 @@ public class ActionsToScriptConverter {
                 addToDropScript(obj, true);
             }
 
-            script.addCreate(obj, null, obj.getFullSQL(), true);
+            Set<SQLAction> createActions = new LinkedHashSet<>();
+            obj.getCreationSQL(createActions);
+            script.addCreate(obj, null, createActions, true);
 
             if (arguments.isDataMovementMode()
                     && obj.getTwin(oldDbFull) != null
@@ -345,7 +347,11 @@ public class ActionsToScriptConverter {
         List<PartitionPgTable> tables = partitionTables.get(obj.getQualifiedName());
         if (tables != null) {
             // print create for partition tables
-            tables.forEach(table -> script.addCreate(table, null, table.getFullSQL(), true));
+            for (PartitionPgTable table : tables) {
+                Set<SQLAction> createActions = new LinkedHashSet<>();
+                table.getCreationSQL(createActions);
+                script.addCreate(table, null, createActions, true);
+            }
         }
         // print insert for parent table
         addCommandsForMoveData((AbstractTable) obj);

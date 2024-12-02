@@ -177,6 +177,7 @@ public class PgTrigger extends AbstractTrigger {
         if (enabledState != null) {
             addAlterTable(enabledState, this, createActions);
         }
+        appendComments(createActions);
     }
 
     @Override

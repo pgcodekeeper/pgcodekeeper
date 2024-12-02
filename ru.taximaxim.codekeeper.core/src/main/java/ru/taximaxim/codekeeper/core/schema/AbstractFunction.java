@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -63,6 +62,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
         createActions.add(new SQLAction(sbSQL));
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -90,10 +90,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
             alterActions.add(new SQLAction(sbSQL));
         }
 
-        if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            newFunction.alterOwnerSQL(alterActions);
-        }
-
+        appendAlterOwner(newFunction, alterActions);
         alterPrivileges(newFunction, alterActions);
         appendAlterComments(newFunction, alterActions);
         return getObjectState(alterActions);

@@ -81,6 +81,7 @@ public class PgExtension extends PgStatement {
         }
 
         createActions.add(new SQLAction(sbSQL));
+        appendComments(createActions);
     }
 
     @Override

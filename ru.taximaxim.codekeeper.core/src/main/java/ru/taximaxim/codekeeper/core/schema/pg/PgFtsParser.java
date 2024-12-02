@@ -66,6 +66,7 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
 
         sbSql.append(" )");
         createActions.add(sbSql);
+        appendComments(createActions);
     }
 
     @Override

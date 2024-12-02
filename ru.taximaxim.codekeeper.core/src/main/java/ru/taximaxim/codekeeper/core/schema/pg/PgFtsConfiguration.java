@@ -73,6 +73,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
         });
 
         appendOwnerSQL(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -87,9 +88,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
 
         compareOptions(newConf, alterActions);
 
-        if (!Objects.equals(getOwner(), newConf.getOwner())) {
-            newConf.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newConf, alterActions);
         appendAlterComments(newConf, alterActions);
 
         return getObjectState(alterActions);

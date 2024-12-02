@@ -83,9 +83,7 @@ public class MsView extends AbstractView implements SourceStatement {
             isNeedDepcies.set(true);
         }
 
-        if (!Objects.equals(getOwner(), newView.getOwner())) {
-            newView.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newView, alterActions);
         alterPrivileges(newView, alterActions);
 
         return getObjectState(alterActions);

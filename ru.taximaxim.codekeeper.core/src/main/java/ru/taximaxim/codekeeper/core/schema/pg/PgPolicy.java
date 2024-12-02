@@ -72,6 +72,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
             sbSQL.append("\n  WITH CHECK ").append(check);
         }
         createActions.add(new SQLAction(sbSQL));
+        appendComments(createActions);
     }
 
     @Override

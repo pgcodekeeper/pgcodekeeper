@@ -66,6 +66,7 @@ public class PgSequence extends AbstractSequence {
         getOwnedBySQL(createActions);
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -135,9 +136,7 @@ public class PgSequence extends AbstractSequence {
             alterActions.add(sql);
         }
 
-        if (!Objects.equals(getOwner(), newSequence.getOwner())) {
-            newSequence.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newSequence, alterActions);
 
         if (isLogged != newSequence.isLogged) {
             SQLAction sql = new SQLAction();

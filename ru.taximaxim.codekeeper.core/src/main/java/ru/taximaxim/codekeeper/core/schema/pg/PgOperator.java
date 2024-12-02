@@ -114,6 +114,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     public String getSignature() {
@@ -178,9 +179,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
             alterActions.add(sql);
         }
 
-        if (!Objects.equals(getOwner(), newOperator.getOwner())) {
-            newOperator.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newOperator, alterActions);
         appendAlterComments(newOperator, alterActions);
 
         return getObjectState(alterActions);

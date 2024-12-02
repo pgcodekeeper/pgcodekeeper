@@ -63,6 +63,7 @@ implements ISimpleOptionContainer, ISearchPath {
         sbSql.append(" )");
         createActions.add(new SQLAction(sbSql));
         appendOwnerSQL(createActions);
+        appendComments(createActions);
     }
 
     @Override

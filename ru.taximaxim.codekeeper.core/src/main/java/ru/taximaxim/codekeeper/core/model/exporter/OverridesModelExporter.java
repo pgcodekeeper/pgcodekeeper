@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -41,6 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class OverridesModelExporter extends ModelExporter {
 
@@ -109,6 +109,6 @@ public class OverridesModelExporter extends ModelExporter {
                 PgPrivilege.appendPrivileges(col.getPrivileges(), sqlActions);
             }
         }
-        return PgDiffUtils.getText(sqlActions, st.getDbType());
+        return SQLScript.getText(sqlActions, st.getDbType());
     }
 }

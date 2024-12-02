@@ -58,6 +58,7 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
         sbSql.append("LEXIZE = ").append(lexizeFunction).append(" )");
         createActions.add(sbSql);
+        appendComments(createActions);
     }
 
     @Override

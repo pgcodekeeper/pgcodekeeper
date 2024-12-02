@@ -5,6 +5,8 @@ CREATE STATISTICS public.s1 ON a, b FROM public.t1;
 
 CREATE STATISTICS public.s2 ON a, b FROM public.t1;
 
+COMMENT ON STATISTICS public.s2 IS 'Улучшает оценку числа строк для планировщика';
+
 CREATE STATISTICS public.s4 ON a, b FROM public.t1;
 
 ALTER STATISTICS public.s4 SET STATISTICS 1024;

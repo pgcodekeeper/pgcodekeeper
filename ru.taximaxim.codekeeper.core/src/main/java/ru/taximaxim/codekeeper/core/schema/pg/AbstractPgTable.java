@@ -78,6 +78,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendPrivileges(createActions);
         appendColumnsPriliges(createActions);
         appendColumnsStatistics(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -86,8 +87,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendChildrenComments(sqlActions);
     }
 
-    @Override
-    protected void appendChildrenComments(Collection<SQLAction> sqlActions) {
+    private void appendChildrenComments(Collection<SQLAction> sqlActions) {
         for (final AbstractColumn column : getColumns()) {
             column.appendComments(sqlActions);
         }
@@ -194,7 +194,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         compareTableTypes(newTable, alterActions);
         compareInherits(newTable, alterActions);
         compareOptions(newTable, alterActions);
-        compareOwners(newTable, alterActions);
+        appendAlterOwner(newTable, alterActions);
         compareTableOptions(newTable, alterActions);
         alterPrivileges(newTable, alterActions);
         appendAlterComments(newTable, alterActions);

@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Collection;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -36,6 +35,7 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
         appendOptions(createActions);
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
 
@@ -56,10 +56,7 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
         }
 
         compareType(newType, isNeedDepcies, alterActions);
-
-        if (!Objects.equals(getOwner(), newType.getOwner())) {
-            newType.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newType, alterActions);
         alterPrivileges(newType, alterActions);
         appendAlterComments(newType, alterActions);
         return getObjectState(alterActions);

@@ -63,6 +63,7 @@ public class PgEventTrigger extends PgStatement {
             createActions.add(sql);
         }
         appendOwnerSQL(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -82,9 +83,8 @@ public class PgEventTrigger extends PgStatement {
             .append(" ").append(newEventTrigger.getMode());
             alterActions.add(sql);
         }
-        if (!Objects.equals(getOwner(), newEventTrigger.getOwner())) {
-            newEventTrigger.appendOwnerSQL(alterActions);
-        }
+
+        appendAlterOwner(newEventTrigger, alterActions);
         appendAlterComments(newEventTrigger, alterActions);
         return getObjectState(alterActions);
     }

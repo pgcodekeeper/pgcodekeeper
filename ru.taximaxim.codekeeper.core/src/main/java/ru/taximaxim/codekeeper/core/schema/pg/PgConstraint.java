@@ -101,6 +101,7 @@ public abstract class PgConstraint extends AbstractConstraint {
             sbSQL.setLength(sbSQL.length() - 1);
             createActions.add(new SQLAction(sbSQL));
         }
+        appendComments(createActions);
     }
 
     protected boolean isGenerateNotValid() {
@@ -133,11 +134,6 @@ public abstract class PgConstraint extends AbstractConstraint {
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition,
             AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
-        return appendAlterSQL(newCondition, isNeedDepcies, alterActions, true);
-    }
-
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions, boolean isNeedComments) {
         PgConstraint newConstr = (PgConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
@@ -153,9 +149,7 @@ public abstract class PgConstraint extends AbstractConstraint {
         }
 
         compareExtraOptions(newConstr, alterActions);
-        if (isNeedComments) {
-            appendAlterComments(newConstr, alterActions);
-        }
+        appendAlterComments(newConstr, alterActions);
         return getObjectState(alterActions);
     }
 

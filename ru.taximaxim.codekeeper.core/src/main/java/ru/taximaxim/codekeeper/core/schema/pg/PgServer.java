@@ -136,6 +136,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
         createActions.add(new SQLAction(sb));
         appendOwnerSQL(createActions);
         appendPrivileges(createActions);
+        appendComments(createActions);
     }
 
     @Override
@@ -155,13 +156,8 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
             alterActions.add(sql);
         }
 
-        if (!Objects.equals(newServer.getOptions(), getOptions())) {
-            compareOptions(newServer, alterActions);
-        }
-
-        if (!Objects.equals(newServer.getOwner(), getOwner())) {
-            newServer.appendOwnerSQL(alterActions);
-        }
+        compareOptions(newServer, alterActions);
+        appendAlterOwner(newServer, alterActions);
         alterPrivileges(newCondition, alterActions);
         appendAlterComments(newServer, alterActions);
 

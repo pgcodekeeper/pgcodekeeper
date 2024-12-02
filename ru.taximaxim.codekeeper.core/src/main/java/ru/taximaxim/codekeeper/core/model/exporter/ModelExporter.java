@@ -236,7 +236,7 @@ public class ModelExporter {
     }
 
     protected String getDumpSql(PgStatement statement) {
-        return statement.getFullFormattedSQL();
+        return statement.getSQL(true);
     }
 
     /**

@@ -90,7 +90,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         }
 
         compareOptions(newTable, alterActions);
-        compareOwners(newTable, alterActions);
+        appendAlterOwner(newTable, alterActions);
         alterPrivileges(newTable, alterActions);
 
         return getObjectState(alterActions);

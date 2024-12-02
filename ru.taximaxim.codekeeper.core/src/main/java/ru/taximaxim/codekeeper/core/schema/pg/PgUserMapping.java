@@ -120,9 +120,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(newUsm.getOptions(), getOptions())) {
-            compareOptions(newUsm, alterActions);
-        }
+        compareOptions(newUsm, alterActions);
         return getObjectState(alterActions);
     }
 

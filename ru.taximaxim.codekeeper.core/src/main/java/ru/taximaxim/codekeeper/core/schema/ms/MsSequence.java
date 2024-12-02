@@ -98,10 +98,7 @@ public class MsSequence extends AbstractSequence {
             alterActions.add(sql);
         }
 
-        if (!Objects.equals(getOwner(), newSequence.getOwner())) {
-            newSequence.alterOwnerSQL(alterActions);
-        }
-
+        appendAlterOwner(newSequence, alterActions);
         alterPrivileges(newSequence, alterActions);
         return getObjectState(alterActions);
     }

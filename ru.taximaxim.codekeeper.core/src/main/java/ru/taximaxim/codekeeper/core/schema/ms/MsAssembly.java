@@ -26,13 +26,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsAssembly extends PgStatement {
 
@@ -67,7 +67,7 @@ public class MsAssembly extends PgStatement {
     public String getPreview() {
         Set<SQLAction> sqlActions = new LinkedHashSet<>();
         getAssemblyFullSQL(true, sqlActions);
-        return PgDiffUtils.getText(sqlActions, getDbType());
+        return SQLScript.getText(sqlActions, getDbType());
     }
 
     private void getAssemblyFullSQL(boolean isPreview, Collection<SQLAction> sqlActions) {
@@ -124,9 +124,7 @@ public class MsAssembly extends PgStatement {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(getOwner(), newAss.getOwner())) {
-            newAss.alterOwnerSQL(alterActions);
-        }
+        appendAlterOwner(newAss, alterActions);
 
         if (newAss.isVisible() != isVisible()) {
             SQLAction sql = new SQLAction();
