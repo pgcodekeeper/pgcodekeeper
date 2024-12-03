@@ -29,8 +29,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
-import ru.taximaxim.codekeeper.core.schema.SQLAction.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
 
 /**
  * Stores sequence information.

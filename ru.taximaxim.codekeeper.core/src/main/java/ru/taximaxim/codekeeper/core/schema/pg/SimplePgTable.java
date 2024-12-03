@@ -19,7 +19,7 @@ import java.util.Collection;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 /**
  * Simple table object

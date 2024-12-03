@@ -25,7 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public final class PgEnumType extends AbstractType{
 

@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public class ChView extends AbstractView {
 

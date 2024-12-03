@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 /**
  * Stores database information.

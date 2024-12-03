@@ -32,9 +32,9 @@ import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public final class MsConstraintPk extends MsConstraint
 implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {

@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public class PgPrivilege implements IHashable {
 

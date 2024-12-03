@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class ChDictionary extends PgStatement implements IRelation {

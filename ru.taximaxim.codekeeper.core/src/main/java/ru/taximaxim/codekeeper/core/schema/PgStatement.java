@@ -41,7 +41,8 @@ import ru.taximaxim.codekeeper.core.hashers.ShaHasher;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
-import ru.taximaxim.codekeeper.core.schema.SQLAction.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
@@ -89,29 +90,11 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public boolean isOwned() {
-        switch (getStatementType()) {
-        case FOREIGN_DATA_WRAPPER:
-        case SERVER:
-        case EVENT_TRIGGER:
-        case FTS_CONFIGURATION:
-        case FTS_DICTIONARY:
-        case TABLE:
-        case VIEW:
-        case SCHEMA:
-        case FUNCTION:
-        case OPERATOR:
-        case PROCEDURE:
-        case AGGREGATE:
-        case SEQUENCE:
-        case COLLATION:
-        case TYPE:
-        case DOMAIN:
-        case ASSEMBLY:
-        case STATISTICS:
-            return true;
-        default :
-            return false;
-        }
+        return switch (getStatementType()) {
+            case FOREIGN_DATA_WRAPPER, SERVER, EVENT_TRIGGER, FTS_CONFIGURATION, FTS_DICTIONARY, TABLE, VIEW, SCHEMA, 
+            FUNCTION, OPERATOR, PROCEDURE, AGGREGATE, SEQUENCE, COLLATION, TYPE, DOMAIN, ASSEMBLY, STATISTICS -> true;
+            default -> false;
+        };
     }
 
     /**

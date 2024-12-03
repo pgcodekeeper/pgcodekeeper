@@ -23,8 +23,6 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
-import ru.taximaxim.codekeeper.core.schema.SQLAction.SQLActionType;
 
 public class SQLScript {
 

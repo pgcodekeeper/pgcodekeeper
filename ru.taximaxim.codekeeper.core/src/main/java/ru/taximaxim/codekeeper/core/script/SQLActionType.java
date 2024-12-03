@@ -13,27 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.schema;
+package ru.taximaxim.codekeeper.core.script;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import ru.taximaxim.codekeeper.core.script.SQLAction;
-
-public interface IOptionContainer extends IStatement {
-
-    List<String> GP_OPTION_LIST = List.of(
-            "appendonly",
-            "appendoptimized",
-            "blocksize",
-            "orientation",
-            "checksum",
-            "compresstype",
-            "compresslevel",
-            "analyze_hll_non_part_table");
-
-    void addOption(String key, String value);
-    Map<String, String> getOptions();
-    void compareOptions(IOptionContainer newContainer, Collection<SQLAction> alterActions);
+public enum SQLActionType {
+    PRE, BEGIN, MID, END, POST
 }

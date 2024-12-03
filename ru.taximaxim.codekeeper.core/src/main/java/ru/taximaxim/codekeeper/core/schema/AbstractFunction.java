@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public abstract class AbstractFunction extends PgStatement implements IFunction, ISearchPath {
 

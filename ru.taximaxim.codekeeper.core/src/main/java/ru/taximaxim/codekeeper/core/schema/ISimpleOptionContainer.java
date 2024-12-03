@@ -20,6 +20,7 @@ import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public interface ISimpleOptionContainer extends IOptionContainer {
 

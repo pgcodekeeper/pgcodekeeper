@@ -46,7 +46,6 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
@@ -55,6 +54,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 /*
  * implementation notes:

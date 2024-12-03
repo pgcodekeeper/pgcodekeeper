@@ -25,8 +25,8 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public class MsTrigger extends AbstractTrigger implements SourceStatement {
 

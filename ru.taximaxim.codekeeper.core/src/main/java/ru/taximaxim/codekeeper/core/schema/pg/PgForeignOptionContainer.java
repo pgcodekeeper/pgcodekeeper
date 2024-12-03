@@ -22,7 +22,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public interface PgForeignOptionContainer extends IOptionContainer {
 
