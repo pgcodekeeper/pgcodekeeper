@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed error with triggers on partition tables.
+
 ### Removed
 
 ## [10.4.0] - 2024-11-27
