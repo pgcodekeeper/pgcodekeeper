@@ -2,7 +2,7 @@ SET TIMEZONE TO 'UTC';
 
 SET search_path = pg_catalog;
 
--- DEPCY: This SCHEMA is a dependency of VIEW: public.v1
+-- DEPCY: This SCHEMA newschema is a dependency of VIEW: public.v1
 
 CREATE SCHEMA newschema;
 

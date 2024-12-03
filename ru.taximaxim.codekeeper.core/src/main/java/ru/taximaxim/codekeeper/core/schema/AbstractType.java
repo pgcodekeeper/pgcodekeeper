@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public abstract class AbstractType extends PgStatement implements ISearchPath {
 

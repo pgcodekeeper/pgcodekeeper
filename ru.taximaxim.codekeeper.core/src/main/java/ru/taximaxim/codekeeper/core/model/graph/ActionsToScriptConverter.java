@@ -50,7 +50,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.SQLAction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractForeignTable;
@@ -60,6 +59,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
+import ru.taximaxim.codekeeper.core.script.SQLAction;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ActionsToScriptConverter {
@@ -83,6 +83,8 @@ public class ActionsToScriptConverter {
 
     private final Map<ActionContainer, List<ActionContainer>> joinableTableActions = new HashMap<>();
     private final Set<ActionContainer> toSkip = new HashSet<>();
+    private final Set<PgStatement> droppedObjects = new HashSet<>();
+
     /**
      * renamed table qualified names and their temporary (simple) names
      */
@@ -291,6 +293,10 @@ public class ActionsToScriptConverter {
     }
 
     private void addToDropScript(PgStatement obj, boolean isExist) {
+        // check "drop before create"
+        if (!droppedObjects.add(obj.getTwin(oldDbFull))) {
+            return;
+        }
         Set<SQLAction> dropActions = new LinkedHashSet<>();
         obj.getDropSQL(dropActions, isExist);
         dropActions.forEach(script::addStatement);

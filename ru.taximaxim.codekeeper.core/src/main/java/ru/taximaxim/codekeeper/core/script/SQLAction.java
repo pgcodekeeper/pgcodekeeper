@@ -13,17 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-
-package ru.taximaxim.codekeeper.core.schema;
+package ru.taximaxim.codekeeper.core.script;
 
 public class SQLAction {
 
     private final StringBuilder command;
     private final SQLActionType type;
-
-    public enum SQLActionType {
-        PRE, BEGIN, MID, END, POST
-    }
 
     public SQLAction() {
         this(new StringBuilder());
