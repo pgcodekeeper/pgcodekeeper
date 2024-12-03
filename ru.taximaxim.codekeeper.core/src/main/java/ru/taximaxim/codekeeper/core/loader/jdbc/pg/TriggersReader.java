@@ -225,5 +225,9 @@ public class TriggersReader extends JdbcReader {
             .column("res.tgoldtable")
             .column("res.tgnewtable");
         }
+
+        if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
+            builder.where("res.tgparentid = 0");
+        }
     }
 }
