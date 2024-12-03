@@ -22,7 +22,7 @@ CREATE TYPE public.typ_composite AS (
 CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
 	CONSTRAINT dom_check CHECK ((VALUE <> 0));
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: public.test.id
+-- DEPCY: This SEQUENCE test_id_seq is a dependency of COLUMN: public.test.id
 
 CREATE SEQUENCE public.test_id_seq
 	START WITH 1

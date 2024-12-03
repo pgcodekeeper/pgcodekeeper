@@ -5,7 +5,7 @@ CREATE DOMAIN public.dom2 AS integer
 
 ALTER DOMAIN public.dom2 OWNER TO botov_av;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.c1
+-- DEPCY: This VIEW v1 depends on the COLUMN: public.t1.c1
 
 DROP VIEW public.v1;
 

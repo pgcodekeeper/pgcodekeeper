@@ -1,24 +1,24 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the TABLE: public.emp
+-- DEPCY: This VIEW emp_view depends on the TABLE: public.emp
 
 DROP VIEW public.emp_view;
 
--- DEPCY: This RULE depends on the TABLE: public.emp
+-- DEPCY: This RULE notify_me depends on the TABLE: public.emp
 
 DROP RULE notify_me ON public.emp;
 
--- DEPCY: This TRIGGER depends on the TABLE: public.emp
+-- DEPCY: This TRIGGER emp_stamp depends on the TABLE: public.emp
 
 DROP TRIGGER emp_stamp ON public.emp;
 
--- DEPCY: This INDEX depends on the TABLE: public.emp
+-- DEPCY: This INDEX name_ind depends on the TABLE: public.emp
 
 DROP INDEX public.name_ind;
 
 DROP TABLE public.emp;
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: test.emp.id
+-- DEPCY: This SEQUENCE emp_id_seq is a dependency of COLUMN: test.emp.id
 
 CREATE SEQUENCE test.emp_id_seq
 	START WITH 1
@@ -29,7 +29,7 @@ CREATE SEQUENCE test.emp_id_seq
 
 ALTER SEQUENCE test.emp_id_seq OWNER TO galiev_mr;
 
--- DEPCY: This TYPE is a dependency of COLUMN: test.emp.code
+-- DEPCY: This TYPE user_code is a dependency of COLUMN: test.emp.code
 
 CREATE TYPE test.user_code AS (
 	f1 integer,
@@ -60,7 +60,7 @@ CREATE VIEW test.emp_view AS
 
 ALTER VIEW test.emp_view OWNER TO galiev_mr;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: test.emp.emp_stamp
+-- DEPCY: This FUNCTION emp_stamp is a dependency of TRIGGER: test.emp.emp_stamp
 
 CREATE OR REPLACE FUNCTION test.emp_stamp() RETURNS trigger
     LANGUAGE plpgsql

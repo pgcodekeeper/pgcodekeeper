@@ -1,12 +1,12 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION depends on the FUNCTION: tester.f1(text)
+-- DEPCY: This FUNCTION f2 depends on the FUNCTION: tester.f1(text)
 
 DROP FUNCTION public.f2(j text);
 
 DROP FUNCTION tester.f1(j text);
 
--- DEPCY: This FUNCTION is a dependency of FUNCTION: public.f2(text)
+-- DEPCY: This FUNCTION f1 is a dependency of FUNCTION: public.f2(text)
 
 CREATE OR REPLACE FUNCTION tester.f1(k text) RETURNS text
     LANGUAGE sql

@@ -1,4 +1,4 @@
--- DEPCY: This PROCEDURE is a dependency of FUNCTION: [dbo].[f2]
+-- DEPCY: This PROCEDURE p1 is a dependency of FUNCTION: [dbo].[f2]
 
 SET QUOTED_IDENTIFIER ON
 GO

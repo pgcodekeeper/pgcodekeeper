@@ -16,12 +16,7 @@
 
 package ru.taximaxim.codekeeper.core.schema;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.localizations.Messages;
-
 public class SQLAction {
-
-    public static final String GO = "\nGO";
 
     private final StringBuilder command;
     private final SQLActionType type;
@@ -76,21 +71,5 @@ public class SQLAction {
     @Override
     public String toString() {
         return command.toString();
-    }
-
-    public String getSQL(DatabaseType type) {
-        String result = command.toString();
-        if (result.startsWith("--") || result.endsWith("*/") || result.endsWith("GO\n")) {
-            return result;
-        }
-        return result + getSeparator(type);
-    }
-
-    public String getSeparator(DatabaseType dbType) {
-        return switch (dbType) {
-        case PG, CH -> ";";
-        case MS -> GO;
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        };
     }
 }

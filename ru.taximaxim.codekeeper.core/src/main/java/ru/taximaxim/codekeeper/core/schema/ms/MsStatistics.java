@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractStatistics;
@@ -47,7 +48,7 @@ public final class MsStatistics extends AbstractStatistics {
     @Override
     public void getCreationSQL(Collection<SQLAction> createActions) {
         var sb = new StringBuilder("CREATE STATISTICS ");
-        sb.append(name).append(" ON ").append(getParent().getQualifiedName());
+        sb.append(MsDiffUtils.quoteName(getName())).append(" ON ").append(getParent().getQualifiedName());
         if (!cols.isEmpty()) {
             sb.append(' ');
             StatementUtils.appendCols(sb, getCols(), getDbType());

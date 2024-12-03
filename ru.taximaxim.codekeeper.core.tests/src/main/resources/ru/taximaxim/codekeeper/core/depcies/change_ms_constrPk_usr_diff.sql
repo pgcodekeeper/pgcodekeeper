@@ -1,4 +1,4 @@
--- DEPCY: This CONSTRAINT depends on the CONSTRAINT: [dbo].[Employee].[Employee_EmployeeID_pkey]
+-- DEPCY: This CONSTRAINT test_fk_col1_fkey depends on the CONSTRAINT: [dbo].[Employee].[Employee_EmployeeID_pkey]
 
 ALTER TABLE [dbo].[test_fk]
 	DROP CONSTRAINT [test_fk_col1_fkey]
@@ -8,7 +8,7 @@ ALTER TABLE [dbo].[Employee]
 	DROP CONSTRAINT [Employee_EmployeeID_pkey]
 GO
 
--- DEPCY: This CONSTRAINT is a dependency of CONSTRAINT: [dbo].[test_fk].[test_fk_col1_fkey]
+-- DEPCY: This CONSTRAINT Employee_EmployeeID_pkey is a dependency of CONSTRAINT: [dbo].[test_fk].[test_fk_col1_fkey]
 
 ALTER TABLE [dbo].[Employee]
 	ADD CONSTRAINT [Employee_EmployeeID_pkey] PRIMARY KEY CLUSTERED  ([EmployeeID]) WITH (FILLFACTOR = 10)

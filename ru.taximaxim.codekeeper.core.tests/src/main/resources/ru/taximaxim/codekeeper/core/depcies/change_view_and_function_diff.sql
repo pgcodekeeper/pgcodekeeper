@@ -1,12 +1,12 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION depends on the VIEW: public.v1
+-- DEPCY: This FUNCTION function_contract depends on the VIEW: public.v1
 
 DROP FUNCTION public.function_contract(_id integer);
 
 DROP VIEW public.v1;
 
--- DEPCY: This VIEW is a dependency of FUNCTION: public.function_contract(integer)
+-- DEPCY: This VIEW v1 is a dependency of FUNCTION: public.function_contract(integer)
 
 CREATE VIEW public.v1 AS
 	SELECT t1.c1,

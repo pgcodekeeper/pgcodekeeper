@@ -2,7 +2,7 @@ SET search_path = pg_catalog;
 
 -- HIDDEN: Object test.the_part_2_c1_idx of type INDEX (action: DROP, reason: object cannot be dropped)
 
--- DEPCY: This INDEX depends on the INDEX: test.the_part_2_c1_idx
+-- DEPCY: This INDEX the_part_index_c1_idx depends on the INDEX: test.the_part_2_c1_idx
 
 DROP INDEX public.the_part_index_c1_idx;
 

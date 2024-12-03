@@ -5,18 +5,18 @@ CREATE TABLE public.t1 (
 	val integer
 );
 
--- DEPCY: This FUNCTION is a dependency of VIEW: public.test
+-- DEPCY: This FUNCTION f2 is a dependency of VIEW: public.test
 
 CREATE OR REPLACE FUNCTION public.f2() RETURNS integer
     LANGUAGE sql
     AS $$ select 15 as q LIMIT 1 $$;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.test
+-- DEPCY: This VIEW v2 is a dependency of VIEW: public.test
 
 CREATE VIEW public.v2 AS
 	SELECT 12 AS c1, 4 AS c2;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.test
+-- DEPCY: This VIEW v1 is a dependency of VIEW: public.test
 
 CREATE VIEW public.v1 AS
 	SELECT 1 AS c1, 2 AS c2;
@@ -29,7 +29,7 @@ CREATE TABLE public.t2 (
 	c5 integer
 );
 
--- DEPCY: This FUNCTION is a dependency of VIEW: public.test
+-- DEPCY: This FUNCTION f1 is a dependency of VIEW: public.test
 
 CREATE OR REPLACE FUNCTION public.f1(p1 text, p2 integer) RETURNS integer
     LANGUAGE sql

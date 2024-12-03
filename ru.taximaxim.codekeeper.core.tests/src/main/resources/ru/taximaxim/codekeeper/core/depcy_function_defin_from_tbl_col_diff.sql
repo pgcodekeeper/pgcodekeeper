@@ -1,10 +1,10 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION depends on the COLUMN: public.emp.salary
+-- DEPCY: This FUNCTION double_salary_2 depends on the COLUMN: public.emp.salary
 
 DROP FUNCTION public.double_salary_2(nnaammee public.emp);
 
--- DEPCY: This FUNCTION depends on the COLUMN: public.emp.salary
+-- DEPCY: This FUNCTION double_salary depends on the COLUMN: public.emp.salary
 
 DROP FUNCTION public.double_salary(public.emp);
 

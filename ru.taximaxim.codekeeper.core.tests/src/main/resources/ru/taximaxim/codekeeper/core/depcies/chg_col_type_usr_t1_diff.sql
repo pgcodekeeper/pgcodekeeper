@@ -1,10 +1,10 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.c1
+-- DEPCY: This VIEW v1 depends on the COLUMN: public.t1.c1
 
 DROP VIEW public.v1;
 
--- DEPCY: This DOMAIN is a dependency of COLUMN: public.t1.c1
+-- DEPCY: This DOMAIN dom2 is a dependency of COLUMN: public.t1.c1
 
 CREATE DOMAIN public.dom2 AS integer
 	CONSTRAINT chechk1 CHECK ((VALUE > 0));

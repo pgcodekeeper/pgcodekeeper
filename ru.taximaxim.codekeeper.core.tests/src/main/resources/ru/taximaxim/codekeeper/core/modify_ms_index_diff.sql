@@ -1,4 +1,4 @@
--- DEPCY: This INDEX depends on the TABLE: [dbo].[t1]
+-- DEPCY: This INDEX ix_1 depends on the TABLE: [dbo].[t1]
 
 DROP INDEX [ix_1] ON [dbo].[t1]
 GO
@@ -6,7 +6,7 @@ GO
 DROP TABLE [dbo].[t1]
 GO
 
--- DEPCY: This INDEX depends on the TABLE: [dbo].[t3]
+-- DEPCY: This INDEX ix_3 depends on the TABLE: [dbo].[t3]
 
 DROP INDEX [ix_3] ON [dbo].[t3]
 GO
@@ -14,7 +14,7 @@ GO
 DROP TABLE [dbo].[t3]
 GO
 
--- DEPCY: This INDEX depends on the TABLE: [dbo].[t4]
+-- DEPCY: This INDEX ix_4 depends on the TABLE: [dbo].[t4]
 
 DROP INDEX [ix_4] ON [dbo].[t4]
 GO

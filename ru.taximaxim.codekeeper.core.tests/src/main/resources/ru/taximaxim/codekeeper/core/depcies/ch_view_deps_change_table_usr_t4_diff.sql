@@ -1,4 +1,4 @@
--- DEPCY: This VIEW depends on the COLUMN: default.t4.`Object.Key`
+-- DEPCY: This VIEW v3 depends on the COLUMN: default.t4.`Object.Key`
 
 DROP VIEW default.v3;
 

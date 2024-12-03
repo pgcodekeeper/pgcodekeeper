@@ -8,10 +8,6 @@ REVOKE SELECT(c4) ON default.table1 FROM john;
 
 REVOKE SELECT(c5) ON default.table1 FROM john;
 
-REVOKE SELECT(c1) ON default.table2 FROM john;
-
-REVOKE SELECT(c2) ON default.table2 FROM john;
-
 REVOKE SHOW ON *.* FROM john;
 
 REVOKE SELECT(c1) ON default.table1 FROM admin;

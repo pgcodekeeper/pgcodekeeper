@@ -4,46 +4,46 @@ DROP TABLE public.cities_fg;
 
 DROP TABLE public.cities_4544;
 
--- DEPCY: This TABLE depends on the TABLE: public.measurement
+-- DEPCY: This TABLE measurement_2 depends on the TABLE: public.measurement
 
 DROP TABLE public.measurement_2;
 
--- DEPCY: This TABLE depends on the TABLE: public.measurement
+-- DEPCY: This TABLE measurement_1 depends on the TABLE: public.measurement
 
 DROP TABLE public.measurement_1;
 
 DROP TABLE public.measurement;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE towns depends on the TABLE: public.cities
 
 DROP TABLE public.towns;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE cities_cd_10_to_103 depends on the TABLE: public.cities
 
 DROP TABLE public.cities_cd_10_to_103;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE cities_cd_10_to_102 depends on the TABLE: public.cities
 
 DROP TABLE public.cities_cd_10_to_102;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE cities57 depends on the TABLE: public.cities
 
 DROP TABLE public.cities57;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE cities56 depends on the TABLE: public.cities
 
 DROP TABLE public.cities56;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE cities_cd_10_to_100 depends on the TABLE: public.cities
 
 DROP TABLE public.cities_cd_10_to_100;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.cities
+-- DEPCY: This CONSTRAINT constr_check depends on the TABLE: public.cities
 
 ALTER TABLE public.cities_cd
 	DROP CONSTRAINT constr_check;
 
--- DEPCY: This TABLE depends on the TABLE: public.cities
+-- DEPCY: This TABLE cities_cd depends on the TABLE: public.cities
 
 DROP TABLE public.cities_cd;
 
@@ -84,7 +84,7 @@ FOR VALUES FROM ('1') TO ('100');
 
 ALTER TABLE public.towns OWNER TO khazieva_gr;
 
--- DEPCY: This TABLE is a dependency of TABLE: public.cities_cd_10_to_103
+-- DEPCY: This TABLE cities_cd is a dependency of TABLE: public.cities_cd_10_to_103
 
 CREATE TABLE public.cities_cd PARTITION OF public.cities
 FOR VALUES IN ('c', 'd')
@@ -102,7 +102,7 @@ FOR VALUES FROM ('1') TO ('10');
 
 ALTER TABLE public.cities_cd_10_to_102 OWNER TO khazieva_gr;
 
--- DEPCY: This TABLE is a dependency of TABLE: public.cities57
+-- DEPCY: This TABLE cities_cd_10_to_100 is a dependency of TABLE: public.cities57
 
 CREATE TABLE public.cities_cd_10_to_100 PARTITION OF public.cities_cd
 FOR VALUES FROM ('1') TO ('100')

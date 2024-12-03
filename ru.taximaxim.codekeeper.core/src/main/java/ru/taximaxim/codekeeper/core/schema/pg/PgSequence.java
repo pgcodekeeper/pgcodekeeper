@@ -149,7 +149,6 @@ public class PgSequence extends AbstractSequence {
         alterPrivileges(newSequence, alterActions);
         appendAlterComments(newSequence, alterActions);
 
-        // OWNED BY will be changed separately
         if (!Objects.equals(getOwnedBy(), newSequence.getOwnedBy())) {
             newSequence.getOwnedBySQL(alterActions);
         }

@@ -1,4 +1,4 @@
--- DEPCY: This FUNCTION depends on the FUNCTION: [dbo].[f2]
+-- DEPCY: This FUNCTION f1 depends on the FUNCTION: [dbo].[f2]
 
 SET QUOTED_IDENTIFIER ON
 GO

@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION depends on the TYPE: public.typ_composite
+-- DEPCY: This FUNCTION add depends on the TYPE: public.typ_composite
 
 DROP FUNCTION public.add(public.typ_composite, integer);
 
