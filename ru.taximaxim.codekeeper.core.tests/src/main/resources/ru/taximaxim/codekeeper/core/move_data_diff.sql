@@ -2,7 +2,7 @@ SET search_path = pg_catalog;
 
 ALTER TABLE public.cities2 RENAME TO cities2_randomly_generated_part;
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: public.person.age
+-- DEPCY: This SEQUENCE person_age_seq is a dependency of COLUMN: public.person.age
 
 CREATE SEQUENCE public.person_age_seq
 	START WITH 1
@@ -20,39 +20,39 @@ CREATE TABLE public.person (
 
 ALTER TABLE public.person OWNER TO khazieva_gr;
 
--- DEPCY: This VIEW depends on the TABLE: public.tbl
+-- DEPCY: This VIEW v depends on the TABLE: public.tbl
 
 DROP VIEW public.v;
 
--- DEPCY: This TRIGGER depends on the TABLE: public.tbl
+-- DEPCY: This TRIGGER events_insert depends on the TABLE: public.tbl
 
 DROP TRIGGER events_insert ON public.tbl;
 
--- DEPCY: This FUNCTION depends on the TABLE: public.tbl
+-- DEPCY: This FUNCTION events_insert_trigger depends on the TABLE: public.tbl
 
 DROP FUNCTION public.events_insert_trigger();
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.tbl
+-- DEPCY: This CONSTRAINT tbl_pkey depends on the TABLE: public.tbl
 
 ALTER TABLE public.tbl
 	DROP CONSTRAINT tbl_pkey;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.tbl
+-- DEPCY: This CONSTRAINT tbl_event_time_check depends on the TABLE: public.tbl
 
 ALTER TABLE public.tbl
 	DROP CONSTRAINT tbl_event_time_check;
 
--- DEPCY: This RULE depends on the TABLE: public.tbl
+-- DEPCY: This RULE notify_me_tbl depends on the TABLE: public.tbl
 
 DROP RULE notify_me_tbl ON public.tbl;
 
--- DEPCY: This INDEX depends on the TABLE: public.tbl
+-- DEPCY: This INDEX tbl_idx depends on the TABLE: public.tbl
 
 DROP INDEX public.tbl_idx;
 
 ALTER TABLE public.tbl RENAME TO tbl_randomly_generated_part;
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: public.cities2.city_id
+-- DEPCY: This SEQUENCE cities2_city_id_seq is a dependency of COLUMN: public.cities2.city_id
 
 DROP SEQUENCE public.cities2_city_id_seq;
 
@@ -104,7 +104,7 @@ CREATE VIEW public.v AS
     1 AS qwerty
    FROM public.tbl;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: public.tbl.events_insert
+-- DEPCY: This FUNCTION events_insert_trigger is a dependency of TRIGGER: public.tbl.events_insert
 
 CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql

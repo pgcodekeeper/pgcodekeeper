@@ -1,11 +1,11 @@
--- DEPCY: This COLUMN depends on the COLUMN: default.t2.d
+-- DEPCY: This COLUMN b depends on the COLUMN: default.t2.d
 
 ALTER TABLE default.t2 MODIFY COLUMN `b` UInt8 TTL (c + toIntervalDay(1));
 
 ALTER TABLE default.t2
 	DROP COLUMN `d`;
 
--- DEPCY: This COLUMN depends on the COLUMN: default.t4.d
+-- DEPCY: This COLUMN c depends on the COLUMN: default.t4.d
 
 ALTER TABLE default.t4 MODIFY COLUMN `c` ALIAS b + a;
 

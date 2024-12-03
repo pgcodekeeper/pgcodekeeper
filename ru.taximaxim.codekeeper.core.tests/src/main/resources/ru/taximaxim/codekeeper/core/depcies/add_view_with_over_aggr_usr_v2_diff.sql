@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This AGGREGATE is a dependency of VIEW: public.v2
+-- DEPCY: This AGGREGATE max is a dependency of VIEW: public.v2
 
 CREATE AGGREGATE public.max(boolean) (
 	SFUNC = text_larger,

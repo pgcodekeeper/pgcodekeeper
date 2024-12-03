@@ -1,4 +1,4 @@
--- DEPCY: This VIEW depends on the COLUMN: default.t3.b
+-- DEPCY: This VIEW v2 depends on the COLUMN: default.t3.b
 
 DROP VIEW default.v2;
 

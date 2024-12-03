@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of CONSTRAINT: public.test_table.test_constraint
+-- DEPCY: This FUNCTION test_function is a dependency of CONSTRAINT: public.test_table.test_constraint
 
 CREATE OR REPLACE FUNCTION public.test_function() RETURNS tsrange
     LANGUAGE sql IMMUTABLE

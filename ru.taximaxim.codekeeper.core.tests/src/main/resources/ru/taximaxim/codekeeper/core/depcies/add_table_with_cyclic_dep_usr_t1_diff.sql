@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of COLUMN: public.t1.id
+-- DEPCY: This FUNCTION f2 is a dependency of COLUMN: public.t1.id
 
 CREATE OR REPLACE FUNCTION public.f2() RETURNS integer
     LANGUAGE plpgsql
@@ -10,7 +10,7 @@ BEGIN
 END
 $$;
 
--- DEPCY: This FUNCTION is a dependency of COLUMN: public.t1.id
+-- DEPCY: This FUNCTION f1 is a dependency of COLUMN: public.t1.id
 
 CREATE OR REPLACE FUNCTION public.f1() RETURNS integer
     LANGUAGE plpgsql

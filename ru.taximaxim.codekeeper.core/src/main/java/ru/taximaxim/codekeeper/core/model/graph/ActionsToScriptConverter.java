@@ -39,7 +39,6 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.PgDiffScript;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -61,20 +60,21 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ActionsToScriptConverter {
 
     private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule {0}";
 
-    private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
-    private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
+    private static final String DROP_COMMENT = "-- DEPCY: This {0} {1} depends on the {2}: {3}";
+    private static final String CREATE_COMMENT = "-- DEPCY: This {0} {1} is a dependency of {2}: {3}";
     private static final String HIDDEN_OBJECT = "-- HIDDEN: Object {0} of type {1} (action: {2}, reason: {3})";
 
     private static final String RENAME_PG_OBJECT = "ALTER {0} {1} RENAME TO {2}";
     private static final String RENAME_MS_OBJECT = "EXEC sp_rename {0}, {1}";
     private static final String RENAME_CH_OBJECT = "RENAME {0} {1} TO {2};";
 
-    private final PgDiffScript script;
+    private final SQLScript script;
     private final Set<ActionContainer> actions;
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
@@ -99,7 +99,7 @@ public class ActionsToScriptConverter {
 
     private List<String> partitionChildren;
 
-    public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
+    public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
             PgDiffArguments arguments, AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
         this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
     }
@@ -107,7 +107,7 @@ public class ActionsToScriptConverter {
     /**
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
-    public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
+    public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
             Set<PgStatement> toRefresh, PgDiffArguments arguments, AbstractDatabase oldDbFull,
             AbstractDatabase newDbFull) {
         this.script = script;
@@ -222,13 +222,11 @@ public class ActionsToScriptConverter {
         switch (action.getAction()) {
         case CREATE:
             if (depcy != null) {
-                script.addStatement(depcy);
+                script.addStatementWithoutSeparator(depcy);
             }
 
             // explicitly deleting a sequence due to a name conflict
-            if (arguments.isDataMovementMode()
-                    && obj instanceof PgSequence
-                    && obj.getTwin(oldDbFull) != null){
+            if (arguments.isDataMovementMode() && obj instanceof PgSequence && obj.getTwin(oldDbFull) != null) {
                 addToDropScript(obj, false);
             }
 
@@ -236,9 +234,7 @@ public class ActionsToScriptConverter {
                 addToDropScript(obj, true);
             }
 
-            Set<SQLAction> createActions = new LinkedHashSet<>();
-            obj.getCreationSQL(createActions);
-            script.addCreate(obj, null, createActions, true);
+            addToAddScript(obj);
 
             if (arguments.isDataMovementMode()
                     && obj.getTwin(oldDbFull) != null
@@ -255,7 +251,7 @@ public class ActionsToScriptConverter {
             break;
         case DROP:
             if (depcy != null) {
-                script.addStatement(depcy);
+                script.addStatementWithoutSeparator(depcy);
             }
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
@@ -269,7 +265,7 @@ public class ActionsToScriptConverter {
         case ALTER:
             var joinableActions = joinableTableActions.get(action);
             if (joinableActions != null) {
-                script.addStatement(getAlterTableScript(joinableActions));
+                getAlterTableScript(joinableActions).forEach(script::addStatement);
                 return;
             }
             Set<SQLAction> alterActions = new LinkedHashSet<>();
@@ -277,10 +273,10 @@ public class ActionsToScriptConverter {
 
             if (state == ObjectState.ALTER) {
                 if (depcy != null) {
-                    script.addStatement(depcy);
+                    script.addStatementWithoutSeparator(depcy);
                 }
 
-                script.addStatement(alterActions);
+                alterActions.forEach(script::addStatement);
             }
             break;
         case NONE:
@@ -288,10 +284,16 @@ public class ActionsToScriptConverter {
         }
     }
 
+    private void addToAddScript(PgStatement obj) {
+        Set<SQLAction> createActions = new LinkedHashSet<>();
+        obj.getCreationSQL(createActions);
+        createActions.forEach(script::addStatement);
+    }
+
     private void addToDropScript(PgStatement obj, boolean isExist) {
         Set<SQLAction> dropActions = new LinkedHashSet<>();
         obj.getDropSQL(dropActions, isExist);
-        script.addDrop(obj, null, dropActions);
+        dropActions.forEach(script::addStatement);
     }
 
     /**
@@ -348,9 +350,7 @@ public class ActionsToScriptConverter {
         if (tables != null) {
             // print create for partition tables
             for (PartitionPgTable table : tables) {
-                Set<SQLAction> createActions = new LinkedHashSet<>();
-                table.getCreationSQL(createActions);
-                script.addCreate(table, null, createActions, true);
+                addToAddScript(table);
             }
         }
         // print insert for parent table
@@ -366,7 +366,7 @@ public class ActionsToScriptConverter {
         // print parent drops
         SimplePgTable parenTable = (SimplePgTable) obj;
         printDropPartition(parenTable, dropActions);
-        script.addStatement(dropActions);
+        dropActions.forEach(script::addStatement);
     }
 
     private void printDropPartition(AbstractPgTable table, Collection<SQLAction> dropActions) {
@@ -401,6 +401,7 @@ public class ActionsToScriptConverter {
                 action.getAction() == StatementActions.CREATE ?
                         CREATE_COMMENT : DROP_COMMENT,
                         oldObj.getStatementType(),
+                        oldObj.getBareName(),
                         objStarter.getStatementType(),
                         objStarter.getQualifiedName());
     }
@@ -634,7 +635,7 @@ public class ActionsToScriptConverter {
             sbDrop.append("DROP TABLE ").append(tblTmpQName);
             sqlActions.add(new SQLAction(sbDrop));
         }
-        script.addStatement(sqlActions);
+        sqlActions.forEach(script::addStatement);
     }
 
     private String getIdentInsertText(String name, boolean isOn) {

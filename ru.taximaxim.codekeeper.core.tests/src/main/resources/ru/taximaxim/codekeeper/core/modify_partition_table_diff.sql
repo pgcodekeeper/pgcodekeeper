@@ -20,7 +20,7 @@ DROP FOREIGN TABLE public.f_cities_e;
 
 ALTER FOREIGN TABLE ONLY public.ftable SET WITHOUT OIDS;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.tab_of_type
+-- DEPCY: This CONSTRAINT tab_of_type_f3_check depends on the TABLE: public.tab_of_type
 
 ALTER TABLE public.tab_of_type
 	DROP CONSTRAINT tab_of_type_f3_check;

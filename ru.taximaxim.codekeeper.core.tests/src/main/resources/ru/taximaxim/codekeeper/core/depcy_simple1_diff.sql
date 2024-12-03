@@ -1,14 +1,14 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.id
+-- DEPCY: This VIEW v1 depends on the COLUMN: public.t1.id
 
 DROP VIEW s.v1;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.id
+-- DEPCY: This VIEW v3 depends on the COLUMN: public.t1.id
 
 DROP VIEW s.v3;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.id
+-- DEPCY: This VIEW v2 depends on the COLUMN: public.t1.id
 
 DROP VIEW public.v2;
 
@@ -21,7 +21,7 @@ CREATE VIEW s.v1 AS
 
 ALTER VIEW s.v1 OWNER TO levsha_aa;
 
--- DEPCY: This VIEW is a dependency of VIEW: s.v3
+-- DEPCY: This VIEW v2 is a dependency of VIEW: s.v3
 
 CREATE VIEW public.v2 AS
 	SELECT t1.id

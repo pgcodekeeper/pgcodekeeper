@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This COLUMN depends on the COLUMN: public.test_1.c1
+-- DEPCY: This COLUMN c1 depends on the COLUMN: public.test_1.c1
 
 ALTER TABLE ONLY public.test_2
 	ALTER COLUMN c1 DROP DEFAULT;

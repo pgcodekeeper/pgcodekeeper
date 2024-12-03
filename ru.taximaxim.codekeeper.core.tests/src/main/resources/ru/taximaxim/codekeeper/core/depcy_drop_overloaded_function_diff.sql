@@ -1,12 +1,12 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the FUNCTION: public.f(integer)
+-- DEPCY: This VIEW v2 depends on the FUNCTION: public.f(integer)
 
 DROP VIEW public.v2;
 
 DROP FUNCTION public.f(p integer);
 
--- DEPCY: This FUNCTION is a dependency of VIEW: public.v2
+-- DEPCY: This FUNCTION f is a dependency of VIEW: public.v2
 
 CREATE OR REPLACE FUNCTION public.f(p integer) RETURNS numeric
     LANGUAGE plpgsql

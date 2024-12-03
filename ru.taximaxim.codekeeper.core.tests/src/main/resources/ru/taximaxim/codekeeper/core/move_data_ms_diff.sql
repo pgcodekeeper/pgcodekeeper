@@ -7,18 +7,18 @@ GO
 DROP SEQUENCE [dbo].[seq2]
 GO
 
--- DEPCY: This CONSTRAINT depends on the TABLE: [dbo].[tbl]
+-- DEPCY: This CONSTRAINT PK_tbl depends on the TABLE: [dbo].[tbl]
 
 ALTER TABLE [dbo].[tbl]
 	DROP CONSTRAINT [PK_tbl]
 GO
 
--- DEPCY: This TRIGGER depends on the TABLE: [dbo].[tbl]
+-- DEPCY: This TRIGGER trg depends on the TABLE: [dbo].[tbl]
 
 DROP TRIGGER [dbo].[trg]
 GO
 
--- DEPCY: This INDEX depends on the TABLE: [dbo].[tbl]
+-- DEPCY: This INDEX idx_dbo_tbl_c2 depends on the TABLE: [dbo].[tbl]
 
 DROP INDEX [idx_dbo_tbl_c2] ON [dbo].[tbl]
 GO
@@ -32,7 +32,7 @@ GO
 ALTER TABLE [dbo].[tbl_randomly_generated_part] DROP CONSTRAINT [DF__tbl__c6__2739D489]
 GO
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: [dbo].[table1].[c1]
+-- DEPCY: This SEQUENCE seq2 is a dependency of COLUMN: [dbo].[table1].[c1]
 
 CREATE SEQUENCE [dbo].[seq2]
 	AS bigint

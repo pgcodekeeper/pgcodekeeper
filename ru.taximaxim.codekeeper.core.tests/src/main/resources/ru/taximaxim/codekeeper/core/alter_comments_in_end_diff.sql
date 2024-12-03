@@ -14,33 +14,33 @@ ALTER SEQUENCE public.test_id_seq
 
 DROP FOREIGN TABLE public.test_ft;
 
--- DEPCY: This VIEW depends on the TABLE: public.test
+-- DEPCY: This VIEW test_view depends on the TABLE: public.test
 
 DROP VIEW public.test_view;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.test
+-- DEPCY: This CONSTRAINT test_pkey depends on the TABLE: public.test
 
 ALTER TABLE public.test
 	DROP CONSTRAINT test_pkey;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.test
+-- DEPCY: This CONSTRAINT text_check depends on the TABLE: public.test
 
 ALTER TABLE public.test
 	DROP CONSTRAINT text_check;
 
--- DEPCY: This POLICY depends on the TABLE: public.test
+-- DEPCY: This POLICY test_policy depends on the TABLE: public.test
 
 DROP POLICY test_policy ON public.test;
 
--- DEPCY: This RULE depends on the TABLE: public.test
+-- DEPCY: This RULE test_rule depends on the TABLE: public.test
 
 DROP RULE test_rule ON public.test;
 
--- DEPCY: This TRIGGER depends on the TABLE: public.test
+-- DEPCY: This TRIGGER test_trigger depends on the TABLE: public.test
 
 DROP TRIGGER test_trigger ON public.test;
 
--- DEPCY: This INDEX depends on the TABLE: public.test
+-- DEPCY: This INDEX test_index depends on the TABLE: public.test
 
 DROP INDEX public.test_index;
 

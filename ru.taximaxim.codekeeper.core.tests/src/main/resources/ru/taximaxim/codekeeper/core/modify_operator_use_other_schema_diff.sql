@@ -1,12 +1,12 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This OPERATOR depends on the FUNCTION: tester.nonull_append_strings(text, text)
+-- DEPCY: This OPERATOR ||++ depends on the FUNCTION: tester.nonull_append_strings(text, text)
 
 DROP OPERATOR public.||++(text, text);
 
 DROP FUNCTION tester.nonull_append_strings(text, text);
 
--- DEPCY: This FUNCTION is a dependency of OPERATOR: public.||++(text, text)
+-- DEPCY: This FUNCTION nonull_append_strings is a dependency of OPERATOR: public.||++(text, text)
 
 CREATE OR REPLACE FUNCTION tester.nonull_append_strings(text, text) RETURNS text
     LANGUAGE sql IMMUTABLE

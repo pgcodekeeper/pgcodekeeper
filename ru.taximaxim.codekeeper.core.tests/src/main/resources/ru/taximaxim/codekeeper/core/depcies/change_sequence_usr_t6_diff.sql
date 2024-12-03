@@ -2,7 +2,7 @@ SET search_path = pg_catalog;
 
 DROP TABLE public.t6;
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: public.t6.c1
+-- DEPCY: This SEQUENCE s6 is a dependency of COLUMN: public.t6.c1
 
 CREATE SEQUENCE public.s6
 	AS integer

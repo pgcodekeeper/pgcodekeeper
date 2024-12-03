@@ -1,4 +1,4 @@
--- DEPCY: This FUNCTION is a dependency of FUNCTION: function_1
+-- DEPCY: This FUNCTION function_2 is a dependency of FUNCTION: function_1
 
 CREATE FUNCTION function_2 AS (x) -> (a + 2);
 

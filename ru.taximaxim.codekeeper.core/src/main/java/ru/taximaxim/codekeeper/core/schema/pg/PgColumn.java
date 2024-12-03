@@ -570,11 +570,12 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             Collection<SQLAction> sqlActions) {
         SQLAction sql;
         if (newStorage == null && oldStorage != null) {
+            // FIXME fix test
             sql = new SQLAction();
             sql.append(MessageFormat.format(
                     Messages.Storage_WarningUnableToDetermineStorageType,
                     getParent().getName(), getName()));
-            sqlActions.add(new SQLAction(sql.toString()));
+            sqlActions.add(sql);
         } else if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
             sql = new SQLAction();
             sql.append(getAlterTableColumn(true, true, name))

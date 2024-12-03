@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of FUNCTION: public.func_1(jsonb)
+-- DEPCY: This FUNCTION func_3 is a dependency of FUNCTION: public.func_1(jsonb)
 
 CREATE OR REPLACE FUNCTION public.func_3(_first integer, _second integer) RETURNS Integer
     LANGUAGE plpgsql SECURITY DEFINER
@@ -10,7 +10,7 @@ BEGIN
 END;
 $$;
 
--- DEPCY: This FUNCTION is a dependency of FUNCTION: public.func_1(jsonb)
+-- DEPCY: This FUNCTION func_2 is a dependency of FUNCTION: public.func_1(jsonb)
 
 CREATE OR REPLACE FUNCTION public.func_2(_first integer, _second text) RETURNS Integer
     LANGUAGE plpgsql SECURITY DEFINER

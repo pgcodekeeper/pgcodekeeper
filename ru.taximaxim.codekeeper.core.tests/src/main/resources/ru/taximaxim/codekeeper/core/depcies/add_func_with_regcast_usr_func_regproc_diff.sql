@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of FUNCTION: public.f_regproc(integer)
+-- DEPCY: This FUNCTION f1 is a dependency of FUNCTION: public.f_regproc(integer)
 
 CREATE OR REPLACE FUNCTION public.f1(x integer) RETURNS text
     LANGUAGE sql

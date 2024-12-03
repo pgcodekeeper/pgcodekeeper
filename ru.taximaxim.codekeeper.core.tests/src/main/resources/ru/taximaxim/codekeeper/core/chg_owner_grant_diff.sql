@@ -36,8 +36,6 @@ REVOKE ALL ON TABLE public."n+n+" FROM n;
 
 REVOKE ALL ON TABLE public."n+n+" FROM PUBLIC;
 
-REVOKE ALL ON TABLE public."n+n+" FROM n;
-
 GRANT ALL ON TABLE public."n+n+" TO n;
 
 ALTER TABLE public."n+n-" OWNER TO n;
@@ -46,11 +44,7 @@ REVOKE ALL ON TABLE public."n+n-" FROM n;
 
 REVOKE ALL ON TABLE public."n+n-" FROM PUBLIC;
 
-REVOKE ALL ON TABLE public."n+n-" FROM n;
-
 GRANT ALL ON TABLE public."n+n-" TO n;
-
-REVOKE ALL ON TABLE public."n+n-" FROM n;
 
 ALTER TABLE public."n-n+" OWNER TO n;
 
@@ -61,8 +55,6 @@ REVOKE ALL ON TABLE public."n-n-" FROM PUBLIC;
 REVOKE ALL ON TABLE public."n-n-" FROM n;
 
 GRANT ALL ON TABLE public."n-n-" TO n;
-
-REVOKE ALL ON TABLE public."n-n-" FROM n;
 
 ALTER TABLE public."o+o+2" OWNER TO n;
 
@@ -106,8 +98,6 @@ REVOKE ALL ON TABLE public."n+n+2" FROM n;
 
 REVOKE ALL ON TABLE public."n+n+2" FROM PUBLIC;
 
-REVOKE ALL ON TABLE public."n+n+2" FROM n;
-
 GRANT ALL ON TABLE public."n+n+2" TO n;
 
 GRANT ALL ON TABLE public."n+n+2" TO dummy;
@@ -118,11 +108,7 @@ REVOKE ALL ON TABLE public."n+n-2" FROM n;
 
 REVOKE ALL ON TABLE public."n+n-2" FROM PUBLIC;
 
-REVOKE ALL ON TABLE public."n+n-2" FROM n;
-
 GRANT ALL ON TABLE public."n+n-2" TO n;
-
-REVOKE ALL ON TABLE public."n+n-2" FROM n;
 
 GRANT ALL ON TABLE public."n+n-2" TO dummy;
 
@@ -135,7 +121,5 @@ REVOKE ALL ON TABLE public."n-n-2" FROM PUBLIC;
 REVOKE ALL ON TABLE public."n-n-2" FROM n;
 
 GRANT ALL ON TABLE public."n-n-2" TO n;
-
-REVOKE ALL ON TABLE public."n-n-2" FROM n;
 
 GRANT ALL ON TABLE public."n-n-2" TO dummy;

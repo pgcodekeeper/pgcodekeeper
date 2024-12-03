@@ -1,16 +1,16 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This SCHEMA is a dependency of VIEW: public.v2
+-- DEPCY: This SCHEMA test is a dependency of VIEW: public.v2
 
 CREATE SCHEMA test;
 
--- DEPCY: This FUNCTION is a dependency of VIEW: public.v2
+-- DEPCY: This FUNCTION goo is a dependency of VIEW: public.v2
 
 CREATE OR REPLACE FUNCTION public.goo(x integer) RETURNS SETOF record
     LANGUAGE sql
     AS $$SELECT 1::int,x,'A'::text;$$;
 
--- DEPCY: This FUNCTION is a dependency of VIEW: public.v2
+-- DEPCY: This FUNCTION foo is a dependency of VIEW: public.v2
 
 CREATE OR REPLACE FUNCTION public.foo() RETURNS SETOF record
     LANGUAGE sql

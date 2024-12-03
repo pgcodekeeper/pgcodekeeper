@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of TYPE: public.t1
+-- DEPCY: This FUNCTION t1_subtype_diff is a dependency of TYPE: public.t1
 
 CREATE OR REPLACE FUNCTION public.t1_subtype_diff(_x date, _y date) RETURNS double precision
     LANGUAGE sql IMMUTABLE STRICT

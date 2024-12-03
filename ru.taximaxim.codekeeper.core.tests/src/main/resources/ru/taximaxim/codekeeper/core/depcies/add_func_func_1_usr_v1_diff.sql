@@ -1,4 +1,4 @@
--- DEPCY: This VIEW is a dependency of FUNCTION: func_1
+-- DEPCY: This VIEW v1 is a dependency of FUNCTION: func_1
 
 CREATE VIEW default.v1
 (
