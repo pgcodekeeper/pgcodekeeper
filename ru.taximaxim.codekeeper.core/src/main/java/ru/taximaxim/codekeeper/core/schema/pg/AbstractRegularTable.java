@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
 
 /**
  * Base implementation of regular table
@@ -187,7 +188,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
 
         // greenplum
         if (!Objects.equals(distribution, newRegTable.distribution)) {
-            SQLAction sql = new SQLAction();
+            SQLAction sql = new SQLAction(new StringBuilder(), SQLActionType.END);
             sql.append(getAlterTable(false));
             sql.append(" SET ");
             String newDistribution = newRegTable.getDistribution();
