@@ -27,28 +27,17 @@ public abstract class AbstractStatementReader {
 
     private static final String PG_CATALOG = "pg_catalog.";
 
-    protected static final String MS_PRIVILIGES_JOIN = """
-            CROSS APPLY (
-              SELECT * FROM (
-                SELECT
-                  perm.state_desc AS sd,
-                  perm.permission_name AS pn,
-                  roleprinc.name AS r%s
-                FROM sys.database_principals roleprinc  WITH (NOLOCK)
-                JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id
-                LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id AND col.column_id = perm.minor_id
-                WHERE major_id = res.%s AND perm.class = %s
-              ) aa
-              FOR XML RAW, ROOT
-            ) aa (acl)""";
+    private static final QueryBuilder MS_PRIVILEGES_JOIN_SUBSELECT = new QueryBuilder()
+            .column("perm.state_desc AS sd")
+            .column("perm.permission_name AS pn")
+            .column("roleprinc.name AS r")
+            .from("sys.database_principals roleprinc WITH (NOLOCK)")
+            .join("JOIN sys.database_permissions perm WITH (NOLOCK) ON perm.grantee_principal_id = roleprinc.principal_id")
+            .join("LEFT JOIN sys.columns col WITH (NOLOCK) ON col.object_id = perm.major_id AND col.column_id = perm.minor_id");
 
-    private static final String EXTENSION_DEPS_CTE = """
-
-        \s   SELECT objid
-            FROM pg_catalog.pg_depend
-            WHERE classid = %s::pg_catalog.regclass
-              AND deptype = 'e'
-        """;
+    protected static final QueryBuilder EXTENSION_DEPS_CTE_BUILDER = new QueryBuilder()
+            .column("objid")
+            .from("pg_catalog.pg_depend");
 
     // join extension data with a left join
     private static final String EXTENSION_JOIN =
@@ -103,12 +92,14 @@ public abstract class AbstractStatementReader {
     }
 
     protected void addExtensionDepsCte(QueryBuilder builder) {
-        builder.with("extension_deps", getExtensionCte().formatted(classId));
+        QueryBuilder subSelect = getExtensionCte()
+                .where("classid = %s::pg_catalog.regclass".formatted(classId));
+        builder.with("extension_deps", subSelect);
         builder.where("res.oid NOT IN (SELECT objid FROM extension_deps)");
     }
 
-    protected String getExtensionCte() {
-        return EXTENSION_DEPS_CTE;
+    protected QueryBuilder getExtensionCte() {
+        return EXTENSION_DEPS_CTE_BUILDER.copy().where("deptype = 'e'");
     }
 
     protected void addDescriptionPart(QueryBuilder builder) {
@@ -122,13 +113,21 @@ public abstract class AbstractStatementReader {
     }
 
     protected void addMsPriviligesPart(QueryBuilder builder) {
+        var subSelect = new QueryBuilder()
+            .column("*")
+            .from(formatMsPriviliges(MS_PRIVILEGES_JOIN_SUBSELECT.copy()), "aa")
+            .postAction("FOR XML RAW, ROOT");
+
         builder
-        .column("aa.acl")
-        .join(getFormattedMsPriviliges());
+            .column("aa.acl")
+            .join("CROSS APPLY", subSelect, "aa (acl)");
     }
 
-    protected String getFormattedMsPriviliges() {
-        return MS_PRIVILIGES_JOIN.formatted(",\n      col.name AS c", "object_id", 1);
+    protected QueryBuilder formatMsPriviliges(QueryBuilder privileges) {
+        return privileges
+                .column("col.name AS c")
+                .where("major_id = res.object_id")
+                .where("perm.class = 1");
     }
 
     protected void addMsOwnerPart(QueryBuilder builder) {

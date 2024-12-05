@@ -195,6 +195,12 @@ public class TriggersReader extends JdbcReader {
         addExtensionSchemasCte(builder);
         addDescriptionPart(builder, true);
 
+        QueryBuilder subselect = new QueryBuilder()
+                .column("pg_catalog.array_agg(attname ORDER BY attnum)")
+                .from("pg_catalog.pg_attribute a")
+                .where("a.attrelid = cls.oid")
+                .where("a.attnum = ANY(res.tgattr)");
+
         builder
         .column("cls.relname")
         .column("p.proname")
@@ -208,8 +214,7 @@ public class TriggersReader extends JdbcReader {
         .column("res.tginitdeferred")
         .column("relcon.relname as refrelname")
         .column("refnsp.nspname as refnspname")
-        .column("(SELECT pg_catalog.array_agg(attname ORDER BY attnum) FROM pg_catalog.pg_attribute a "
-                + "WHERE a.attrelid = cls.oid AND a.attnum = ANY(res.tgattr)) AS cols")
+        .column("", subselect, "AS cols")
         .column("pg_catalog.pg_get_triggerdef(res.oid,false) AS definition")
         .from("pg_catalog.pg_trigger res")
         .join("LEFT JOIN pg_catalog.pg_class cls ON cls.oid = res.tgrelid")

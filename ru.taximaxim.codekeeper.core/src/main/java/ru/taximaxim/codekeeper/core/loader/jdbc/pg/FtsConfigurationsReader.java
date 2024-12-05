@@ -102,32 +102,30 @@ public class FtsConfigurationsReader extends JdbcReader {
         .column("res.cfgowner::bigint")
         .column("p.prsname")
         .column("n.nspname AS prsnspname")
-        .from("pg_ts_config res")
+        .from("pg_catalog.pg_ts_config res")
         .join("LEFT JOIN pg_catalog.pg_ts_parser p ON p.oid = res.cfgparser")
         .join("LEFT JOIN pg_catalog.pg_namespace n ON p.prsnamespace = n.oid");
     }
 
     private void addWordsPart(QueryBuilder builder) {
-        String words = """
-                LEFT JOIN LATERAL (
-                  SELECT
-                    m.mapcfg,
-                    pg_catalog.array_agg(
-                    (SELECT alias\s
-                      FROM pg_catalog.ts_token_type(res.cfgparser::pg_catalog.oid) AS t
-                      WHERE t.tokid = m.maptokentype)\s
-                      ORDER BY m.mapseqno) AS tokennames,
-                    pg_catalog.array_agg(nsp.nspname ORDER BY m.mapseqno) AS dictschemas,
-                    pg_catalog.array_agg(dict.dictname ORDER BY m.mapseqno) AS dictnames
-                  FROM pg_catalog.pg_ts_config_map m
-                  LEFT JOIN pg_catalog.pg_ts_dict dict ON m.mapdict = dict.oid
-                  LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid
-                  GROUP BY m.mapcfg
-                ) words ON words.mapcfg = res.oid""";
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("alias")
+                .from("pg_catalog.ts_token_type(res.cfgparser::pg_catalog.oid) AS t")
+                .where("t.tokid = m.maptokentype");
+
+        QueryBuilder words = new QueryBuilder()
+                .column("m.mapcfg")
+                .column("pg_catalog.array_agg(", subSelect, "ORDER BY m.mapseqno) AS tokennames")
+                .column("pg_catalog.array_agg(nsp.nspname ORDER BY m.mapseqno) AS dictschemas")
+                .column("pg_catalog.array_agg(dict.dictname ORDER BY m.mapseqno) AS dictnames")
+                .from("pg_catalog.pg_ts_config_map m")
+                .join("LEFT JOIN pg_catalog.pg_ts_dict dict ON m.mapdict = dict.oid")
+                .join("LEFT JOIN pg_catalog.pg_namespace nsp ON dict.dictnamespace = nsp.oid")
+                .groupBy("m.mapcfg");
 
         builder.column("words.tokennames");
         builder.column("words.dictschemas");
         builder.column("words.dictnames");
-        builder.join(words);
+        builder.join("LEFT JOIN LATERAL", words, "words ON words.mapcfg = res.oid");
     }
 }

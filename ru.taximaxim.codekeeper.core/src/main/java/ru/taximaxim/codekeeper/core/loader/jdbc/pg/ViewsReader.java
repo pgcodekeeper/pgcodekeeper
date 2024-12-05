@@ -173,26 +173,25 @@ public class ViewsReader extends JdbcReader {
     }
 
     private void addColumnsPart(QueryBuilder builder) {
-        String columns = """
-                LEFT JOIN
-                  (SELECT attrelid,
-                          pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names,
-                          pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments,
-                          pg_catalog.array_agg(pg_catalog.pg_get_expr(def.adbin, def.adrelid) ORDER BY attr.attnum) AS column_defaults,
-                          pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl
-                   FROM pg_catalog.pg_attribute attr
-                   LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum
-                     AND attr.attrelid = def.adrelid
-                     AND attr.attisdropped IS FALSE
-                   LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid
-                     AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
-                     AND des.objsubid = attr.attnum
-                  GROUP BY attrelid) subselect ON subselect.attrelid = res.oid""";
+        QueryBuilder columns = new QueryBuilder()
+                .column("attrelid")
+                .column("pg_catalog.array_agg(attr.attname ORDER BY attr.attnum) AS column_names")
+                .column("pg_catalog.array_agg(des.description ORDER BY attr.attnum) AS column_comments")
+                .column("pg_catalog.array_agg(pg_catalog.pg_get_expr(def.adbin, def.adrelid) ORDER BY attr.attnum) AS column_defaults")
+                .column("pg_catalog.array_agg(attr.attacl::text ORDER BY attr.attnum) AS column_acl")
+                .from("pg_catalog.pg_attribute attr")
+                .join("LEFT JOIN pg_catalog.pg_attrdef def ON def.adnum = attr.attnum")
+                .join("  AND attr.attrelid = def.adrelid")
+                .join("  AND attr.attisdropped IS FALSE")
+                .join("LEFT JOIN pg_catalog.pg_description des ON des.objoid = attr.attrelid")
+                .join("  AND des.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass")
+                .join("  AND des.objsubid = attr.attnum")
+                .groupBy("attrelid");
 
         builder.column("subselect.column_names");
         builder.column("subselect.column_comments");
         builder.column("subselect.column_defaults");
         builder.column("subselect.column_acl");
-        builder.join(columns);
+        builder.join("LEFT JOIN", columns, "subselect ON subselect.attrelid = res.oid");
     }
 }

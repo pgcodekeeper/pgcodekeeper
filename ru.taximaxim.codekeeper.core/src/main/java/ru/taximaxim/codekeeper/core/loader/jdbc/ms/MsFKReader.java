@@ -98,23 +98,22 @@ public class MsFKReader extends JdbcReader {
     }
 
     protected void addMsColsPart(QueryBuilder builder) {
-        String cols = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT\s
-                      sfkc.constraint_column_id AS id,
-                      fc.name AS f,
-                      rc.name AS r
-                    FROM sys.foreign_key_columns AS sfkc WITH (NOLOCK)\s
-                    JOIN sys.columns fc WITH (NOLOCK) ON sfkc.parent_column_id=fc.column_id AND fc.object_id=sfkc.parent_object_id
-                    JOIN sys.columns rc WITH (NOLOCK) ON sfkc.referenced_column_id=rc.column_id AND rc.object_id=sfkc.referenced_object_id
-                    WHERE res.object_id=sfkc.constraint_object_id
-                  ) cc ORDER BY cc.id
-                  FOR XML RAW, ROOT
-                ) aa (cols)""";
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("sfkc.constraint_column_id AS id")
+                .column("fc.name AS f")
+                .column("rc.name AS r")
+                .from("sys.foreign_key_columns AS sfkc WITH (NOLOCK)")
+                .join("JOIN sys.columns fc WITH (NOLOCK) ON sfkc.parent_column_id=fc.column_id AND fc.object_id=sfkc.parent_object_id")
+                .join("JOIN sys.columns rc WITH (NOLOCK) ON sfkc.referenced_column_id=rc.column_id AND rc.object_id=sfkc.referenced_object_id")
+                .where("res.object_id=sfkc.constraint_object_id");
+
+        QueryBuilder cols = new QueryBuilder()
+                .column("*")
+                .from(subSelect, "cc ORDER BY cc.id")
+                .postAction("FOR XML RAW, ROOT");
 
         builder.column("aa.cols");
-        builder.join(cols);
+        builder.join("CROSS APPLY", cols, "aa (cols)");
     }
 
     @Override
