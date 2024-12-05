@@ -28,9 +28,22 @@ public final class QueryBuilder {
     private String from;
     private List<String> joins = new ArrayList<>();
     private List<String> wheres = new ArrayList<>();
+    private List<String> groups = new ArrayList<>();
+    private String postAction;
 
     public QueryBuilder column(String column) {
         columns.add(column);
+        return this;
+    }
+
+    public QueryBuilder column(String prefix, QueryBuilder column, String postfix) {
+        StringBuilder sb = new StringBuilder();
+        if (!prefix.isEmpty()) {
+            sb.append(prefix).append(" ");
+        }
+        appendChild(sb, column, 4);
+        sb.append(" ").append(postfix);
+        columns.add(sb.toString());
         return this;
     }
 
@@ -39,18 +52,62 @@ public final class QueryBuilder {
         return this;
     }
 
+    public QueryBuilder join(String prefix, QueryBuilder join, String postfix) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append(" ");
+        appendChild(sb, join);
+        sb.append(" ").append(postfix);
+        joins.add(sb.toString());
+        return this;
+    }
+
     public QueryBuilder from(String from) {
         this.from = from;
         return this;
     }
 
+    public QueryBuilder from(QueryBuilder from, String postfix) {
+        StringBuilder sb = new StringBuilder();
+        appendChild(sb, from);
+        sb.append(" ").append(postfix);
+        this.from = sb.toString();
+        return this;
+    }
+
     public QueryBuilder where(String where) {
-        this.wheres.add(where);
+        wheres.add(where);
+        return this;
+    }
+
+    public QueryBuilder where(String prefix, QueryBuilder where) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append(" ");
+        appendChild(sb, where);
+        wheres.add(sb.toString());
+        return this;
+    }
+
+    public QueryBuilder postAction(String action) {
+        postAction = action;
         return this;
     }
 
     public QueryBuilder with(String alias, String cte) {
-        withs.put(alias, cte);
+        StringBuilder sb = new StringBuilder();
+        sb.append("(").append(cte).append(")");
+        withs.put(alias, sb.toString());
+        return this;
+    }
+
+    public QueryBuilder with(String alias, QueryBuilder cte) {
+        StringBuilder sb = new StringBuilder();
+        appendChild(sb, cte);
+        withs.put(alias, sb.toString());
+        return this;
+    }
+
+    public QueryBuilder groupBy(String group) {
+        groups.add(group);
         return this;
     }
 
@@ -59,7 +116,7 @@ public final class QueryBuilder {
         if (!withs.isEmpty()) {
             sb.append("WITH ");
             for (Entry<String, String> with : withs.entrySet()) {
-                sb.append(with.getKey()).append(" AS (").append(with.getValue()).append("),\n");
+                sb.append(with.getKey()).append(" AS ").append(with.getValue()).append(",\n");
             }
             sb.setLength(sb.length() - 2);
             sb.append("\n");
@@ -77,9 +134,38 @@ public final class QueryBuilder {
         }
 
         if (!wheres.isEmpty()) {
-            sb.append("\nWHERE ").append(String.join("\n AND ", wheres));
+            sb.append("\nWHERE ").append(String.join("\n  AND ", wheres));
+        }
+
+        if (!groups.isEmpty()) {
+            sb.append("\nGROUP BY ").append(String.join(", ", groups));
+        }
+
+        if (postAction != null) {
+            sb.append("\n").append(postAction);
         }
 
         return sb.toString();
+    }
+
+    private void appendChild(StringBuilder sb, QueryBuilder childBuilder) {
+        appendChild(sb, childBuilder, 2);
+    }
+
+    private void appendChild(StringBuilder sb, QueryBuilder childBuilder, int indent) {
+        sb.append("(\n").append(childBuilder.build().indent(indent)).append(" ".repeat(indent - 2)).append(")");
+    }
+
+    public QueryBuilder copy() {
+        QueryBuilder copy = new QueryBuilder();
+        copy.withs.putAll(withs);
+        copy.columns.addAll(columns);
+        copy.from = from;
+        copy.joins.addAll(joins);
+        copy.wheres.addAll(wheres);
+        copy.groups.addAll(groups);
+        copy.postAction = postAction;
+
+        return copy;
     }
 }

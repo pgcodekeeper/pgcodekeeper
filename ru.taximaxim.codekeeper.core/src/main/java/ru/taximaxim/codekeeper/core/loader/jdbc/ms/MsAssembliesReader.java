@@ -78,20 +78,21 @@ public class MsAssembliesReader extends AbstractStatementReader {
     }
 
     private void addMsBinariesPart(QueryBuilder builder) {
-        String binaries = """
-                CROSS APPLY (
-                    SELECT convert(varchar(max), af.content, 1) b
-                    FROM sys.assembly_files af WITH (NOLOCK)\s
-                    WHERE res.assembly_id = af.assembly_id AND af.assembly_id > 65535
-                    FOR XML RAW, ROOT
-                ) bb (binaries)""";
+        QueryBuilder binaries = new QueryBuilder()
+                .column("convert(varchar(max), af.content, 1) b")
+                .from("sys.assembly_files af WITH (NOLOCK)")
+                .where("res.assembly_id = af.assembly_id")
+                .where("af.assembly_id > 65535")
+                .postAction("FOR XML RAW, ROOT");
 
         builder.column("bb.binaries");
-        builder.join(binaries);
+        builder.join("CROSS APPLY", binaries, "bb (binaries)");
     }
 
     @Override
-    protected String getFormattedMsPriviliges() {
-        return MS_PRIVILIGES_JOIN.formatted("", "assembly_id", 5);
+    protected QueryBuilder formatMsPriviliges(QueryBuilder privileges) {
+        return privileges
+                .where("major_id = res.assembly_id")
+                .where("perm.class = 5");
     }
 }

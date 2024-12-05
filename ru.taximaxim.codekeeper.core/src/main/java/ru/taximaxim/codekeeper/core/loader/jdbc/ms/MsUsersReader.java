@@ -75,7 +75,10 @@ public class MsUsersReader extends AbstractStatementReader {
     }
 
     @Override
-    protected String getFormattedMsPriviliges() {
-        return MS_PRIVILIGES_JOIN.formatted("", "principal_id", 4);
+    protected QueryBuilder formatMsPriviliges(QueryBuilder privileges) {
+        return privileges
+                .column("col.name AS c")
+                .where("major_id = res.principal_id")
+                .where("perm.class = 4");
     }
 }

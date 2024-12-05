@@ -451,47 +451,41 @@ public final class TypesReader extends JdbcReader {
     }
 
     private void addDomainPart(QueryBuilder builder) {
-        String constraints = """
-                LEFT JOIN(
-                  SELECT
-                    c.contypid,
-                    pg_catalog.array_agg(c.conname ORDER BY c.conname) AS connames,
-                    pg_catalog.array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs,
-                    pg_catalog.array_agg(cd.description ORDER BY c.conname) AS concomments
-                  FROM pg_catalog.pg_constraint c
-                  LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid
-                    AND cd.classoid = 'pg_catalog.pg_constraint'::pg_catalog.regclass
-                  WHERE c.contypid != 0
-                  GROUP BY c.contypid
-                ) dom_constraints ON dom_constraints.contypid = res.oid""";
+        QueryBuilder constraints = new QueryBuilder()
+                .column("c.contypid")
+                .column("pg_catalog.array_agg(c.conname ORDER BY c.conname) AS connames")
+                .column("pg_catalog.array_agg(pg_catalog.pg_get_constraintdef(c.oid) ORDER BY c.conname) AS condefs")
+                .column("pg_catalog.array_agg(cd.description ORDER BY c.conname) AS concomments")
+                .from("pg_catalog.pg_constraint c")
+                .join("LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid")
+                .join("  AND cd.classoid = 'pg_catalog.pg_constraint'::pg_catalog.regclass")
+                .where("c.contypid != 0")
+                .groupBy("c.contypid");
 
         builder.column("dom_constraints.connames AS dom_connames");
         builder.column("dom_constraints.condefs AS dom_condefs");
         builder.column("dom_constraints.concomments AS dom_concomments");
-        builder.join(constraints);
+        builder.join("LEFT JOIN", constraints, "dom_constraints ON dom_constraints.contypid = res.oid");
     }
 
     private void addCompositePart(QueryBuilder builder) {
-        String columns = """
-                LEFT JOIN(
-                  SELECT
-                    a.attrelid,
-                    pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS attnames,
-                    pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS atttypdefns,
-                    pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS atttypids,
-                    pg_catalog.array_agg(a.attcollation::bigint ORDER BY a.attnum) AS attcollations,
-                    pg_catalog.array_agg(ta.typcollation::bigint ORDER BY a.attnum) AS atttypcollations,
-                    pg_catalog.array_agg(cl.collname ORDER BY a.attnum) AS attcollationnames,
-                    pg_catalog.array_agg(cl.nspname ORDER BY a.attnum) AS attcollationnspnames,
-                    pg_catalog.array_agg(d.description ORDER BY a.attnum) AS attcomments
-                  FROM pg_catalog.pg_attribute a
-                  LEFT JOIN pg_catalog.pg_type ta ON ta.oid = a.atttypid
-                  LEFT JOIN collations cl ON cl.oid = a.attcollation
-                  LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum
-                    AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass
-                  WHERE a.attisdropped = FALSE
-                  GROUP BY a.attrelid
-                ) comp_attrs ON comp_attrs.attrelid = res.typrelid""";
+        QueryBuilder columns = new QueryBuilder()
+                .column("a.attrelid")
+                .column("pg_catalog.array_agg(a.attname ORDER BY a.attnum) AS attnames")
+                .column("pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS atttypdefns")
+                .column("pg_catalog.array_agg(a.atttypid::bigint ORDER BY a.attnum) AS atttypids")
+                .column("pg_catalog.array_agg(a.attcollation::bigint ORDER BY a.attnum) AS attcollations")
+                .column("pg_catalog.array_agg(ta.typcollation::bigint ORDER BY a.attnum) AS atttypcollations")
+                .column("pg_catalog.array_agg(cl.collname ORDER BY a.attnum) AS attcollationnames")
+                .column("pg_catalog.array_agg(cl.nspname ORDER BY a.attnum) AS attcollationnspnames")
+                .column("pg_catalog.array_agg(d.description ORDER BY a.attnum) AS attcomments")
+                .from("pg_catalog.pg_attribute a")
+                .join("LEFT JOIN pg_catalog.pg_type ta ON ta.oid = a.atttypid")
+                .join("LEFT JOIN collations cl ON cl.oid = a.attcollation")
+                .join("LEFT JOIN pg_catalog.pg_description d ON d.objoid = a.attrelid AND d.objsubid = a.attnum")
+                .join("  AND d.classoid = 'pg_catalog.pg_class'::pg_catalog.regclass")
+                .where("a.attisdropped = FALSE")
+                .groupBy("a.attrelid");
 
         builder
         .column("pg_catalog.format_type(res.typbasetype, res.typtypmod) AS dom_basetypefmt")
@@ -509,6 +503,6 @@ public final class TypesReader extends JdbcReader {
         .column("comp_attrs.attcollationnames AS comp_attcollationnames")
         .column("comp_attrs.attcollationnspnames AS comp_attcollationnspnames")
         .column("comp_attrs.attcomments AS comp_attcomments")
-        .join(columns);
+        .join("LEFT JOIN", columns, "comp_attrs ON comp_attrs.attrelid = res.typrelid");
     }
 }

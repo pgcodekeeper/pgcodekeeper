@@ -72,7 +72,9 @@ public class MsSchemasReader extends AbstractStatementReader {
     }
 
     @Override
-    protected String getFormattedMsPriviliges() {
-        return MS_PRIVILIGES_JOIN.formatted("", "schema_id", 3);
+    protected QueryBuilder formatMsPriviliges(QueryBuilder privileges) {
+        return privileges
+            .where("major_id = res.schema_id")
+            .where("perm.class = 3");
     }
 }
