@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChView extends AbstractView {
 
@@ -156,7 +155,7 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         StringBuilder sb = new StringBuilder(getQuery().length() * 2);
         sb.append("CREATE ").append(type.getSql()).append(" ");
         appendIfNotExists(sb);
@@ -195,7 +194,7 @@ public class ChView extends AbstractView {
             sb.append("\nCOMMENT ").append(getComment());
         }
 
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     private void appendColumns(StringBuilder sb) {
@@ -212,8 +211,8 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChView newView = (ChView) newCondition;
 
         if (getViewType() != newView.getViewType() || isViewModified(newView)
@@ -222,14 +221,14 @@ public class ChView extends AbstractView {
             return ObjectState.RECREATE;
         }
 
-        compareSqlSecurity(newView, alterActions);
-        compareSql(newView.getNormalizedQuery(), alterActions);
-        compareComment(newView.getComment(), alterActions);
+        compareSqlSecurity(newView, script);
+        compareSql(newView.getNormalizedQuery(), script);
+        compareComment(newView.getComment(), script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
-    private void compareSqlSecurity(ChView newView, Collection<SQLAction> sqlActions) {
+    private void compareSqlSecurity(ChView newView, SQLScript script) {
         if (Objects.equals(getSqlSecurity(), newView.getSqlSecurity())
                 && Objects.equals(getDefiner(), newView.getDefiner())) {
             return;
@@ -251,20 +250,16 @@ public class ChView extends AbstractView {
             sb.append("CURRENT_USER");
         }
         sb.append(")");
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareSql(String newNormalizedSql, Collection<SQLAction> sqlActions) {
-        if (normalizedQuery.equals(newNormalizedSql)) {
-            return;
+    private void compareSql(String newNormalizedSql, SQLScript script) {
+        if (!normalizedQuery.equals(newNormalizedSql)) {
+            script.addStatement(ALTER_TABLE + getQualifiedName() + "\n\tMODIFY QUERY " + newNormalizedSql);
         }
-
-        StringBuilder sb = new StringBuilder();
-        sb.append(ALTER_TABLE).append(getQualifiedName()).append("\n\tMODIFY QUERY ").append(newNormalizedSql);
-        sqlActions.add(new SQLAction(sb));
     }
 
-    private void compareComment(String newComment, Collection<SQLAction> sqlActions) {
+    private void compareComment(String newComment, SQLScript script) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
@@ -276,7 +271,7 @@ public class ChView extends AbstractView {
         } else {
             sb.append(newComment);
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     /**
@@ -343,12 +338,12 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public void appendComments(Collection<SQLAction> sqlActions) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 }

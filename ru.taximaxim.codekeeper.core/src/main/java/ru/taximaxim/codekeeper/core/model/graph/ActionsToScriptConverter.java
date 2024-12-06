@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -59,7 +58,6 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ActionsToScriptConverter {
@@ -267,18 +265,17 @@ public class ActionsToScriptConverter {
         case ALTER:
             var joinableActions = joinableTableActions.get(action);
             if (joinableActions != null) {
-                getAlterTableScript(joinableActions).forEach(script::addStatement);
+                getAlterTableScript(joinableActions);
                 return;
             }
-            Set<SQLAction> alterActions = new LinkedHashSet<>();
-            ObjectState state = obj.appendAlterSQL(action.getNewObj(), new AtomicBoolean(), alterActions);
+            SQLScript temp = new SQLScript(action.getNewObj().getDbType());
+            ObjectState state = obj.appendAlterSQL(action.getNewObj(), new AtomicBoolean(), temp);
 
             if (state == ObjectState.ALTER) {
                 if (depcy != null) {
                     script.addStatementWithoutSeparator(depcy);
                 }
-
-                alterActions.forEach(script::addStatement);
+                script.addAllStatements(temp);
             }
             break;
         case NONE:
@@ -287,9 +284,7 @@ public class ActionsToScriptConverter {
     }
 
     private void addToAddScript(PgStatement obj) {
-        Set<SQLAction> createActions = new LinkedHashSet<>();
-        obj.getCreationSQL(createActions);
-        createActions.forEach(script::addStatement);
+        obj.getCreationSQL(script);
     }
 
     private void addToDropScript(PgStatement obj, boolean isExist) {
@@ -297,15 +292,13 @@ public class ActionsToScriptConverter {
         if (!droppedObjects.add(obj.getTwin(oldDbFull))) {
             return;
         }
-        Set<SQLAction> dropActions = new LinkedHashSet<>();
-        obj.getDropSQL(dropActions, isExist);
-        dropActions.forEach(script::addStatement);
+        obj.getDropSQL(script, isExist);
     }
 
     /**
      * get ALTER TABLE script with all joinable changes
      */
-    private Set<SQLAction> getAlterTableScript(List<ActionContainer> actionsList) {
+    private void getAlterTableScript(List<ActionContainer> actionsList) {
         StringBuilder sb = new StringBuilder();
         int i = 1;
         for (var colAction : actionsList) {
@@ -314,8 +307,7 @@ public class ActionsToScriptConverter {
             oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size());
             i++;
         }
-
-        return Set.of(new SQLAction(sb.toString()));
+        script.addStatement(sb);
     }
 
     private boolean isPartitionTable(PgStatement obj) {
@@ -362,27 +354,25 @@ public class ActionsToScriptConverter {
         // print insert for parent table
         addCommandsForMoveData((AbstractTable) obj);
 
-        Set<SQLAction> dropActions = new LinkedHashSet<>();
         if (tables != null) {
             List<PartitionPgTable> list = new ArrayList<>(tables);
             Collections.reverse(list);
-            list.forEach(table -> printDropPartition(table, dropActions));
+            list.forEach(this::printDropPartition);
         }
 
         // print parent drops
         SimplePgTable parenTable = (SimplePgTable) obj;
-        printDropPartition(parenTable, dropActions);
-        dropActions.forEach(script::addStatement);
+        printDropPartition(parenTable);
     }
 
-    private void printDropPartition(AbstractPgTable table, Collection<SQLAction> dropActions) {
+    private void printDropPartition(AbstractPgTable table) {
         String tblTmpName = tblTmpNames.get(table.getQualifiedName());
         if (tblTmpName != null) {
             UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
             StringBuilder sb = new StringBuilder();
             sb.append("DROP TABLE ")
             .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName));
-            dropActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         }
     }
 
@@ -575,10 +565,9 @@ public class ActionsToScriptConverter {
                 : identityCols.stream().filter(colsForMovingData::contains)
                 .toList();
 
-        Set<SQLAction> sqlActions = new LinkedHashSet<>();
         if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
-            sqlActions.add(new SQLAction(getIdentInsertText(tblQName, true)));
+            script.addStatement(getIdentInsertText(tblQName, true));
         }
 
         String cols = colsForMovingData.stream()
@@ -592,11 +581,11 @@ public class ActionsToScriptConverter {
             sbInsert.append("\nOVERRIDING SYSTEM VALUE");
         }
         sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
-        sqlActions.add(new SQLAction(sbInsert));
+        script.addStatement(sbInsert);
 
         if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
-            sqlActions.add(new SQLAction(getIdentInsertText(tblQName, false)));
+            script.addStatement(getIdentInsertText(tblQName, false));
         }
 
         if (!identityColsForMovingData.isEmpty()) {
@@ -615,7 +604,7 @@ public class ActionsToScriptConverter {
                             + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
                     sbSql.append("DO LANGUAGE plpgsql ")
                     .append(PgDiffUtils.quoteStringDollar(doBody));
-                    sqlActions.add(new SQLAction(sbSql));
+                    script.addStatement(sbSql);
                 }
                 break;
             case MS:
@@ -629,7 +618,7 @@ public class ActionsToScriptConverter {
                 .append("));\nDBCC CHECKIDENT (")
                 .append(PgDiffUtils.quoteString(tblQName))
                 .append(", RESEED, @restart_var);");
-                sqlActions.add(new SQLAction(sbSql));
+                script.addStatement(sbSql.toString());
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -637,11 +626,8 @@ public class ActionsToScriptConverter {
             }
         }
         if (!isPartitionTable(newTbl)) {
-            StringBuilder sbDrop = new StringBuilder();
-            sbDrop.append("DROP TABLE ").append(tblTmpQName);
-            sqlActions.add(new SQLAction(sbDrop));
+            script.addStatement("DROP TABLE " + tblTmpQName);
         }
-        sqlActions.forEach(script::addStatement);
     }
 
     private String getIdentInsertText(String name, boolean isOn) {

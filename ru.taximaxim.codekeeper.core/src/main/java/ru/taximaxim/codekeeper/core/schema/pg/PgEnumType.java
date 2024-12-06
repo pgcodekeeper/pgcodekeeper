@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -25,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgEnumType extends AbstractType{
 
@@ -77,12 +76,12 @@ public final class PgEnumType extends AbstractType{
     }
 
     @Override
-    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
         List<String> newEnums = ((PgEnumType) newType).getEnums();
         for (int i = 0; i < newEnums.size(); ++i) {
             String value = newEnums.get(i);
             if (!getEnums().contains(value)) {
-                SQLAction sql = new SQLAction();
+                StringBuilder sql = new StringBuilder();
                 sql.append("ALTER TYPE ").append(getQualifiedName())
                 .append("\n\tADD VALUE ").append(value);
                 if (i == 0) {
@@ -90,7 +89,7 @@ public final class PgEnumType extends AbstractType{
                 } else {
                     sql.append(" AFTER ").append(newEnums.get(i - 1));
                 }
-                sqlActions.add(sql);
+                script.addStatement(sql);
             }
         }
     }

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -31,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgConstraintPk extends PgConstraint implements IConstraintPk, PgIndexParamContainer {
 
@@ -157,7 +156,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     }
 
     @Override
-    protected void compareExtraOptions(PgConstraint obj, Collection<SQLAction> sqlActions) {
+    protected void compareExtraOptions(PgConstraint obj, SQLScript script) {
         PgConstraintPk newConstr = (PgConstraintPk) obj;
 
         if (newConstr.isClustered() != isClustered()) {
@@ -165,11 +164,11 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
             if (newConstr.isClustered()) {
                 appendAlterTable(sb);
                 sb.append(" CLUSTER ON ").append(getName());
-                sqlActions.add(new SQLAction(sb));
+                script.addStatement(sb);
             } else if (!((PgStatementContainer) newConstr.getParent()).isClustered()) {
                 appendAlterTable(sb);
                 sb.append(" SET WITHOUT CLUSTER");
-                sqlActions.add(new SQLAction(sb));
+                script.addStatement(sb);
             }
         }
     }

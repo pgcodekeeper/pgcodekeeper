@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class MsConstraintPk extends MsConstraint
 implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
@@ -145,10 +144,10 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        super.getCreationSQL(createActions);
+    public void getCreationSQL(SQLScript script) {
+        super.getCreationSQL(script);
         if (trackedState != null) {
-            appendChangeTracking(trackedState, createActions);
+            appendChangeTracking(trackedState, script);
         }
     }
 
@@ -166,21 +165,21 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
-    protected void compareOptions(MsConstraint newConstr, Collection<SQLAction> alterActions) {
+    protected void compareOptions(MsConstraint newConstr, SQLScript script) {
         var newPk = (MsConstraintPk) newConstr;
         if (Objects.equals(getTrackedState(), newPk.getTrackedState())) {
             return;
         }
         if (getTrackedState() != null) {
-            appendChangeTracking(null, alterActions);
+            appendChangeTracking(null, script);
         }
 
         if (newPk.getTrackedState() != null) {
-            appendChangeTracking(newPk.getTrackedState(), alterActions);
+            appendChangeTracking(newPk.getTrackedState(), script);
         }
     }
 
-    private void appendChangeTracking(Boolean trackedState, Collection<SQLAction> sqlActions) {
+    private void appendChangeTracking(Boolean trackedState, SQLScript script) {
         StringBuilder sb = new StringBuilder();
         appendAlterTable(sb);
         if (trackedState == null) {
@@ -189,13 +188,13 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
             sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
             sb.append(trackedState ? "ON" : "OFF").append(')');
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    protected void appendSpecialDropSQL(Collection<SQLAction> dropActions) {
+    protected void appendSpecialDropSQL(SQLScript script) {
         if (trackedState != null) {
-            appendChangeTracking(null, dropActions);
+            appendChangeTracking(null, script);
         }
     }
 
@@ -250,7 +249,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, Collection<SQLAction> sqlActions) {
+    public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no imple
     }
 }

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,7 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChConstraint extends AbstractConstraint {
 
@@ -58,16 +57,15 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         appendAlterTable(sb);
         sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition());
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
@@ -77,7 +75,7 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
         appendAlterTable(sb);
         sb.append("\n\tDROP CONSTRAINT ");
@@ -85,7 +83,7 @@ public class ChConstraint extends AbstractConstraint {
             sb.append(IF_EXISTS);
         }
         sb.append(ChDiffUtils.getQuotedName(getName()));
-        dropActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     private boolean compareUnalterable(ChConstraint newConstr) {

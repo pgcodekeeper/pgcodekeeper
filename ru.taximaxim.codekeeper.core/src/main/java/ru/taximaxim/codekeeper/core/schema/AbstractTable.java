@@ -26,7 +26,7 @@ import java.util.stream.Stream;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -127,9 +127,9 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
     }
 
-    protected void appendColumnsPriliges(Collection<SQLAction> createActions) {
+    protected void appendColumnsPriliges(SQLScript script) {
         for (AbstractColumn col : columns) {
-            col.appendPrivileges(createActions);
+            col.appendPrivileges(script);
         }
     }
 

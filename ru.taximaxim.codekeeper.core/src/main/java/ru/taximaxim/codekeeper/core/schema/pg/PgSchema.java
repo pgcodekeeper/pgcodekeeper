@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Postgres schema code generation.
@@ -54,26 +54,26 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
-        appendAlterOwner(newCondition, alterActions);
-        alterPrivileges(newCondition, alterActions);
-        appendAlterComments(newCondition, alterActions);
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
+        appendAlterOwner(newCondition, script);
+        alterPrivileges(newCondition, script);
+        appendAlterComments(newCondition, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     public PgDomain getDomain(String name) {

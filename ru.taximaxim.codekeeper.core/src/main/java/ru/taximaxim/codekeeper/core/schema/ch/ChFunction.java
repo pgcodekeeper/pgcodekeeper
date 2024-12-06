@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChFunction extends PgStatement implements IFunction {
 
@@ -69,12 +68,12 @@ public class ChFunction extends PgStatement implements IFunction {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE FUNCTION ").append(ChDiffUtils.getQuotedName(getName())).append(" AS ");
         fillArgs(sb);
         sb.append(" -> ").append(body);
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     private void fillArgs(StringBuilder sb) {
@@ -90,7 +89,7 @@ public class ChFunction extends PgStatement implements IFunction {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         var newFunction = (ChFunction) newCondition;
         if (!compareUnalterable(newFunction)) {
             isNeedDepcies.set(true);

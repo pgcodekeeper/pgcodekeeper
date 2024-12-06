@@ -8,7 +8,6 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
 
 public class PartitionTemplateContainer implements IHashable {
 
@@ -35,28 +34,28 @@ public class PartitionTemplateContainer implements IHashable {
         return !subElements.isEmpty();
     }
 
-    public void appendCreateSQL(SQLAction sql) {
+    public void appendCreateSQL(StringBuilder sql) {
         appendPartitionName(sql);
         sql.append(SET_SUBPARTITION).append("\n");
         appendTemplateOptions(sql);
     }
 
-    public void appendDropSql(SQLAction sql) {
+    public void appendDropSql(StringBuilder sql) {
         appendPartitionName(sql);
         sql.append(SET_SUBPARTITION).append(")");
     }
 
-    private void appendPartitionName(SQLAction sql) {
+    private void appendPartitionName(StringBuilder sql) {
         if (partitionName != null) {
             sql.append(" ALTER PARTITION ").append(partitionName);
         }
     }
 
-    protected void appendTemplateOptions(SQLAction sbSQL) {
+    protected void appendTemplateOptions(StringBuilder sbSQL) {
         for (var elem : subElements) {
             sbSQL.append("  ").append(elem).append(",").append("\n");
         }
-        sbSQL.reduce(2);
+        sbSQL.setLength(sbSQL.length() - 2);
         sbSQL.append("\n");
         sbSQL.append(")");
     }

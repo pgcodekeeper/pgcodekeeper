@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -23,7 +22,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgBaseType extends AbstractType implements ICompressOptionContainer {
 
@@ -84,19 +83,19 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
     }
 
     @Override
-    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
         PgBaseType newBaseType = (PgBaseType) newType;
         if (!Objects.equals(newBaseType.getCompressType(), getCompressType())
                 || newBaseType.getCompressLevel() != getCompressLevel()
                 || newBaseType.getBlockSize() != getBlockSize()) {
-            appendGreenplumOptions(newBaseType, sqlActions);
+            script.addStatement(appendGreenplumOptions(newBaseType));
         }
     }
 
     @Override
-    protected void appendOptions(Collection<SQLAction> createActions) {
+    protected void appendOptions(SQLScript script) {
         if (checkGreenplumOptions()) {
-            appendGreenplumOptions(this, createActions);
+            script.addStatement(appendGreenplumOptions(this));
         }
     }
 
@@ -106,16 +105,15 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
                 || !Objects.equals(DEFAULT_COMPESS_TYPE, compressType);
     }
 
-    private void appendGreenplumOptions(PgBaseType type, Collection<SQLAction> sqlCommands/*, StringBuilder sb*/) {
-        SQLAction sbSQL = new SQLAction();
+    private StringBuilder appendGreenplumOptions(PgBaseType type) {
+        StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("ALTER TYPE ").append(getQualifiedName())
         .append(" SET DEFAULT ENCODING (")
         .append("COMPRESSTYPE = ").append(type.getCompressType()).append(", ")
         .append("COMPRESSLEVEL = ").append(type.getCompressLevel()).append(", ")
         .append("BLOCKSIZE = ").append(type.getBlockSize())
         .append(")");
-
-        sqlCommands.add(sbSQL);
+        return sbSQL;
     }
 
     public String getInputFunction() {

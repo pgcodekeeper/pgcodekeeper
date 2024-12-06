@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IPartitionTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Partition regular table object
@@ -54,7 +53,7 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> alterTableActions) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" PARTITION OF ").append(getParentTable());
 
         if (!columns.isEmpty()) {
@@ -62,7 +61,7 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn((PgColumn) column, sbSQL, alterTableActions);
+                writeColumn((PgColumn) column, sbSQL, script);
             }
 
             if (start != sbSQL.length()) {
@@ -84,28 +83,26 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         if (!(newTable instanceof PartitionPgTable)) {
-            SQLAction sql = appendTablePartiton(getParentTable(), "DETACH");
-            sqlActions.add(sql);
+            script.addStatement(appendTablePartiton(getParentTable(), "DETACH"));
 
             if (newTable instanceof AbstractRegularTable table) {
-                table.convertTable(sqlActions);
+                table.convertTable(script);
             }
         }
     }
 
     @Override
-    protected void convertTable(Collection<SQLAction> sqlActions) {
+    protected void convertTable(SQLScript script) {
         Inherits newInherits = getInherits().get(0);
-        SQLAction sql = appendTablePartiton(newInherits.getQualifiedName(), "ATTACH");
+        StringBuilder sql = appendTablePartiton(newInherits.getQualifiedName(), "ATTACH");
         sql.append(' ').append(getPartitionBounds());
-        sqlActions.add(sql);
+        script.addStatement(sql);
     }
 
-    private SQLAction appendTablePartiton(String tableName, String state) {
-        SQLAction sql = new SQLAction();
-        return sql.append(ALTER_TABLE).append(tableName)
+    private StringBuilder appendTablePartiton(String tableName, String state) {
+        return new StringBuilder(ALTER_TABLE).append(tableName)
                 .append(MessageFormat.format("\n\t{0} PARTITION ", state))
                 .append(PgDiffUtils.getQuotedName(getParent().getName()))
                 .append('.')
@@ -113,8 +110,8 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
     }
 
     @Override
-    protected void compareTableOptions(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
-        super.compareTableOptions(newTable, sqlActions);
+    protected void compareTableOptions(AbstractPgTable newTable, SQLScript script) {
+        super.compareTableOptions(newTable, script);
 
         if (newTable instanceof PartitionPgTable table) {
             String newBounds = table.getPartitionBounds();
@@ -124,16 +121,16 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
 
             if (!Objects.equals(partitionBounds, newBounds)
                     || !Objects.equals(oldInherits, newInherits)) {
-                sqlActions.add(appendTablePartiton(oldInherits.getQualifiedName(), "DETACH"));
-                SQLAction sql = appendTablePartiton(newInherits.getQualifiedName(), "ATTACH");
+                script.addStatement(appendTablePartiton(oldInherits.getQualifiedName(), "DETACH"));
+                StringBuilder sql = appendTablePartiton(newInherits.getQualifiedName(), "ATTACH");
                 sql.append(' ').append(table.getPartitionBounds());
-                sqlActions.add(sql);
+                script.addStatement(sql);
             }
         }
     }
 
     @Override
-    protected void compareInherits(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
+    protected void compareInherits(AbstractPgTable newTable, SQLScript script) {
         //not support default syntax
     }
 

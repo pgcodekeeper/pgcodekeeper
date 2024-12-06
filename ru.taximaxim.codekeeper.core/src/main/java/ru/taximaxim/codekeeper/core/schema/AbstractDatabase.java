@@ -37,7 +37,7 @@ import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Stores database information.
@@ -198,18 +198,17 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         // no action
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> createActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         return ObjectState.NOTHING;
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
     }
 
     @Override

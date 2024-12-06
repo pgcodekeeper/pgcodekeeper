@@ -15,14 +15,13 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Base implementation of foreign table
@@ -83,12 +82,9 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void appendAlterOptions(Collection<SQLAction> sqlActions) {
+    protected void appendAlterOptions(SQLScript script) {
         if (hasOids) {
-            SQLAction sql = new SQLAction();
-            sql.append(getAlterTable(true));
-            sql.append(" SET WITH OIDS");
-            sqlActions.add(sql);
+            script.addStatement(getAlterTable(true) + " SET WITH OIDS");
         }
     }
 
@@ -102,7 +98,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> alterActions) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         // untransformable
     }
 

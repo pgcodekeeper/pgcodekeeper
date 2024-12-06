@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,7 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgCollation extends PgStatement implements ISearchPath {
 
@@ -95,7 +94,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE COLLATION ");
         appendIfNotExists(sbSQL);
@@ -118,15 +117,15 @@ public class PgCollation extends PgStatement implements ISearchPath {
         }
 
         sbSQL.append(")");
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
-        appendOwnerSQL(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgCollation newCollation = (PgCollation) newCondition;
 
         if (!compareUnalterable(newCollation)) {
@@ -134,10 +133,10 @@ public class PgCollation extends PgStatement implements ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        appendAlterOwner(newCollation, alterActions);
-        appendAlterComments(newCollation, alterActions);
+        appendAlterOwner(newCollation, script);
+        appendAlterComments(newCollation, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override

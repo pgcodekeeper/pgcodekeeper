@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChIndex extends AbstractIndex {
 
@@ -76,14 +75,12 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        final SQLAction action = new SQLAction();
-        action.append(getAlterTable(false, false)).append(" ADD ").append(getDefinition());
-        createActions.add(action);
+    public void getCreationSQL(SQLScript script) {
+        script.addStatement(getAlterTable(false, false) + " ADD " + getDefinition());
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         var newIndex = (ChIndex) newCondition;
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
@@ -93,14 +90,14 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
-        final SQLAction action = new SQLAction();
-        action.append(getAlterTable(false, false)).append("\n\tDROP INDEX ");
+    public void getDropSQL(SQLScript script, boolean optionExists) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false, false)).append("\n\tDROP INDEX ");
         if (optionExists) {
-            action.append(IF_EXISTS);
+            sb.append(IF_EXISTS);
         }
-        action.append(ChDiffUtils.getQuotedName(getName()));
-        dropActions.add(action);
+        sb.append(ChDiffUtils.getQuotedName(getName()));
+        script.addStatement(sb);
     }
 
     private String getAlterTable(boolean nextLine, boolean only) {

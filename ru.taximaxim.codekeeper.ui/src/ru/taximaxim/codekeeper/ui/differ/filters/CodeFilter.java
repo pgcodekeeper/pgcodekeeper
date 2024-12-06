@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.differ.filters;
 
-import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +22,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
@@ -52,11 +51,9 @@ public class CodeFilter extends AbstractFilter {
     }
 
     private String getScript(PgStatement st) {
-        Set<SQLAction> sqlActions = new LinkedHashSet<>();
-        st.getCreationSQL(sqlActions);
-        StringBuilder sb = new StringBuilder();
-        sqlActions.forEach(sb::append);
-        return sb.toString();
+        SQLScript script = new SQLScript(st.getDbType());
+        st.getCreationSQL(script);
+        return script.getFullScript();
     }
 
     private boolean checkSide(TreeElement el, AbstractDatabase db, Set<TreeElement> elements) {

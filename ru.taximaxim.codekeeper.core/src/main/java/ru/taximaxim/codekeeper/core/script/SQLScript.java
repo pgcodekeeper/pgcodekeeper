@@ -35,20 +35,18 @@ public class SQLScript {
 
     private final DatabaseType databaseType;
 
+    private int count;
+
     public SQLScript(DatabaseType databaseType) {
         this.databaseType = databaseType;
     }
 
-    public void addStatement(SQLAction action) {
-        addStatement(action, action.getType());
+    public void addStatement(StringBuilder sb) {
+        addStatement(sb.toString());
     }
 
     public void addStatement(String sql) {
         addStatement(sql, SQLActionType.MID);
-    }
-
-    public void addStatement(SQLAction action, SQLActionType actionType) {
-        addStatement(action.toString(), actionType);
     }
 
     public void addStatement(String sql, SQLActionType actionType) {
@@ -80,6 +78,17 @@ public class SQLScript {
 
     public void addStatement(String sql, SQLActionType actionType, boolean needSeparator) {
         statements.computeIfAbsent(actionType, e -> new LinkedHashSet<>()).add(getSQLWithSeparator(sql, needSeparator));
+        count++;
+    }
+
+    public void addAllStatements(SQLScript script) {
+        for (var type : SQLActionType.values()) {
+            Set<String> s = script.statements.get(type);
+            if (null == s) {
+                continue;
+            }
+            s.forEach(e -> addStatement(e, type, false));
+        }
     }
 
     public String getFullScript() {
@@ -88,9 +97,11 @@ public class SQLScript {
             .collect(Collectors.joining(DELIMITER));
     }
 
-    public static String getText(Set<SQLAction> sqlActions, DatabaseType dbType) {
-        SQLScript script = new SQLScript(dbType);
-        sqlActions.forEach(script::addStatement);
-        return script.getFullScript();
+    public int getSize() {
+        return count;
+    }
+
+    public boolean isEmpty() {
+        return 0 == count;
     }
 }

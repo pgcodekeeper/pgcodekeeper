@@ -37,8 +37,8 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Base MS SQL table class
@@ -69,22 +69,22 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
-        appendAlterOptions(createActions);
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
-        appendColumnsPriliges(createActions);
+        appendAlterOptions(script);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendColumnsPriliges(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -92,17 +92,17 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newTable, alterActions);
-        appendAlterOwner(newTable, alterActions);
-        compareTableOptions(newTable, alterActions);
-        alterPrivileges(newTable, alterActions);
+        compareOptions(newTable, script);
+        appendAlterOwner(newTable, script);
+        compareTableOptions(newTable, script);
+        alterPrivileges(newTable, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
-    protected void appendAlterOptions(Collection<SQLAction> createActions) {
+    protected void appendAlterOptions(SQLScript script) {
         if (isTracked != null) {
-            createActions.add(enableTracking());
+            script.addStatement(enableTracking(), SQLActionType.END);
         }
     }
 
@@ -211,25 +211,25 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return true;
     }
 
-    private void compareTableOptions(MsTable table, Collection<SQLAction> alterActions) {
+    private void compareTableOptions(MsTable table, SQLScript script) {
         if (Objects.equals(isTracked, table.isTracked())) {
             if (pkChanged(table) && isTracked != null) {
-                disableEnableTracking(SQLActionType.MID, alterActions, table);
+                disableEnableTracking(SQLActionType.MID, script, table);
             }
             return;
         }
 
         if (table.isTracked() == null) {
-            alterActions.add(disableTracking(SQLActionType.END));
+            script.addStatement(disableTracking(), SQLActionType.END);
             return;
         }
 
         if (isTracked == null) {
-            alterActions.add(table.enableTracking());
+            script.addStatement(table.enableTracking(), SQLActionType.END);
             return;
         }
 
-        disableEnableTracking(SQLActionType.END, alterActions, table);
+        disableEnableTracking(SQLActionType.END, script, table);
     }
 
     private boolean pkChanged(MsTable table) {
@@ -238,24 +238,19 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return oldPk != null && newPk != null && !Objects.equals(oldPk, newPk);
     }
 
-    private void disableEnableTracking(SQLActionType actionType, Collection<SQLAction> alterActions, MsTable table) {
-        alterActions.add(disableTracking(actionType));
-        alterActions.add(table.enableTracking());
+    private void disableEnableTracking(SQLActionType actionType, SQLScript script, MsTable table) {
+        script.addStatement(disableTracking(), actionType);
+        script.addStatement(table.enableTracking(), SQLActionType.END);
     }
 
-    private SQLAction disableTracking(SQLActionType actionType) {
-        SQLAction action = new SQLAction(new StringBuilder(), actionType);
-        action.append(getAlterTable(false));
-        action.append(" DISABLE CHANGE_TRACKING");
-        return action;
+    private String disableTracking() {
+        return getAlterTable(false) + " DISABLE CHANGE_TRACKING";
     }
 
-    private SQLAction enableTracking() {
-        SQLAction action = new SQLAction(new StringBuilder(), SQLActionType.END);
-        action.append(getAlterTable(false));
-        action.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
-        action.append(isTracked() ? "ON" : "OFF").append(')');
-        return action;
+    private String enableTracking() {
+        return new StringBuilder(getAlterTable(false))
+                .append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ")
+                .append(isTracked() ? "ON" : "OFF").append(')').toString();
     }
 
     @Override
@@ -314,11 +309,11 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean generateExists) {
+    public void getDropSQL(SQLScript script, boolean generateExists) {
         if (isTracked != null && isTracked && getConstraints().stream().anyMatch(MsConstraintPk.class::isInstance)) {
-            dropActions.add(disableTracking(SQLActionType.BEGIN));
+            script.addStatement(disableTracking(), SQLActionType.BEGIN);
         }
-        super.getDropSQL(dropActions, generateExists);
+        super.getDropSQL(script, generateExists);
     }
 
     @Override

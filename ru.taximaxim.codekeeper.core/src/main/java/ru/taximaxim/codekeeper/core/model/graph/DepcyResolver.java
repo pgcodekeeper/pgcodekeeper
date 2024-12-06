@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -54,7 +53,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /*
  * implementation notes:
@@ -190,8 +189,8 @@ public class DepcyResolver {
         AtomicBoolean isNeedDepcies = new AtomicBoolean();
 
         if (oldObjStat != null) {
-            Set<SQLAction> sqlActions = new LinkedHashSet<>();
-            ObjectState state = oldObjStat.appendAlterSQL(newObjStat, isNeedDepcies, sqlActions);
+            SQLScript script = new SQLScript(oldObjStat.getDbType());
+            ObjectState state = oldObjStat.appendAlterSQL(newObjStat, isNeedDepcies, script);
             if (state.in(ObjectState.RECREATE, ObjectState.ALTER)) {
                 if (isNeedDepcies.get()) {
                     // is state alterable (sb.length() > 0)
@@ -204,7 +203,7 @@ public class DepcyResolver {
                     // ничего делать не нужно
                     // пропускаем колонки таблиц из дроп листа
                     addToListWithoutDepcies(
-                            !sqlActions.isEmpty() ? StatementActions.ALTER : StatementActions.DROP,
+                            !script.isEmpty() ? StatementActions.ALTER : StatementActions.DROP,
                                     oldObjStat, null);
                 }
             }
@@ -382,9 +381,9 @@ public class DepcyResolver {
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                Set<SQLAction> sqlActions = new LinkedHashSet<>();
+                SQLScript script = new SQLScript(newObj.getDbType());
 
-                action = askAlter(oldObj, newObj, isNeedDepcies, sqlActions);
+                action = askAlter(oldObj, newObj, isNeedDepcies, script);
 
                 // проверить а не
                 // требует ли пересоздания(Drop/create) родителькие объекты
@@ -424,10 +423,8 @@ public class DepcyResolver {
                 }
 
                 // пропускаем также при recreate
-                StringBuilder sb = new StringBuilder();
-
-                Set<SQLAction> sqlActions = new LinkedHashSet<>();
-                ObjectState state = oldTable.appendAlterSQL(newTable, new AtomicBoolean(), sqlActions);
+                SQLScript script = new SQLScript(newTable.getDbType());
+                ObjectState state = oldTable.appendAlterSQL(newTable, new AtomicBoolean(), script);
                 if (state == ObjectState.RECREATE) {
                     return true;
                 }
@@ -502,8 +499,8 @@ public class DepcyResolver {
             PgStatement oldObj;
             if ((oldObj = newObj.getTwin(oldDb)) != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                Set<SQLAction> sqlActions = new LinkedHashSet<>();
-                action = askAlter(oldObj, newObj, isNeedDepcies, sqlActions);
+                SQLScript script = new SQLScript(oldObj.getDbType());
+                action = askAlter(oldObj, newObj, isNeedDepcies, script);
                 if (action == StatementActions.NONE) {
                     return true;
                 }
@@ -580,11 +577,11 @@ public class DepcyResolver {
             addToListWithoutDepcies(action, statement, starter);
         }
 
-        protected StatementActions askAlter(PgStatement oldSt, PgStatement newSt,
-                AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+        protected StatementActions askAlter(PgStatement oldSt, PgStatement newSt, AtomicBoolean isNeedDepcies,
+                SQLScript script) {
             StatementActions alterAction = action;
             // Проверяем меняется ли объект
-            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcies, alterActions);
+            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcies, script);
             if (state == ObjectState.ALTER) {
                 alterAction = StatementActions.ALTER;
             } else if (state != ObjectState.RECREATE) {
@@ -624,9 +621,9 @@ public class DepcyResolver {
             }
 
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            Set<SQLAction> sqlActions = new LinkedHashSet<>();
+            SQLScript script = new SQLScript(newSt.getDbType());
 
-            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcy, sqlActions);
+            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcy, script);
             if (state.in(ObjectState.RECREATE, ObjectState.ALTER) && isNeedDepcy.get()) {
                 needDrop = oldSt;
             }

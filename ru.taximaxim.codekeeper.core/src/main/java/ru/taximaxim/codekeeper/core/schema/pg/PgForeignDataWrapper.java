@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer {
 
@@ -106,7 +105,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE FOREIGN DATA WRAPPER ");
         sb.append(PgDiffUtils.getQuotedName(getName()));
@@ -120,20 +119,20 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             sb.append(' ');
         }
         appendOptions(sb);
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
 
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgForeignDataWrapper newForeign = (PgForeignDataWrapper) newCondition;
 
         if (!Objects.equals(newForeign.getHandler(), getHandler())) {
-            SQLAction sql = new SQLAction();
+            StringBuilder sql = new StringBuilder();
             sql.append(getAlterHeader());
             if (newForeign.getHandler() != null) {
                 sql.append(" HANDLER ").append(newForeign.getHandler());
@@ -141,11 +140,11 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             } else {
                 sql.append(" NO HANDLER");
             }
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
 
         if (!Objects.equals(newForeign.getValidator(), getValidator())) {
-            SQLAction sql = new SQLAction();
+            StringBuilder sql = new StringBuilder();
             sql.append(getAlterHeader());
             if (newForeign.getValidator() != null) {
                 sql.append(" VALIDATOR ").append(newForeign.getValidator());
@@ -153,15 +152,15 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             } else {
                 sql.append(" NO VALIDATOR");
             }
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
 
-        compareOptions(newForeign, alterActions);
-        appendAlterOwner(newForeign, alterActions);
-        alterPrivileges(newCondition, alterActions);
-        appendAlterComments(newForeign, alterActions);
+        compareOptions(newForeign, script);
+        appendAlterOwner(newForeign, script);
+        alterPrivileges(newCondition, script);
+        appendAlterComments(newForeign, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override

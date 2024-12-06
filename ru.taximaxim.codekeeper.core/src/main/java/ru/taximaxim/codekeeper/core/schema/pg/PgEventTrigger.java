@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +26,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgEventTrigger extends PgStatement {
 
@@ -41,34 +40,34 @@ public class PgEventTrigger extends PgStatement {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        SQLAction action = new SQLAction();
-        action.append("CREATE EVENT TRIGGER ")
+    public void getCreationSQL(SQLScript script) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("CREATE EVENT TRIGGER ")
         .append(getQualifiedName())
         .append("\n\tON ").append(event);
         if (!tags.isEmpty()) {
-            action.append("\n\tWHEN TAG IN (");
+            sb.append("\n\tWHEN TAG IN (");
             for (String tag : tags) {
-                action.append(tag).append(", ");
+                sb.append(tag).append(", ");
             }
-            action.reduce(2);
-            action.append(")");
+            sb.setLength(sb.length() - 2);
+            sb.append(")");
         }
-        action.append("\n\tEXECUTE PROCEDURE ").append(executable);
-        createActions.add(action);
+        sb.append("\n\tEXECUTE PROCEDURE ").append(executable);
+        script.addStatement(sb);
 
         if (mode != null) {
-            SQLAction sql = new SQLAction();
+            StringBuilder sql = new StringBuilder();
             sql.append("ALTER EVENT TRIGGER ").append(getQualifiedName()).append(" ").append(mode);
-            createActions.add(sql);
+            script.addStatement(sql);
         }
-        appendOwnerSQL(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgEventTrigger newEventTrigger = (PgEventTrigger) newCondition;
         if (!Objects.equals(getExecutable(), newEventTrigger.getExecutable())
                 || !Objects.equals(getTags(), newEventTrigger.getTags())
@@ -78,15 +77,15 @@ public class PgEventTrigger extends PgStatement {
         }
 
         if (!Objects.equals(getMode(), newEventTrigger.getMode())) {
-            SQLAction sql = new SQLAction();
+            StringBuilder sql = new StringBuilder();
             sql.append("ALTER EVENT TRIGGER ").append(getQualifiedName())
             .append(" ").append(newEventTrigger.getMode());
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
 
-        appendAlterOwner(newEventTrigger, alterActions);
-        appendAlterComments(newEventTrigger, alterActions);
-        return getObjectState(alterActions);
+        appendAlterOwner(newEventTrigger, script);
+        appendAlterComments(newEventTrigger, script);
+        return getObjectState(script, startSize);
     }
 
     @Override

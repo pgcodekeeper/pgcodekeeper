@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgCompositeType extends AbstractType {
 
@@ -60,14 +59,14 @@ public final class PgCompositeType extends AbstractType {
     }
 
     @Override
-    public void appendComments(Collection<SQLAction> sqlActions) {
-        super.appendComments(sqlActions);
-        appendChildrenComments(sqlActions);
+    public void appendComments(SQLScript script) {
+        super.appendComments(script);
+        appendChildrenComments(script);
     }
 
-    private void appendChildrenComments(Collection<SQLAction> sqlActions) {
+    private void appendChildrenComments(SQLScript script) {
         for (final AbstractColumn column : attrs) {
-            column.appendComments(sqlActions);
+            column.appendComments(script);
         }
     }
 
@@ -77,7 +76,7 @@ public final class PgCompositeType extends AbstractType {
     }
 
     @Override
-    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
         PgCompositeType newCompositeType = (PgCompositeType) newType;
         StringBuilder attrSb = new StringBuilder();
         for (AbstractColumn attr : newCompositeType.getAttrs()) {
@@ -99,27 +98,25 @@ public final class PgCompositeType extends AbstractType {
         if (attrSb.length() > 0) {
             // remove last comma
             attrSb.setLength(attrSb.length() - 1);
-            SQLAction sql = new SQLAction();
-            sql.append("ALTER TYPE ").append(getQualifiedName()).append(attrSb);
-            sqlActions.add(sql);
+            script.addStatement("ALTER TYPE " + getQualifiedName() + attrSb);
             isNeedDepcies.set(true);
         }
     }
 
     @Override
-    public void appendAlterComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
-        super.appendAlterComments(newObj, sqlActions);
-        appendAlterChildrenComments(newObj, sqlActions);
+    public void appendAlterComments(PgStatement newObj, SQLScript script) {
+        super.appendAlterComments(newObj, script);
+        appendAlterChildrenComments(newObj, script);
     }
 
-    private void appendAlterChildrenComments(PgStatement newObj, Collection<SQLAction> sqlActions) {
+    private void appendAlterChildrenComments(PgStatement newObj, SQLScript script) {
         PgCompositeType newType = (PgCompositeType) newObj;
         for (AbstractColumn newAttr : newType.getAttrs()) {
             AbstractColumn oldAttr = getAttr(newAttr.getName());
             if (oldAttr != null) {
-                oldAttr.appendAlterComments(newAttr, sqlActions);
+                oldAttr.appendAlterComments(newAttr, script);
             } else {
-                newAttr.appendComments(sqlActions);
+                newAttr.appendComments(script);
             }
         }
     }

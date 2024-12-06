@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChSchema extends AbstractSchema {
 
@@ -87,7 +87,7 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE DATABASE ");
         appendIfNotExists(sb);
@@ -95,12 +95,11 @@ public class ChSchema extends AbstractSchema {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (!compareUnalterable((ChSchema) newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
@@ -109,14 +108,14 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean generateExists) {
+    public void getDropSQL(SQLScript script, boolean generateExists) {
         final StringBuilder sb = new StringBuilder();
         sb.append("DROP DATABASE ");
         if (generateExists) {
             sb.append(IF_EXISTS);
         }
         appendFullName(sb);
-        dropActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
@@ -167,7 +166,7 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public void appendComments(Collection<SQLAction> sqlActions) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 }

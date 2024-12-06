@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgPrivilege implements IHashable {
 
@@ -76,14 +76,13 @@ public class PgPrivilege implements IHashable {
         return new PgPrivilege("REVOKE", permission, name, role, isGrantOption, dbType).getCreationSQL();
     }
 
-    public static void appendPrivileges(Collection<PgPrivilege> privileges,
-            Collection<SQLAction> sqlActions) {
+    public static void appendPrivileges(Collection<PgPrivilege> privileges, SQLScript script) {
         for (PgPrivilege priv : privileges) {
-            sqlActions.add(new SQLAction(priv.getCreationSQL()));
+            script.addStatement(priv.getCreationSQL());
         }
     }
 
-    public static void appendDefaultPostgresPrivileges(PgStatement newObj, Collection<SQLAction> sqlActions) {
+    public static void appendDefaultPostgresPrivileges(PgStatement newObj, SQLScript script) {
         DbObjType type = newObj.getStatementType();
         boolean isFunctionOrTypeOrDomain = false;
         String typeName;
@@ -133,7 +132,7 @@ public class PgPrivilege implements IHashable {
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
                 "ALL", name, "PUBLIC", false, DatabaseType.PG);
-        sqlActions.add(new SQLAction(priv.getCreationSQL()));
+        script.addStatement(priv.getCreationSQL());
 
         String owner = newObj.getOwner();
         if (owner == null) {
@@ -141,14 +140,13 @@ public class PgPrivilege implements IHashable {
         }
         owner = PgDiffUtils.getQuotedName(owner);
 
-        addDefPostgresPrivileges(sqlActions, "REVOKE", name, owner);
-        addDefPostgresPrivileges(sqlActions, "GRANT", name, owner);
+        addDefPostgresPrivileges(script, "REVOKE", name, owner);
+        addDefPostgresPrivileges(script, "GRANT", name, owner);
     }
 
-    private static void addDefPostgresPrivileges(Collection<SQLAction> sqlActions, String state,
-            String name, String owner) {
+    private static void addDefPostgresPrivileges(SQLScript script, String state, String name, String owner) {
         PgPrivilege priv = new PgPrivilege(state, "ALL", name, owner, false, DatabaseType.PG);
-        sqlActions.add(new SQLAction(priv.getCreationSQL()));
+        script.addStatement(priv.getCreationSQL());
     }
 
     @Override

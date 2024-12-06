@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -28,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractPolicy;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class ChPolicy extends AbstractPolicy {
 
@@ -48,11 +47,11 @@ public final class ChPolicy extends AbstractPolicy {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        appendFullSQL(createActions, true);
+    public void getCreationSQL(SQLScript script) {
+        appendFullSQL(script, true);
     }
 
-    private void appendFullSQL(Collection<SQLAction> sqlActions, boolean isCreate) {
+    private void appendFullSQL(SQLScript script, boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
 
         sbSQL.append(isCreate ? "CREATE" : "ALTER").append(" POLICY ");
@@ -85,18 +84,19 @@ public final class ChPolicy extends AbstractPolicy {
         if (!excepts.isEmpty()) {
             sbSQL.append(" EXCEPT ").append(String.join(", ", excepts));
         }
-        sqlActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChPolicy police = (ChPolicy) newCondition;
 
         if (!compare(police)) {
-            police.appendFullSQL(alterActions, false);
+            police.appendFullSQL(script, false);
         }
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override
