@@ -212,6 +212,7 @@ public class TriggersReader extends JdbcReader {
         .column("res.tgconstraint::bigint")
         .column("res.tgdeferrable")
         .column("res.tginitdeferred")
+        .column("res.tgparentid")
         .column("relcon.relname as refrelname")
         .column("refnsp.nspname as refnspname")
         .column("", subselect, "AS cols")
@@ -222,6 +223,7 @@ public class TriggersReader extends JdbcReader {
         .join("LEFT JOIN pg_catalog.pg_namespace refnsp ON refnsp.oid = relcon.relnamespace")
         .join("JOIN pg_catalog.pg_proc p ON p.oid = res.tgfoid")
         .join("JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid")
+        .join("LEFT JOIN pg_catalog.pg_trigger u ON (u.oid = res.tgparentid)")
         .where("cls.relkind IN ('r', 'f', 'p', 'm', 'v')")
         .where("res.tgisinternal = FALSE");
 
@@ -232,7 +234,7 @@ public class TriggersReader extends JdbcReader {
         }
 
         if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
-            builder.where("res.tgparentid = 0");
+            builder.where("(res.tgparentid = 0 OR res.tgenabled != u.tgenabled)");
         }
     }
 }
