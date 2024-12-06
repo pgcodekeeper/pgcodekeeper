@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgFtsDictionary extends PgStatement
 implements ISimpleOptionContainer, ISearchPath {
@@ -53,7 +52,7 @@ implements ISimpleOptionContainer, ISearchPath {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
         .append(getQualifiedName());
@@ -61,14 +60,14 @@ implements ISimpleOptionContainer, ISearchPath {
 
         options.forEach((k,v) -> sbSql.append(",\n\t").append(k).append(" = ").append(v));
         sbSql.append(" )");
-        createActions.add(new SQLAction(sbSql));
-        appendOwnerSQL(createActions);
-        appendComments(createActions);
+        script.addStatement(sbSql);
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
 
         if (!newDictionary.getTemplate().equals(template)) {
@@ -76,30 +75,30 @@ implements ISimpleOptionContainer, ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newDictionary, alterActions);
-        appendAlterComments(newDictionary, alterActions);
+        compareOptions(newDictionary, script);
+        appendAlterComments(newDictionary, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
-            StringBuilder resetOptions, Collection<SQLAction> sqlActions) {
-        SQLAction action = new SQLAction();
-        action.append("ALTER TEXT SEARCH DICTIONARY ");
-        action.append(getQualifiedName());
-        action.append("\n\t(");
+    public void appendOptions(IOptionContainer newContainer, StringBuilder setOptions, StringBuilder resetOptions,
+            SQLScript script) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER TEXT SEARCH DICTIONARY ");
+        sb.append(getQualifiedName());
+        sb.append("\n\t(");
 
         if (setOptions.length() > 0) {
-            action.append(setOptions);
+            sb.append(setOptions);
         }
 
         if (resetOptions.length() > 0) {
-            action.append(resetOptions);
+            sb.append(resetOptions);
         }
-        action.reduce(2);
-        action.append(")");
-        sqlActions.add(action);
+        sb.setLength(sb.length() - 2);
+        sb.append(")");
+        script.addStatement(sb);
     }
 
     public void setTemplate(final String template) {

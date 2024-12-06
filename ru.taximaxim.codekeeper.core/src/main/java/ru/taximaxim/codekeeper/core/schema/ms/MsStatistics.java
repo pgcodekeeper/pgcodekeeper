@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class MsStatistics extends AbstractStatistics {
 
@@ -46,7 +45,7 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder("CREATE STATISTICS ");
         sb.append(MsDiffUtils.quoteName(getName())).append(" ON ").append(getParent().getQualifiedName());
         if (!cols.isEmpty()) {
@@ -57,7 +56,7 @@ public final class MsStatistics extends AbstractStatistics {
             sb.append("\nWHERE ").append(filter);
         }
         appendOptions(sb, options);
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     private void appendOptions(StringBuilder sb, Map<String, String> options) {
@@ -83,8 +82,8 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         var newStat = (MsStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
             return ObjectState.RECREATE;
@@ -94,10 +93,10 @@ public final class MsStatistics extends AbstractStatistics {
             sql.append("UPDATE STATISTICS ")
             .append(getParent().getQualifiedName()).append(" (").append(getName()).append(")");
             appendOptions(sql, newStat.getOptions());
-            alterActions.add(new SQLAction(sql));
+            script.addStatement(sql);
         }
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override

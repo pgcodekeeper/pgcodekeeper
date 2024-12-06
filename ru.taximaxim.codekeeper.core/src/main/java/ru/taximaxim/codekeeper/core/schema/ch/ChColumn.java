@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -28,7 +27,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class ChColumn extends AbstractColumn {
 
@@ -104,7 +103,7 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append(getAlterTable(false)).append("\n\tADD COLUMN ");
         appendIfNotExists(sb);
@@ -114,7 +113,7 @@ public final class ChColumn extends AbstractColumn {
             sb.append(' ').append(getType());
         }
         appendColumnOptions(sb);
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     public void appendColumnOptions(StringBuilder sb) {
@@ -149,41 +148,40 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies,
-            Collection<SQLAction> alterActions) {
-
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChColumn newColumn = (ChColumn) newCondition;
 
-        compareTypes(newColumn.getType(), alterActions);
-        compareDefaults(newColumn, alterActions);
-        compareCodecs(newColumn.getCodecs(), alterActions);
-        compareTtl(newColumn.getTtl(), newColumn.getType(), alterActions);
-        compareComment(newColumn.getComment(), alterActions);
-        return getObjectState(alterActions);
+        compareTypes(newColumn.getType(), script);
+        compareDefaults(newColumn, script);
+        compareCodecs(newColumn.getCodecs(), script);
+        compareTtl(newColumn.getTtl(), newColumn.getType(), script);
+        compareComment(newColumn.getComment(), script);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         StringBuilder sb = new StringBuilder();
         sb.append(getAlterTable(false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
         sb.append(ChDiffUtils.quoteName(name));
-        dropActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareTypes(String newType, Collection<SQLAction> sqlActions) {
+    private void compareTypes(String newType, SQLScript script) {
         if (getType().equals(newType)) {
             return;
         }
         StringBuilder sb = new StringBuilder();
         appendAlterColumn(sb);
         sb.append(' ').append(newType);
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareDefaults(ChColumn newColumn, Collection<SQLAction> sqlActions) {
+    private void compareDefaults(ChColumn newColumn, SQLScript script) {
         if (Objects.equals(defaultType, newColumn.getDefaultType())
                 && Objects.equals(getDefaultValue(), newColumn.getDefaultValue())) {
             return;
@@ -192,22 +190,22 @@ public final class ChColumn extends AbstractColumn {
         appendAlterColumn(sb);
         if (newColumn.getDefaultType() != null) {
             sb.append(' ').append(newColumn.getDefaultType()).append(' ').append(newColumn.getDefaultValue());
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         } else if ("EPHEMERAL".equals(defaultType)) {
             // because we can't drop EPHEMERAL default type
             sb.append(" DEFAULT ").append("0");
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
             StringBuilder sbRemove = new StringBuilder();
             appendAlterColumn(sbRemove);
             sbRemove.append(" REMOVE").append(" DEFAULT");
-            sqlActions.add(new SQLAction(sbRemove));
+            script.addStatement(sbRemove);
         } else {
             sb.append(" REMOVE ").append(defaultType);
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         }
     }
 
-    private void compareCodecs(List<String> newCodecs, Collection<SQLAction> sqlActions) {
+    private void compareCodecs(List<String> newCodecs, SQLScript script) {
         if (Objects.equals(codecs, newCodecs)) {
             return;
         }
@@ -223,10 +221,10 @@ public final class ChColumn extends AbstractColumn {
             sb.setLength(sb.length() - 2);
             sb.append(')');
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareTtl(String newTtl, String newType, Collection<SQLAction> sqlActions) {
+    private void compareTtl(String newTtl, String newType, SQLScript script) {
         if (Objects.equals(ttl, newTtl)) {
             return;
         }
@@ -237,10 +235,10 @@ public final class ChColumn extends AbstractColumn {
         } else {
             sb.append(' ').append(newType).append(" TTL ").append(newTtl);
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareComment(String newComment, Collection<SQLAction> sqlActions) {
+    private void compareComment(String newComment, SQLScript script) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
@@ -253,7 +251,7 @@ public final class ChColumn extends AbstractColumn {
             appendIfExists(sb);
             sb.append(ChDiffUtils.quoteName(name)).append(' ').append(newComment);
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     private void appendAlterColumn(StringBuilder sb) {
@@ -306,12 +304,12 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public void appendComments(Collection<SQLAction> sqlActions) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 }

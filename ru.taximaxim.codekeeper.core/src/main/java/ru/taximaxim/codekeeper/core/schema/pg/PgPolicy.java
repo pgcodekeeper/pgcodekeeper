@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
@@ -47,7 +46,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE POLICY ");
         appendFullName(sbSQL);
@@ -71,13 +70,13 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         if (check != null && !check.isEmpty()) {
             sbSQL.append("\n  WITH CHECK ").append(check);
         }
-        createActions.add(new SQLAction(sbSQL));
-        appendComments(createActions);
+        script.addStatement(sbSQL);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgPolicy newPolice = (PgPolicy) newCondition;
 
         if (!compareUnalterable(newPolice)) {
@@ -111,11 +110,11 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
             if (!Objects.equals(check, newCheck)) {
                 sbSql.append("\n  WITH CHECK ").append(newCheck);
             }
-            alterActions.add(new SQLAction(sbSql));
+            script.addStatement(sbSql);
         }
-        appendAlterComments(newPolice, alterActions);
+        appendAlterComments(newPolice, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override

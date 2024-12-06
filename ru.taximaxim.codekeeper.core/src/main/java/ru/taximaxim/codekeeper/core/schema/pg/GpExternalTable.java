@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,7 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer {
 
@@ -47,7 +46,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, Collection<SQLAction> sqlActions) {
+    public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no impl
     }
 
@@ -65,7 +64,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> sqlActions) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" (");
         for (AbstractColumn column : columns) {
             sbSQL.append("\n\t").append(column.getName()).append(" ")
@@ -127,7 +126,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
 
 
     @Override
-    protected void appendAlterOptions(Collection<SQLAction> sqlActions) {
+    protected void appendAlterOptions(SQLScript script) {
         // no impl
     }
 
@@ -140,7 +139,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         // untransformable
     }
 

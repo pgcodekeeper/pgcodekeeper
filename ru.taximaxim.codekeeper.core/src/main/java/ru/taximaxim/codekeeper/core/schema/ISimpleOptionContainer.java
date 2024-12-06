@@ -15,17 +15,16 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-import java.util.Collection;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public interface ISimpleOptionContainer extends IOptionContainer {
 
     @Override
-    default void compareOptions(IOptionContainer newContainer, Collection<SQLAction> sqlActions) {
+    default void compareOptions(IOptionContainer newContainer, SQLScript script) {
         Map <String, String> oldOptions = getOptions();
         Map <String, String> newOptions = newContainer.getOptions();
 
@@ -62,57 +61,41 @@ public interface ISimpleOptionContainer extends IOptionContainer {
         }
 
         if (setOptions.length() > 0 || resetOptions.length() > 0) {
-            appendOptions(newContainer, setOptions, resetOptions,  sqlActions);
+            appendOptions(newContainer, setOptions, resetOptions, script);
         }
     }
 
     default void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
-            StringBuilder resetOptions,  Collection<SQLAction> sqlActions) {
+            StringBuilder resetOptions, SQLScript script) {
         DbObjType type = getStatementType();
         String typeName = type == DbObjType.VIEW ? ((PgStatement) newContainer).getTypeName() : type.name();
-
-        if (setOptions.length() > 0) {
-            setOptions.setLength(setOptions.length() - 2);
-            SQLAction sql = new SQLAction();
-            sql.append("ALTER ");
-            if (type == DbObjType.COLUMN) {
-                sql.append("TABLE ONLY ")
-                .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
-                .append(" ALTER ");
-            }
-            sql.append(typeName).append(' ');
-            if (type != DbObjType.COLUMN) {
-                IStatement parent = getParent();
-                if (type == DbObjType.INDEX) {
-                    parent = parent.getParent();
-                }
-                sql.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
-            }
-            sql.append(PgDiffUtils.getQuotedName(getName())).append(" SET (").append(setOptions).append(")");
-            sqlActions.add(sql);
+        getAlterOptionAction(setOptions, " SET (", script, type, typeName);
+        getAlterOptionAction(resetOptions, " RESET (", script, type, typeName);
+    }
+    
+    private void getAlterOptionAction(StringBuilder option, String action, SQLScript script, DbObjType type,
+            String typeName) {
+        if (option.length() < 1) {
+            return;
         }
-
-        if (resetOptions.length() > 0) {
-            SQLAction sql = new SQLAction();
-            resetOptions.setLength(resetOptions.length() - 2);
-            sql.append("ALTER ");
-            if (type == DbObjType.COLUMN) {
-                sql.append("TABLE ONLY ")
-                .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
-                .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
-                .append(" ALTER ");
-            }
-            sql.append(typeName).append(' ');
-            if (type != DbObjType.COLUMN) {
-                IStatement parent = getParent();
-                if (type == DbObjType.INDEX) {
-                    parent = parent.getParent();
-                }
-                sql.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
-            }
-            sql.append(PgDiffUtils.getQuotedName(getName())).append(" RESET (").append(resetOptions).append(")");
-            sqlActions.add(sql);
+        StringBuilder sql = new StringBuilder();
+        option.setLength(option.length() - 2);
+        sql.append("ALTER ");
+        if (type == DbObjType.COLUMN) {
+            sql.append("TABLE ONLY ")
+            .append(PgDiffUtils.getQuotedName(getParent().getParent().getName()))
+            .append('.').append(PgDiffUtils.getQuotedName(getParent().getName()))
+            .append(" ALTER ");
         }
+        sql.append(typeName).append(' ');
+        if (type != DbObjType.COLUMN) {
+            IStatement parent = getParent();
+            if (type == DbObjType.INDEX) {
+                parent = parent.getParent();
+            }
+            sql.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
+        }
+        sql.append(PgDiffUtils.getQuotedName(getName())).append(action).append(option).append(")");
+        script.addStatement(sql);
     }
 }

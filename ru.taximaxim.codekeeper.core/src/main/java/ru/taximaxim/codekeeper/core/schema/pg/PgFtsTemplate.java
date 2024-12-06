@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -25,7 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
@@ -47,8 +46,8 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        SQLAction sbSql = new SQLAction();
+    public void getCreationSQL(SQLScript script) {
+        StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
         .append(getQualifiedName()).append(" (\n\t");
 
@@ -57,21 +56,20 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
         }
 
         sbSql.append("LEXIZE = ").append(lexizeFunction).append(" )");
-        createActions.add(sbSql);
-        appendComments(createActions);
+        script.addStatement(sbSql);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
-
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         if (!compareUnalterable((PgFtsTemplate) newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        appendAlterComments(newCondition, alterActions);
+        appendAlterComments(newCondition, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override

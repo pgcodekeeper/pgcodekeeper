@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -27,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
@@ -63,7 +62,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
@@ -110,11 +109,11 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         }
 
         sbSQL.append("\n)");
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     public String getSignature() {
@@ -148,8 +147,8 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgOperator newOperator = (PgOperator) newCondition;
 
         if (!compareUnalterable(newOperator)) {
@@ -162,7 +161,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         boolean restrChanged = !Objects.equals(restrict, newOperRestr);
         boolean joinChanged = !Objects.equals(join, newOperJoin);
         if (restrChanged || joinChanged) {
-            SQLAction sql = new SQLAction();
+            StringBuilder sql = new StringBuilder();
             sql.append("ALTER OPERATOR ")
             .append(getQualifiedName())
             .append("\n\tSET (");
@@ -176,13 +175,13 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
                 sql.append("JOIN = ").append(newOperJoin != null ? newOperJoin : "NONE");
             }
             sql.append(")");
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
 
-        appendAlterOwner(newOperator, alterActions);
-        appendAlterComments(newOperator, alterActions);
+        appendAlterOwner(newOperator, script);
+        appendAlterComments(newOperator, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     private boolean compareUnalterable(PgOperator oper) {

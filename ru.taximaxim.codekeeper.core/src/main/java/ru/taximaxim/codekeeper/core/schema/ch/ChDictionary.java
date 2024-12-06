@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class ChDictionary extends PgStatement implements IRelation {
@@ -147,7 +146,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE DICTIONARY ");
         appendIfNotExists(sb);
@@ -182,7 +181,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     private void appendColumns(StringBuilder sb) {
@@ -199,8 +198,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies,
-            Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
@@ -258,12 +256,12 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public void appendComments(Collection<SQLAction> sqlActions) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 

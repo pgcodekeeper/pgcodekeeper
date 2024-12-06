@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -25,7 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsSequence extends AbstractSequence {
 
@@ -37,7 +36,7 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
@@ -45,9 +44,9 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("\n\tAS ").append(getDataType());
 
         fillSequenceBody(sbSQL);
-        createActions.add(new SQLAction(sbSQL));
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
+        script.addStatement(sbSQL);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
     }
 
 
@@ -82,8 +81,8 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsSequence newSequence = (MsSequence) newCondition;
 
         if (!newSequence.getDataType().equals(getDataType())) {
@@ -93,14 +92,12 @@ public class MsSequence extends AbstractSequence {
 
         StringBuilder sbSQL = new StringBuilder();
         if (compareSequenceBody(newSequence, sbSQL)) {
-            SQLAction sql = new SQLAction();
-            sql.append("ALTER SEQUENCE " + getQualifiedName() + sbSQL.toString());
-            alterActions.add(sql);
+            script.addStatement("ALTER SEQUENCE " + getQualifiedName() + sbSQL.toString());
         }
 
-        appendAlterOwner(newSequence, alterActions);
-        alterPrivileges(newSequence, alterActions);
-        return getObjectState(alterActions);
+        appendAlterOwner(newSequence, script);
+        alterPrivileges(newSequence, script);
+        return getObjectState(script, startSize);
     }
 
     private boolean compareSequenceBody(MsSequence newSequence, StringBuilder sbSQL) {
@@ -187,8 +184,7 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
-            long precision) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType, long precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
         this.maxValue = Long.toString(max == null ? getBoundaryTypeVal(type, true, precision) : max);

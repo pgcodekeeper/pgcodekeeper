@@ -19,7 +19,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -29,14 +28,15 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Stores sequence information.
  */
 public class PgSequence extends AbstractSequence {
 
+    private static final String ALTER_SEQUENCE = "ALTER SEQUENCE ";
     private GenericColumn ownedBy;
     private boolean isLogged = true;
 
@@ -46,7 +46,7 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
         if (!isLogged) {
@@ -61,12 +61,12 @@ public class PgSequence extends AbstractSequence {
         }
 
         fillSequenceBody(sbSQL);
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
-        getOwnedBySQL(createActions);
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
-        appendComments(createActions);
+        getOwnedBySQL(script);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
@@ -112,48 +112,45 @@ public class PgSequence extends AbstractSequence {
     /**
      * Creates SQL statement for modification "OWNED BY" parameter.
      */
-    public void getOwnedBySQL(Collection<SQLAction> sqlActions) {
+    public void getOwnedBySQL(SQLScript script) {
         if (getOwnedBy() == null) {
             return;
         }
         final StringBuilder sbSQL = new StringBuilder();
 
-        sbSQL.append("ALTER SEQUENCE ").append(getQualifiedName());
+        sbSQL.append(ALTER_SEQUENCE).append(getQualifiedName());
         sbSQL.append("\n\tOWNED BY ").append(getOwnedBy().getQualifiedName());
-        sqlActions.add(new SQLAction(sbSQL, SQLActionType.END));
+        script.addStatement(sbSQL.toString(), SQLActionType.END);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgSequence newSequence = (PgSequence) newCondition;
         StringBuilder sbSQL = new StringBuilder();
 
         if (compareSequenceBody(newSequence, sbSQL)) {
-            SQLAction sql = new SQLAction();
-            sql.append("ALTER SEQUENCE ").append(newSequence.getQualifiedName())
-            .append(sbSQL);
-            alterActions.add(sql);
+            script.addStatement(ALTER_SEQUENCE + newSequence.getQualifiedName() + sbSQL);
         }
 
-        appendAlterOwner(newSequence, alterActions);
+        appendAlterOwner(newSequence, script);
 
         if (isLogged != newSequence.isLogged) {
-            SQLAction sql = new SQLAction();
-            sql.append("ALTER SEQUENCE ").append(newSequence.getQualifiedName())
+            StringBuilder sql = new StringBuilder();
+            sql.append(ALTER_SEQUENCE).append(newSequence.getQualifiedName())
             .append(" SET")
             .append(newSequence.isLogged ? " LOGGED" : " UNLOGGED");
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
 
-        alterPrivileges(newSequence, alterActions);
-        appendAlterComments(newSequence, alterActions);
+        alterPrivileges(newSequence, script);
+        appendAlterComments(newSequence, script);
 
         if (!Objects.equals(getOwnedBy(), newSequence.getOwnedBy())) {
-            newSequence.getOwnedBySQL(alterActions);
+            newSequence.getOwnedBySQL(script);
         }
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     private boolean compareSequenceBody(PgSequence newSequence, StringBuilder sbSQL) {
@@ -215,8 +212,7 @@ public class PgSequence extends AbstractSequence {
     }
 
     @Override
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
-            long precision) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType, long precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
         if (max == null || (inc > 0 && max == getBoundaryTypeVal(type, true, 0L))

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -32,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChTable extends AbstractTable {
 
@@ -68,7 +67,7 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         appendIfNotExists(sb);
@@ -92,12 +91,12 @@ public class ChTable extends AbstractTable {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChTable newTable = (ChTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -105,13 +104,13 @@ public class ChTable extends AbstractTable {
             return ObjectState.RECREATE;
         }
 
-        compareProjections(newTable.getProjections(), alterActions);
-        engine.appendAlterSQL(newTable.getEngine(), getAlterTable(false), alterActions);
-        compareComment(newTable.getComment(), alterActions);
-        return getObjectState(alterActions);
+        compareProjections(newTable.getProjections(), script);
+        engine.appendAlterSQL(newTable.getEngine(), getAlterTable(false), script);
+        compareComment(newTable.getComment(), script);
+        return getObjectState(script, startSize);
     }
 
-    private void compareProjections(Map<String, String> newProjections, Collection<SQLAction> sqlActions) {
+    private void compareProjections(Map<String, String> newProjections, SQLScript script) {
         if (Objects.equals(projections, newProjections)) {
             return;
         }
@@ -136,26 +135,23 @@ public class ChTable extends AbstractTable {
             }
         }
 
-        appendAlterProjections(toDrops, toAdds, sqlActions);
+        appendAlterProjections(toDrops, toAdds, script);
     }
 
-    private void appendAlterProjections(Set<String> toDrops, Map<String, String> toAdds,
-            Collection<SQLAction> sqlActions) {
+    private void appendAlterProjections(Set<String> toDrops, Map<String, String> toAdds, SQLScript script) {
         for (String toDrop : toDrops) {
-            SQLAction sql = new SQLAction();
-            sql.append(getAlterTable(false)).append("\n\tDROP PROJECTION IF EXISTS ").append(toDrop);
-            sqlActions.add(sql);
+            script.addStatement(getAlterTable(false) + "\n\tDROP PROJECTION IF EXISTS " + toDrop);
         }
         for (Entry<String, String> toAdd : toAdds.entrySet()) {
             StringBuilder sb = new StringBuilder();
             sb.append(getAlterTable(false)).append("\n\tADD PROJECTION ");
             appendIfNotExists(sb);
             sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue());
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         }
     }
 
-    private void compareComment(String newComment, Collection<SQLAction> sqlActions) {
+    private void compareComment(String newComment, SQLScript script) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
@@ -166,7 +162,7 @@ public class ChTable extends AbstractTable {
         } else {
             sb.append(newComment);
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
@@ -212,17 +208,17 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public void appendComments(Collection<SQLAction> sqlActions) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(Collection<SQLAction> sqlActions) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, Collection<SQLAction> alterActions) {
+    public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no impl
     }
 }

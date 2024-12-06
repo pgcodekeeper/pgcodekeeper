@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
-import java.util.Collection;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,10 +25,11 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsColumn extends AbstractColumn {
 
+    private static final String PERSISTED = "PERSISTED";
     private boolean isSparse;
     private boolean isRowGuidCol;
     private boolean isPersisted;
@@ -100,8 +100,8 @@ public class MsColumn extends AbstractColumn {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        SQLAction sql = new SQLAction();
+    public void getCreationSQL(SQLScript script) {
+        StringBuilder sql = new StringBuilder();
 
         sql.append(getAlterTable(false));
         sql.append("\n\tADD ").append(MsDiffUtils.quoteName(name)).append(' ');
@@ -133,16 +133,16 @@ public class MsColumn extends AbstractColumn {
             sql.append(NOT_NULL);
         }
 
-        createActions.add(sql);
+        script.addStatement(sql);
 
-        compareDefaults(null, null, getDefaultName(), getDefaultValue(), createActions);
+        compareDefaults(null, null, getDefaultName(), getDefaultValue(), script);
 
         if (!isJoinNotNull && getExpression() == null && !getNullValue()) {
             if (getDefaultValue() != null) {
-                createActions.add(new SQLAction(getUpdateSql()));
+                script.addStatement(getUpdateSql());
             }
 
-            SQLAction sqlAlter = new SQLAction();
+            StringBuilder sqlAlter = new StringBuilder();
             sqlAlter.append(getAlterColumn(false, getName())).append(' ').append(getType());
 
             if (getCollation() != null) {
@@ -150,22 +150,22 @@ public class MsColumn extends AbstractColumn {
             }
 
             sqlAlter.append(NOT_NULL);
-            createActions.add(sqlAlter);
+            script.addStatement(sqlAlter);
         }
 
-        compareOption(false, isSparse(), "SPARSE", createActions);
-        compareOption(false, isRowGuidCol(), "ROWGUIDCOL", createActions);
-        compareOption(false, isPersisted(), "PERSISTED", createActions);
+        compareOption(false, isSparse(), "SPARSE", script);
+        compareOption(false, isRowGuidCol(), "ROWGUIDCOL", script);
+        compareOption(false, isPersisted(), PERSISTED, script);
 
-        appendPrivileges(createActions);
+        appendPrivileges(script);
     }
 
-    private void compareOption(boolean oldOption, boolean newOption, String optionName, Collection<SQLAction> sqlActions) {
-        compareOption(oldOption, newOption, optionName, null, sqlActions);
+    private void compareOption(boolean oldOption, boolean newOption, String optionName, SQLScript script) {
+        compareOption(oldOption, newOption, optionName, null, script);
     }
 
     private void compareOption(boolean oldOption, boolean newOption, String optionName,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
+            AtomicBoolean isNeedDepcies, SQLScript script) {
 
         if (oldOption == newOption) {
             return;
@@ -175,19 +175,19 @@ public class MsColumn extends AbstractColumn {
          * we can set PERSISTED without drop dependencies, but can't simple drop this option
          * for first we have to drop dependencies
          */
-        if (isNeedDepcies != null && (!"PERSISTED".equalsIgnoreCase(optionName) || oldOption)) {
+        if (isNeedDepcies != null && (!PERSISTED.equalsIgnoreCase(optionName) || oldOption)) {
             isNeedDepcies.set(true);
         }
         StringBuilder sb = new StringBuilder();
         sb.append(getAlterColumn(false, name));
         sb.append(newOption ? " ADD " : " DROP ");
         sb.append(optionName);
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsColumn newColumn = (MsColumn) newCondition;
 
         // recreate column to change identity or computed value
@@ -203,44 +203,41 @@ public class MsColumn extends AbstractColumn {
                         || !Objects.equals(getDefaultName(), newColumn.getDefaultName()));
 
         if (isNeedDropDefault) {
-            compareDefaults(getDefaultName(), getDefaultValue(), null, null, alterActions);
+            compareDefaults(getDefaultName(), getDefaultValue(), null, null, script);
         }
 
-        compareTypes(newColumn, isNeedDepcies, alterActions);
+        compareTypes(newColumn, isNeedDepcies, script);
 
         String oldDefaultName = isNeedDropDefault ? null : getDefaultName();
         String oldDefault = isNeedDropDefault ? null : getDefaultValue();
         compareDefaults(oldDefaultName, oldDefault, newColumn.getDefaultName(),
-                newColumn.getDefaultValue(), alterActions);
+                newColumn.getDefaultValue(), script);
 
-        compareNullValues(newColumn, isNeedDepcies, alterActions);
-        compareMaskingFunctions(newColumn, alterActions);
+        compareNullValues(newColumn, isNeedDepcies, script);
+        compareMaskingFunctions(newColumn, script);
 
-        compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", alterActions);
-        compareOption(isSparse(), newColumn.isSparse(), "SPARSE", isNeedDepcies, alterActions);
-        compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), "ROWGUIDCOL", alterActions);
-        compareOption(isPersisted(), newColumn.isPersisted(), "PERSISTED", isNeedDepcies, alterActions);
+        compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", script);
+        compareOption(isSparse(), newColumn.isSparse(), "SPARSE", isNeedDepcies, script);
+        compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), "ROWGUIDCOL", script);
+        compareOption(isPersisted(), newColumn.isPersisted(), PERSISTED, isNeedDepcies, script);
 
-        alterPrivileges(newColumn, alterActions);
+        alterPrivileges(newColumn, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     private void compareDefaults(String oldDefaultName, String oldDefault,
-            String newDefaultName, String newDefault, Collection<SQLAction> alterActions) {
+            String newDefaultName, String newDefault, SQLScript script) {
         if (Objects.equals(oldDefault, newDefault) && Objects.equals(oldDefaultName, newDefaultName)) {
             return;
         }
 
         if (oldDefault != null) {
-            SQLAction sql = new SQLAction();
-            sql.append(getAlterTable(false));
-            sql.append("\n\tDROP CONSTRAINT ").append(MsDiffUtils.quoteName(oldDefaultName));
-            alterActions.add(sql);
+            script.addStatement(getAlterTable(false) + "\n\tDROP CONSTRAINT " + MsDiffUtils.quoteName(oldDefaultName));
         }
 
         if (newDefault != null) {
-            SQLAction sql = new SQLAction();
+            StringBuilder sql = new StringBuilder();
             sql.append(getAlterTable(false));
             sql.append("\n\tADD");
             if (newDefaultName != null) {
@@ -248,11 +245,11 @@ public class MsColumn extends AbstractColumn {
             }
             sql.append(" DEFAULT ").append(newDefault);
             sql.append(" FOR ").append(MsDiffUtils.quoteName(name));
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
     }
 
-    private void compareTypes(MsColumn newColumn, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
+    private void compareTypes(MsColumn newColumn, AtomicBoolean isNeedDepcies, SQLScript script) {
         String newCollation = newColumn.getCollation();
         if (!Objects.equals(getType(), newColumn.getType())
                 || !Objects.equals(newCollation, getCollation())) {
@@ -268,14 +265,14 @@ public class MsColumn extends AbstractColumn {
             if (getNullValue() == newColumn.getNullValue()) {
                 sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
             }
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         }
     }
 
-    private void compareNullValues(MsColumn newColumn, AtomicBoolean isNeedDepcies, Collection<SQLAction> sqlActions) {
+    private void compareNullValues(MsColumn newColumn, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (newColumn.getNullValue() != getNullValue()) {
             if (newColumn.getDefaultValue() != null && getNullValue() && !newColumn.getNullValue()) {
-                sqlActions.add(new SQLAction(getUpdateSql()));
+                script.addStatement(getUpdateSql());
             }
             StringBuilder sb = new StringBuilder();
             sb.append(getAlterColumn(false, newColumn.getName()))
@@ -286,12 +283,12 @@ public class MsColumn extends AbstractColumn {
             }
 
             sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
             isNeedDepcies.set(true);
         }
     }
 
-    private void compareMaskingFunctions(MsColumn newColumn, Collection<SQLAction> sqlActions) {
+    private void compareMaskingFunctions(MsColumn newColumn, SQLScript script) {
         if (!Objects.equals(newColumn.getMaskingFunction(), getMaskingFunction())) {
             StringBuilder sb = new StringBuilder();
             sb.append(getAlterColumn(false, newColumn.getName()));
@@ -300,17 +297,17 @@ public class MsColumn extends AbstractColumn {
             } else {
                 sb.append(" DROP MASKED");
             }
-            sqlActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         }
     }
 
-    private StringBuilder getUpdateSql() {
+    private String getUpdateSql() {
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getParent().getQualifiedName())
         .append("\n\tSET ").append(MsDiffUtils.quoteName(name))
         .append(" = DEFAULT WHERE ")
         .append(MsDiffUtils.quoteName(name)).append(" IS").append(NULL);
-        return sb;
+        return sb.toString();
     }
 
     private String getAlterColumn(boolean only, String column) {
@@ -318,16 +315,16 @@ public class MsColumn extends AbstractColumn {
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
-        final StringBuilder sbString = new StringBuilder();
+    public void getDropSQL(SQLScript script, boolean optionExists) {
+        final StringBuilder sb = new StringBuilder();
         // we need to drop default
-        compareDefaults(getDefaultName(), getDefaultValue(), null, null, dropActions);
-        sbString.append(getAlterTable(false)).append("\n\tDROP COLUMN ");
+        compareDefaults(getDefaultName(), getDefaultValue(), null, null, script);
+        sb.append(getAlterTable(false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
-            sbString.append(IF_EXISTS);
+            sb.append(IF_EXISTS);
         }
-        sbString.append(MsDiffUtils.quoteName(name));
-        dropActions.add(new SQLAction(sbString));
+        sb.append(MsDiffUtils.quoteName(name));
+        script.addStatement(sb);
     }
 
     public boolean isSparse() {

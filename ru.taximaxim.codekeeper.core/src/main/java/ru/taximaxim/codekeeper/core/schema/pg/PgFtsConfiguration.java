@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgFtsConfiguration extends PgStatement implements ISearchPath {
 
@@ -57,28 +56,28 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        SQLAction sql = new SQLAction();
+    public void getCreationSQL(SQLScript script) {
+        StringBuilder sql = new StringBuilder();
         sql.append("CREATE TEXT SEARCH CONFIGURATION ")
         .append(getQualifiedName()).append(" (\n\t");
         sql.append("PARSER = ").append(parser).append(" )");
-        createActions.add(sql);
+        script.addStatement(sql);
 
         dictionariesMap.forEach((fragment, dictionaries) -> {
-            SQLAction sqlAction = new SQLAction();
+            StringBuilder sqlAction = new StringBuilder();
             sqlAction.append(ALTER_CONFIGURATION).append(getQualifiedName());
             sqlAction.append("\n\tADD MAPPING FOR ").append(fragment)
             .append(WITH).append(dictionaries);
-            createActions.add(sqlAction);
+            script.addStatement(sqlAction);
         });
 
-        appendOwnerSQL(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgFtsConfiguration newConf = (PgFtsConfiguration) newCondition;
 
         if (!newConf.getParser().equals(parser)) {
@@ -86,15 +85,15 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newConf, alterActions);
+        compareOptions(newConf, script);
 
-        appendAlterOwner(newConf, alterActions);
-        appendAlterComments(newConf, alterActions);
+        appendAlterOwner(newConf, script);
+        appendAlterComments(newConf, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
-    public void compareOptions(PgFtsConfiguration newConf, Collection<SQLAction> sqlActions) {
+    public void compareOptions(PgFtsConfiguration newConf, SQLScript script) {
         Map <String, String> oldMap = dictionariesMap;
         Map <String, String> newMap = newConf.dictionariesMap;
 
@@ -105,32 +104,32 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
         oldMap.forEach((fragment, dictionary) -> {
             String newDictionary = newMap.get(fragment);
             if (newDictionary == null) {
-                sqlActions.add(getAlterConfiguration("DROP", fragment));
+                script.addStatement(getAlterConfiguration("DROP", fragment));
             } else if (!dictionary.equals(newDictionary)) {
-                sqlActions.add(getAlterConfiguration("ALTER", fragment, newDictionary));
+                script.addStatement(getAlterConfiguration("ALTER", fragment, newDictionary));
             }
         });
 
         newMap.forEach((fragment, dictionary) -> {
             if (!oldMap.containsKey(fragment)) {
-                sqlActions.add(getAlterConfiguration("ADD", fragment, dictionary));
+                script.addStatement(getAlterConfiguration("ADD", fragment, dictionary));
             }
         });
     }
 
 
-    private SQLAction getAlterConfiguration(String action, String fragment) {
+    private String getAlterConfiguration(String action, String fragment) {
         return getAlterConfiguration(action, fragment, null);
     }
 
-    private SQLAction getAlterConfiguration(String action, String fragment, String dictionary) {
-        SQLAction sqlAction = new SQLAction(ALTER_CONFIGURATION).append(getQualifiedName())
+    private String getAlterConfiguration(String action, String fragment, String dictionary) {
+        StringBuilder sqlAction = new StringBuilder(ALTER_CONFIGURATION).append(getQualifiedName())
                 .append(MessageFormat.format("\n\t{0} MAPPING FOR ", action))
                 .append(fragment);
         if (null != dictionary) {
             sqlAction.append(WITH).append(dictionary);
         }
-        return sqlAction;
+        return sqlAction.toString();
     }
 
 

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
-import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -24,7 +23,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public abstract class MsConstraint extends AbstractConstraint {
 
@@ -35,7 +34,7 @@ public abstract class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL);
         if (isNotValid()) {
@@ -46,7 +45,7 @@ public abstract class MsConstraint extends AbstractConstraint {
             sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
         }
         sbSQL.append(getDefinition());
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
         // 1) if is not valid, after adding it is disabled by default
         // 2) can't be valid if disabled
@@ -58,44 +57,44 @@ public abstract class MsConstraint extends AbstractConstraint {
                 sb.append("NO");
             }
             sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(getName()));
-            createActions.add(new SQLAction(sb));
+            script.addStatement(sb);
         }
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsConstraint newConstr = (MsConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        compareOptions(newConstr, alterActions);
+        compareOptions(newConstr, script);
 
         if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
-            StringBuilder sbSQl = new StringBuilder();
-            appendAlterTable(sbSQl);
-            sbSQl.append(" WITH ");
+            StringBuilder sb = new StringBuilder();
+            appendAlterTable(sb);
+            sb.append(" WITH ");
             if (newConstr.isNotValid()) {
-                sbSQl.append("NO");
+                sb.append("NO");
             }
-            sbSQl.append("CHECK ");
+            sb.append("CHECK ");
             if (newConstr.isDisabled()) {
-                sbSQl.append("NO");
+                sb.append("NO");
             }
-            sbSQl.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()));
-            alterActions.add(new SQLAction(sbSQl));
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()));
+            script.addStatement(sb);
         }
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     protected abstract boolean compareUnalterable(MsConstraint newConstr);
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
-        appendSpecialDropSQL(dropActions);
+    public void getDropSQL(SQLScript script, boolean optionExists) {
+        appendSpecialDropSQL(script);
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
@@ -103,14 +102,14 @@ public abstract class MsConstraint extends AbstractConstraint {
             sbSQL.append(IF_EXISTS);
         }
         sbSQL.append(MsDiffUtils.quoteName(getName()));
-        dropActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
     }
 
-    protected void compareOptions(MsConstraint newConstr, Collection<SQLAction> sqlActions) {
+    protected void compareOptions(MsConstraint newConstr, SQLScript script) {
         // subclasses will override if needed
     }
 
-    protected void appendSpecialDropSQL(Collection<SQLAction> dropActions) {
+    protected void appendSpecialDropSQL(SQLScript script) {
         // subclasses will override if needed
     }
 

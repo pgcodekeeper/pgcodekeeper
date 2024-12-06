@@ -22,7 +22,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,7 +38,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class OverridesModelExporter extends ModelExporter {
@@ -96,19 +94,19 @@ public class OverridesModelExporter extends ModelExporter {
 
     @Override
     protected String getDumpSql(PgStatement st) {
-        Set<SQLAction> sqlActions = new LinkedHashSet<>();
+        SQLScript script = new SQLScript(st.getDbType());
         Set<PgPrivilege> privs = st.getPrivileges();
-        st.appendOwnerSQL(sqlActions);
-        PgPrivilege.appendPrivileges(privs, sqlActions);
+        st.appendOwnerSQL(script);
+        PgPrivilege.appendPrivileges(privs, script);
         if (privs.isEmpty() && st.getDbType() == DatabaseType.PG) {
-            PgPrivilege.appendDefaultPostgresPrivileges(st, sqlActions);
+            PgPrivilege.appendDefaultPostgresPrivileges(st, script);
         }
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                PgPrivilege.appendPrivileges(col.getPrivileges(), sqlActions);
+                PgPrivilege.appendPrivileges(col.getPrivileges(), script);
             }
         }
-        return SQLScript.getText(sqlActions, st.getDbType());
+        return script.getFullScript();
     }
 }

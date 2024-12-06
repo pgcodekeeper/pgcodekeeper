@@ -19,7 +19,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -35,10 +34,11 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgIndex extends AbstractIndex {
 
+    private static final String ALTER_INDEX = "ALTER INDEX ";
     private Inherits inherit;
     private String method;
     private boolean nullsDistinction = true;
@@ -53,12 +53,12 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        getCreationSQL(createActions, getName());
-        appendComments(createActions);
+    public void getCreationSQL(SQLScript script) {
+        getCreationSQL(script, getName());
+        appendComments(script);
     }
 
-    private void getCreationSQL(Collection<SQLAction> createActions, String name) {
+    private void getCreationSQL(SQLScript script, String name) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
@@ -86,19 +86,14 @@ public class PgIndex extends AbstractIndex {
         appendSimpleColumns(sbSQL, columns);
         appendIndexParam(sbSQL);
         appendWhere(sbSQL);
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
         if (isClustered()) {
-            SQLAction sql = new SQLAction();
-            appendClusterSql(sql);
-            createActions.add(sql);
+            script.addStatement(appendClusterSql());
         }
 
         if (inherit != null) {
-            SQLAction sql = new SQLAction();
-            sbSQL.append("ALTER INDEX ").append(inherit.getQualifiedName())
-            .append(" ATTACH PARTITION ").append(getQualifiedName());
-            createActions.add(sql);
+            script.addStatement(ALTER_INDEX + inherit.getQualifiedName() + " ATTACH PARTITION " + getQualifiedName());
         }
     }
 
@@ -152,8 +147,8 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgIndex newIndex = (PgIndex) newCondition;
 
         if (!compareUnalterable(newIndex)) {
@@ -162,59 +157,50 @@ public class PgIndex extends AbstractIndex {
             if (getDatabaseArguments().isConcurrentlyMode()) {
                 // generate optimized command sequence for concurrent index creation
                 String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();
-                newIndex.getCreationSQL(alterActions, tmpName);
-                alterActions.add(new SQLAction("BEGIN TRANSACTION"));
-                getDropSQL(alterActions);
-                SQLAction sql = new SQLAction();
-                sql.append("ALTER INDEX ")
+                newIndex.getCreationSQL(script, tmpName);
+                script.addStatement("BEGIN TRANSACTION");
+                getDropSQL(script);
+                StringBuilder sql = new StringBuilder();
+                sql.append(ALTER_INDEX)
                 .append(PgDiffUtils.getQuotedName(getSchemaName()))
                 .append('.')
                 .append(PgDiffUtils.getQuotedName(tmpName))
                 .append(" RENAME TO ")
                 .append(PgDiffUtils.getQuotedName(getName()));
-                alterActions.add(sql);
+                script.addStatement(sql);
 
-                newIndex.appendComments(alterActions);
-                alterActions.add(new SQLAction("COMMIT TRANSACTION"));
+                newIndex.appendComments(script);
+                script.addStatement("COMMIT TRANSACTION");
             }
             return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(getTablespace(), newIndex.getTablespace())) {
-            SQLAction sql = new SQLAction();
-            sql.append("ALTER INDEX ").append(newIndex.getQualifiedName())
+            StringBuilder sql = new StringBuilder();
+            sql.append(ALTER_INDEX).append(newIndex.getQualifiedName())
             .append(" SET TABLESPACE ");
 
             String newSpace = newIndex.getTablespace();
             sql.append(newSpace == null ? Consts.PG_DEFAULT : newSpace);
-            alterActions.add(sql);
+            script.addStatement(sql);
         }
 
         if (newIndex.isClustered() != isClustered()) {
-            SQLAction sql = new SQLAction();
             if (newIndex.isClustered()) {
-                newIndex.appendClusterSql(sql);
-                alterActions.add(sql);
+                script.addStatement(newIndex.appendClusterSql());
             } else if (!((PgStatementContainer) newIndex.getParent()).isClustered()) {
-                sql.append(ALTER_TABLE)
-                .append(newIndex.getParent().getQualifiedName())
-                .append(" SET WITHOUT CLUSTER");
-                alterActions.add(sql);
+                script.addStatement(ALTER_TABLE + newIndex.getParent().getQualifiedName() + " SET WITHOUT CLUSTER");
             }
         }
 
-        compareOptions(newIndex, alterActions);
-        appendAlterComments(newIndex, alterActions);
+        compareOptions(newIndex, script);
+        appendAlterComments(newIndex, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
-    private void appendClusterSql(SQLAction sql) {
-        sql.append("ALTER ");
-        sql.append(getParent().getTypeName()).append(' ');
-        sql.append(getParent().getQualifiedName());
-        sql.append(" CLUSTER ON ");
-        sql.append(getName());
+    private String appendClusterSql() {
+        return "ALTER " + getParent().getTypeName() + ' ' + getParent().getQualifiedName() + " CLUSTER ON " + getName();
     }
 
     public String getMethod() {

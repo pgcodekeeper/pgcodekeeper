@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
 
@@ -97,7 +96,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE USER MAPPING ");
         appendIfNotExists(sb);
@@ -106,12 +105,12 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
             sb.append(' ');
         }
         appendOptions(sb);
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgUserMapping newUsm = (PgUserMapping) newCondition;
 
         if (!Objects.equals(newUsm.getUser(), getUser()) ||
@@ -120,19 +119,19 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newUsm, alterActions);
-        return getObjectState(alterActions);
+        compareOptions(newUsm, script);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean generateExists) {
-        final SQLAction sbString = new SQLAction();
+    public void getDropSQL(SQLScript script, boolean generateExists) {
+        final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP USER MAPPING ");
         if (generateExists) {
             sbString.append(IF_EXISTS);
         }
         sbString.append("FOR ").append(getQualifiedName());
-        dropActions.add(sbString);
+        script.addStatement(sbString);
     }
 
     @Override

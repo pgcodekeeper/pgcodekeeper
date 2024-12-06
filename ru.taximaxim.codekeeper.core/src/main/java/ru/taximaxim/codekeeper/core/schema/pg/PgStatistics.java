@@ -20,7 +20,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -31,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractStatistics;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgStatistics extends AbstractStatistics {
 
@@ -46,7 +45,7 @@ public class PgStatistics extends AbstractStatistics {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE STATISTICS ");
         appendIfNotExists(sb);
@@ -59,20 +58,19 @@ public class PgStatistics extends AbstractStatistics {
             sb.append(PgDiffUtils.getQuotedName(foreignSchema)).append('.');
         }
         sb.append(PgDiffUtils.getQuotedName(foreignTable));
-        createActions.add(new SQLAction(sb));
+        script.addStatement(sb);
 
         if (statistics > 0) {
-            createActions.add(appendStatistics(this));
+            script.addStatement(appendStatistics(this));
         }
 
-        appendOwnerSQL(createActions);
-        appendComments(createActions);
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
-
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgStatistics newStat = (PgStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
             isNeedDepcies.set(true);
@@ -80,19 +78,17 @@ public class PgStatistics extends AbstractStatistics {
         }
 
         if (statistics != newStat.statistics) {
-            alterActions.add(appendStatistics(newStat));
+            script.addStatement(appendStatistics(newStat));
         }
 
-        appendAlterOwner(newStat, alterActions);
-        appendAlterComments(newStat, alterActions);
+        appendAlterOwner(newStat, script);
+        appendAlterComments(newStat, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
-    private SQLAction appendStatistics(PgStatistics stat) {
-        SQLAction sql = new SQLAction();
-        return sql.append("ALTER STATISTICS ").append(stat.getQualifiedName())
-                .append(" SET STATISTICS ").append(stat.statistics);
+    private String appendStatistics(PgStatistics stat) {
+        return "ALTER STATISTICS " + stat.getQualifiedName() + " SET STATISTICS " + stat.statistics;
     }
 
     public void setForeignSchema(String foreignSchema) {

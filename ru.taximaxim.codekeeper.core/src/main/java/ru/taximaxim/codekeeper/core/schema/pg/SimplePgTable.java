@@ -15,11 +15,9 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
-
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Simple table object
@@ -35,12 +33,12 @@ public class SimplePgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, Collection<SQLAction> alterTableActions) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn((PgColumn) column, sbSQL, alterTableActions);
+            writeColumn((PgColumn) column, sbSQL, script);
         }
         if (start != sbSQL.length()) {
             sbSQL.setLength(sbSQL.length() - 2);
@@ -56,14 +54,14 @@ public class SimplePgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, Collection<SQLAction> sqlActions) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         if (newTable instanceof AbstractRegularTable regTable) {
-            regTable.convertTable(sqlActions);
+            regTable.convertTable(script);
         }
     }
 
     @Override
-    protected void convertTable(Collection<SQLAction> sqlActions) {
+    protected void convertTable(SQLScript script) {
         // no implements
     }
 }

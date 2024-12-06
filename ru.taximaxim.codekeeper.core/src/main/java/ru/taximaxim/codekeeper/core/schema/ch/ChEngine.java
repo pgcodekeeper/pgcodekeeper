@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -27,7 +26,7 @@ import java.util.Set;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Subclass when need to reset hashes
@@ -133,13 +132,13 @@ public final class ChEngine implements Serializable, IHashable {
         }
     }
 
-    public void appendAlterSQL(ChEngine newEngine, String prefix, Collection<SQLAction> alterActions) {
-        compareSampleBy(newEngine.sampleBy, prefix, alterActions);
-        compareTtl(newEngine.ttl, prefix, alterActions);
-        compareOptions(newEngine.options, prefix, alterActions);
+    public void appendAlterSQL(ChEngine newEngine, String prefix, SQLScript script) {
+        compareSampleBy(newEngine.sampleBy, prefix, script);
+        compareTtl(newEngine.ttl, prefix, script);
+        compareOptions(newEngine.options, prefix, script);
     }
 
-    private void compareSampleBy(String newSampleBy, String prefix, Collection<SQLAction> sqlActions) {
+    private void compareSampleBy(String newSampleBy, String prefix, SQLScript script) {
         if (Objects.equals(sampleBy, newSampleBy)) {
             return;
         }
@@ -151,10 +150,10 @@ public final class ChEngine implements Serializable, IHashable {
             sb.append(prefix);
             sb.append("\n\tMODIFY SAMPLE BY ").append(newSampleBy);
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareTtl(String newTtl, String prefix, Collection<SQLAction> sqlActions) {
+    private void compareTtl(String newTtl, String prefix, SQLScript script) {
         if (Objects.equals(ttl, newTtl)) {
             return;
         }
@@ -166,11 +165,10 @@ public final class ChEngine implements Serializable, IHashable {
         } else {
             sb.append("\n\tMODIFY TTL ").append(newTtl);
         }
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
-    private void compareOptions(Map<String, String> newOptions,
-            String prefix, Collection<SQLAction> sqlActions) {
+    private void compareOptions(Map<String, String> newOptions, String prefix, SQLScript script) {
         if (options.equals(newOptions)) {
             return;
         }
@@ -200,32 +198,32 @@ public final class ChEngine implements Serializable, IHashable {
             }
         }
 
-        appendAlterOptions(resetOptions, modifyOptions, prefix, sqlActions);
+        appendAlterOptions(resetOptions, modifyOptions, prefix, script);
     }
 
-    private void appendAlterOptions(Set<String> resetOptions,
-            Map<String, String> modifyOptions, String prefix, Collection<SQLAction> sqlActions) {
+    private void appendAlterOptions(Set<String> resetOptions, Map<String, String> modifyOptions, String prefix,
+            SQLScript script) {
         if (!resetOptions.isEmpty()) {
-            SQLAction action = new SQLAction();
-            action.append(prefix).append("\n\tRESET SETTING");
+            StringBuilder sb = new StringBuilder();
+            sb.append(prefix).append("\n\tRESET SETTING");
             for(String key : resetOptions) {
-                action.append(' ').append(key).append(',');
+                sb.append(' ').append(key).append(',');
             }
-            action.reduce(1);
-            sqlActions.add(action);
+            sb.setLength(sb.length() - 1);
+            script.addStatement(sb);
         }
 
         if (modifyOptions.isEmpty()) {
             return;
         }
 
-        SQLAction action = new SQLAction();
-        action.append(prefix).append("\n\tMODIFY SETTING");
+        StringBuilder sb = new StringBuilder();
+        sb.append(prefix).append("\n\tMODIFY SETTING");
         for (Entry<String, String> option : modifyOptions.entrySet()) {
-            action.append(' ').append(option.getKey()).append('=').append(option.getValue()).append(',');
+            sb.append(' ').append(option.getKey()).append('=').append(option.getValue()).append(',');
         }
-        action.reduce(1);
-        sqlActions.add(action);
+        sb.setLength(sb.length() - 1);
+        script.addStatement(sb);
     }
 
     public boolean containsOption(String key) {

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
@@ -29,7 +28,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsRole extends PgStatement {
 
@@ -50,61 +49,61 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
-        createActions.add(new SQLAction(sbSQL));
+        script.addStatement(sbSQL);
 
         for (String member : members) {
-            appendAlterRole(member, createActions, true);
+            appendAlterRole(member, script, true);
         }
 
-        appendPrivileges(createActions);
+        appendPrivileges(script);
     }
 
     @Override
-    public void getDropSQL(Collection<SQLAction> dropActions, boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         for (String member : members) {
-            appendAlterRole(member, dropActions, false);
+            appendAlterRole(member, script, false);
         }
-        super.getDropSQL(dropActions, optionExists);
+        super.getDropSQL(script, optionExists);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsRole newRole = (MsRole) newCondition;
 
-        appendAlterOwner(newRole, alterActions);
+        appendAlterOwner(newRole, script);
 
         if (!Objects.equals(members, newRole.members)) {
             for (String newMember : newRole.members) {
                 if (!members.contains(newMember)) {
-                    appendAlterRole(newMember, alterActions, true);
+                    appendAlterRole(newMember, script, true);
                 }
             }
 
             for (String oldMember : members) {
                 if (!newRole.members.contains(oldMember)) {
-                    appendAlterRole(oldMember, alterActions, false);
+                    appendAlterRole(oldMember, script, false);
                 }
             }
         }
 
-        alterPrivileges(newRole, alterActions);
+        alterPrivileges(newRole, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
-    public void appendAlterRole(String member, Collection<SQLAction> sqlActions, boolean needAddMember) {
-        SQLAction sql = new SQLAction();
+    public void appendAlterRole(String member, SQLScript script, boolean needAddMember) {
+        StringBuilder sql = new StringBuilder();
         sql.append("ALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
         sql.append(needAddMember ? " ADD " : " DROP ").append("MEMBER ").append(MsDiffUtils.quoteName(member));
-        sqlActions.add(sql);
+        script.addStatement(sql);
     }
 
     public void addMember(String member) {

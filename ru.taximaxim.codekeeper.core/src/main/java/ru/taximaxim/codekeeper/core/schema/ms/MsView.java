@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
-import ru.taximaxim.codekeeper.core.script.SQLAction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsView extends AbstractView implements SourceStatement {
 
@@ -53,13 +53,13 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public void getCreationSQL(Collection<SQLAction> createActions) {
-        addViewFullSQL(createActions, true);
-        appendOwnerSQL(createActions);
-        appendPrivileges(createActions);
+    public void getCreationSQL(SQLScript script) {
+        addViewFullSQL(script, true);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
     }
 
-    private void addViewFullSQL(Collection<SQLAction> sqlActions, boolean isCreate) {
+    private void addViewFullSQL(SQLScript script, boolean isCreate) {
         final StringBuilder sb = new StringBuilder();
         sb.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sb.append(GO).append('\n');
@@ -67,26 +67,26 @@ public class MsView extends AbstractView implements SourceStatement {
         sb.append(GO).append('\n');
 
         appendSourceStatement(isCreate, sb);
-        sqlActions.add(new SQLAction(sb));
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition,
-            AtomicBoolean isNeedDepcies, Collection<SQLAction> alterActions) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsView newView = (MsView) newCondition;
 
         if (isAnsiNulls() != newView.isAnsiNulls()
                 || isQuotedIdentified() != newView.isQuotedIdentified()
                 || !Objects.equals(getFirstPart(), newView.getFirstPart())
                 || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
-            newView.addViewFullSQL(alterActions, false);
+            newView.addViewFullSQL(script, false);
             isNeedDepcies.set(true);
         }
 
-        appendAlterOwner(newView, alterActions);
-        alterPrivileges(newView, alterActions);
+        appendAlterOwner(newView, script);
+        alterPrivileges(newView, script);
 
-        return getObjectState(alterActions);
+        return getObjectState(script, startSize);
     }
 
     @Override
