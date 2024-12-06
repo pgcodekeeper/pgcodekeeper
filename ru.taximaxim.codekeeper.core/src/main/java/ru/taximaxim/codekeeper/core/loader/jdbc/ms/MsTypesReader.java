@@ -156,7 +156,7 @@ public class MsTypesReader extends JdbcReader {
         .join("LEFT JOIN sys.assembly_types ay WITH (NOLOCK) ON ay.user_type_id=res.user_type_id")
         .join("LEFT JOIN sys.assemblies a WITH (NOLOCK) ON a.assembly_id=ay.assembly_id")
         .where("res.is_user_defined=1");
-        
+
         if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
             builder
             .column("ttt.is_memory_optimized")
@@ -170,92 +170,94 @@ public class MsTypesReader extends JdbcReader {
     }
 
     private void addMsConstraintsPart(QueryBuilder builder) {
-        String checks = """
-                CROSS APPLY (\s
-                  SELECT c.definition AS def
-                  FROM sys.check_constraints c WITH (NOLOCK)
-                  WHERE c.parent_object_id=ttt.type_table_object_id
-                  FOR XML RAW, ROOT
-                ) ch (checks)""";
-        
+        QueryBuilder checks = new QueryBuilder()
+                .column("c.definition AS def")
+                .from("sys.check_constraints c WITH (NOLOCK)")
+                .where("c.parent_object_id=ttt.type_table_object_id")
+                .postAction("FOR XML RAW, ROOT");
+
         builder.column("ch.checks");
-        builder.join(checks);
+        builder.join("CROSS APPLY", checks, "ch (checks)");
     }
 
     private void addMsColumnsPart(QueryBuilder builder) {
-        String cols = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT
-                      c.name,
-                      c.column_id AS id,
-                      ss.name AS st,
-                      usrt.name AS type,
-                      usrt.is_user_defined AS ud,
-                      CASE WHEN c.max_length >= 0 AND baset.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
-                      c.precision AS pr,
-                      c.scale AS sc,
-                      c.collation_name AS cn,
-                      object_definition(c.default_object_id) AS dv,
-                      c.is_nullable AS nl,
-                      c.is_identity AS ii,
-                      ic.seed_value AS s,
-                      ic.increment_value AS i,
-                      ic.is_not_for_replication AS nfr,
-                      c.is_rowguidcol AS rgc,
-                      cc.is_persisted AS ps,
-                      cc.definition AS def
-                    FROM sys.all_columns c WITH (NOLOCK)
-                    LEFT OUTER JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND cc.column_id = c.column_id
-                    LEFT OUTER JOIN sys.identity_columns ic WITH (NOLOCK) ON ic.object_id = c.object_id AND ic.column_id = c.column_id
-                    LEFT OUTER JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = c.user_type_id
-                    LEFT OUTER JOIN sys.schemas ss WITH (NOLOCK) ON ss.schema_id = usrt.schema_id
-                    LEFT OUTER JOIN sys.types baset WITH (NOLOCK) ON (baset.user_type_id = c.system_type_id AND baset.user_type_id = baset.system_type_id)
-                      OR (baset.system_type_id = c.system_type_id AND baset.user_type_id = c.user_type_id AND baset.is_user_defined = 0 AND baset.is_assembly_type = 1)
-                    WHERE ttt.type_table_object_id=c.object_id
-                  ) cc ORDER BY cc.id
-                  FOR XML RAW, ROOT
-                ) cc (cols)""";
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("c.name")
+                .column("c.column_id AS id")
+                .column("ss.name AS st")
+                .column("usrt.name AS type")
+                .column("usrt.is_user_defined AS ud")
+                .column("CASE WHEN c.max_length >= 0 AND baset.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size")
+                .column("c.precision AS pr")
+                .column("c.scale AS sc")
+                .column("c.collation_name AS cn")
+                .column("object_definition(c.default_object_id) AS dv")
+                .column("c.is_nullable AS nl")
+                .column("c.is_identity AS ii")
+                .column("ic.seed_value AS s")
+                .column("ic.increment_value AS i")
+                .column("ic.is_not_for_replication AS nfr")
+                .column("c.is_rowguidcol AS rgc")
+                .column("cc.is_persisted AS ps")
+                .column("cc.definition AS def")
+                .from("sys.all_columns c WITH (NOLOCK)")
+                .join("LEFT OUTER JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND cc.column_id = c.column_id")
+                .join("LEFT OUTER JOIN sys.identity_columns ic WITH (NOLOCK) ON ic.object_id = c.object_id AND ic.column_id = c.column_id")
+                .join("LEFT OUTER JOIN sys.types usrt WITH (NOLOCK) ON usrt.user_type_id = c.user_type_id")
+                .join("LEFT OUTER JOIN sys.schemas ss WITH (NOLOCK) ON ss.schema_id = usrt.schema_id")
+                .join("LEFT OUTER JOIN sys.types baset WITH (NOLOCK) ON (baset.user_type_id = c.system_type_id AND baset.user_type_id = baset.system_type_id)")
+                .join("  OR (baset.system_type_id = c.system_type_id AND baset.user_type_id = c.user_type_id AND baset.is_user_defined = 0 AND baset.is_assembly_type = 1)")
+                .where("ttt.type_table_object_id=c.object_id");
+
+
+        QueryBuilder cols = new QueryBuilder()
+                .column("*")
+                .from(subSelect, "cc ORDER BY cc.id")
+                .postAction("FOR XML RAW, ROOT");
 
         builder.column("cc.cols");
-        builder.join(cols);
+        builder.join("CROSS APPLY", cols, "cc (cols)");
     }
 
     private void addMsIndicesPart(QueryBuilder builder) {
-        String indices = """
-                CROSS APPLY (\s
-                  SELECT * FROM (
-                    SELECT
-                      si.name,
-                      si.is_primary_key AS pk,
-                      si.is_unique_constraint AS uc,
-                      si.ignore_dup_key AS dk,
-                      INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS cl,
-                      hi.bucket_count AS bc,
-                      ccc.cols,
-                      si.filter_definition AS def
-                    FROM sys.indexes AS si WITH (NOLOCK)
-                    LEFT JOIN sys.objects o WITH (NOLOCK) ON si.object_id = o.object_id
-                    LEFT JOIN sys.hash_indexes hi WITH (NOLOCK) ON hi.object_id = si.object_id AND hi.index_id = si.index_id
-                    CROSS APPLY (\s
-                      SELECT * FROM (
-                        SELECT
-                          c.index_column_id AS id,
-                          sc.name,
-                          c.is_descending_key AS is_desc
-                        FROM sys.index_columns c WITH (NOLOCK)
-                        JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
-                        WHERE c.object_id = si.object_id AND c.index_id = si.index_id
-                      ) cc ORDER BY cc.id
-                      FOR XML RAW, ROOT
-                    ) ccc (cols)
-                    WHERE si.object_id=ttt.type_table_object_id AND si.index_id > 0 AND si.is_hypothetical = 0
-                  ) ii \s
-                  FOR XML RAW, ROOT
-                ) ii (indices)""";
+        QueryBuilder subSubSubSelect = new QueryBuilder()
+                .column("c.index_column_id AS id")
+                .column("sc.name")
+                .column("c.is_descending_key AS is_desc")
+                .from("sys.index_columns c WITH (NOLOCK)")
+                .join("JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id")
+                .where("c.object_id = si.object_id")
+                .where("c.index_id = si.index_id");
+
+        QueryBuilder subSubSelect = new QueryBuilder()
+                .column("*")
+                .from(subSubSubSelect, "cc ORDER BY cc.id")
+                .postAction("FOR XML RAW, ROOT");
+
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("si.name")
+                .column("si.is_primary_key AS pk")
+                .column("si.is_unique_constraint AS uc")
+                .column("si.ignore_dup_key AS dk")
+                .column("INDEXPROPERTY(si.object_id, si.name, 'IsClustered') AS cl")
+                .column("hi.bucket_count AS bc")
+                .column("ccc.cols")
+                .column("si.filter_definition AS def")
+                .from("sys.indexes AS si WITH (NOLOCK)")
+                .join("LEFT JOIN sys.objects o WITH (NOLOCK) ON si.object_id = o.object_id")
+                .join("LEFT JOIN sys.hash_indexes hi WITH (NOLOCK) ON hi.object_id = si.object_id AND hi.index_id = si.index_id")
+                .join("CROSS APPLY", subSubSelect, "ccc (cols)")
+                .where("si.object_id=ttt.type_table_object_id")
+                .where("si.index_id > 0")
+                .where("si.is_hypothetical = 0");
+
+        QueryBuilder indicesBuilder = new QueryBuilder()
+                .column("*")
+                .from(subSelect, "ii")
+                .postAction("FOR XML RAW, ROOT");
 
         builder.column("ii.indices");
-        builder.join(indices);
+        builder.join("CROSS APPLY", indicesBuilder, "ii (indices)");
     }
 
     @Override
@@ -264,7 +266,9 @@ public class MsTypesReader extends JdbcReader {
     }
 
     @Override
-    protected String getFormattedMsPriviliges() {
-        return MS_PRIVILIGES_JOIN.formatted("", "user_type_id", 6);
+    protected QueryBuilder formatMsPriviliges(QueryBuilder privileges) {
+        return privileges
+                .where("major_id = res.user_type_id")
+                .where("perm.class = 6");
     }
 }

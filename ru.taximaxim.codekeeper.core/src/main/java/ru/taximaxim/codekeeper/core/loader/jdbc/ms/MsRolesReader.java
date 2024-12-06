@@ -69,23 +69,25 @@ public class MsRolesReader extends AbstractStatementReader {
     }
 
     private void addMsGroupsPart(QueryBuilder builder) {
-        String groups = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT p1.name AS m
-                    FROM sys.database_role_members AS rm WITH (NOLOCK)
-                    INNER JOIN sys.database_principals p1 WITH (NOLOCK) ON rm.member_principal_id=p1.principal_id
-                    WHERE rm.role_principal_id=res.principal_id
-                  ) cc
-                  FOR XML RAW, ROOT
-                ) cc (groups)""";
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("p1.name AS m")
+                .from("sys.database_role_members AS rm WITH (NOLOCK)")
+                .join("INNER JOIN sys.database_principals p1 WITH (NOLOCK) ON rm.member_principal_id=p1.principal_id")
+                .where("rm.role_principal_id=res.principal_id");
+
+        QueryBuilder group = new QueryBuilder()
+                .column("*")
+                .from(subSelect, "cc")
+                .postAction("FOR XML RAW, ROOT");
 
         builder.column("cc.groups");
-        builder.join(groups);
+        builder.join("CROSS APPLY", group, "cc (groups)");
     }
 
     @Override
-    protected String getFormattedMsPriviliges() {
-        return MS_PRIVILIGES_JOIN.formatted("", "principal_id", 4);
+    protected QueryBuilder formatMsPriviliges(QueryBuilder privileges) {
+        return privileges
+                .where("major_id = res.principal_id")
+                .where("perm.class = 4");
     }
 }

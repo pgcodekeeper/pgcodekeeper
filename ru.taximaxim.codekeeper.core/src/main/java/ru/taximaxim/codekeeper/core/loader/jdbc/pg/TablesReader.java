@@ -635,20 +635,17 @@ public class TablesReader extends JdbcReader {
     }
 
     private void addParentsPart(QueryBuilder builder) {
-        String parents = """
-                LEFT JOIN (
-                  SELECT
-                    inh.inhrelid,
-                    pg_catalog.array_agg(inhrel.relname ORDER BY inh.inhrelid, inh.inhseqno) AS inhrelnames,
-                    pg_catalog.array_agg(inhns.nspname ORDER BY inh.inhrelid, inh.inhseqno) AS inhnspnames
-                  FROM pg_catalog.pg_inherits inh
-                  LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid
-                  LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid
-                  GROUP BY inh.inhrelid
-                ) parents ON parents.inhrelid = res.oid""";
+        QueryBuilder parents = new QueryBuilder()
+                .column("inh.inhrelid")
+                .column("pg_catalog.array_agg(inhrel.relname ORDER BY inh.inhrelid, inh.inhseqno) AS inhrelnames")
+                .column("pg_catalog.array_agg(inhns.nspname ORDER BY inh.inhrelid, inh.inhseqno) AS inhnspnames")
+                .from("pg_catalog.pg_inherits inh")
+                .join("LEFT JOIN pg_catalog.pg_class inhrel ON inh.inhparent = inhrel.oid")
+                .join("LEFT JOIN pg_catalog.pg_namespace inhns ON inhrel.relnamespace = inhns.oid")
+                .groupBy("inh.inhrelid");
 
         builder.column("parents.inhrelnames");
         builder.column("parents.inhnspnames");
-        builder.join(parents);
+        builder.join("LEFT JOIN", parents, "parents ON parents.inhrelid = res.oid");
     }
 }

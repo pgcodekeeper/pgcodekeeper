@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.ms;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -199,7 +198,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
             .column("t.is_memory_optimized")
             .join("LEFT JOIN sys.tables t WITH (NOLOCK) ON o.object_id = t.object_id");
         }
-        
+
         if (SupportedMsVersion.VERSION_19.isLE(loader.getVersion())) {
             builder.column("res.optimize_for_sequential_key");
         }
@@ -212,29 +211,28 @@ public class MsIndicesAndPKReader extends JdbcReader {
     }
 
     protected void addMsColsPart(QueryBuilder builder) {
-        String cols = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT
-                      c.index_column_id AS id,
-                      sc.name,
-                      c.is_descending_key AS is_desc,
-                      {0}
-                      c.is_included_column AS is_inc
-                    FROM sys.index_columns c WITH (NOLOCK)
-                    JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id
-                    WHERE c.object_id = res.object_id AND c.index_id = res.index_id
-                  ) cc ORDER BY cc.id
-                  FOR XML RAW, ROOT
-                ) cc (cols)""";
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("c.index_column_id AS id")
+                .column("sc.name")
+                .column("c.is_descending_key AS is_desc")
+                .column("c.is_included_column AS is_inc")
+                .from("sys.index_columns c WITH (NOLOCK)")
+                .join("JOIN sys.columns sc WITH (NOLOCK) ON c.object_id = sc.object_id AND c.column_id = sc.column_id")
+                .where("c.object_id = res.object_id")
+                .where("c.index_id = res.index_id");
 
-        String orderColsStr = "c.column_store_order_ordinal AS col_order,";
-        String query = MessageFormat.format(cols,
-                SupportedMsVersion.VERSION_22.isLE(loader.getVersion()) ? orderColsStr : "");
+        if (SupportedMsVersion.VERSION_22.isLE(loader.getVersion())) {
+            subSelect.column("c.column_store_order_ordinal AS col_order");
+        }
+
+        QueryBuilder cols = new QueryBuilder()
+                .column("*")
+                .from(subSelect, "cc ORDER BY cc.id")
+                .postAction("FOR XML RAW, ROOT");
 
         builder
         .column("cc.cols")
-        .join(query);
+        .join("CROSS APPLY", cols, "cc (cols)");
     }
 
     @Override

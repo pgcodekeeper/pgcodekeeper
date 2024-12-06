@@ -40,11 +40,17 @@ public abstract class JdbcReader extends AbstractStatementReader {
 
     private static final String EXTENSIONS_SCHEMAS = "extensions_schemas";
 
-    private static final String EXTENSION_SCHEMAS_CTE = """
-            SELECT n.oid
-            FROM pg_catalog.pg_namespace n
-            WHERE EXISTS (SELECT 1 FROM pg_catalog.pg_depend dp WHERE dp.objid = n.oid AND dp.deptype = 'e'
-                AND dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass)""";
+    private static final QueryBuilder EXTENSION_SCHEMA_CTE_SUBSELECT = new QueryBuilder()
+            .column("1")
+            .from("pg_catalog.pg_depend dp")
+            .where("dp.objid = n.oid")
+            .where("dp.deptype = 'e'")
+            .where("dp.classid = 'pg_catalog.pg_namespace'::pg_catalog.regclass");
+
+    private static final QueryBuilder EXTENSION_SCHEMA_CTE = new QueryBuilder()
+            .column("n.oid")
+            .from("pg_catalog.pg_namespace n")
+            .where("EXISTS", EXTENSION_SCHEMA_CTE_SUBSELECT);
 
     protected JdbcReader(JdbcLoaderBase loader) {
         super(loader);
@@ -160,7 +166,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
     protected abstract String getSchemaColumn();
 
     protected void addExtensionSchemasCte(QueryBuilder builder) {
-        builder.with(EXTENSIONS_SCHEMAS, EXTENSION_SCHEMAS_CTE);
+        builder.with(EXTENSIONS_SCHEMAS, EXTENSION_SCHEMA_CTE);
         builder.where(getSchemaColumn() + " NOT IN (SELECT oid FROM extensions_schemas)");
     }
 

@@ -239,15 +239,13 @@ public class MsTablesReader extends JdbcReader {
     }
 
     private void addMsTablespacePart(QueryBuilder builder) {
-        String cols = """
-                CROSS APPLY (
-                  SELECT TOP 1 dsp.name
-                  FROM sys.indexes ind WITH (NOLOCK)
-                  LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id
-                  WHERE ind.object_id = res.object_id
-                ) tt""";
+        QueryBuilder cols = new QueryBuilder()
+                .column("TOP 1 dsp.name")
+                .from("sys.indexes ind WITH (NOLOCK)")
+                .join("LEFT JOIN sys.data_spaces dsp WITH (NOLOCK) on dsp.data_space_id = ind.data_space_id")
+                .where("ind.object_id = res.object_id");
 
         builder.column("tt.name AS space_name");
-        builder.join(cols);
+        builder.join("CROSS APPLY", cols, "tt");
     }
 }

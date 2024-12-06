@@ -521,14 +521,9 @@ public class FunctionsReader extends JdbcReader {
     }
 
     @Override
-    protected String getExtensionCte() {
-        return """
-
-            \s   SELECT objid
-                FROM pg_catalog.pg_depend
-                WHERE classid = %s::pg_catalog.regclass
-                  AND deptype IN ('e', 'i')
-            """;
+    protected QueryBuilder getExtensionCte() {
+        return EXTENSION_DEPS_CTE_BUILDER.copy()
+                .where("deptype IN ('e', 'i')");
     }
 
     @Override
