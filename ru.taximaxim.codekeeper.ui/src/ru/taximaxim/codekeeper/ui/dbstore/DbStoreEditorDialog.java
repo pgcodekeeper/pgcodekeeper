@@ -28,7 +28,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -47,6 +51,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
@@ -62,6 +67,7 @@ import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
@@ -75,6 +81,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
+    private DbInfo testDbInfo;
 
     private Text txtName;
     private Text txtDbName;
@@ -94,9 +101,45 @@ public final class DbStoreEditorDialog extends TrayDialog {
     private ComboViewer cmbGroups;
     private ComboViewer cmbConTypes;
     private final Set<String> dbGroups;
+    private boolean isRunning;
 
     private IgnoreListEditor ignoreListEditor;
     private DbPropertyListEditor propertyListEditor;
+
+    private Job connectionTestJob = Job.create("Connection test", new ICoreRunnable() {
+
+        @Override
+        public void run(IProgressMonitor monitor) throws CoreException {
+            isRunning = true;
+            Integer style;
+            String message;
+            try {
+                AbstractJdbcConnector connector = new DbInfoJdbcConnector(testDbInfo);
+                try (Connection connection = connector.getConnection()) {
+                    style = SWT.OK;
+                    message = Messages.DbStoreEditorDialog_successfull_connection;
+                    }
+                } catch (NumberFormatException ex) {
+                    message = MessageFormat.format(Messages.dbStoreEditorDialog_not_valid_port_number,
+                            txtDbPort.getText());
+                    style = SWT.ICON_ERROR;
+                } catch (SQLException | IOException ex) {
+                    Log.log(Log.LOG_INFO, "Connection test error", ex); //$NON-NLS-1$
+                    message = Messages.DbStoreEditorDialog_failed_connection_reason + ex.getLocalizedMessage();
+                    style = SWT.ICON_ERROR;
+                }
+
+            UiSync.exec(Display.getDefault(), () -> {
+            MessageBox mb = new MessageBox(getShell(), style.intValue());
+            mb.setText(style == SWT.ERROR ? Messages.DbStoreEditorDialog_failed_connection
+                    : Messages.DbStoreEditorDialog_success);
+            mb.setMessage(message);
+            mb.open();
+        });
+            showTestResults(style, message);
+            isRunning = false;
+        }
+    });
 
     public DbInfo getDbInfo(){
         return dbInfo;
@@ -529,39 +572,32 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 Messages.DbStoreEditorDialog_test_connection, true);
         btnTestConnection.addSelectionListener(new SelectionAdapter() {
 
+
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int style;
-                String message;
-                try {
-                    AbstractJdbcConnector connector = new DbInfoJdbcConnector(generateDbInfo());
-                    try (Connection connection = connector.getConnection()) {
-                        style = SWT.OK;
-                        message = Messages.DbStoreEditorDialog_successfull_connection;
+                if (!isRunning) {
+                    testDbInfo = generateDbInfo();
+                    connectionTestJob.schedule();
                     }
-                } catch (NumberFormatException ex) {
-                    message = MessageFormat.format(Messages.dbStoreEditorDialog_not_valid_port_number,
-                            txtDbPort.getText());
-                    style = SWT.ICON_ERROR;
-                } catch (SQLException | IOException ex) {
-                    Log.log(Log.LOG_INFO, "Connection test error", ex); //$NON-NLS-1$
-                    message = Messages.DbStoreEditorDialog_failed_connection_reason + ex.getLocalizedMessage();
-                    style = SWT.ICON_ERROR;
                 }
-
-                MessageBox mb = new MessageBox(getShell(), style);
-                mb.setText(style == SWT.ERROR ? Messages.DbStoreEditorDialog_failed_connection
-                        : Messages.DbStoreEditorDialog_success);
-                mb.setMessage(message);
-                mb.open();
-            }
         });
 
         super.createButtonsForButtonBar(parent);
     }
 
+    private void showTestResults(int style, String message) {
+        Display.getDefault().asyncExec(() -> {
+            MessageBox mb = new MessageBox(getShell(), style);
+            mb.setText(style == SWT.ERROR ? Messages.DbStoreEditorDialog_failed_connection
+                    : Messages.DbStoreEditorDialog_success);
+            mb.setMessage(message);
+            mb.open();
+        });
+    }
+
     @Override
     protected void okPressed() {
+        connectionTestJob.cancel();
         String port = txtDbPort.getText();
         if (!port.isEmpty()) {
             try {
@@ -584,6 +620,12 @@ public final class DbStoreEditorDialog extends TrayDialog {
             dbInfo = generateDbInfo();
             super.okPressed();
         }
+    }
+
+    @Override
+    protected void cancelPressed() {
+        connectionTestJob.cancel();
+        super.cancelPressed();
     }
 
     private DbInfo generateDbInfo() {
