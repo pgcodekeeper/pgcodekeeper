@@ -311,9 +311,16 @@ public class AlterTable extends TableAbstract {
         try {
             trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
                     tablAction.trigger_name);
+            db.getParentTriggers().put(tablAction.trigger_name.getText(), trigger);
         }
         catch (UnresolvedReferenceException e) {
-            trigger = new PgTrigger(tablAction.trigger_name.getText());
+            var parentTrigger = db.getParentTriggers().get(tablAction.trigger_name.getText());
+            if (parentTrigger == null) {
+                return;
+            }
+            trigger = (PgTrigger) parentTrigger.deepCopy();
+            trigger.setIsChild(true);
+            tabl.addTrigger(trigger);
         }
         if (trigger != null) {
             if (tablAction.DISABLE() != null) {
@@ -323,6 +330,8 @@ public class AlterTable extends TableAbstract {
                     trigger.setEnabledState("ENABLE REPLICA");
                 } else if (tablAction.ALWAYS() != null) {
                     trigger.setEnabledState("ENABLE ALWAYS");
+                } else {
+                    trigger.setEnabledState("ENABLE");
                 }
             }
         }

@@ -215,6 +215,11 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
+    public boolean canDrop() {
+        return !isChild;
+    }
+
+    @Override
     public boolean canDropBeforeCreate() {
         return true;
     }
@@ -408,6 +413,7 @@ public class PgTrigger extends AbstractTrigger {
         hasher.put(newTable);
         hasher.put(oldTable);
         hasher.put(enabledState);
+        hasher.put(isChild);
     }
 
     @Override
@@ -438,5 +444,6 @@ public class PgTrigger extends AbstractTrigger {
 
     public void setIsChild(Boolean isChild) {
         this.isChild = isChild;
+        resetHash();
     }
 }

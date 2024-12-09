@@ -48,6 +48,7 @@ public class PgDatabase extends AbstractDatabase {
     private final Map<String, PgServer> servers = new LinkedHashMap<>();
     private final Map<String, PgUserMapping> userMappings = new LinkedHashMap<>();
     private final Map<String, PgCast> casts = new LinkedHashMap<>();
+    private final Map<String, PgTrigger> parentTriggers = new LinkedHashMap<>();
 
     public PgDatabase() {
         super();
@@ -299,5 +300,9 @@ public class PgDatabase extends AbstractDatabase {
             }
         }
         return found == 1 ? oper : null;
+    }
+
+    public Map<String, PgTrigger> getParentTriggers() {
+        return parentTriggers;
     }
 }

@@ -61,7 +61,6 @@ public class TriggersReader extends JdbcReader {
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName);
-        var test = res.getString("tgparentid").equals("0");
         t.setIsChild(!res.getString("tgparentid").equals("0"));
 
         int firingConditions = res.getInt("tgtype");
