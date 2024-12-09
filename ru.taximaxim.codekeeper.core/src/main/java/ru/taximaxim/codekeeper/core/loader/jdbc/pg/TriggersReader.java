@@ -61,6 +61,8 @@ public class TriggersReader extends JdbcReader {
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName);
+        var test = res.getString("tgparentid").equals("0");
+        t.setIsChild(!res.getString("tgparentid").equals("0"));
 
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0) {
@@ -102,6 +104,9 @@ public class TriggersReader extends JdbcReader {
         case "t":
         case "O":
             //default enable state
+            if (t.getIsChild()) {
+                t.setEnabledState("ENABLE");
+            }
             break;
         case "R":
             t.setEnabledState("ENABLE REPLICA");
@@ -223,7 +228,6 @@ public class TriggersReader extends JdbcReader {
         .join("LEFT JOIN pg_catalog.pg_namespace refnsp ON refnsp.oid = relcon.relnamespace")
         .join("JOIN pg_catalog.pg_proc p ON p.oid = res.tgfoid")
         .join("JOIN pg_catalog.pg_namespace nsp ON p.pronamespace = nsp.oid")
-        .join("LEFT JOIN pg_catalog.pg_trigger u ON (u.oid = res.tgparentid)")
         .where("cls.relkind IN ('r', 'f', 'p', 'm', 'v')")
         .where("res.tgisinternal = FALSE");
 
@@ -234,7 +238,10 @@ public class TriggersReader extends JdbcReader {
         }
 
         if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
-            builder.where("(res.tgparentid = 0 OR res.tgenabled != u.tgenabled)");
+            builder
+            .column("res.tgparentid")
+            .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = res.tgparentid")
+            .where("(res.tgparentid = 0 OR res.tgenabled != u.tgenabled)");
         }
     }
 }

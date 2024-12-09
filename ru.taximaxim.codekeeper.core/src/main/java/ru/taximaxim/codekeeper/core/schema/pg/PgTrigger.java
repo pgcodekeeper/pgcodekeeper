@@ -70,6 +70,7 @@ public class PgTrigger extends AbstractTrigger {
      * REFERENCING new table name
      */
     private String newTable;
+    private Boolean isChild;
 
 
     public PgTrigger(String name) {
@@ -79,101 +80,102 @@ public class PgTrigger extends AbstractTrigger {
     @Override
     public String getCreationSQL() {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE");
-        if (isConstraint()) {
-            sbSQL.append(" CONSTRAINT");
-        }
-        sbSQL.append(" TRIGGER ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append("\n\t");
-        sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
+        if (!isChild) {
+            sbSQL.append("CREATE");
+            if (isConstraint()) {
+                sbSQL.append(" CONSTRAINT");
+            }
+            sbSQL.append(" TRIGGER ");
+            sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+            sbSQL.append("\n\t");
+            sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
 
-        boolean firstEvent = true;
+            boolean firstEvent = true;
 
-        if (isOnInsert()) {
-            sbSQL.append(" INSERT");
-            firstEvent = false;
-        }
-
-        if (isOnUpdate()) {
-            if (firstEvent) {
+            if (isOnInsert()) {
+                sbSQL.append(" INSERT");
                 firstEvent = false;
-            } else {
-                sbSQL.append(" OR");
             }
 
-            sbSQL.append(" UPDATE");
-
-            if (!updateColumns.isEmpty()) {
-                sbSQL.append(" OF ");
-                for (String updateColumn : updateColumns) {
-                    sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
-                    sbSQL.append(", ");
+            if (isOnUpdate()) {
+                if (firstEvent) {
+                    firstEvent = false;
+                } else {
+                    sbSQL.append(" OR");
                 }
-                sbSQL.setLength(sbSQL.length() - 2);
+
+                sbSQL.append(" UPDATE");
+
+                if (!updateColumns.isEmpty()) {
+                    sbSQL.append(" OF ");
+                    for (String updateColumn : updateColumns) {
+                        sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
+                        sbSQL.append(", ");
+                    }
+                    sbSQL.setLength(sbSQL.length() - 2);
+                }
             }
+
+            if (isOnDelete()) {
+                if (!firstEvent) {
+                    sbSQL.append(" OR");
+                }
+
+                sbSQL.append(" DELETE");
+            }
+
+            if (isOnTruncate()) {
+                if (!firstEvent) {
+                    sbSQL.append(" OR");
+                }
+
+                sbSQL.append(" TRUNCATE");
+            }
+
+            sbSQL.append(" ON ");
+            sbSQL.append(getParent().getQualifiedName());
+
+            if (isConstraint()) {
+                if (getRefTableName() != null){
+                    sbSQL.append("\n\tFROM ").append(getRefTableName());
+                }
+                if (isImmediate() != null){
+                    sbSQL.append("\n\tDEFERRABLE INITIALLY ")
+                    .append(isImmediate() ? "IMMEDIATE" : "DEFERRED");
+                } else {
+                    sbSQL.append("\n\tNOT DEFERRABLE INITIALLY IMMEDIATE");
+                }
+            }
+
+            if (getOldTable() != null || getNewTable() != null) {
+                sbSQL.append("\n\tREFERENCING ");
+                if (getNewTable() != null) {
+                    sbSQL.append("NEW TABLE AS ");
+                    sbSQL.append(getNewTable());
+                    sbSQL.append(' ');
+                }
+                if (getOldTable() != null) {
+                    sbSQL.append("OLD TABLE AS ");
+                    sbSQL.append(getOldTable());
+                    sbSQL.append(' ');
+                }
+            }
+
+            sbSQL.append("\n\tFOR EACH ");
+            sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
+
+            if (getWhen() != null) {
+                sbSQL.append("\n\tWHEN (");
+                sbSQL.append(getWhen());
+                sbSQL.append(')');
+            }
+
+            sbSQL.append("\n\tEXECUTE PROCEDURE ");
+            sbSQL.append(getFunction());
+            sbSQL.append(';');
         }
-
-        if (isOnDelete()) {
-            if (!firstEvent) {
-                sbSQL.append(" OR");
-            }
-
-            sbSQL.append(" DELETE");
-        }
-
-        if (isOnTruncate()) {
-            if (!firstEvent) {
-                sbSQL.append(" OR");
-            }
-
-            sbSQL.append(" TRUNCATE");
-        }
-
-        sbSQL.append(" ON ");
-        sbSQL.append(getParent().getQualifiedName());
-
-        if (isConstraint()) {
-            if (getRefTableName() != null){
-                sbSQL.append("\n\tFROM ").append(getRefTableName());
-            }
-            if (isImmediate() != null){
-                sbSQL.append("\n\tDEFERRABLE INITIALLY ")
-                .append(isImmediate() ? "IMMEDIATE" : "DEFERRED");
-            } else {
-                sbSQL.append("\n\tNOT DEFERRABLE INITIALLY IMMEDIATE");
-            }
-        }
-
-        if (getOldTable() != null || getNewTable() != null) {
-            sbSQL.append("\n\tREFERENCING ");
-            if (getNewTable() != null) {
-                sbSQL.append("NEW TABLE AS ");
-                sbSQL.append(getNewTable());
-                sbSQL.append(' ');
-            }
-            if (getOldTable() != null) {
-                sbSQL.append("OLD TABLE AS ");
-                sbSQL.append(getOldTable());
-                sbSQL.append(' ');
-            }
-        }
-
-        sbSQL.append("\n\tFOR EACH ");
-        sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
-
-        if (getWhen() != null) {
-            sbSQL.append("\n\tWHEN (");
-            sbSQL.append(getWhen());
-            sbSQL.append(')');
-        }
-
-        sbSQL.append("\n\tEXECUTE PROCEDURE ");
-        sbSQL.append(getFunction());
-        sbSQL.append(';');
-
         if (enabledState != null) {
-            sbSQL.append("\n\nALTER TABLE ")
+            sbSQL.append("%sALTER TABLE ".formatted(isChild ? "" : "\n\n"))
             .append(getParent().getQualifiedName())
             .append(' ')
             .append(enabledState)
@@ -426,6 +428,15 @@ public class PgTrigger extends AbstractTrigger {
         trigger.setOldTable(getOldTable());
         trigger.updateColumns.addAll(updateColumns);
         trigger.setEnabledState(getEnabledState());
+        trigger.setIsChild(isChild);
         return trigger;
+    }
+
+    public Boolean getIsChild() {
+        return isChild;
+    }
+
+    public void setIsChild(Boolean isChild) {
+        this.isChild = isChild;
     }
 }

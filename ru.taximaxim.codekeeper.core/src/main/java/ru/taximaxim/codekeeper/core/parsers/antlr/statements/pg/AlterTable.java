@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_partition_gpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_table_statementContext;
@@ -306,9 +307,14 @@ public class AlterTable extends TableAbstract {
         if (tablAction.trigger_name == null) {
             return;
         }
-
-        PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
-                tablAction.trigger_name);
+        PgTrigger trigger;
+        try {
+            trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
+                    tablAction.trigger_name);
+        }
+        catch (UnresolvedReferenceException e) {
+            trigger = new PgTrigger(tablAction.trigger_name.getText());
+        }
         if (trigger != null) {
             if (tablAction.DISABLE() != null) {
                 trigger.setEnabledState("DISABLE");
