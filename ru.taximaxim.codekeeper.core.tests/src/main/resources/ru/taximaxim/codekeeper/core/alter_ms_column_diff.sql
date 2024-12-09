@@ -1,3 +1,7 @@
+ALTER TABLE [dbo].[t1]
+	ALTER COLUMN [col2_2] DROP ROWGUIDCOL
+GO
+
 -- DEPCY: This CONSTRAINT UQ_1_1 depends on the COLUMN: [dbo].[t1].[col1_1]
 
 ALTER TABLE [dbo].[t1]
@@ -20,10 +24,6 @@ GO
 
 ALTER TABLE [dbo].[t1]
 	ALTER COLUMN [col2_1] ADD ROWGUIDCOL
-GO
-
-ALTER TABLE [dbo].[t1]
-	ALTER COLUMN [col2_2] DROP ROWGUIDCOL
 GO
 
 ALTER TABLE [dbo].[t1]
