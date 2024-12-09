@@ -25,11 +25,15 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsColumn extends AbstractColumn {
 
+    private static final String SPARSE = "SPARSE";
+    private static final String ROWGUIDCOL = "ROWGUIDCOL";
     private static final String PERSISTED = "PERSISTED";
+
     private boolean isSparse;
     private boolean isRowGuidCol;
     private boolean isPersisted;
@@ -126,8 +130,7 @@ public class MsColumn extends AbstractColumn {
             sql.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
         }
 
-        boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null
-                && !getNullValue();
+        boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null && !getNullValue();
 
         if (isJoinNotNull) {
             sql.append(NOT_NULL);
@@ -153,8 +156,8 @@ public class MsColumn extends AbstractColumn {
             script.addStatement(sqlAlter);
         }
 
-        compareOption(false, isSparse(), "SPARSE", script);
-        compareOption(false, isRowGuidCol(), "ROWGUIDCOL", script);
+        compareOption(false, isSparse(), SPARSE, script);
+        compareOption(false, isRowGuidCol(), ROWGUIDCOL, script);
         compareOption(false, isPersisted(), PERSISTED, script);
 
         appendPrivileges(script);
@@ -166,7 +169,6 @@ public class MsColumn extends AbstractColumn {
 
     private void compareOption(boolean oldOption, boolean newOption, String optionName,
             AtomicBoolean isNeedDepcies, SQLScript script) {
-
         if (oldOption == newOption) {
             return;
         }
@@ -175,14 +177,17 @@ public class MsColumn extends AbstractColumn {
          * we can set PERSISTED without drop dependencies, but can't simple drop this option
          * for first we have to drop dependencies
          */
-        if (isNeedDepcies != null && (!PERSISTED.equalsIgnoreCase(optionName) || oldOption)) {
+        if (isNeedDepcies != null && (oldOption || !PERSISTED.equalsIgnoreCase(optionName))) {
             isNeedDepcies.set(true);
         }
         StringBuilder sb = new StringBuilder();
         sb.append(getAlterColumn(false, name));
         sb.append(newOption ? " ADD " : " DROP ");
         sb.append(optionName);
-        script.addStatement(sb);
+
+        // before adding the ROWGUIDCOL option to a column, we must first remove it from another
+        var orderType = !newOption && ROWGUIDCOL.equalsIgnoreCase(optionName) ? SQLActionType.BEGIN : SQLActionType.MID;
+        script.addStatement(sb.toString(), orderType);
     }
 
     @Override
@@ -217,8 +222,8 @@ public class MsColumn extends AbstractColumn {
         compareMaskingFunctions(newColumn, script);
 
         compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", script);
-        compareOption(isSparse(), newColumn.isSparse(), "SPARSE", isNeedDepcies, script);
-        compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), "ROWGUIDCOL", script);
+        compareOption(isSparse(), newColumn.isSparse(), SPARSE, isNeedDepcies, script);
+        compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), ROWGUIDCOL, script);
         compareOption(isPersisted(), newColumn.isPersisted(), PERSISTED, isNeedDepcies, script);
 
         alterPrivileges(newColumn, script);
