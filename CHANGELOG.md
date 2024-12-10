@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed error when loading DOMAIN object with NOT NULL constraint.
+- Fixed a bug in generating code for a DOMAIN object with constraints.
 
 ### Removed
 
