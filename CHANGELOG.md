@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed error when loading DOMAIN object with NOT NULL constraint.
+
 ### Removed
 
 ## [10.5.0] - 2024-12-10
