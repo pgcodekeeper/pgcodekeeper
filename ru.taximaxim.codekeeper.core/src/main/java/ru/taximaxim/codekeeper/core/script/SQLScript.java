@@ -62,7 +62,6 @@ public class SQLScript {
     }
 
     public String getSQLWithSeparator(String sql, boolean needSeparator) {
-        // FIXME fix comment logic
         if (!needSeparator || sql.endsWith("*/") || sql.startsWith("--")) {
             return sql;
         }

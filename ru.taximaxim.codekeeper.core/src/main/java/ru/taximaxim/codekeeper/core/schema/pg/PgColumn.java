@@ -548,7 +548,6 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void compareStorages(String oldStorage, String newStorage, SQLScript script) {
         StringBuilder sql;
         if (newStorage == null && oldStorage != null) {
-            // FIXME fix test
             sql = new StringBuilder();
             sql.append(MessageFormat.format(
                     Messages.Storage_WarningUnableToDetermineStorageType,
