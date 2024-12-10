@@ -39,9 +39,6 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
         SQLEditor editor = getAdapter(SQLEditor.class);
         IEditorInput input = editor.getEditorInput();
         if (input instanceof SQLEditorInput sqlInput) {
-            if (sqlInput.isReadOnly()) {
-                return new IHyperlink[0];
-            }
             project = sqlInput.getProject();
         } else {
             IResource res = ResourceUtil.getResource(input);

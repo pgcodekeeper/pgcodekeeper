@@ -39,10 +39,6 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
     private final String project;
     private final DatabaseType dbType;
 
-    public FileLibrary(Path path, String project, DatabaseType dbType) {
-        this(null, path, project, dbType);
-    }
-
     FileLibrary(AbstractLibrary parent, Path path, String project, DatabaseType dbType) {
         super(parent, path);
         this.project = project;

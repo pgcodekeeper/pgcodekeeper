@@ -247,6 +247,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         });
 
         overrides.addAll(lib.getOverrides());
+        lib.getObjReferences().entrySet().forEach(e -> objReferences.putIfAbsent(e.getKey(), e.getValue()));
     }
 
     protected void addOverride(PgOverride override) {
