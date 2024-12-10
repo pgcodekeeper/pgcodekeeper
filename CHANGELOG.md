@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added links to library objects.
+
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.5.0] - 2024-12-10
+
+### Added
+
 - Added comments before INSERT commands in --insert mode.
 
 ### Changed
@@ -18,8 +30,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed error with triggers on partition tables.
-
-### Removed
 
 ## [10.4.0] - 2024-11-27
 
@@ -2135,7 +2145,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...HEAD
+[10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
 [10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
 [10.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.2.0...v10.3.0

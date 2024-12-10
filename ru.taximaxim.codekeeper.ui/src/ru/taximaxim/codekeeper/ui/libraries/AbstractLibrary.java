@@ -70,6 +70,10 @@ public abstract class AbstractLibrary {
         return parent == null ? getName() : (parent.getDescriptionRecursive() + '/' + getName());
     }
 
+    public void clearChildren() {
+        children.clear();
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(name);

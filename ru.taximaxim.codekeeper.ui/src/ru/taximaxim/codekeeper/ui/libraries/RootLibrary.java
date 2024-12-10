@@ -15,6 +15,9 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.libraries;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.eclipse.swt.graphics.Image;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -23,7 +26,18 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class RootLibrary extends AbstractLibrary {
 
-    RootLibrary() {
+    /**
+     * here storage all root libs for each project we need it to make work the
+     * option "Link with Editor" in ProjectExplorer for libs objects. key - project
+     * name value - {@link RootLibrary}
+     */
+    private static final Map<String, RootLibrary> ROOT_LIBS = new ConcurrentHashMap<>();
+
+    public static RootLibrary getRootLib(String project) {
+        return ROOT_LIBS.computeIfAbsent(project, k -> new RootLibrary());
+    }
+
+    private RootLibrary() {
         super(null, null, Messages.LibraryContainer_root);
     }
 

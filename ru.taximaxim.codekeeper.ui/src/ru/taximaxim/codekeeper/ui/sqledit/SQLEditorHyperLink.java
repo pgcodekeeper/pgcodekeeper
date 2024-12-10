@@ -24,11 +24,15 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorHyperLink implements IHyperlink {
+
+    private static final String DEPENDENCIES_FOLDER = LibraryUtils.META_PATH.toString();
 
     private final String location;
     private final IRegion region;
@@ -64,18 +68,35 @@ public class SQLEditorHyperLink implements IHyperlink {
 
     @Override
     public String getHyperlinkText() {
-        return label + " - " + relativePath + ':' + lineNumber; //$NON-NLS-1$
+        int index = relativePath.indexOf(DEPENDENCIES_FOLDER);
+        if (-1 == index) {
+            return label + " - " + relativePath + ':' + lineNumber; //$NON-NLS-1$
+        }
+
+        var temp = relativePath.substring(index + DEPENDENCIES_FOLDER.length());
+        return temp.substring(0, temp.indexOf('_')) + " : " + label + " - " //$NON-NLS-1$ //$NON-NLS-2$
+                + temp.substring(temp.indexOf('/') + 1, temp.length()) + ':' + lineNumber;
     }
 
     @Override
     public void open() {
         try {
             ITextEditor editor = (ITextEditor) FileUtilsUi.openFileInSqlEditor(
-                    Paths.get(location), project, dbType, false);
+                    Paths.get(location), project, dbType, isLib());
             editor.selectAndReveal(region.getOffset(), region.getLength());
         } catch (PartInitException ex) {
             ExceptionNotifier.notifyDefault(
                     Messages.ProjectEditorDiffer_error_opening_script_editor, ex);
         }
+    }
+
+    /**
+     * check it library or not
+     *
+     * @return true if it's library, and false if not
+     */
+    private boolean isLib() {
+        var isInProjectDir = WorkDirs.getDirectoryNames(dbType).stream().anyMatch(location::contains);
+        return location.contains(DEPENDENCIES_FOLDER) || !isInProjectDir;
     }
 }
