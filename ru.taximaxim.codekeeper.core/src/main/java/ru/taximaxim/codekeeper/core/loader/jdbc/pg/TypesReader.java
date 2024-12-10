@@ -460,6 +460,7 @@ public final class TypesReader extends JdbcReader {
                 .join("LEFT JOIN pg_catalog.pg_description cd ON cd.objoid = c.oid")
                 .join("  AND cd.classoid = 'pg_catalog.pg_constraint'::pg_catalog.regclass")
                 .where("c.contypid != 0")
+                .where("c.contype != 'n'")
                 .groupBy("c.contypid");
 
         builder.column("dom_constraints.connames AS dom_connames");
