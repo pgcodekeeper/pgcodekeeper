@@ -181,8 +181,9 @@ public class PgDomain extends PgStatement implements ISearchPath {
             AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
                 oldConstr.getDropSQL(script);
-            } else {
-                ((PgConstraint) oldConstr).appendAlterSQL(newConstr, needDepcyConstr, script);
+            } else if ((oldConstr.appendAlterSQL(newConstr, needDepcyConstr, script) == ObjectState.RECREATE)) {
+                oldConstr.getDropSQL(script);
+                newConstr.getCreationSQL(script);
             }
         }
         for (AbstractConstraint newConstr : newDomain.getConstraints()) {
