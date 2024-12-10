@@ -62,7 +62,8 @@ public class UiLibraryLoader {
     }
 
     public RootLibrary load(List<PgLibrary> libs) throws IOException {
-        RootLibrary root = new RootLibrary();
+        RootLibrary root = RootLibrary.getRootLib(project);
+        root.clearChildren();
 
         for (PgLibrary lib : libs) {
             readLib(root, lib);

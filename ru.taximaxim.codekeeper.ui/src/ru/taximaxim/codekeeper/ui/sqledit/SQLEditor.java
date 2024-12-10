@@ -459,17 +459,30 @@ implements IResourceChangeListener, ITextErrorReporter {
 
         IEditorInput in = getEditorInput();
         IResource res = ResourceUtil.getResource(in);
+        String projName = null;
 
         if (res != null) {
             dbType = OpenProjectUtils.getDatabaseType(res.getProject());
         } else if (in instanceof SQLEditorInput sqlEditor) {
             dbType = sqlEditor.getDbType();
+            projName = sqlEditor.getProject();
         }
 
         if (res != null && UIProjectLoader.isInProject(res)) {
             return PgDbParser.getParser(res);
         }
 
+        if (null != projName) {
+            IProject proj = ResourcesPlugin.getWorkspace().getRoot().getProject(projName);
+            if (proj != null) {
+                return PgDbParser.getParser(proj);
+            }
+        }
+
+        return createNewParser(res);
+    }
+
+    private PgDbParser createNewParser(IResource res) throws InterruptedException, IOException, CoreException {
         PgDbParser pgDbParser = new PgDbParser();
         refreshParser(pgDbParser, res, null);
         return pgDbParser;
