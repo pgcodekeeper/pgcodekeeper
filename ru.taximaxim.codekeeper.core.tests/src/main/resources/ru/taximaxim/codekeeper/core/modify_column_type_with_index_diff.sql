@@ -1,13 +1,13 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This INDEX depends on the COLUMN: public.mytable.col111
+-- DEPCY: This INDEX col222_idx depends on the COLUMN: public.mytable.col111
 
 DROP INDEX public.col222_idx;
 
 ALTER TABLE public.mytable
 	ALTER COLUMN col111 TYPE numeric USING col111::numeric; /* TYPE change - table: public.mytable original: integer new: numeric */
 
--- DEPCY: This INDEX depends on the COLUMN: public.mytable2.col222
+-- DEPCY: This INDEX col222_idx_2 depends on the COLUMN: public.mytable2.col222
 
 DROP INDEX public.col222_idx_2;
 

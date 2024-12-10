@@ -24,6 +24,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractStatistics;
@@ -31,6 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class MsStatistics extends AbstractStatistics {
 
@@ -43,9 +45,9 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder("CREATE STATISTICS ");
-        sb.append(name).append(" ON ").append(getParent().getQualifiedName());
+        sb.append(MsDiffUtils.quoteName(getName())).append(" ON ").append(getParent().getQualifiedName());
         if (!cols.isEmpty()) {
             sb.append(' ');
             StatementUtils.appendCols(sb, getCols(), getDbType());
@@ -54,8 +56,7 @@ public final class MsStatistics extends AbstractStatistics {
             sb.append("\nWHERE ").append(filter);
         }
         appendOptions(sb, options);
-        sb.append(getSeparator());
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     private void appendOptions(StringBuilder sb, Map<String, String> options) {
@@ -81,20 +82,21 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         var newStat = (MsStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
             return ObjectState.RECREATE;
         }
-        int startLenght = sb.length();
         if (!Objects.equals(newStat.getOptions(), options)) {
-            sb.append("\n\nUPDATE STATISTICS ")
+            StringBuilder sql = new StringBuilder();
+            sql.append("UPDATE STATISTICS ")
             .append(getParent().getQualifiedName()).append(" (").append(getName()).append(")");
-            appendOptions(sb, newStat.getOptions());
-            sb.append(getSeparator());
+            appendOptions(sql, newStat.getOptions());
+            script.addStatement(sql);
         }
-        
-        return getObjectState(sb, startLenght);
+
+        return getObjectState(script, startSize);
     }
 
     @Override
@@ -117,7 +119,7 @@ public final class MsStatistics extends AbstractStatistics {
         }
         return false;
     }
-    
+
     private boolean compareUnalterable (MsStatistics stat) {
         return Objects.equals(filter, stat.filter)
                 && Objects.equals(cols, stat.cols);

@@ -1,16 +1,16 @@
--- DEPCY: This CONSTRAINT depends on the TABLE: [dbo].[tbl]
+-- DEPCY: This CONSTRAINT PK_tbl depends on the TABLE: [dbo].[tbl]
 
 ALTER TABLE [dbo].[tbl]
 	DROP CONSTRAINT [PK_tbl]
 GO
 
--- DEPCY: This CONSTRAINT depends on the TABLE: [dbo].[tbl]
+-- DEPCY: This CONSTRAINT CHK_c7_tbl depends on the TABLE: [dbo].[tbl]
 
 ALTER TABLE [dbo].[tbl]
 	DROP CONSTRAINT [CHK_c7_tbl]
 GO
 
--- DEPCY: This TRIGGER depends on the TABLE: [dbo].[tbl]
+-- DEPCY: This TRIGGER trg depends on the TABLE: [dbo].[tbl]
 
 DROP TRIGGER [dbo].[trg]
 GO
@@ -61,7 +61,7 @@ GO
 DROP TABLE [dbo].[tbl_randomly_generated_part]
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v]' 
+EXEC sys.sp_refreshsqlmodule '[dbo].[v]'
 GO
 
 ALTER TABLE [dbo].[tbl]

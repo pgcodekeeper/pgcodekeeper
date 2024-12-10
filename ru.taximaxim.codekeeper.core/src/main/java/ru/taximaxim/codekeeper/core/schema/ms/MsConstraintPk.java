@@ -33,6 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleColumnContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class MsConstraintPk extends MsConstraint
 implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
@@ -47,7 +48,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     /*
      *  this is table option. It store in MsConstraintPk because can't use without Primary Key
      */
-    private Boolean isTracked;
+    private Boolean trackedState;
 
     public MsConstraintPk(String name, boolean isPrimaryKey) {
         super(name);
@@ -59,8 +60,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         return isPrimaryKey;
     }
 
-    public Boolean isTracked() {
-        return isTracked;
+    public Boolean getTrackedState() {
+        return trackedState;
     }
 
     @Override
@@ -68,8 +69,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         return isClustered;
     }
 
-    public void setTracked(final Boolean isTracked) {
-        this.isTracked = isTracked;
+    public void setTracked(final Boolean trackedState) {
+        this.trackedState = trackedState;
         resetHash();
     }
 
@@ -139,11 +140,15 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         if (dataSpace != null) {
             sbSQL.append(" ON ").append(MsDiffUtils.quoteName(dataSpace));
         }
-        if (isTracked != null) {
-            sbSQL.append(GO);
-            appendChangeTracking(sbSQL, isTracked);
-        }
         return sbSQL.toString();
+    }
+
+    @Override
+    public void getCreationSQL(SQLScript script) {
+        super.getCreationSQL(script);
+        if (trackedState != null) {
+            appendChangeTracking(trackedState, script);
+        }
     }
 
     private void appendSimpleColumns(StringBuilder sbSQL, List<SimpleColumn> columns) {
@@ -160,39 +165,36 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
-    protected void compareOptions(MsConstraint newConstr, StringBuilder sb) {
+    protected void compareOptions(MsConstraint newConstr, SQLScript script) {
         var newPk = (MsConstraintPk) newConstr;
-        if (Objects.equals(isTracked(), newPk.isTracked())) {
+        if (Objects.equals(getTrackedState(), newPk.getTrackedState())) {
             return;
         }
-
-        if (isTracked() != null) {
-            appendChangeTracking(sb, null);
-            sb.append(GO);
+        if (getTrackedState() != null) {
+            appendChangeTracking(null, script);
         }
 
-        if (newPk.isTracked() != null) {
-            appendChangeTracking(sb, newPk.isTracked());
-            sb.append(GO);
+        if (newPk.getTrackedState() != null) {
+            appendChangeTracking(newPk.getTrackedState(), script);
         }
     }
 
-    private void appendChangeTracking(StringBuilder sb, Boolean isTracked) {
-        appendAlterTable(sb, true);
-        if (isTracked == null) {
+    private void appendChangeTracking(Boolean trackedState, SQLScript script) {
+        StringBuilder sb = new StringBuilder();
+        appendAlterTable(sb);
+        if (trackedState == null) {
             sb.append(" DISABLE CHANGE_TRACKING");
         } else {
             sb.append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ");
-            sb.append(isTracked ? "ON" : "OFF").append(')');
+            sb.append(trackedState ? "ON" : "OFF").append(')');
         }
+        script.addStatement(sb);
     }
 
     @Override
-    protected void appendSpecialDropSQL(StringBuilder sb) {
-        if (isTracked != null) {
-            appendChangeTracking(sb, null);
-            sb.append(GO);
-            sb.append("\n\n");
+    protected void appendSpecialDropSQL(SQLScript script) {
+        if (trackedState != null) {
+            appendChangeTracking(null, script);
         }
     }
 
@@ -203,7 +205,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         }
 
         if (obj instanceof MsConstraintPk con && super.compare(obj)) {
-            return Objects.equals(isTracked, con.isTracked())
+            return Objects.equals(trackedState, con.getTrackedState())
                     && compareUnalterable(con);
         }
 
@@ -227,7 +229,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(isPrimaryKey);
-        hasher.put(isTracked());
+        hasher.put(getTrackedState());
         hasher.put(isClustered);
         hasher.put(dataSpace);
         hasher.putOrdered(columns);
@@ -237,7 +239,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new MsConstraintPk(name, isPrimaryKey);
-        con.setTracked(isTracked);
+        con.setTracked(trackedState);
         con.setClustered(isClustered());
         con.setDataSpace(getDataSpace());
         con.columnNames.addAll(columnNames);
@@ -247,7 +249,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no imple
     }
 }

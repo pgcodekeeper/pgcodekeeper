@@ -55,6 +55,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 /**
@@ -250,23 +252,23 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) throws IOException {
-        PgDiffScript script = new PgDiffScript();
+        SQLScript script = new SQLScript(arguments.getDbType());
 
         for (String preFilePath : arguments.getPreFilePath()) {
-            addPrePostPath(script, preFilePath);
+            addPrePostPath(script, preFilePath, SQLActionType.PRE);
         }
 
         if (arguments.getTimeZone() != null) {
-            script.addStatement("SET TIMEZONE TO "
-                    + PgDiffUtils.quoteString(arguments.getTimeZone()) + ';');
+            script.addStatement("SET TIMEZONE TO " + PgDiffUtils.quoteString(arguments.getTimeZone()),
+                    SQLActionType.BEGIN);
         }
 
         if (arguments.isDisableCheckFunctionBodies()) {
-            script.addStatement("SET check_function_bodies = false;");
+            script.addStatement("SET check_function_bodies = false", SQLActionType.BEGIN);
         }
 
         if (arguments.isAddTransaction()) {
-            script.addStatement("START TRANSACTION;");
+            script.addStatement("START TRANSACTION", SQLActionType.BEGIN);
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
@@ -275,41 +277,41 @@ public class PgDiff {
                 additionalDepciesSource, additionalDepciesTarget);
 
         if (!depRes.getActions().isEmpty()) {
-            script.addStatement("SET search_path = pg_catalog;");
+            script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN);
         }
         new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull)
         .fillScript(selected);
         if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT TRANSACTION;");
+            script.addStatement("COMMIT TRANSACTION", SQLActionType.END);
         }
 
         for (String postFilePath : arguments.getPostFilePath()) {
-            addPrePostPath(script, postFilePath);
+            addPrePostPath(script, postFilePath, SQLActionType.POST);
         }
-        return script.getText();
+        return script.getFullScript();
     }
 
-    private void addPrePostPath(PgDiffScript script, String scriptPath) throws IOException {
+    private void addPrePostPath(SQLScript script, String scriptPath, SQLActionType actionType) throws IOException {
         Path path = Paths.get(scriptPath);
-        addPrePostPath(script, path);
+        addPrePostPath(script, path, actionType);
     }
 
-    private void addPrePostPath(PgDiffScript script, Path path) throws IOException {
+    private void addPrePostPath(SQLScript script, Path path, SQLActionType actionType) throws IOException {
         if (Files.isRegularFile(path)) {
-            addPrePostScript(script, path);
+            addPrePostScript(script, path, actionType);
             return;
         }
         Stream<Path> stream = Files.list(path).sorted();
         for (Path child : PgDiffUtils.sIter(stream)) {
-            addPrePostPath(script, child);
+            addPrePostPath(script, child, actionType);
         }
     }
 
-    private void addPrePostScript(PgDiffScript script, Path fileName) throws IOException {
+    private void addPrePostScript(SQLScript script, Path fileName, SQLActionType actionType) throws IOException {
         try {
             String prePostScript = new String(Files.readAllBytes(fileName), StandardCharsets.UTF_8);
             prePostScript = "-- " + fileName + "\n\n" + prePostScript;
-            script.addStatement(prePostScript);
+            script.addStatementWithoutSeparator(prePostScript, actionType);
         } catch (IOException e) {
             throw new IOException(Messages.PgDiff_read_error + e.getLocalizedMessage(), e);
         }
@@ -320,10 +322,10 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
-        PgDiffScript script = new PgDiffScript();
+        SQLScript script = new SQLScript(arguments.getDbType());
 
         if (arguments.isAddTransaction()) {
-            script.addStatement("BEGIN TRANSACTION\nGO");
+            script.addStatement("BEGIN TRANSACTION", SQLActionType.BEGIN);
         }
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
@@ -334,10 +336,10 @@ public class PgDiff {
                 arguments, oldDbFull, newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
-            script.addStatement("COMMIT\nGO");
+            script.addStatement("COMMIT", SQLActionType.END);
         }
 
-        return script.getText();
+        return script.getFullScript();
     }
 
     private String diffChDatabaseSchemas(
@@ -345,7 +347,7 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
-        PgDiffScript script = new PgDiffScript();
+        SQLScript script = new SQLScript(arguments.getDbType());
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
@@ -354,7 +356,7 @@ public class PgDiff {
 
         new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
 
-        return script.getText();
+        return script.getFullScript();
     }
 
     protected List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {

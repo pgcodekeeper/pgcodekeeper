@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChTable extends AbstractTable {
 
@@ -66,7 +67,7 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE TABLE ");
         appendIfNotExists(sb);
@@ -90,14 +91,12 @@ public class ChTable extends AbstractTable {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(';');
-
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChTable newTable = (ChTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -105,13 +104,13 @@ public class ChTable extends AbstractTable {
             return ObjectState.RECREATE;
         }
 
-        comparePojections(sb, newTable.getProjections());
-        engine.appendAlterSQL(sb, newTable.getEngine(), getAlterTable(true, false));
-        compareComment(sb, newTable.getComment());
-        return getObjectState(sb, startLength);
+        compareProjections(newTable.getProjections(), script);
+        engine.appendAlterSQL(newTable.getEngine(), getAlterTable(false), script);
+        compareComment(newTable.getComment(), script);
+        return getObjectState(script, startSize);
     }
 
-    private void comparePojections(StringBuilder sb, Map<String, String> newProjections) {
+    private void compareProjections(Map<String, String> newProjections, SQLScript script) {
         if (Objects.equals(projections, newProjections)) {
             return;
         }
@@ -136,43 +135,39 @@ public class ChTable extends AbstractTable {
             }
         }
 
-        appendAlterProjections(sb, toDrops, toAdds);
+        appendAlterProjections(toDrops, toAdds, script);
     }
 
-    private void appendAlterProjections(StringBuilder sb, Set<String> toDrops, Map<String, String> toAdds) {
+    private void appendAlterProjections(Set<String> toDrops, Map<String, String> toAdds, SQLScript script) {
         for (String toDrop : toDrops) {
-            sb.append(getAlterTable(true, false)).append("\n\tDROP PROJECTION IF EXISTS ").append(toDrop)
-            .append(getSeparator());
+            script.addStatement(getAlterTable(false) + "\n\tDROP PROJECTION IF EXISTS " + toDrop);
         }
         for (Entry<String, String> toAdd : toAdds.entrySet()) {
-            sb.append(getAlterTable(true, false)).append("\n\tADD PROJECTION ");
+            StringBuilder sb = new StringBuilder();
+            sb.append(getAlterTable(false)).append("\n\tADD PROJECTION ");
             appendIfNotExists(sb);
-            sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue()).append(getSeparator());
+            sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue());
+            script.addStatement(sb);
         }
     }
 
-    private void compareComment(StringBuilder sb, String newComment) {
+    private void compareComment(String newComment, SQLScript script) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
-        sb.append(getAlterTable(true, false)).append("\n\tMODIFY COMMENT ");
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false)).append("\n\tMODIFY COMMENT ");
         if (newComment == null) {
             sb.append("''");
         } else {
             sb.append(newComment);
         }
-        sb.append(getSeparator());
+        script.addStatement(sb);
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        sb.append("ALTER TABLE ");
-        sb.append(getQualifiedName());
-        return sb.toString();
+    public String getAlterTable(boolean only) {
+        return ALTER_TABLE + getQualifiedName();
     }
 
     @Override
@@ -199,11 +194,7 @@ public class ChTable extends AbstractTable {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChTable)) {
-            return false;
-        }
-        var table = (ChTable) obj;
-        return super.compare(table)
+        return obj instanceof ChTable table && super.compare(table)
                 && Objects.equals(projections, table.projections)
                 && Objects.equals(engine, table.getEngine());
     }
@@ -217,17 +208,17 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no impl
     }
 }

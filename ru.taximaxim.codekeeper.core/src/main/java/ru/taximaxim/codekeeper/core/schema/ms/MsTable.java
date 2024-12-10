@@ -37,6 +37,8 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Base MS SQL table class
@@ -54,6 +56,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     private List<AbstractConstraint> pkeys;
 
     private boolean ansiNulls;
+    private Boolean isTracked;
 
     private String textImage;
     private String fileStream;
@@ -66,22 +69,22 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         appendName(sbSQL);
         appendColumns(sbSQL);
         appendOptions(sbSQL);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        appendColumnsPriliges(sbSQL);
+        script.addStatement(sbSQL);
 
-        return sbSQL.toString();
+        appendAlterOptions(script);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendColumnsPriliges(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -89,11 +92,18 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newTable, sb);
-        compareOwners(newTable, sb);
-        alterPrivileges(newTable, sb);
+        compareOptions(newTable, script);
+        appendAlterOwner(newTable, script);
+        compareTableOptions(newTable, script);
+        alterPrivileges(newTable, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
+    }
+
+    protected void appendAlterOptions(SQLScript script) {
+        if (isTracked != null) {
+            script.addStatement(enableTracking(), SQLActionType.END);
+        }
     }
 
     protected void appendName(StringBuilder sbSQL) {
@@ -184,8 +194,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             sb.setLength(sb.length() - 2);
             sbSQL.append("\nWITH (").append(sb).append(")");
         }
-
-        sbSQL.append(GO);
     }
 
     @Override
@@ -203,15 +211,51 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return true;
     }
 
-    @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
+    private void compareTableOptions(MsTable table, SQLScript script) {
+        if (Objects.equals(isTracked, table.isTracked())) {
+            if (pkChanged(table) && isTracked != null) {
+                disableEnableTracking(SQLActionType.MID, script, table);
+            }
+            return;
         }
-        sb.append("ALTER TABLE ");
-        sb.append(getQualifiedName());
-        return sb.toString();
+
+        if (table.isTracked() == null) {
+            script.addStatement(disableTracking(), SQLActionType.END);
+            return;
+        }
+
+        if (isTracked == null) {
+            script.addStatement(table.enableTracking(), SQLActionType.END);
+            return;
+        }
+
+        disableEnableTracking(SQLActionType.END, script, table);
+    }
+
+    private boolean pkChanged(MsTable table) {
+        var oldPk = getConstraints().stream().filter(MsConstraintPk.class::isInstance).findAny().orElse(null);
+        var newPk = table.getConstraints().stream().filter(MsConstraintPk.class::isInstance).findAny().orElse(null);
+        return oldPk != null && newPk != null && !Objects.equals(oldPk, newPk);
+    }
+
+    private void disableEnableTracking(SQLActionType actionType, SQLScript script, MsTable table) {
+        script.addStatement(disableTracking(), actionType);
+        script.addStatement(table.enableTracking(), SQLActionType.END);
+    }
+
+    private String disableTracking() {
+        return getAlterTable(false) + " DISABLE CHANGE_TRACKING";
+    }
+
+    private String enableTracking() {
+        return new StringBuilder(getAlterTable(false))
+                .append(" ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ")
+                .append(isTracked() ? "ON" : "OFF").append(')').toString();
+    }
+
+    @Override
+    public String getAlterTable(boolean only) {
+        return ALTER_TABLE + getQualifiedName();
     }
 
     public String getFileStream() {
@@ -241,6 +285,15 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return ansiNulls;
     }
 
+    public Boolean isTracked() {
+        return isTracked;
+    }
+
+    public void setTracked(final Boolean isTracked) {
+        this.isTracked = isTracked;
+        resetHash();
+    }
+
     public String getTablespace() {
         return tablespace;
     }
@@ -254,6 +307,15 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
     }
 
+
+    @Override
+    public void getDropSQL(SQLScript script, boolean generateExists) {
+        if (isTracked != null && isTracked && getConstraints().stream().anyMatch(MsConstraintPk.class::isInstance)) {
+            script.addStatement(disableTracking(), SQLActionType.BEGIN);
+        }
+        super.getDropSQL(script, generateExists);
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
@@ -262,6 +324,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
             return ansiNulls == table.isAnsiNulls()
                     && Objects.equals(textImage, table.getTextImage())
                     && Objects.equals(fileStream, table.getFileStream())
+                    && Objects.equals(isTracked, table.isTracked)
                     && Objects.equals(tablespace, table.getTablespace())
                     && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
         }
@@ -275,6 +338,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         hasher.put(getTextImage());
         hasher.put(getFileStream());
         hasher.put(isAnsiNulls());
+        hasher.put(isTracked());
         hasher.put(getTablespace());
         hasher.putUnordered(getPkeys());
     }
@@ -285,6 +349,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         table.setFileStream(getFileStream());
         table.setTextImage(getTextImage());
         table.setAnsiNulls(isAnsiNulls());
+        table.setTracked(isTracked());
         table.setTablespace(getTablespace());
 
         if (pkeys != null) {

@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PartitionGpTable extends AbstractRegularTable {
 
@@ -50,12 +51,12 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn((PgColumn) column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, script);
         }
 
         if (start != sbSQL.length()) {
@@ -88,23 +89,24 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void convertTable(StringBuilder sb) {
+    protected void convertTable(SQLScript script) {
         // available in 7 version
     }
 
     @Override
     protected void appendOptions(StringBuilder sbSQL) {
         super.appendOptions(sbSQL);
-        sbSQL.setLength(sbSQL.length() - 1);
-        sbSQL.append("\n").append(partitionGpBounds).append(";");
+        sbSQL.append("\n").append(partitionGpBounds);
     }
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
-        super.appendAlterOptions(sbSQL);
+    protected void appendAlterOptions(SQLScript script) {
+        super.appendAlterOptions(script);
         for (var template : templates.values()) {
-            sbSQL.append(getAlterTable(true, false));
-            template.appendCreateSQL(sbSQL);
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterTable(false));
+            template.appendCreateSQL(sql);
+            script.addStatement(sql);
         }
     }
 
@@ -118,44 +120,49 @@ public class PartitionGpTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
-        super.compareTableOptions(newTable, sb);
+    protected void compareTableOptions(AbstractPgTable newTable, SQLScript script) {
+        super.compareTableOptions(newTable, script);
 
         PartitionGpTable newPartGptable = (PartitionGpTable) newTable;
         if (!Objects.equals(normalizedPartitionGpBounds, newPartGptable.getNormalizedPartitionGpBounds())) {
-            sb.append("\n --The PARTTITION clause have differences. Add ALTER statement manually");
+            script.addStatement("\n --The PARTTITION clause have differences. Add ALTER statement manually");
         }
-        compareTemplates(newPartGptable, sb);
+        compareTemplates(newPartGptable, script);
     }
 
-    private void compareTemplates(PartitionGpTable newTable, StringBuilder sb) {
+    private void compareTemplates(PartitionGpTable newTable, SQLScript script) {
         if (Objects.equals(templates, newTable.templates)) {
             return;
         }
 
         templates.forEach((key, value) -> {
             PartitionTemplateContainer newValue = newTable.templates.get(key);
-            if (newValue != null) {
-                if (!value.equals(newValue)) {
-                    sb.append(getAlterTable(true, false));
-                    newValue.appendCreateSQL(sb);
-                }
-            } else {
-                sb.append(getAlterTable(true, false));
-                value.appendDropSql(sb);
+            StringBuilder sql;
+            if (newValue == null) {
+                sql = new StringBuilder();
+                sql.append(getAlterTable(false));
+                value.appendDropSql(sql);
+                script.addStatement(sql);
+            } else if (!value.equals(newValue)) {
+                sql = new StringBuilder();
+                sql.append(getAlterTable(false));
+                newValue.appendCreateSQL(sql);
+                script.addStatement(sql);
             }
         });
 
         newTable.templates.forEach((key, value) -> {
             if (!templates.containsKey(key)) {
-                sb.append(getAlterTable(true, false));
-                value.appendCreateSQL(sb);
+                StringBuilder sql = new StringBuilder();
+                sql.append(getAlterTable(false));
+                value.appendCreateSQL(sql);
+                script.addStatement(sql);
             }
         });
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         // no implements
     }
 

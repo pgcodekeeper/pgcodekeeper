@@ -138,12 +138,18 @@ public final class TestUtils {
 
     static String getScript(String fileNameTemplate, PgDiffArguments args, Class<?> clazz)
             throws IOException, InterruptedException {
+        return getScript(fileNameTemplate, args, clazz, false);
+    }
+
+    static String getScript(String fileNameTemplate, PgDiffArguments args, Class<?> clazz, boolean needTransaction)
+            throws IOException, InterruptedException {
         AbstractDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
         TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
 
         AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
+        args.setAddTransaction(needTransaction);
         return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
     }
 

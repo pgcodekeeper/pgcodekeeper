@@ -42,7 +42,6 @@ public class MsFunction extends AbstractMsFunction {
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         appendSourceStatement(isCreate, sbSQL);
-        sbSQL.append(GO);
     }
 
     @Override

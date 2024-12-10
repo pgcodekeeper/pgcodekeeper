@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChIndex extends AbstractIndex {
 
@@ -74,14 +75,12 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(getAlterTable(false, false)).append(" ADD ").append(getDefinition()).append(getSeparator());
-        return sb.toString();
+    public void getCreationSQL(SQLScript script) {
+        script.addStatement(getAlterTable(false, false) + " ADD " + getDefinition());
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         var newIndex = (ChIndex) newCondition;
         if (!compareUnalterable(newIndex)) {
             isNeedDepcies.set(true);
@@ -91,18 +90,18 @@ public class ChIndex extends AbstractIndex {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
         sb.append(getAlterTable(false, false)).append("\n\tDROP INDEX ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
-        return sb.toString();
+        sb.append(ChDiffUtils.getQuotedName(getName()));
+        script.addStatement(sb);
     }
 
     private String getAlterTable(boolean nextLine, boolean only) {
-        return ((AbstractTable) getParent()).getAlterTable(nextLine, only);
+        return ((AbstractTable) getParent()).getAlterTable(only);
     }
 
     private boolean compareUnalterable(ChIndex newIndex) {
@@ -129,11 +128,8 @@ public class ChIndex extends AbstractIndex {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChIndex)) {
-            return false;
-        }
-        var index = (ChIndex) obj;
-        return super.compare(index) && compareUnalterable(index);
+        return obj instanceof ChIndex index && super.compare(index)
+                && compareUnalterable(index);
     }
 
     @Override

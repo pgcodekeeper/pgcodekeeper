@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of OPERATOR: public.>(integer, integer)
+-- DEPCY: This FUNCTION compare is a dependency of OPERATOR: public.>(integer, integer)
 
 CREATE OR REPLACE FUNCTION public.compare(integer, integer) RETURNS integer
     LANGUAGE sql IMMUTABLE

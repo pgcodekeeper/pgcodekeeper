@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsSequence extends AbstractSequence {
 
@@ -35,7 +36,7 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
@@ -43,12 +44,9 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("\n\tAS ").append(getDataType());
 
         fillSequenceBody(sbSQL);
-        sbSQL.append(GO);
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
     }
 
 
@@ -83,9 +81,8 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsSequence newSequence = (MsSequence) newCondition;
 
         if (!newSequence.getDataType().equals(getDataType())) {
@@ -95,15 +92,12 @@ public class MsSequence extends AbstractSequence {
 
         StringBuilder sbSQL = new StringBuilder();
         if (compareSequenceBody(newSequence, sbSQL)) {
-            sb.append("\n\nALTER SEQUENCE " + getQualifiedName() + sbSQL.toString() + GO);
+            script.addStatement("ALTER SEQUENCE " + getQualifiedName() + sbSQL.toString());
         }
 
-        if (!Objects.equals(getOwner(), newSequence.getOwner())) {
-            newSequence.alterOwnerSQL(sb);
-        }
-
-        alterPrivileges(newSequence, sb);
-        return getObjectState(sb, startLength);
+        appendAlterOwner(newSequence, script);
+        alterPrivileges(newSequence, script);
+        return getObjectState(script, startSize);
     }
 
     private boolean compareSequenceBody(MsSequence newSequence, StringBuilder sbSQL) {
@@ -190,8 +184,7 @@ public class MsSequence extends AbstractSequence {
     }
 
     @Override
-    public void setMinMaxInc(long inc, Long max, Long min, String dataType,
-            long precision) {
+    public void setMinMaxInc(long inc, Long max, Long min, String dataType, long precision) {
         String type = dataType != null ? dataType : BIGINT;
         this.increment = Long.toString(inc);
         this.maxValue = Long.toString(max == null ? getBoundaryTypeVal(type, true, precision) : max);

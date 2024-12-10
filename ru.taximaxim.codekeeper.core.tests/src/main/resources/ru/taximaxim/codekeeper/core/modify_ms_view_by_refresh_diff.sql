@@ -1,4 +1,4 @@
--- DEPCY: This VIEW depends on the TABLE: [dbo].[t1]
+-- DEPCY: This VIEW v2 depends on the TABLE: [dbo].[t1]
 
 DROP VIEW [dbo].[v2]
 GO
@@ -16,10 +16,10 @@ CREATE TABLE [dbo].[t1](
 )
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v1]' 
+EXEC sys.sp_refreshsqlmodule '[dbo].[v1]'
 GO
 
--- DEPCY: This VIEW is a dependency of VIEW: [dbo].[v3]
+-- DEPCY: This VIEW v2 is a dependency of VIEW: [dbo].[v3]
 
 SET QUOTED_IDENTIFIER ON
 GO
@@ -29,5 +29,5 @@ CREATE VIEW [dbo].[v2] AS
     SELECT * FROM [dbo].[v1]
 GO
 
-EXEC sys.sp_refreshsqlmodule '[dbo].[v3]' 
+EXEC sys.sp_refreshsqlmodule '[dbo].[v3]'
 GO

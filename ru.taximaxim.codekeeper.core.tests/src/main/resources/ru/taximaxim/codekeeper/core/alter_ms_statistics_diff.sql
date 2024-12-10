@@ -12,12 +12,12 @@ GO
 DROP STATISTICS [dbo].[t6].[stat4]
 GO
 
-CREATE STATISTICS stat3 ON [dbo].[t6] ([col1], [col2])
+CREATE STATISTICS [stat3] ON [dbo].[t6] ([col1], [col2])
 WHERE (col2=(5))
 WITH NORECOMPUTE
 GO
 
-CREATE STATISTICS stat4 ON [dbo].[t6] ([col1], [col2], [col3])
+CREATE STATISTICS [stat4] ON [dbo].[t6] ([col1], [col2], [col3])
 WHERE (col2=(2))
 WITH AUTO_DROP = ON
 GO

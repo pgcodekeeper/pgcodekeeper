@@ -21,12 +21,12 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -67,13 +67,11 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     /**
      * Generates beginning of alter table statement.
-     *
-     * @param nextLine - if true, string starts with new line symbol
      * @param only - if true, append 'only' to statement
      *
      * @return alter table statement beginning in String format
      */
-    public abstract String getAlterTable(boolean nextLine, boolean only);
+    public abstract String getAlterTable(boolean only);
 
     /**
      * Finds column according to specified column {@code name}.
@@ -129,15 +127,9 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
     }
 
-    protected void compareOwners(AbstractTable newTable, StringBuilder sb) {
-        if (!Objects.equals(owner, newTable.getOwner())) {
-            newTable.alterOwnerSQL(sb);
-        }
-    }
-
-    protected void appendColumnsPriliges(StringBuilder sbSQL) {
+    protected void appendColumnsPriliges(SQLScript script) {
         for (AbstractColumn col : columns) {
-            col.appendPrivileges(sbSQL);
+            col.appendPrivileges(script);
         }
     }
 

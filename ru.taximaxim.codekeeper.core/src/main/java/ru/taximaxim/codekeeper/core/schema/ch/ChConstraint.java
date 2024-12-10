@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChConstraint extends AbstractConstraint {
 
@@ -56,16 +57,15 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
-        appendAlterTable(sb, false);
-        sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition())
-        .append(getSeparator());
-        return sb.toString();
+        appendAlterTable(sb);
+        sb.append(" ADD CONSTRAINT ").append(ChDiffUtils.getQuotedName(name)).append(' ').append(getDefinition());
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
@@ -75,15 +75,15 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
-        appendAlterTable(sb, false);
+        appendAlterTable(sb);
         sb.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName())).append(getSeparator());
-        return sb.toString();
+        sb.append(ChDiffUtils.getQuotedName(getName()));
+        script.addStatement(sb);
     }
 
     private boolean compareUnalterable(ChConstraint newConstr) {
@@ -108,11 +108,8 @@ public class ChConstraint extends AbstractConstraint {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChConstraint)) {
-            return false;
-        }
-        var constr = (ChConstraint) obj;
-        return super.compare(constr) && compareUnalterable(constr);
+        return obj instanceof ChConstraint constr && super.compare(constr)
+                && compareUnalterable(constr);
     }
 
     @Override

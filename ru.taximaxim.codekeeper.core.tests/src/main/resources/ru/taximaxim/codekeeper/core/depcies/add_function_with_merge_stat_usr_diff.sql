@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of FUNCTION: public.func()
+-- DEPCY: This FUNCTION func1 is a dependency of FUNCTION: public.func()
 
 CREATE OR REPLACE FUNCTION public.func1() RETURNS bigint
     LANGUAGE plpgsql

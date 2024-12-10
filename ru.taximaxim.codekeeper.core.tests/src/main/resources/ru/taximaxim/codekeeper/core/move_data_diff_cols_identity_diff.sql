@@ -3,19 +3,19 @@ SET search_path = pg_catalog;
 ALTER TABLE public.tbl
 	DROP CONSTRAINT tbl_name22_check;
 
--- DEPCY: This TRIGGER depends on the COLUMN: public.tbl.did_2
+-- DEPCY: This TRIGGER events_insert depends on the COLUMN: public.tbl.did_2
 
 DROP TRIGGER events_insert ON public.tbl;
 
--- DEPCY: This FUNCTION depends on the COLUMN: public.tbl.did_2
+-- DEPCY: This FUNCTION events_insert_trigger depends on the COLUMN: public.tbl.did_2
 
 DROP FUNCTION public.events_insert_trigger();
 
--- DEPCY: This VIEW depends on the TABLE: public.tbl
+-- DEPCY: This VIEW v depends on the TABLE: public.tbl
 
 DROP VIEW public.v;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.tbl
+-- DEPCY: This CONSTRAINT tbl_pkey depends on the TABLE: public.tbl
 
 ALTER TABLE public.tbl
 	DROP CONSTRAINT tbl_pkey;
@@ -65,7 +65,7 @@ $_$;
 
 DROP TABLE public.tbl_randomly_generated_part;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: public.tbl.events_insert
+-- DEPCY: This FUNCTION events_insert_trigger is a dependency of TRIGGER: public.tbl.events_insert
 
 CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql

@@ -66,12 +66,12 @@ public class CompareInput extends CompareEditorInput {
     }
 
     private DiffNode getFormattedContents(String oldPath, String newPath, PgStatement project, PgStatement remote) {
-        String contentsLeft = project == null ? "" : project.getFullFormattedSQL(); //$NON-NLS-1$
-        String contentsRight = remote == null ? "" : remote.getFullFormattedSQL(); //$NON-NLS-1$
+        String contentsLeft = project == null ? "" : project.getSQL(true); //$NON-NLS-1$
+        String contentsRight = remote == null ? "" : remote.getSQL(true); //$NON-NLS-1$
 
         if (Objects.equals(contentsLeft, contentsRight)) {
-            left = new CompareItem(oldPath, project == null ? "" : project.getFullSQL()); //$NON-NLS-1$
-            right =  new CompareItem(newPath, remote == null ? "" : remote.getFullSQL()); //$NON-NLS-1$
+            left = new CompareItem(oldPath, project == null ? "" : project.getSQL(false)); //$NON-NLS-1$
+            right = new CompareItem(newPath, remote == null ? "" : remote.getSQL(false)); //$NON-NLS-1$
         } else {
             left = new CompareItem(oldPath, contentsLeft);
             right =  new CompareItem(newPath, contentsRight);

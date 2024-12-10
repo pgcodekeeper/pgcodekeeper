@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This COLUMN depends on the FUNCTION: test.mess_number(integer)
+-- DEPCY: This COLUMN mess_number depends on the FUNCTION: test.mess_number(integer)
 
 ALTER TABLE ONLY test.message
 	DROP COLUMN mess_number;

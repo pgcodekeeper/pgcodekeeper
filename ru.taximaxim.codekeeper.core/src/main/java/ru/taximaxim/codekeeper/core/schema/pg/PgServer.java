@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgServer extends PgStatement implements PgForeignOptionContainer {
 
@@ -41,7 +42,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
 
     @Override
     public String getAlterHeader() {
-        return "\n\nALTER SERVER " + getQualifiedName();
+        return "ALTER SERVER " + getQualifiedName();
     }
 
     public String getType() {
@@ -115,7 +116,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE SERVER ");
         appendIfNotExists(sb);
@@ -131,17 +132,15 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
             sb.append(' ');
         }
         appendOptions(sb);
-        sb.append(';');
-        appendOwnerSQL(sb);
-        appendPrivileges(sb);
-
-        return sb.toString();
+        script.addStatement(sb);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgServer newServer = (PgServer) newCondition;
         if (!Objects.equals(newServer.getFdw(), getFdw()) ||
                 !Objects.equals(newServer.getType(), getType())) {
@@ -150,22 +149,18 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
         }
 
         if (!Objects.equals(newServer.getVersion(), getVersion())) {
-            sb.append(getAlterHeader());
-            sb.append(" VERSION ").append(newServer.getVersion())
-            .append(';');
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterHeader());
+            sql.append(" VERSION ").append(newServer.getVersion());
+            script.addStatement(sql);
         }
 
-        if (!Objects.equals(newServer.getOptions(), getOptions())) {
-            compareOptions(newServer, sb);
-        }
+        compareOptions(newServer, script);
+        appendAlterOwner(newServer, script);
+        alterPrivileges(newCondition, script);
+        appendAlterComments(newServer, script);
 
-        if (!Objects.equals(newServer.getOwner(), getOwner())) {
-            newServer.appendOwnerSQL(sb);
-        }
-        alterPrivileges(newCondition, sb);
-        compareComments(sb, newServer);
-
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

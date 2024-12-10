@@ -1,4 +1,4 @@
--- DEPCY: This COLUMN depends on the COLUMN: [dbo].[t1].[a]
+-- DEPCY: This COLUMN c depends on the COLUMN: [dbo].[t1].[a]
 
 ALTER TABLE [dbo].[t1]
 	DROP COLUMN [c]
@@ -8,7 +8,7 @@ ALTER TABLE [dbo].[t1]
 	DROP COLUMN [a]
 GO
 
--- DEPCY: This COLUMN depends on the COLUMN: [dbo].[t2].[a]
+-- DEPCY: This COLUMN c depends on the COLUMN: [dbo].[t2].[a]
 
 ALTER TABLE [dbo].[t2]
 	DROP COLUMN [c]
@@ -18,7 +18,7 @@ ALTER TABLE [dbo].[t2]
 	DROP COLUMN [a]
 GO
 
--- DEPCY: This COLUMN is a dependency of COLUMN: [dbo].[t1].[c]
+-- DEPCY: This COLUMN a is a dependency of COLUMN: [dbo].[t1].[c]
 
 ALTER TABLE [dbo].[t1]
 	ADD [a] [int]
@@ -28,7 +28,7 @@ ALTER TABLE [dbo].[t1]
 	ADD [c] AS ([a]+[b])
 GO
 
--- DEPCY: This COLUMN is a dependency of COLUMN: [dbo].[t2].[c]
+-- DEPCY: This COLUMN a is a dependency of COLUMN: [dbo].[t2].[c]
 
 ALTER TABLE [dbo].[t2]
 	ADD [a] [int] IDENTITY (1,1) NOT NULL

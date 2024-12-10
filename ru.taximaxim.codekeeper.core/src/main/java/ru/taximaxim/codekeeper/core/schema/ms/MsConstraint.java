@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public abstract class MsConstraint extends AbstractConstraint {
 
@@ -33,9 +34,9 @@ public abstract class MsConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendAlterTable(sbSQL, false);
+        appendAlterTable(sbSQL);
         if (isNotValid()) {
             sbSQL.append(" WITH NOCHECK");
         }
@@ -44,37 +45,36 @@ public abstract class MsConstraint extends AbstractConstraint {
             sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
         }
         sbSQL.append(getDefinition());
-        sbSQL.append(GO);
+        script.addStatement(sbSQL);
 
         // 1) if is not valid, after adding it is disabled by default
         // 2) can't be valid if disabled
         if (isNotValid()) {
-            appendAlterTable(sbSQL, true);
-            sbSQL.append(' ');
+            StringBuilder sb = new StringBuilder();
+            appendAlterTable(sb);
+            sb.append(' ');
             if (isDisabled()) {
-                sbSQL.append("NO");
+                sb.append("NO");
             }
-            sbSQL.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(getName()))
-            .append(GO);
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(getName()));
+            script.addStatement(sb);
         }
-
-        return sbSQL.toString();
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        int startSize = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsConstraint newConstr = (MsConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
+        compareOptions(newConstr, script);
 
-        compareOptions(newConstr, sb);
         if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
-            appendAlterTable(sb, true);
+            StringBuilder sb = new StringBuilder();
+            appendAlterTable(sb);
             sb.append(" WITH ");
             if (newConstr.isNotValid()) {
                 sb.append("NO");
@@ -83,35 +83,33 @@ public abstract class MsConstraint extends AbstractConstraint {
             if (newConstr.isDisabled()) {
                 sb.append("NO");
             }
-            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()))
-            .append(GO);
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()));
+            script.addStatement(sb);
         }
 
-        return getObjectState(sb, startSize);
+        return getObjectState(script, startSize);
     }
 
     protected abstract boolean compareUnalterable(MsConstraint newConstr);
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
+        appendSpecialDropSQL(script);
         final StringBuilder sbSQL = new StringBuilder();
-        appendSpecialDropSQL(sbSQL);
-        appendAlterTable(sbSQL, false);
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append(IF_EXISTS);
         }
         sbSQL.append(MsDiffUtils.quoteName(getName()));
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
     }
 
-    protected void compareOptions(MsConstraint newConstr, StringBuilder sb) {
+    protected void compareOptions(MsConstraint newConstr, SQLScript script) {
         // subclasses will override if needed
     }
 
-    protected void appendSpecialDropSQL(StringBuilder sbSQL) {
+    protected void appendSpecialDropSQL(SQLScript script) {
         // subclasses will override if needed
     }
 

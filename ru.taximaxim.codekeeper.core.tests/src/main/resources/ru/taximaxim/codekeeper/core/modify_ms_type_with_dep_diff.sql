@@ -1,12 +1,12 @@
 DROP FUNCTION [dbo].[dropped_function]
 GO
 
--- DEPCY: This FUNCTION depends on the TYPE: [dbo].[custom_type]
+-- DEPCY: This FUNCTION changed_function depends on the TYPE: [dbo].[custom_type]
 
 DROP FUNCTION [dbo].[changed_function]
 GO
 
--- DEPCY: This FUNCTION depends on the TYPE: [dbo].[custom_type]
+-- DEPCY: This FUNCTION getboolean depends on the TYPE: [dbo].[custom_type]
 
 DROP FUNCTION [dbo].[getboolean]
 GO
@@ -14,7 +14,7 @@ GO
 DROP TYPE [dbo].[custom_type]
 GO
 
--- DEPCY: This TYPE is a dependency of FUNCTION: [dbo].[changed_function]
+-- DEPCY: This TYPE custom_type is a dependency of FUNCTION: [dbo].[changed_function]
 
 CREATE TYPE [dbo].[custom_type] FROM [bit]
 GO

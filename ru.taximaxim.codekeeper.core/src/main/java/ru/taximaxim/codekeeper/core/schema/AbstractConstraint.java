@@ -21,7 +21,6 @@ package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Collections;
 import java.util.Set;
-
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -100,10 +99,7 @@ public abstract class AbstractConstraint extends PgStatement implements IConstra
         return constraintDst;
     }
 
-    protected void appendAlterTable(StringBuilder sb, boolean isNewLine) {
-        if (isNewLine) {
-            sb.append("\n\n");
-        }
+    protected void appendAlterTable(StringBuilder sb) {
         sb.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
         sb.append(getParent().getQualifiedName());
     }

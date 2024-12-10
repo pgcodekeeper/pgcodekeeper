@@ -38,6 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class OverridesModelExporter extends ModelExporter {
 
@@ -69,7 +70,7 @@ public class OverridesModelExporter extends ModelExporter {
             if (el.getSide() == DiffSide.BOTH) {
                 switch (el.getType()) {
                 case CONSTRAINT, DATABASE, INDEX, TRIGGER, RULE, POLICY, EXTENSION, EVENT_TRIGGER, CAST, COLUMN,
-                        STATISTICS:
+                STATISTICS:
                     break;
                 default:
                     PgStatement stInNew = el.getPgStatement(newDb);
@@ -93,20 +94,19 @@ public class OverridesModelExporter extends ModelExporter {
 
     @Override
     protected String getDumpSql(PgStatement st) {
-        StringBuilder sb = new StringBuilder();
+        SQLScript script = new SQLScript(st.getDbType());
         Set<PgPrivilege> privs = st.getPrivileges();
-        PgStatement.appendOwnerSQL(st, st.getOwner(), false, sb);
-        PgPrivilege.appendPrivileges(privs, st.getDbType(), sb);
+        st.appendOwnerSQL(script);
+        PgPrivilege.appendPrivileges(privs, script);
         if (privs.isEmpty() && st.getDbType() == DatabaseType.PG) {
-            PgPrivilege.appendDefaultPostgresPrivileges(st, sb);
+            PgPrivilege.appendDefaultPostgresPrivileges(st, script);
         }
 
         if (DbObjType.TABLE == st.getStatementType()) {
             for (AbstractColumn col : ((AbstractTable)st).getColumns()) {
-                PgPrivilege.appendPrivileges(col.getPrivileges(), col.getDbType(), sb);
+                PgPrivilege.appendPrivileges(col.getPrivileges(), script);
             }
         }
-
-        return sb.toString();
+        return script.getFullScript();
     }
 }

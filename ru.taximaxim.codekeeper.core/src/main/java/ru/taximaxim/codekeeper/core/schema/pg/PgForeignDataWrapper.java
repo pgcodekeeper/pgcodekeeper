@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer {
 
@@ -40,7 +41,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
 
     @Override
     public String getAlterHeader() {
-        return "\n\nALTER FOREIGN DATA WRAPPER " + getQualifiedName();
+        return "ALTER FOREIGN DATA WRAPPER " + getQualifiedName();
     }
 
     @Override
@@ -104,7 +105,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE FOREIGN DATA WRAPPER ");
         sb.append(PgDiffUtils.getQuotedName(getName()));
@@ -118,53 +119,48 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             sb.append(' ');
         }
         appendOptions(sb);
-        sb.append(';');
+        script.addStatement(sb);
 
-        appendOwnerSQL(sb);
-        appendPrivileges(sb);
-
-        return sb.toString();
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgForeignDataWrapper newForeign = (PgForeignDataWrapper) newCondition;
 
         if (!Objects.equals(newForeign.getHandler(), getHandler())) {
-            sb.append(getAlterHeader());
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterHeader());
             if (newForeign.getHandler() != null) {
-                sb.append(" HANDLER ").append(newForeign.getHandler());
+                sql.append(" HANDLER ").append(newForeign.getHandler());
                 isNeedDepcies.set(true);
             } else {
-                sb.append(" NO HANDLER");
+                sql.append(" NO HANDLER");
             }
-            sb.append(';');
+            script.addStatement(sql);
         }
 
         if (!Objects.equals(newForeign.getValidator(), getValidator())) {
-            sb.append(getAlterHeader());
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterHeader());
             if (newForeign.getValidator() != null) {
-                sb.append(" VALIDATOR ").append(newForeign.getValidator());
+                sql.append(" VALIDATOR ").append(newForeign.getValidator());
                 isNeedDepcies.set(true);
             } else {
-                sb.append(" NO VALIDATOR");
+                sql.append(" NO VALIDATOR");
             }
-            sb.append(';');
+            script.addStatement(sql);
         }
 
-        if (!Objects.equals(newForeign.getOptions(), getOptions())) {
-            compareOptions(newForeign, sb);
-        }
+        compareOptions(newForeign, script);
+        appendAlterOwner(newForeign, script);
+        alterPrivileges(newCondition, script);
+        appendAlterComments(newForeign, script);
 
-        if (!Objects.equals(newForeign.getOwner(), getOwner())) {
-            newForeign.appendOwnerSQL(sb);
-        }
-        alterPrivileges(newCondition, sb);
-        compareComments(sb, newForeign);
-
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

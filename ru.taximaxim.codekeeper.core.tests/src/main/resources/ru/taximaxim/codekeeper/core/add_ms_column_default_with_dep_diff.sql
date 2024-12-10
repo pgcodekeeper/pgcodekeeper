@@ -1,4 +1,4 @@
--- DEPCY: This FUNCTION is a dependency of COLUMN: [dbo].[t1].[c1]
+-- DEPCY: This FUNCTION f1 is a dependency of COLUMN: [dbo].[t1].[c1]
 
 SET QUOTED_IDENTIFIER ON
 GO

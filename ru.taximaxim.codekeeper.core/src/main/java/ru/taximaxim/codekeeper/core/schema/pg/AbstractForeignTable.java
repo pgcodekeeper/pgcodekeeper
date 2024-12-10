@@ -21,6 +21,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Base implementation of foreign table
@@ -38,11 +39,8 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
+    public String getAlterTable(boolean only) {
         StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
         sb.append("ALTER FOREIGN TABLE ");
         if (only) {
             sb.append("ONLY ");
@@ -59,13 +57,12 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    public void appendOptions(StringBuilder sbSQL) {
-        sbSQL.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
+    public void appendOptions(StringBuilder sqlOption) {
+        sqlOption.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
         if (!getOptions().isEmpty()) {
-            sbSQL.append('\n');
+            sqlOption.append('\n');
         }
-        PgForeignOptionContainer.super.appendOptions(sbSQL);
-        sbSQL.append(';');
+        PgForeignOptionContainer.super.appendOptions(sqlOption);
     }
 
     @Override
@@ -74,7 +71,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
     @Override
     public String getAlterHeader() {
-        return getAlterTable(true, false);
+        return getAlterTable(false);
     }
 
     @Override
@@ -85,10 +82,9 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
+    protected void appendAlterOptions(SQLScript script) {
         if (hasOids) {
-            sbSQL.append(getAlterTable(true, true));
-            sbSQL.append(" SET WITH OIDS;");
+            script.addStatement(getAlterTable(true) + " SET WITH OIDS");
         }
     }
 
@@ -102,7 +98,7 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         // untransformable
     }
 

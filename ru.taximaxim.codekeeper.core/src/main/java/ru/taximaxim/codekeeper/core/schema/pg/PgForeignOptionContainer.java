@@ -18,12 +18,14 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import java.text.MessageFormat;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public interface PgForeignOptionContainer extends IOptionContainer {
 
-    static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3});";
+    static final String ALTER_FOREIGN_OPTION = "{0} OPTIONS ({1} {2} {3})";
     static final String DELIM = ",\n    ";
 
     String getAlterHeader();
@@ -44,29 +46,35 @@ public interface PgForeignOptionContainer extends IOptionContainer {
     }
 
     @Override
-    default void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    default void compareOptions(IOptionContainer newContainer, SQLScript script) {
         Map <String, String> oldForeignOptions = getOptions();
         Map <String, String> newForeignOptions = newContainer.getOptions();
+
+        if (Objects.equals(oldForeignOptions, newForeignOptions)) {
+            return;
+        }
+
         if (!oldForeignOptions.isEmpty() || !newForeignOptions.isEmpty()) {
             oldForeignOptions.forEach((key, value) -> {
                 String newValue = newForeignOptions.get(key);
                 if (newValue != null) {
                     if (!value.equals(newValue)) {
-                        sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                                getAlterHeader(), "SET", key, newValue));
+                        script.addStatement(getAlterOption("SET", key, newValue));
                     }
                 } else {
-                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getAlterHeader(), "DROP", key, ""));
+                    script.addStatement(getAlterOption("DROP", key, ""));
                 }
             });
 
             newForeignOptions.forEach((key, value) -> {
                 if (!oldForeignOptions.containsKey(key)) {
-                    sb.append(MessageFormat.format(ALTER_FOREIGN_OPTION,
-                            getAlterHeader(), "ADD", key, value));
+                    script.addStatement(getAlterOption("ADD", key, value));
                 }
             });
         }
+    }
+
+    private String getAlterOption(String action, String key, String value) {
+        return MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterHeader(), action, key, value);
     }
 }

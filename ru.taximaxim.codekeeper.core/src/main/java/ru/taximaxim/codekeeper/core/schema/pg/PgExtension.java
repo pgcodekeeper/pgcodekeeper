@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Stores extension information.
@@ -67,7 +68,7 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE EXTENSION ");
         appendIfNotExists(sbSQL);
@@ -78,32 +79,32 @@ public class PgExtension extends PgStatement {
             sbSQL.append(getSchema());
         }
 
-        sbSQL.append(';');
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgExtension newExt = (PgExtension) newCondition;
 
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
             if (!isRelocatable()) {
                 return ObjectState.RECREATE;
             }
-            sb.append("\n\nALTER EXTENSION ")
+            StringBuilder sql = new StringBuilder();
+            sql.append("ALTER EXTENSION ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(" SET SCHEMA ")
-            .append(newExt.getSchema())
-            .append(';');
+            .append(newExt.getSchema());
+            script.addStatement(sql);
             isNeedDepcies.set(true);
         }
         // TODO ALTER EXTENSION UPDATE TO ?
-        compareComments(sb, newExt);
 
-        return getObjectState(sb, startLength);
+        appendAlterComments(newExt, script);
+
+        return getObjectState(script, startSize);
     }
 
     @Override

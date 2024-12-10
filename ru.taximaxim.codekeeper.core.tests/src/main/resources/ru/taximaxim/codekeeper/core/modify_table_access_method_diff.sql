@@ -4,7 +4,7 @@ DROP TABLE public.t01;
 
 DROP TABLE public.t03;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.employees
+-- DEPCY: This CONSTRAINT employees_pkey depends on the TABLE: public.employees
 
 ALTER TABLE public.employees
 	DROP CONSTRAINT employees_pkey;

@@ -1,4 +1,4 @@
--- DEPCY: This ROLE is a dependency of USER: timon
+-- DEPCY: This ROLE admin is a dependency of USER: timon
 
 CREATE ROLE admin;
 

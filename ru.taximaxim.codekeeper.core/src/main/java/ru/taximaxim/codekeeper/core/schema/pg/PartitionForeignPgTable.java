@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IPartitionTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Partition foreign table object
@@ -56,7 +57,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable implements IPa
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" PARTITION OF ").append(getParentTable());
 
         if (!columns.isEmpty()) {
@@ -64,7 +65,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable implements IPa
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn((PgColumn) column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, script);
             }
 
             if (start != sbSQL.length()) {
@@ -80,7 +81,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable implements IPa
     }
 
     @Override
-    protected void appendInherit(StringBuilder sbSQL) {
+    protected void appendInherit(StringBuilder sb) {
         // PgTable.inherits stores PARTITION OF table in this implementation
     }
 

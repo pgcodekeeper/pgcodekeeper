@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of COLUMN: public."user".c1
+-- DEPCY: This FUNCTION user is a dependency of COLUMN: public."user".c1
 
 CREATE OR REPLACE FUNCTION public."user"() RETURNS integer
     LANGUAGE plpgsql

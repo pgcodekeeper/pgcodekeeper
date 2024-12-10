@@ -1,4 +1,8 @@
--- DEPCY: This CONSTRAINT depends on the COLUMN: [dbo].[t1].[col1_1]
+ALTER TABLE [dbo].[t1]
+	ALTER COLUMN [col2_2] DROP ROWGUIDCOL
+GO
+
+-- DEPCY: This CONSTRAINT UQ_1_1 depends on the COLUMN: [dbo].[t1].[col1_1]
 
 ALTER TABLE [dbo].[t1]
 	DROP CONSTRAINT [UQ_1_1]
@@ -8,7 +12,7 @@ ALTER TABLE [dbo].[t1]
 	ALTER COLUMN [col1_1] [bigint] NOT NULL
 GO
 
--- DEPCY: This CONSTRAINT depends on the COLUMN: [dbo].[t1].[col1_2]
+-- DEPCY: This CONSTRAINT UQ_1_2 depends on the COLUMN: [dbo].[t1].[col1_2]
 
 ALTER TABLE [dbo].[t1]
 	DROP CONSTRAINT [UQ_1_2]
@@ -20,10 +24,6 @@ GO
 
 ALTER TABLE [dbo].[t1]
 	ALTER COLUMN [col2_1] ADD ROWGUIDCOL
-GO
-
-ALTER TABLE [dbo].[t1]
-	ALTER COLUMN [col2_2] DROP ROWGUIDCOL
 GO
 
 ALTER TABLE [dbo].[t1]
@@ -46,7 +46,7 @@ ALTER TABLE [dbo].[t1]
 	ALTER COLUMN [c_1] ADD PERSISTED
 GO
 
--- DEPCY: This CONSTRAINT depends on the COLUMN: [dbo].[t1].[c_2]
+-- DEPCY: This CONSTRAINT UQ_3_2 depends on the COLUMN: [dbo].[t1].[c_2]
 
 ALTER TABLE [dbo].[t1]
 	DROP CONSTRAINT [UQ_3_2]

@@ -62,6 +62,10 @@ public class MsTablesReader extends JdbcReader {
 
         table.setFileStream(res.getString("file_stream"));
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
+        Object isTracked = res.getObject("is_tracked");
+        if (isTracked != null) {
+            table.setTracked((Boolean) isTracked);
+        }
 
         boolean isTextImage = false;
         for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
@@ -161,6 +165,7 @@ public class MsTablesReader extends JdbcReader {
         .column("res.uses_ansi_nulls")
         .column("sp.data_compression")
         .column("sp.data_compression_desc")
+        .column("ctt.is_track_columns_updated_on AS is_tracked")
         .from("sys.tables res WITH (NOLOCK)")
         .join("JOIN sys.indexes ind WITH (NOLOCK) on ind.object_id = res.object_id")
         .join("JOIN sys.partitions sp WITH (NOLOCK) ON sp.object_id = res.object_id AND ind.index_id = sp.index_id AND sp.index_id IN (0,1) AND sp.partition_number = 1")
@@ -168,6 +173,7 @@ public class MsTablesReader extends JdbcReader {
         .join("LEFT JOIN sys.data_spaces dsx WITH (NOLOCK) ON dsx.data_space_id=res.lob_data_space_id")
         .join("LEFT JOIN sys.index_columns ic WITH (NOLOCK) ON ic.partition_ordinal > 0 AND ic.index_id = ind.index_id and ic.object_id = res.object_id")
         .join("LEFT JOIN sys.columns c WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id")
+        .join("LEFT JOIN sys.change_tracking_tables ctt WITH (NOLOCK) ON ctt.object_id = res.object_id")
         .where("res.type = 'U'");
 
         if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {

@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsView extends AbstractView implements SourceStatement {
 
@@ -52,48 +53,40 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public String getCreationSQL() {
-        StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append(getViewFullSQL(true));
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        return sbSQL.toString();
+    public void getCreationSQL(SQLScript script) {
+        addViewFullSQL(script, true);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
     }
 
-    private String getViewFullSQL(boolean isCreate) {
-        final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
-        sbSQL.append(GO).append('\n');
-        sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
-        sbSQL.append(GO).append('\n');
+    private void addViewFullSQL(SQLScript script, boolean isCreate) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
+        sb.append(GO).append('\n');
+        sb.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
+        sb.append(GO).append('\n');
 
-        appendSourceStatement(isCreate, sbSQL);
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        appendSourceStatement(isCreate, sb);
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsView newView = (MsView) newCondition;
 
         if (isAnsiNulls() != newView.isAnsiNulls()
                 || isQuotedIdentified() != newView.isQuotedIdentified()
                 || !Objects.equals(getFirstPart(), newView.getFirstPart())
                 || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
-            sb.append(newView.getViewFullSQL(false));
+            newView.addViewFullSQL(script, false);
             isNeedDepcies.set(true);
         }
 
-        if (!Objects.equals(getOwner(), newView.getOwner())) {
-            newView.alterOwnerSQL(sb);
-        }
-        alterPrivileges(newView, sb);
+        appendAlterOwner(newView, script);
+        alterPrivileges(newView, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

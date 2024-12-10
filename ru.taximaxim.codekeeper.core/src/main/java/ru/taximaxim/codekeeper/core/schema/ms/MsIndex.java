@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsIndex extends AbstractIndex {
     private boolean isColumnstore;
@@ -58,11 +59,11 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public String getCreationSQL() {
-        return getCreationSQL(false);
+    public void getCreationSQL(SQLScript script) {
+        getCreationSQL(script, false);
     }
 
-    private String getCreationSQL(boolean dropExisting) {
+    private void getCreationSQL(SQLScript script, boolean dropExisting) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
         if (isUnique()) {
@@ -77,9 +78,7 @@ public class MsIndex extends AbstractIndex {
         if (getTablespace() != null) {
             sbSQL.append("\nON ").append(getTablespace());
         }
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
     }
 
     public String getDefinition(boolean isTypeIndex, boolean dropExisting) {
@@ -153,15 +152,13 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
 
             MsIndex newIndex = (MsIndex) newCondition;
             if (!isClustered() || newIndex.isClustered()) {
-                sb.append("\n\n")
-                .append(newIndex.getCreationSQL(true));
+                newIndex.getCreationSQL(script, true);
                 return ObjectState.ALTER;
             }
 

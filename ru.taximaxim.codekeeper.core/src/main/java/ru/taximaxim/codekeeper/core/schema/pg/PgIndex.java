@@ -34,9 +34,11 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgIndex extends AbstractIndex {
 
+    private static final String ALTER_INDEX = "ALTER INDEX ";
     private Inherits inherit;
     private String method;
     private boolean nullsDistinction = true;
@@ -51,11 +53,12 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    public String getCreationSQL() {
-        return getCreationSQL(getName());
+    public void getCreationSQL(SQLScript script) {
+        getCreationSQL(script, getName());
+        appendComments(script);
     }
 
-    private String getCreationSQL(String name) {
+    private void getCreationSQL(SQLScript script, String name) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
@@ -83,18 +86,15 @@ public class PgIndex extends AbstractIndex {
         appendSimpleColumns(sbSQL, columns);
         appendIndexParam(sbSQL);
         appendWhere(sbSQL);
-        sbSQL.append(';');
+        script.addStatement(sbSQL);
 
         if (isClustered()) {
-            appendClusterSql(sbSQL);
+            script.addStatement(appendClusterSql());
         }
 
         if (inherit != null) {
-            sbSQL.append("\n\nALTER INDEX ").append(inherit.getQualifiedName())
-            .append(" ATTACH PARTITION ").append(getQualifiedName()).append(';');
+            script.addStatement(ALTER_INDEX + inherit.getQualifiedName() + " ATTACH PARTITION " + getQualifiedName());
         }
-
-        return sbSQL.toString();
     }
 
     private void appendSimpleColumns(StringBuilder sbSQL, List<SimpleColumn> columns) {
@@ -147,9 +147,8 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgIndex newIndex = (PgIndex) newCondition;
 
         if (!compareUnalterable(newIndex)) {
@@ -158,55 +157,50 @@ public class PgIndex extends AbstractIndex {
             if (getDatabaseArguments().isConcurrentlyMode()) {
                 // generate optimized command sequence for concurrent index creation
                 String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();
-
-                sb.append("\n\n")
-                .append(newIndex.getCreationSQL(tmpName))
-                .append("\n\nBEGIN TRANSACTION;\n")
-                .append(getDropSQL())
-                .append("\nALTER INDEX ")
+                newIndex.getCreationSQL(script, tmpName);
+                script.addStatement("BEGIN TRANSACTION");
+                getDropSQL(script);
+                StringBuilder sql = new StringBuilder();
+                sql.append(ALTER_INDEX)
                 .append(PgDiffUtils.getQuotedName(getSchemaName()))
                 .append('.')
                 .append(PgDiffUtils.getQuotedName(tmpName))
                 .append(" RENAME TO ")
-                .append(PgDiffUtils.getQuotedName(getName()))
-                .append(";");
-                newIndex.appendComments(sb);
-                sb.append("\nCOMMIT TRANSACTION;");
+                .append(PgDiffUtils.getQuotedName(getName()));
+                script.addStatement(sql);
+
+                newIndex.appendComments(script);
+                script.addStatement("COMMIT TRANSACTION");
             }
             return ObjectState.RECREATE;
         }
 
         if (!Objects.equals(getTablespace(), newIndex.getTablespace())) {
-            sb.append("\n\nALTER INDEX ").append(newIndex.getQualifiedName())
+            StringBuilder sql = new StringBuilder();
+            sql.append(ALTER_INDEX).append(newIndex.getQualifiedName())
             .append(" SET TABLESPACE ");
 
             String newSpace = newIndex.getTablespace();
-            sb.append(newSpace == null ? Consts.PG_DEFAULT : newSpace).append(';');
+            sql.append(newSpace == null ? Consts.PG_DEFAULT : newSpace);
+            script.addStatement(sql);
         }
 
         if (newIndex.isClustered() != isClustered()) {
             if (newIndex.isClustered()) {
-                newIndex.appendClusterSql(sb);
+                script.addStatement(newIndex.appendClusterSql());
             } else if (!((PgStatementContainer) newIndex.getParent()).isClustered()) {
-                sb.append("\n\nALTER TABLE ")
-                .append(newIndex.getParent().getQualifiedName())
-                .append(" SET WITHOUT CLUSTER;");
+                script.addStatement(ALTER_TABLE + newIndex.getParent().getQualifiedName() + " SET WITHOUT CLUSTER");
             }
         }
 
-        compareOptions(newIndex, sb);
-        compareComments(sb, newIndex);
+        compareOptions(newIndex, script);
+        appendAlterComments(newIndex, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
-    private void appendClusterSql(StringBuilder sb) {
-        sb.append("\n\nALTER ");
-        sb.append(getParent().getTypeName()).append(' ');
-        sb.append(getParent().getQualifiedName());
-        sb.append(" CLUSTER ON ");
-        sb.append(getName());
-        sb.append(';');
+    private String appendClusterSql() {
+        return "ALTER " + getParent().getTypeName() + ' ' + getParent().getQualifiedName() + " CLUSTER ON " + getName();
     }
 
     public String getMethod() {
@@ -238,10 +232,9 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     protected boolean compareUnalterable(AbstractIndex index) {
-        if (!(index instanceof PgIndex)) {
+        if (!(index instanceof PgIndex pgIndex)) {
             return false;
         }
-        var pgIndex = (PgIndex) index;
         return super.compareUnalterable(pgIndex)
                 && Objects.equals(inherit, pgIndex.inherit)
                 && Objects.equals(method, pgIndex.method)

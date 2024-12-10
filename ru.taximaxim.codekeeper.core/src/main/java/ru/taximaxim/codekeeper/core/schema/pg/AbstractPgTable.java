@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -57,29 +58,36 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbOption = new StringBuilder();
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
+
+        SQLScript temp = new SQLScript(getDbType());
+
         appendName(sbSQL);
-        appendColumns(sbSQL, sbOption);
+        appendColumns(sbSQL, temp);
         appendInherit(sbSQL);
         appendOptions(sbSQL);
-        sbSQL.append(sbOption);
-        appendAlterOptions(sbSQL);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-        appendColumnsPriliges(sbSQL);
-        appendColumnsStatistics(sbSQL);
+        script.addStatement(sbSQL);
 
-        return sbSQL.toString();
+        script.addAllStatements(temp);
+        appendAlterOptions(script);
+
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendColumnsPriliges(script);
+        appendColumnsStatistics(script);
+        appendComments(script);
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
-        super.appendComments(sb);
+    public void appendComments(SQLScript script) {
+        super.appendComments(script);
+        appendChildrenComments(script);
+    }
 
+    private void appendChildrenComments(SQLScript script) {
         for (final AbstractColumn column : getColumns()) {
-            column.appendComments(sb);
+            column.appendComments(script);
         }
     }
 
@@ -92,17 +100,17 @@ public abstract class AbstractPgTable extends AbstractTable {
      *
      * @param sbSQL - StringBuilder for statement
      */
-    protected abstract void appendName(StringBuilder sbSQL);
+    protected abstract void appendName(StringBuilder sbSQl);
 
     /**
-     * Fills columns and their options to create table statement. Options will
-     * be appends after CREATE TABLE statement. <br>
+     * Fills columns and their options to create table statement. Options will be
+     * appends after CREATE TABLE statement. <br>
      * Must be overridden by subclasses
      *
-     * @param sbSQL - StringBuilder for columns
-     * @param sbOption - StringBuilder for options
+     * @param sbSQL  - StringBuilder for columns
+     * @param script - collection for options
      */
-    protected abstract void appendColumns(StringBuilder sbSQL, StringBuilder sbOption);
+    protected abstract void appendColumns(StringBuilder sbSQL, SQLScript script);
 
     /**
      * Fills tables parents, parents are stored in 'inherits' list.<br>
@@ -127,8 +135,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     /**
-     * Appends table storage parameters or server options, part of create statement,
-     * must be finished with ';' character;
+     * Appends table storage parameters or server options, part of create statement;
      *
      * @param sbSQL - StringBuilder for options
      */
@@ -143,23 +150,24 @@ public abstract class AbstractPgTable extends AbstractTable {
      * <br>
      * @param sbSQL - StringBuilder for options
      */
-    protected abstract void appendAlterOptions(StringBuilder sbSQL);
+    protected abstract void appendAlterOptions(SQLScript script);
 
-    protected void appendColumnsStatistics(StringBuilder sbSQL) {
+    protected void appendColumnsStatistics(SQLScript script) {
         columns.stream().map(PgColumn.class::cast).filter(c -> c.getStatistics() != null)
         .forEach(column -> {
-            sbSQL.append(getAlterTable(true, true));
-            sbSQL.append(ALTER_COLUMN);
-            sbSQL.append(PgDiffUtils.getQuotedName(column.getName()));
-            sbSQL.append(" SET STATISTICS ");
-            sbSQL.append(column.getStatistics());
-            sbSQL.append(';');
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterTable(true));
+            sql.append(ALTER_COLUMN);
+            sql.append(PgDiffUtils.getQuotedName(column.getName()));
+            sql.append(" SET STATISTICS ");
+            sql.append(column.getStatistics());
+            script.addStatement(sql);
         });
     }
 
     protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
         PgSequence sequence = column.getSequence();
-        sbOption.append(getAlterTable(newLine, false))
+        sbOption.append(getAlterTable(false))
         .append(ALTER_COLUMN)
         .append(PgDiffUtils.getQuotedName(column.getName()))
         .append(" ADD GENERATED ")
@@ -172,9 +180,8 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {
@@ -182,14 +189,15 @@ public abstract class AbstractPgTable extends AbstractTable {
             return ObjectState.RECREATE;
         }
 
-        compareTableTypes(newTable, sb);
-        compareInherits(newTable, sb);
-        compareOptions(newTable, sb);
-        compareOwners(newTable, sb);
-        compareTableOptions(newTable, sb);
-        alterPrivileges(newTable, sb);
-        compareComments(sb, newTable);
-        return getObjectState(sb, startLength);
+        compareTableTypes(newTable, script);
+        compareInherits(newTable, script);
+        compareOptions(newTable, script);
+        appendAlterOwner(newTable, script);
+        compareTableOptions(newTable, script);
+        alterPrivileges(newTable, script);
+        appendAlterComments(newTable, script);
+
+        return getObjectState(script, startSize);
     }
 
     @Override
@@ -252,39 +260,35 @@ public abstract class AbstractPgTable extends AbstractTable {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected void compareTableOptions(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableOptions(AbstractPgTable newTable, SQLScript script) {
         if (hasOids != newTable.getHasOids()) {
-            sb.append(getAlterTable(true, true))
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterTable(true))
             .append(" SET ")
             .append(newTable.getHasOids() ? "WITH" : "WITHOUT")
-            .append(" OIDS;");
+            .append(" OIDS");
+            script.addStatement(sql);
         }
     }
 
-    protected void compareInherits(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareInherits(AbstractPgTable newTable, SQLScript script) {
         List<Inherits> newInherits = newTable.getInherits();
 
         if (newTable instanceof PartitionPgTable) {
             return;
         }
 
-        for (final Inherits tableName : inherits) {
-            if (!newInherits.contains(tableName)) {
-                sb.append(getAlterTable(true, false))
-                .append("\n\tNO INHERIT ")
-                .append(tableName.getQualifiedName())
-                .append(';');
-            }
-        }
+        inherits.stream()
+                .filter(e -> !newInherits.contains(e))
+                .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tNO INHERIT ")));
 
-        for (final Inherits tableName : newInherits) {
-            if (!inherits.contains(tableName)) {
-                sb.append(getAlterTable(true, false))
-                .append("\n\tINHERIT ")
-                .append(tableName.getQualifiedName())
-                .append(';');
-            }
-        }
+        newInherits.stream()
+                .filter(e -> !inherits.contains(e))
+                .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tINHERIT ")));
+    }
+
+    private String getInheritsActions(Inherits inh, String state) {
+        return getAlterTable(false) + state + inh.getQualifiedName();
     }
 
     public void addInherits(final String schemaName, final String tableName) {
@@ -330,93 +334,94 @@ public abstract class AbstractPgTable extends AbstractTable {
         resetHash();
     }
 
-    protected void writeColumn(PgColumn column, StringBuilder sbSQL,
-            StringBuilder sbOption) {
-
+    protected void writeColumn(PgColumn column, StringBuilder sbSQL, SQLScript script) {
         boolean isInherit = column.isInherit();
         if (isInherit) {
-            fillInheritOptions(column, sbOption);
+            fillInheritOptions(column, script);
         } else {
             sbSQL.append("\t");
             sbSQL.append(column.getFullDefinition());
             sbSQL.append(",\n");
         }
-
         if (column.getStorage() != null) {
-            sbOption.append(getAlterTable(true, isInherit))
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterTable(isInherit))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET STORAGE ")
-            .append(column.getStorage())
-            .append(';');
+            .append(column.getStorage());
+            script.addStatement(sql);
         }
 
-        writeOptions(column, sbOption, isInherit);
+        writeOptions(column, script, isInherit);
         AbstractSequence sequence = column.getSequence();
         if (sequence != null) {
+            StringBuilder sbSeq = new StringBuilder();
             if (getDatabaseArguments().isGenerateExistDoBlock()) {
-                StringBuilder sbSeq = new StringBuilder();
-                writeSequences(column, sbSeq, false);
-                PgDiffUtils.appendSqlWrappedInDo(sbOption, sbSeq, Consts.DUPLICATE_RELATION);
+                StringBuilder tmpSb = new StringBuilder();
+                writeSequences(column, tmpSb, false);
+                PgDiffUtils.appendSqlWrappedInDo(sbSeq, tmpSb, Consts.DUPLICATE_RELATION);
             } else {
-                writeSequences(column, sbOption, true);
+                writeSequences(column, sbSeq, true);
+                sbSeq.setLength(sbSeq.length() - 1);
             }
+            script.addStatement(sbSeq);
         }
     }
 
-    private void fillInheritOptions(AbstractColumn column, StringBuilder sb) {
+    private void fillInheritOptions(AbstractColumn column, SQLScript script) {
         if (!column.getNullValue()) {
-            sb.append(getAlterTable(true, true))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.getName()))
-            .append(" SET NOT NULL;");
+            script.addStatement(getAlterColumn(column) + " SET NOT NULL");
         }
         if (column.getDefaultValue() != null) {
-            sb.append(getAlterTable(true, true))
-            .append(ALTER_COLUMN)
-            .append(PgDiffUtils.getQuotedName(column.getName()))
-            .append(" SET DEFAULT ")
-            .append(column.getDefaultValue())
-            .append(';');
+            script.addStatement(getAlterColumn(column) + " SET DEFAULT " + column.getDefaultValue());
         }
     }
 
-    private void writeOptions(PgColumn column, StringBuilder sbOption, boolean isInherit) {
+    private String getAlterColumn(AbstractColumn column) {
+        return getAlterTable(true) + ALTER_COLUMN + PgDiffUtils.getQuotedName(column.getName());
+    }
+
+    private void writeOptions(PgColumn column, SQLScript script, boolean isInherit) {
         Map<String, String> opts = column.getOptions();
         Map<String, String> fOpts = column.getForeignOptions();
 
         if (!opts.isEmpty()) {
-            sbOption.append(getAlterTable(true, isInherit))
+            StringBuilder sb = new StringBuilder();
+            sb.append(getAlterTable(isInherit))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" SET (");
 
             for (Entry<String, String> option : opts.entrySet()) {
-                sbOption.append(option.getKey());
+                sb.append(option.getKey());
                 if (!option.getValue().isEmpty()) {
-                    sbOption.append('=').append(option.getValue());
+                    sb.append('=').append(option.getValue());
                 }
-                sbOption.append(", ");
+                sb.append(", ");
             }
-            sbOption.setLength(sbOption.length() - 2);
-            sbOption.append(");");
+            sb.setLength(sb.length() - 2);
+            sb.append(")");
+            script.addStatement(sb);
         }
 
         if (!fOpts.isEmpty()) {
-            sbOption.append(getAlterTable(true, isInherit))
+            StringBuilder sb = new StringBuilder();
+            sb.append(getAlterTable(isInherit))
             .append(ALTER_COLUMN)
             .append(PgDiffUtils.getQuotedName(column.getName()))
             .append(" OPTIONS (");
 
             for (Entry<String, String> option : fOpts.entrySet()) {
-                sbOption.append(option.getKey());
+                sb.append(option.getKey());
                 if (!option.getValue().isEmpty()) {
-                    sbOption.append(' ').append(option.getValue());
+                    sb.append(' ').append(option.getValue());
                 }
-                sbOption.append(", ");
+                sb.append(", ");
             }
-            sbOption.setLength(sbOption.length() - 2);
-            sbOption.append(");");
+            sb.setLength(sb.length() - 2);
+            sb.append(")");
+            script.addStatement(sb);
         }
     }
 
@@ -426,7 +431,7 @@ public abstract class AbstractPgTable extends AbstractTable {
      * @param newTable - new table
      * @param sb - StringBuilder for statements
      */
-    protected abstract void compareTableTypes(AbstractPgTable newTable, StringBuilder sb);
+    protected abstract void compareTableTypes(AbstractPgTable newTable, SQLScript script);
 
     @Override
     public boolean compare(PgStatement obj) {

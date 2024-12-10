@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgBaseType extends AbstractType implements ICompressOptionContainer {
 
@@ -78,21 +79,23 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
         appendStringOption(sb, "ELEMENT", element);
         appendStringOption(sb, "DELIMITER", delimiter);
         appendStringOption(sb, "COLLATABLE", collatable);
-        sb.append("\n);");
-
-        if (checkGreenplumOptions()) {
-            appendGreenplumOptions(this, sb);
-        }
+        sb.append("\n)");
     }
 
     @Override
-    protected void compareType(AbstractType newType, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
         PgBaseType newBaseType = (PgBaseType) newType;
         if (!Objects.equals(newBaseType.getCompressType(), getCompressType())
                 || newBaseType.getCompressLevel() != getCompressLevel()
                 || newBaseType.getBlockSize() != getBlockSize()) {
-            appendGreenplumOptions(newBaseType, sb);
+            script.addStatement(appendGreenplumOptions(newBaseType));
+        }
+    }
+
+    @Override
+    protected void appendOptions(SQLScript script) {
+        if (checkGreenplumOptions()) {
+            script.addStatement(appendGreenplumOptions(this));
         }
     }
 
@@ -102,13 +105,15 @@ public final class PgBaseType extends AbstractType implements ICompressOptionCon
                 || !Objects.equals(DEFAULT_COMPESS_TYPE, compressType);
     }
 
-    private void appendGreenplumOptions(PgBaseType type, StringBuilder sb) {
-        sb.append("\n\nALTER TYPE ").append(getQualifiedName())
+    private StringBuilder appendGreenplumOptions(PgBaseType type) {
+        StringBuilder sbSQL = new StringBuilder();
+        sbSQL.append("ALTER TYPE ").append(getQualifiedName())
         .append(" SET DEFAULT ENCODING (")
         .append("COMPRESSTYPE = ").append(type.getCompressType()).append(", ")
         .append("COMPRESSLEVEL = ").append(type.getCompressLevel()).append(", ")
         .append("BLOCKSIZE = ").append(type.getBlockSize())
-        .append(");");
+        .append(")");
+        return sbSQL;
     }
 
     public String getInputFunction() {

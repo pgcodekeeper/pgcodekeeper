@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
@@ -40,30 +41,25 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(getTriggerFullSQL(true));
+    public void getCreationSQL(SQLScript script) {
+        addTriggerFullSQL(script, true);
 
         if (isDisable()) {
+            StringBuilder sb = new StringBuilder();
             sb.append("\nDISABLE TRIGGER ");
             appendName(sb);
-            sb.append(GO);
+            script.addStatement(sb);
         }
-
-        return sb.toString();
     }
 
-    private String getTriggerFullSQL(boolean isCreate) {
+    private void addTriggerFullSQL(SQLScript script, boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-
         appendSourceStatement(isCreate, sbSQL);
-        sbSQL.append(GO);
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
     }
 
     @Override
@@ -77,28 +73,28 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsTrigger newTrigger = (MsTrigger) newCondition;
-        final int startLength = sb.length();
 
         if (isAnsiNulls() != newTrigger.isAnsiNulls()
                 || isQuotedIdentified() != newTrigger.isQuotedIdentified()
                 || !Objects.equals(getFirstPart(), newTrigger.getFirstPart())
                 || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
-            sb.append(newTrigger.getTriggerFullSQL(false));
+            newTrigger.addTriggerFullSQL(script, false);
             isNeedDepcies.set(true);
         }
 
         if (isDisable() != newTrigger.isDisable()) {
-            sb.append('\n');
-            sb.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
-            sb.append(" TRIGGER ");
-            appendName(sb);
-            sb.append(GO);
+            StringBuilder sbSQL = new StringBuilder();
+            sbSQL.append('\n');
+            sbSQL.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
+            sbSQL.append(" TRIGGER ");
+            appendName(sbSQL);
+            script.addStatement(sbSQL);
         }
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

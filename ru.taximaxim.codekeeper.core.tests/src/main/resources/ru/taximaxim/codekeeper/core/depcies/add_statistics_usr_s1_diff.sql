@@ -5,7 +5,7 @@ CREATE TABLE first.t1 (
 	b integer
 );
 
--- DEPCY: This FUNCTION is a dependency of STATISTICS: second.s1
+-- DEPCY: This FUNCTION f1 is a dependency of STATISTICS: second.s1
 
 CREATE OR REPLACE FUNCTION first.f1(f1 integer) RETURNS integer
     LANGUAGE plpgsql IMMUTABLE

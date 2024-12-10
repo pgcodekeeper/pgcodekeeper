@@ -22,11 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,7 +38,6 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.PgDiffScript;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -61,31 +58,31 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ActionsToScriptConverter {
 
-    private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule {0} \nGO";
+    private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule {0}";
 
-    private static final String DROP_COMMENT = "-- DEPCY: This {0} depends on the {1}: {2}";
-    private static final String CREATE_COMMENT = "-- DEPCY: This {0} is a dependency of {1}: {2}";
+    private static final String DROP_COMMENT = "-- DEPCY: This {0} {1} depends on the {2}: {3}";
+    private static final String CREATE_COMMENT = "-- DEPCY: This {0} {1} is a dependency of {2}: {3}";
     private static final String HIDDEN_OBJECT = "-- HIDDEN: Object {0} of type {1} (action: {2}, reason: {3})";
 
-    private static final String RENAME_PG_OBJECT = "ALTER {0} {1} RENAME TO {2};";
-    private static final String RENAME_MS_OBJECT = "EXEC sp_rename {0}, {1}\nGO";
+    private static final String RENAME_PG_OBJECT = "ALTER {0} {1} RENAME TO {2}";
+    private static final String RENAME_MS_OBJECT = "EXEC sp_rename {0}, {1}";
     private static final String RENAME_CH_OBJECT = "RENAME {0} {1} TO {2};";
 
-    private final PgDiffScript script;
+    private final SQLScript script;
     private final Set<ActionContainer> actions;
     private final Set<PgStatement> toRefresh;
     private final PgDiffArguments arguments;
     private final AbstractDatabase oldDbFull;
     private final AbstractDatabase newDbFull;
 
-    private final Set<PgSequence> sequencesOwnedBy = new LinkedHashSet<>();
-    private final List<String> postComments = new ArrayList<>();
-
     private final Map<ActionContainer, List<ActionContainer>> joinableTableActions = new HashMap<>();
     private final Set<ActionContainer> toSkip = new HashSet<>();
+    private final Set<PgStatement> droppedObjects = new HashSet<>();
+
     /**
      * renamed table qualified names and their temporary (simple) names
      */
@@ -102,7 +99,7 @@ public class ActionsToScriptConverter {
 
     private List<String> partitionChildren;
 
-    public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
+    public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
             PgDiffArguments arguments, AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
         this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
     }
@@ -110,7 +107,7 @@ public class ActionsToScriptConverter {
     /**
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
-    public ActionsToScriptConverter(PgDiffScript script, Set<ActionContainer> actions,
+    public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
             Set<PgStatement> toRefresh, PgDiffArguments arguments, AbstractDatabase oldDbFull,
             AbstractDatabase newDbFull) {
         this.script = script;
@@ -157,19 +154,10 @@ public class ActionsToScriptConverter {
                     refreshed.add(obj);
                 }
             } else if (!hideAction(action, selected)) {
-                processSequence(action);
                 printAction(action, obj);
-                proccessComment(action, obj);
             }
         }
 
-        for (PgSequence sequence : sequencesOwnedBy) {
-            String ownedBy = sequence.getOwnedBySQL();
-            if (!ownedBy.isEmpty()) {
-                script.addStatement(ownedBy);
-            }
-        }
-        postComments.forEach(script::addStatement);
         // As a result of discussion with the SQL database developers, it was
         // decided that, in pgCodeKeeper, refresh operations are required only
         // for MsView objects. This is why a filter is used here that only
@@ -229,46 +217,24 @@ public class ActionsToScriptConverter {
         }
     }
 
-    private void proccessComment(ActionContainer action, PgStatement obj) {
-        StringBuilder sb = new StringBuilder();
-        if (action.getAction() == StatementActions.CREATE) {
-            obj.appendComments(sb);
-        } else if (action.getAction() == StatementActions.ALTER) {
-            obj.appendAlterComments(sb, action.getNewObj());
-        }
-
-        if (sb.length() == 0) {
-            return;
-        }
-
-        String comment = sb.toString();
-        if (arguments.isCommentsToEnd()) {
-            postComments.add(comment);
-        } else {
-            script.addStatement(comment);
-        }
-    }
-
     private void printAction(ActionContainer action, PgStatement obj) {
         String depcy = getComment(action, obj);
         switch (action.getAction()) {
         case CREATE:
             if (depcy != null) {
-                script.addStatement(depcy);
+                script.addStatementWithoutSeparator(depcy);
             }
 
-            // explicitly deleting a sequence due to a name conflict.
-            if (arguments.isDataMovementMode()
-                    && obj instanceof PgSequence
-                    && obj.getTwin(oldDbFull) != null) {
-                script.addDrop(obj, null, obj.getDropSQL());
+            // explicitly deleting a sequence due to a name conflict
+            if (arguments.isDataMovementMode() && obj instanceof PgSequence && obj.getTwin(oldDbFull) != null) {
+                addToDropScript(obj, false);
             }
 
             if (obj.isDropBeforeCreate()) {
-                script.addDrop(obj, null, obj.getDropSQL(true));
+                addToDropScript(obj, true);
             }
 
-            script.addCreate(obj, null, obj.getCreationSQL(), true);
+            addToAddScript(obj);
 
             if (arguments.isDataMovementMode()
                     && obj.getTwin(oldDbFull) != null
@@ -285,7 +251,7 @@ public class ActionsToScriptConverter {
             break;
         case DROP:
             if (depcy != null) {
-                script.addStatement(depcy);
+                script.addStatementWithoutSeparator(depcy);
             }
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
@@ -293,23 +259,23 @@ public class ActionsToScriptConverter {
                     && obj.getTwin(newDbFull) != null) {
                 addCommandsForRenameTbl((AbstractTable) obj);
             } else {
-                script.addDrop(obj, null, obj.getDropSQL());
+                addToDropScript(obj, false);
             }
             break;
         case ALTER:
             var joinableActions = joinableTableActions.get(action);
             if (joinableActions != null) {
-                script.addStatement(getAlterTableScript(joinableActions));
+                getAlterTableScript(joinableActions);
                 return;
             }
-            StringBuilder sb = new StringBuilder();
-            ObjectState state = obj.appendAlterSQL(action.getNewObj(), sb, new AtomicBoolean());
+            SQLScript temp = new SQLScript(action.getNewObj().getDbType());
+            ObjectState state = obj.appendAlterSQL(action.getNewObj(), new AtomicBoolean(), temp);
+
             if (state == ObjectState.ALTER) {
                 if (depcy != null) {
-                    script.addStatement(depcy);
+                    script.addStatementWithoutSeparator(depcy);
                 }
-
-                script.addStatement(sb.toString());
+                script.addAllStatements(temp);
             }
             break;
         case NONE:
@@ -317,10 +283,22 @@ public class ActionsToScriptConverter {
         }
     }
 
+    private void addToAddScript(PgStatement obj) {
+        obj.getCreationSQL(script);
+    }
+
+    private void addToDropScript(PgStatement obj, boolean isExist) {
+        // check "drop before create"
+        if (!droppedObjects.add(obj.getTwin(oldDbFull))) {
+            return;
+        }
+        obj.getDropSQL(script, isExist);
+    }
+
     /**
      * get ALTER TABLE script with all joinable changes
      */
-    private String getAlterTableScript(List<ActionContainer> actionsList) {
+    private void getAlterTableScript(List<ActionContainer> actionsList) {
         StringBuilder sb = new StringBuilder();
         int i = 1;
         for (var colAction : actionsList) {
@@ -329,7 +307,7 @@ public class ActionsToScriptConverter {
             oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size());
             i++;
         }
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     private boolean isPartitionTable(PgStatement obj) {
@@ -369,31 +347,32 @@ public class ActionsToScriptConverter {
         List<PartitionPgTable> tables = partitionTables.get(obj.getQualifiedName());
         if (tables != null) {
             // print create for partition tables
-            tables.forEach(table -> script.addCreate(table, null, table.getCreationSQL(), true));
+            for (PartitionPgTable table : tables) {
+                addToAddScript(table);
+            }
         }
         // print insert for parent table
         addCommandsForMoveData((AbstractTable) obj);
 
-        StringBuilder sb = new StringBuilder();
         if (tables != null) {
             List<PartitionPgTable> list = new ArrayList<>(tables);
             Collections.reverse(list);
-            list.forEach(table -> printDropPartition(table, sb));
+            list.forEach(this::printDropPartition);
         }
 
         // print parent drops
         SimplePgTable parenTable = (SimplePgTable) obj;
-        printDropPartition(parenTable, sb);
-        script.addStatement(sb.toString());
+        printDropPartition(parenTable);
     }
 
-    private void printDropPartition(AbstractPgTable table, StringBuilder sb) {
-        UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
+    private void printDropPartition(AbstractPgTable table) {
         String tblTmpName = tblTmpNames.get(table.getQualifiedName());
         if (tblTmpName != null) {
-            sb.append("\n\nDROP TABLE ")
-            .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName))
-            .append(';');
+            UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
+            StringBuilder sb = new StringBuilder();
+            sb.append("DROP TABLE ")
+            .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName));
+            script.addStatement(sb);
         }
     }
 
@@ -418,20 +397,9 @@ public class ActionsToScriptConverter {
                 action.getAction() == StatementActions.CREATE ?
                         CREATE_COMMENT : DROP_COMMENT,
                         oldObj.getStatementType(),
+                        oldObj.getBareName(),
                         objStarter.getStatementType(),
                         objStarter.getQualifiedName());
-    }
-
-    private void processSequence(ActionContainer action) {
-        if (action.getOldObj() instanceof PgSequence oldSeq) {
-            PgSequence newSeq = (PgSequence) action.getNewObj();
-            if (newSeq.getOwnedBy() != null
-                    && action.getAction() == StatementActions.CREATE
-                    || (action.getAction() == StatementActions.ALTER &&
-                    !Objects.equals(newSeq.getOwnedBy(), oldSeq.getOwnedBy()))) {
-                sequencesOwnedBy.add(newSeq);
-            }
-        }
     }
 
     /**
@@ -489,10 +457,10 @@ public class ActionsToScriptConverter {
         .anyMatch(obj::equals);
 
         return switch (action.getAction()) {
-            case CREATE -> isSelectedObj.test(action.getNewObj());
-            case ALTER -> isSelectedObj.test(action.getNewObj()) && isSelectedObj.test(action.getOldObj());
-            case DROP -> isSelectedObj.test(action.getOldObj());
-            default -> throw new IllegalStateException("Not implemented action");
+        case CREATE -> isSelectedObj.test(action.getNewObj());
+        case ALTER -> isSelectedObj.test(action.getNewObj()) && isSelectedObj.test(action.getOldObj());
+        case DROP -> isSelectedObj.test(action.getOldObj());
+        default -> throw new IllegalStateException("Not implemented action");
         };
     }
 
@@ -537,8 +505,7 @@ public class ActionsToScriptConverter {
                     script.addStatement("ALTER TABLE "
                             + MsDiffUtils.quoteName(oldTbl.getSchemaName()) + '.'
                             + MsDiffUtils.quoteName(tmpTblName) + " DROP CONSTRAINT "
-                            + MsDiffUtils.quoteName(msCol.getDefaultName())
-                            + PgStatement.GO);
+                            + MsDiffUtils.quoteName(msCol.getDefaultName()));
                 }
                 break;
             case CH:
@@ -566,13 +533,13 @@ public class ActionsToScriptConverter {
      */
     private String getRenameCommand(PgStatement st, String newName) {
         return switch (arguments.getDbType()) {
-            case PG -> MessageFormat.format(RENAME_PG_OBJECT,
-                    st.getStatementType(), st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
-            case MS -> MessageFormat.format(RENAME_MS_OBJECT,
-                    PgDiffUtils.quoteString(st.getQualifiedName()), PgDiffUtils.quoteString(newName));
-            case CH -> MessageFormat.format(RENAME_CH_OBJECT,
-                    st.getStatementType(), st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        case PG -> MessageFormat.format(RENAME_PG_OBJECT,
+                st.getStatementType(), st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
+        case MS -> MessageFormat.format(RENAME_MS_OBJECT,
+                PgDiffUtils.quoteString(st.getQualifiedName()), PgDiffUtils.quoteString(newName));
+        case CH -> MessageFormat.format(RENAME_CH_OBJECT,
+                st.getStatementType(), st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         };
     }
 
@@ -598,35 +565,34 @@ public class ActionsToScriptConverter {
                 : identityCols.stream().filter(colsForMovingData::contains)
                 .toList();
 
-        StringBuilder sb = new StringBuilder();
-
         if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
-            sb.append("SET IDENTITY_INSERT ").append(tblQName)
-            .append(" ON").append(PgStatement.GO).append("\n\n");
+            script.addStatement(getIdentInsertText(tblQName, true));
         }
 
         String cols = colsForMovingData.stream()
                 .map(quoter)
                 .collect(Collectors.joining(", "));
-        sb.append("INSERT INTO ").append(tblQName).append('(')
+        StringBuilder sbInsert = new StringBuilder();
+
+        sbInsert.append("INSERT INTO ").append(tblQName).append('(')
         .append(cols).append(")");
         if (arguments.getDbType() == DatabaseType.PG && identityCols != null) {
-            sb.append("\nOVERRIDING SYSTEM VALUE");
+            sbInsert.append("\nOVERRIDING SYSTEM VALUE");
         }
-        sb.append("\nSELECT ").append(cols).append(" FROM ")
-        .append(tblTmpQName).append(newTbl.getSeparator());
+        sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
+        script.addStatement(sbInsert);
 
         if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
             // There can only be one IDENTITY column per table in MSSQL.
-            sb.append("\n\nSET IDENTITY_INSERT ").append(tblQName)
-            .append(" OFF").append(PgStatement.GO);
+            script.addStatement(getIdentInsertText(tblQName, false));
         }
 
         if (!identityColsForMovingData.isEmpty()) {
             switch (arguments.getDbType()) {
             case PG:
                 for (String colName : identityColsForMovingData) {
+                    StringBuilder sbSql = new StringBuilder();
                     String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN "
                             + PgDiffUtils.getQuotedName(colName)
                             + " RESTART WITH ";
@@ -636,9 +602,9 @@ public class ActionsToScriptConverter {
                             + PgDiffUtils.quoteString(tblTmpQName) + ", "
                             + PgDiffUtils.quoteString(PgDiffUtils.getQuotedName(colName))
                             + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
-                    sb.append("\n\nDO LANGUAGE plpgsql ")
-                    .append(PgDiffUtils.quoteStringDollar(doBody))
-                    .append(';');
+                    sbSql.append("DO LANGUAGE plpgsql ")
+                    .append(PgDiffUtils.quoteStringDollar(doBody));
+                    script.addStatement(sbSql);
                 }
                 break;
             case MS:
@@ -646,12 +612,13 @@ public class ActionsToScriptConverter {
                 // DECLARE'd var is only visible within its batch
                 // so we shouldn't need unique names for them here
                 // use the largest numeric type to fit any possible identity value
-                sb.append("\n\nDECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
+                StringBuilder sbSql = new StringBuilder();
+                sbSql.append("DECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
                 .append(PgDiffUtils.quoteString(tblTmpQName))
                 .append("));\nDBCC CHECKIDENT (")
                 .append(PgDiffUtils.quoteString(tblQName))
-                .append(", RESEED, @restart_var);")
-                .append(PgStatement.GO);
+                .append(", RESEED, @restart_var);");
+                script.addStatement(sbSql.toString());
                 break;
             default:
                 throw new IllegalArgumentException(
@@ -659,9 +626,12 @@ public class ActionsToScriptConverter {
             }
         }
         if (!isPartitionTable(newTbl)) {
-            sb.append("\n\nDROP TABLE ").append(tblTmpQName).append(newTbl.getSeparator());
+            script.addStatement("DROP TABLE " + tblTmpQName);
         }
-        script.addStatement(sb.toString());
+    }
+
+    private String getIdentInsertText(String name, boolean isOn) {
+        return "SET IDENTITY_INSERT " + name + (isOn ? " ON" : " OFF");
     }
 
     /**

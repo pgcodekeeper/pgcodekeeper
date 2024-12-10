@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgCollation extends PgStatement implements ISearchPath {
 
@@ -93,7 +94,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE COLLATION ");
         appendIfNotExists(sbSQL);
@@ -115,17 +116,16 @@ public class PgCollation extends PgStatement implements ISearchPath {
             sbSQL.append(", RULES = ").append(getRules());
         }
 
-        sbSQL.append(");");
+        sbSQL.append(")");
+        script.addStatement(sbSQL);
 
-        appendOwnerSQL(sbSQL);
-
-        return sbSQL.toString();
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgCollation newCollation = (PgCollation) newCondition;
 
         if (!compareUnalterable(newCollation)) {
@@ -133,12 +133,10 @@ public class PgCollation extends PgStatement implements ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(getOwner(), newCollation.getOwner())) {
-            newCollation.alterOwnerSQL(sb);
-        }
-        compareComments(sb, newCollation);
+        appendAlterOwner(newCollation, script);
+        appendAlterComments(newCollation, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

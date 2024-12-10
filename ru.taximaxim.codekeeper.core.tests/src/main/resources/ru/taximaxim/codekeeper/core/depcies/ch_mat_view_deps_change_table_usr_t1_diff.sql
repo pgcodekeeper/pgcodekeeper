@@ -1,4 +1,4 @@
--- DEPCY: This VIEW depends on the TABLE: default.t1_1
+-- DEPCY: This VIEW v1 depends on the TABLE: default.t1_1
 
 DROP VIEW default.v1;
 

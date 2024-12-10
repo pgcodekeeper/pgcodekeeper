@@ -1,20 +1,20 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This RULE depends on the COLUMN: public.accounts.number
+-- DEPCY: This RULE protect_accounts depends on the COLUMN: public.accounts.number
 
 DROP RULE protect_accounts ON public.accounts;
 
 ALTER TABLE public.accounts
 	ALTER COLUMN number TYPE numeric USING number::numeric; /* TYPE change - table: public.accounts original: integer new: numeric */
 
--- DEPCY: This RULE depends on the COLUMN: public.accounts2.number2
+-- DEPCY: This RULE protect_accounts2 depends on the COLUMN: public.accounts2.number2
 
 DROP RULE protect_accounts2 ON public.accounts2;
 
 ALTER TABLE public.accounts2
 	ALTER COLUMN number2 TYPE numeric USING number2::numeric; /* TYPE change - table: public.accounts2 original: integer new: numeric */
 
--- DEPCY: This RULE depends on the COLUMN: public.one1.col222222
+-- DEPCY: This RULE protect_accounts3 depends on the COLUMN: public.one1.col222222
 
 DROP RULE protect_accounts3 ON public.accounts3;
 

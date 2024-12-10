@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This COLUMN depends on the FUNCTION: public.f(integer, integer)
+-- DEPCY: This COLUMN c1 depends on the FUNCTION: public.f(integer, integer)
 
 ALTER TABLE ONLY public.tbl
 	DROP COLUMN c1;

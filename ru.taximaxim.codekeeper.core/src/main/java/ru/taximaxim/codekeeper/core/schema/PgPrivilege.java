@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgPrivilege implements IHashable {
 
@@ -49,7 +50,6 @@ public class PgPrivilege implements IHashable {
         this.isGrantOption = isGrantOption;
         this.dbType = dbType;
     }
-
 
     public String getCreationSQL() {
         StringBuilder sb = new StringBuilder();
@@ -76,26 +76,13 @@ public class PgPrivilege implements IHashable {
         return new PgPrivilege("REVOKE", permission, name, role, isGrantOption, dbType).getCreationSQL();
     }
 
-    public static StringBuilder appendPrivileges(Collection<PgPrivilege> privileges,
-            DatabaseType dbType, StringBuilder sb) {
-        if (privileges.isEmpty()) {
-            return sb;
-        }
-
-        if (sb.length() != 0) {
-            sb.append("\n\n");
-        }
-
+    public static void appendPrivileges(Collection<PgPrivilege> privileges, SQLScript script) {
         for (PgPrivilege priv : privileges) {
-            sb.append(priv.getCreationSQL()).append(dbType != DatabaseType.MS ? ';' : PgStatement.GO).append('\n');
+            script.addStatement(priv.getCreationSQL());
         }
-
-        sb.setLength(sb.length() - 1);
-
-        return sb;
     }
 
-    public static StringBuilder appendDefaultPostgresPrivileges(PgStatement newObj, StringBuilder sb) {
+    public static void appendDefaultPostgresPrivileges(PgStatement newObj, SQLScript script) {
         DbObjType type = newObj.getStatementType();
         boolean isFunctionOrTypeOrDomain = false;
         String typeName;
@@ -126,7 +113,7 @@ public class PgPrivilege implements IHashable {
             typeName = type.name();
             break;
         default:
-            return sb;
+            return;
         }
 
         StringBuilder sbName = new StringBuilder()
@@ -145,21 +132,21 @@ public class PgPrivilege implements IHashable {
         // That's why for them set "GRANT ALL to PUBLIC".
         PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
                 "ALL", name, "PUBLIC", false, DatabaseType.PG);
-        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        script.addStatement(priv.getCreationSQL());
 
         String owner = newObj.getOwner();
         if (owner == null) {
-            return sb;
+            return;
         }
         owner = PgDiffUtils.getQuotedName(owner);
 
-        priv = new PgPrivilege("REVOKE", "ALL", name, owner, false, DatabaseType.PG);
-        sb.append('\n').append(priv.getCreationSQL()).append(';');
+        addDefPostgresPrivileges(script, "REVOKE", name, owner);
+        addDefPostgresPrivileges(script, "GRANT", name, owner);
+    }
 
-        priv = new PgPrivilege("GRANT", "ALL", name, owner, false, DatabaseType.PG);
-        sb.append('\n').append(priv.getCreationSQL()).append(';');
-
-        return sb;
+    private static void addDefPostgresPrivileges(SQLScript script, String state, String name, String owner) {
+        PgPrivilege priv = new PgPrivilege(state, "ALL", name, owner, false, DatabaseType.PG);
+        script.addStatement(priv.getCreationSQL());
     }
 
     @Override

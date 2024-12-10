@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.parsers.antlr;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -83,12 +82,10 @@ implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
-    private final Queue<AntlrTask<?>> antlrTasks;
 
     public CustomTSQLParserListener(MsDatabase database, String filename,
-            ParserListenerMode mode, List<Object> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
+            ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
-        this.antlrTasks = antlrTasks;
     }
 
     @Override
@@ -235,7 +232,7 @@ implements TSqlContextProcessor {
         if (ctx.alter_authorization() != null) {
             p = new AlterMsAuthorization(ctx.alter_authorization(), db);
         } else if (ctx.alter_table() != null) {
-            p = new AlterMsTable(ctx.alter_table(), db, errors, antlrTasks);
+            p = new AlterMsTable(ctx.alter_table(), db);
         } else if (ctx.alter_assembly() != null) {
             p = new AlterMsAssembly(ctx.alter_assembly(), db);
         } else if (ctx.alter_db_role() != null) {

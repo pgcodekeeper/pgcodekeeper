@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer {
 
@@ -45,7 +46,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public void compareOptions(IOptionContainer newContainer, StringBuilder sb) {
+    public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no impl
     }
 
@@ -63,7 +64,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" (");
         for (AbstractColumn column : columns) {
             sbSQL.append("\n\t").append(column.getName()).append(" ")
@@ -121,13 +122,11 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         if (isWritable && distribution != null) {
             sbSQL.append("\n").append(distribution);
         }
-
-        sbSQL.append(";");
     }
 
 
     @Override
-    protected void appendAlterOptions(StringBuilder sbSQL) {
+    protected void appendAlterOptions(SQLScript script) {
         // no impl
     }
 
@@ -140,7 +139,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         // untransformable
     }
 
@@ -150,12 +149,8 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    public String getAlterTable(boolean nextLine, boolean only) {
-        StringBuilder sb = new StringBuilder();
-        if (nextLine) {
-            sb.append("\n\n");
-        }
-        return sb.append("ALTER EXTERNAL TABLE ").append(getQualifiedName()).toString();
+    public String getAlterTable(boolean only) {
+        return "ALTER EXTERNAL TABLE " + getQualifiedName();
     }
 
     @Override

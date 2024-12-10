@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChView extends AbstractView {
 
@@ -154,7 +155,7 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         StringBuilder sb = new StringBuilder(getQuery().length() * 2);
         sb.append("CREATE ").append(type.getSql()).append(" ");
         appendIfNotExists(sb);
@@ -192,8 +193,8 @@ public class ChView extends AbstractView {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(";");
-        return sb.toString();
+
+        script.addStatement(sb);
     }
 
     private void appendColumns(StringBuilder sb) {
@@ -210,8 +211,8 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChView newView = (ChView) newCondition;
 
         if (getViewType() != newView.getViewType() || isViewModified(newView)
@@ -220,20 +221,21 @@ public class ChView extends AbstractView {
             return ObjectState.RECREATE;
         }
 
-        compareSqlSecurity(sb, newView);
-        compareSql(sb, newView.getNormalizedQuery());
-        compareComment(sb, newView.getComment());
+        compareSqlSecurity(newView, script);
+        compareSql(newView.getNormalizedQuery(), script);
+        compareComment(newView.getComment(), script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
-    private void compareSqlSecurity(StringBuilder sb, ChView newView) {
+    private void compareSqlSecurity(ChView newView, SQLScript script) {
         if (Objects.equals(getSqlSecurity(), newView.getSqlSecurity())
                 && Objects.equals(getDefiner(), newView.getDefiner())) {
             return;
         }
 
-        sb.append("ALTER TABLE ").append(getQualifiedName()).append("\n\t(MODIFY SQL SECURITY ");
+        StringBuilder sb = new StringBuilder();
+        sb.append(ALTER_TABLE).append(getQualifiedName()).append("\n\t(MODIFY SQL SECURITY ");
         if (newView.getSqlSecurity() != null) {
             sb.append(newView.getSqlSecurity());
         } else if (getViewType() == ChViewType.MATERIALIZED) {
@@ -247,28 +249,29 @@ public class ChView extends AbstractView {
         } else {
             sb.append("CURRENT_USER");
         }
-        sb.append(");");
+        sb.append(")");
+        script.addStatement(sb);
     }
 
-    private void compareSql(StringBuilder sb, String newNormalizedSql) {
-        if (normalizedQuery.equals(newNormalizedSql)) {
-            return;
+    private void compareSql(String newNormalizedSql, SQLScript script) {
+        if (!normalizedQuery.equals(newNormalizedSql)) {
+            script.addStatement(ALTER_TABLE + getQualifiedName() + "\n\tMODIFY QUERY " + newNormalizedSql);
         }
-        sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY QUERY ").append(newNormalizedSql)
-        .append(getSeparator());
     }
 
-    private void compareComment(StringBuilder sb, String newComment) {
+    private void compareComment(String newComment, SQLScript script) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
-        sb.append("\n\nALTER TABLE ").append(getQualifiedName()).append("\n\tMODIFY COMMENT ");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(ALTER_TABLE).append(getQualifiedName()).append("\n\tMODIFY COMMENT ");
         if (newComment == null) {
             sb.append("''");
         } else {
             sb.append(newComment);
         }
-        sb.append(getSeparator());
+        script.addStatement(sb);
     }
 
     /**
@@ -335,12 +338,12 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 }

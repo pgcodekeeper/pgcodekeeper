@@ -636,4 +636,13 @@ class PgDiffTest {
         String script = TestUtils.getScript(fileNameTemplate, args, PgDiffTest.class);
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
     }
+    
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "alter_greenplum_table"
+    })
+    void testCorrectOrderScript(String fileNameTamplate) throws IOException, InterruptedException {
+        String script = TestUtils.getScript(fileNameTamplate, new PgDiffArguments(), PgDiffTest.class, true);
+        TestUtils.compareResult(script, fileNameTamplate, PgDiffTest.class);
+    }
 }

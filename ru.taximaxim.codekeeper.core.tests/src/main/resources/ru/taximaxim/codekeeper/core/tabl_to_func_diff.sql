@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of COLUMN: public.t1.c1
+-- DEPCY: This FUNCTION testf is a dependency of COLUMN: public.t1.c1
 
 CREATE OR REPLACE FUNCTION public.testf() RETURNS integer
     LANGUAGE plpgsql

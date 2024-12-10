@@ -21,6 +21,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Typed table object
@@ -39,7 +40,7 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" OF ").append(ofType);
 
         if (!columns.isEmpty()) {
@@ -47,7 +48,7 @@ public class TypedPgTable extends AbstractRegularTable {
 
             int start = sbSQL.length();
             for (AbstractColumn column : columns) {
-                writeColumn((PgColumn) column, sbSQL, sbOption);
+                writeColumn((PgColumn) column, sbSQL, script);
             }
 
             if (start != sbSQL.length()) {
@@ -62,23 +63,19 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         if (newTable instanceof TypedPgTable typedTable) {
             String newType = typedTable.getOfType();
             if (!Objects.equals(ofType, newType)) {
-                sb.append(getAlterTable(true, false))
-                .append(" OF ")
-                .append(newType)
-                .append(';');
+                script.addStatement(getAlterTable(false) + " OF " + newType);
             }
-        } else {
-            sb.append(getAlterTable(true, false))
-            .append(" NOT OF")
-            .append(';');
+            return;
+        }
 
-            if (newTable instanceof AbstractRegularTable regTable) {
-                regTable.convertTable(sb);
-            }
+        script.addStatement(getAlterTable(false) + " NOT OF");
+
+        if (newTable instanceof AbstractRegularTable regTable) {
+            regTable.convertTable(script);
         }
     }
 
@@ -108,8 +105,7 @@ public class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void convertTable(StringBuilder sb) {
-        sb.append(getAlterTable(true, false))
-        .append(" OF ").append(getOfType()).append(';');
+    protected void convertTable(SQLScript script) {
+        script.addStatement(getAlterTable(false) + " OF " + getOfType());
     }
 }

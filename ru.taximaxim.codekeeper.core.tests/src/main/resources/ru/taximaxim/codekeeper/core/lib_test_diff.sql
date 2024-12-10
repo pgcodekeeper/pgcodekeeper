@@ -15,7 +15,9 @@ CREATE TABLE public.test (
 );
 
 GRANT SELECT ON TABLE public.test TO test_role;
+
 GRANT INSERT ON TABLE public.test TO test_role;
+
 GRANT UPDATE ON TABLE public.test TO test_role;
 
 CREATE SEQUENCE public.test_id_seq

@@ -279,7 +279,7 @@ public final class PgDiffUtils {
         String body = sbSQL.toString().replace("\n", "\n\t");
 
         sbResult
-        .append("\n\nDO $$")
+        .append("DO $$")
         .append("\nBEGIN")
         .append("\n\t").append(body)
         .append("\nEXCEPTION WHEN OTHERS THEN")
@@ -289,7 +289,7 @@ public final class PgDiffUtils {
         .append("\n\t\tRAISE;")
         .append("\n\tEND IF;")
         .append("\nEND; $$")
-        .append("\nLANGUAGE 'plpgsql';");
+        .append("\nLANGUAGE 'plpgsql'");
     }
 
     private PgDiffUtils() {

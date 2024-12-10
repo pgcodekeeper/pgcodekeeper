@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgTrigger extends AbstractTrigger {
 
@@ -77,7 +78,7 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE");
         if (isConstraint()) {
@@ -170,25 +171,17 @@ public class PgTrigger extends AbstractTrigger {
 
         sbSQL.append("\n\tEXECUTE PROCEDURE ");
         sbSQL.append(getFunction());
-        sbSQL.append(';');
+        script.addStatement(sbSQL);
 
         if (enabledState != null) {
-            sbSQL.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(enabledState)
-            .append(" TRIGGER ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
+            addAlterTable(enabledState, this, script);
         }
-
-        return sbSQL.toString();
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgTrigger newTrg = (PgTrigger) newCondition;
         if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
@@ -199,17 +192,22 @@ public class PgTrigger extends AbstractTrigger {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
-            sb.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(newEnabledState)
-            .append(" TRIGGER ")
-            .append(PgDiffUtils.getQuotedName(newTrg.getName()))
-            .append(';');
+            addAlterTable(newEnabledState, newTrg, script);
         }
-        compareComments(sb, newTrg);
+        appendAlterComments(newTrg, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
+    }
+
+    private void addAlterTable(String enabledState, PgTrigger trigger, SQLScript script) {
+        StringBuilder sql = new StringBuilder();
+        sql.append(ALTER_TABLE)
+        .append(getParent().getQualifiedName())
+        .append(' ')
+        .append(enabledState)
+        .append(" TRIGGER ")
+        .append(PgDiffUtils.getQuotedName(trigger.getName()));
+        script.addStatement(sql);
     }
 
     @Override

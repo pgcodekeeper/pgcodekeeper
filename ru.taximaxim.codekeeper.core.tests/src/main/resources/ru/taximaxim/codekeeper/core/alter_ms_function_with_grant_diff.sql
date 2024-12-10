@@ -7,6 +7,7 @@ returns table
 as return
 select 2 as first
 GO
+
 REVOKE SELECT ON [dbo].[functest2] FROM [public]
 GO
 
