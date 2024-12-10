@@ -31,7 +31,7 @@ Build requires Java (JDK) 17+ and Apache Maven 3.9+.
 ```sh
 git clone https://github.com/pgcodekeeper/pgcodekeeper.git
 cd pgcodekeeper
-mvn verify
+mvn clean package -DskipTests
 ```
 
 Binaries will be created in `ru.taximaxim.codekeeper.mainapp/product/rcp/target/products`  
