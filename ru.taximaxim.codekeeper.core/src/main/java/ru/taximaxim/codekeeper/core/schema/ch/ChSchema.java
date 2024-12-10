@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChSchema extends AbstractSchema {
 
@@ -86,7 +87,7 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE DATABASE ");
         appendIfNotExists(sb);
@@ -94,12 +95,11 @@ public class ChSchema extends AbstractSchema {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(getSeparator());
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (!compareUnalterable((ChSchema) newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
@@ -108,15 +108,14 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public String getDropSQL(boolean generateExists) {
+    public void getDropSQL(SQLScript script, boolean generateExists) {
         final StringBuilder sb = new StringBuilder();
         sb.append("DROP DATABASE ");
         if (generateExists) {
             sb.append(IF_EXISTS);
         }
         appendFullName(sb);
-        sb.append(getSeparator());
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     @Override
@@ -135,11 +134,8 @@ public class ChSchema extends AbstractSchema {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChSchema)) {
-            return false;
-        }
-        var schema = (ChSchema) obj;
-        return super.compare(schema) && compareUnalterable(schema);
+        return obj instanceof ChSchema schema && super.compare(schema)
+                && compareUnalterable(schema);
     }
 
     protected boolean compareUnalterable(ChSchema newSchema) {
@@ -170,7 +166,7 @@ public class ChSchema extends AbstractSchema {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 }

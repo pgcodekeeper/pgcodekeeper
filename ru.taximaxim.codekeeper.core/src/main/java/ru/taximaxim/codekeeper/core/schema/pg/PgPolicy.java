@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
@@ -45,7 +46,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE POLICY ");
         appendFullName(sbSQL);
@@ -69,15 +70,13 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         if (check != null && !check.isEmpty()) {
             sbSQL.append("\n  WITH CHECK ").append(check);
         }
-        sbSQL.append(';');
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgPolicy newPolice = (PgPolicy) newCondition;
 
         if (!compareUnalterable(newPolice)) {
@@ -91,31 +90,31 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
         if (!Objects.equals(roles, newRoles) || !Objects.equals(using, newUsing)
                 || !Objects.equals(check, newCheck)) {
-
-            sb.append("\n\nALTER POLICY ");
-            appendFullName(sb);
+            StringBuilder sbSql = new StringBuilder();
+            sbSql.append("ALTER POLICY ");
+            appendFullName(sbSql);
 
             if (!Objects.equals(roles, newRoles)) {
-                sb.append("\n  TO ");
+                sbSql.append("\n  TO ");
                 if (newRoles.isEmpty()) {
-                    sb.append("PUBLIC");
+                    sbSql.append("PUBLIC");
                 } else {
-                    sb.append(String.join(", ", newRoles));
+                    sbSql.append(String.join(", ", newRoles));
                 }
             }
 
             if (!Objects.equals(using, newUsing)) {
-                sb.append("\n  USING ").append(newUsing);
+                sbSql.append("\n  USING ").append(newUsing);
             }
 
             if (!Objects.equals(check, newCheck)) {
-                sb.append("\n  WITH CHECK ").append(newCheck);
+                sbSql.append("\n  WITH CHECK ").append(newCheck);
             }
-            sb.append(';');
+            script.addStatement(sbSql);
         }
-        compareComments(sb, newPolice);
+        appendAlterComments(newPolice, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

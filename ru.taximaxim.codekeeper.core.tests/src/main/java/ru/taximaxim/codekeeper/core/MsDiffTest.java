@@ -101,8 +101,6 @@ class MsDiffTest {
             // Tests scenario where MS TABLE option is modified.
             // TODO Uncomment the code when table option will be supported.
             // "modify_ms_table_option",
-            // Tests scenario where MS TABLE CHANGE_TRACKING is added.
-            "add_ms_table_tracking",
             // Tests scenario where MS TABLE CHANGE_TRACKING is dropped.
             "drop_ms_table_tracking",
             // Tests scenario where MS TABLE CHANGE_TRACKING is modified.
@@ -193,8 +191,6 @@ class MsDiffTest {
             "add_ms_constraint_column",
             // Tests scenario where MS TABLE CONSTRAINT of column is dropped.
             "drop_ms_constraint_column",
-            // Tests scenario where MS TABLE CONSTRAINT of column is modified.
-            "modify_ms_constraint_column",
             // Tests scenario where MS TABLE CONSTRAINT, with default name, of column is dropped.
             "drop_ms_constraint_default_column",
             // Tests scenario where MS TABLE CONSTRAINT is disabled.
@@ -321,5 +317,19 @@ class MsDiffTest {
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            // Tests scenario where MS TABLE CHANGE_TRACKING is added.
+            "add_ms_table_tracking",
+            // Tests scenario where MS TABLE CONSTRAINT of column is modified.
+            "modify_ms_constraint_column",
+    })
+    void testCorrectOrderScript(String fileNameTamplate) throws IOException, InterruptedException {
+        PgDiffArguments args = new PgDiffArguments();
+        args.setDbType(DatabaseType.MS);
+        String script = TestUtils.getScript(fileNameTamplate, args, PgDiffTest.class, true);
+        TestUtils.compareResult(script, fileNameTamplate, PgDiffTest.class);
     }
 }

@@ -1,14 +1,14 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the VIEW: public.v3
+-- DEPCY: This VIEW v8 depends on the VIEW: public.v3
 
 DROP VIEW public.v8;
 
--- DEPCY: This VIEW depends on the VIEW: public.v3
+-- DEPCY: This VIEW v5 depends on the VIEW: public.v3
 
 DROP VIEW public.v5;
 
--- DEPCY: This VIEW depends on the VIEW: public.v3
+-- DEPCY: This VIEW v4 depends on the VIEW: public.v3
 
 DROP VIEW public.v4;
 
@@ -22,22 +22,22 @@ CREATE TABLE public.t3 (
 
 ALTER TABLE public.t3 OWNER TO galiev_mr;
 
--- DEPCY: This COLUMN is a dependency of VIEW: public.v8
+-- DEPCY: This COLUMN c6 is a dependency of VIEW: public.v8
 
 ALTER TABLE public.t1
 	ADD COLUMN c6 text;
 
--- DEPCY: This VIEW depends on the VIEW: public.v2
+-- DEPCY: This VIEW v7 depends on the VIEW: public.v2
 
 DROP VIEW public.v7;
 
--- DEPCY: This VIEW depends on the VIEW: public.v2
+-- DEPCY: This VIEW v6 depends on the VIEW: public.v2
 
 DROP VIEW public.v6;
 
 DROP VIEW public.v2;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v2 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v2 AS
 	SELECT t2.c1,
@@ -47,7 +47,7 @@ CREATE VIEW public.v2 AS
 
 ALTER VIEW public.v2 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v6 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v6 AS
 	SELECT v2.c1,
@@ -58,7 +58,7 @@ CREATE VIEW public.v6 AS
 
 ALTER VIEW public.v6 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v7 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v7 AS
 	SELECT v2.c1,
@@ -68,14 +68,14 @@ CREATE VIEW public.v7 AS
 
 ALTER VIEW public.v7 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.c4
+-- DEPCY: This VIEW v1 depends on the COLUMN: public.t1.c4
 
 DROP VIEW public.v1;
 
 ALTER TABLE public.t1
 	ALTER COLUMN c4 TYPE integer USING c4::integer; /* TYPE change - table: public.t1 original: text new: integer */
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v3 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v3 AS
 	SELECT t1.c1,
@@ -86,7 +86,7 @@ CREATE VIEW public.v3 AS
 
 ALTER VIEW public.v3 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v1 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v1 AS
 	SELECT t1.c1,
@@ -97,7 +97,7 @@ CREATE VIEW public.v1 AS
 
 ALTER VIEW public.v1 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v4 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v4 AS
 	SELECT v1.c1,
@@ -109,7 +109,7 @@ CREATE VIEW public.v4 AS
 
 ALTER VIEW public.v4 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW is a dependency of VIEW: public.v8
+-- DEPCY: This VIEW v5 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v5 AS
 	SELECT v2.c1,

@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Simple table object
@@ -32,14 +33,13 @@ public class SimplePgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn((PgColumn) column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, script);
         }
-
         if (start != sbSQL.length()) {
             sbSQL.setLength(sbSQL.length() - 2);
             sbSQL.append('\n');
@@ -54,14 +54,14 @@ public class SimplePgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected void compareTableTypes(AbstractPgTable newTable, StringBuilder sb) {
+    protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         if (newTable instanceof AbstractRegularTable regTable) {
-            regTable.convertTable(sb);
+            regTable.convertTable(script);
         }
     }
 
     @Override
-    protected void convertTable(StringBuilder sb) {
+    protected void convertTable(SQLScript script) {
         // no implements
     }
 }

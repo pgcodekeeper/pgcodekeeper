@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsRole extends PgStatement {
 
@@ -48,70 +49,61 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         sbSQL.append(MsDiffUtils.quoteName(getName()));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
-        sbSQL.append(GO);
+        script.addStatement(sbSQL);
 
         for (String member : members) {
-            sbSQL.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
-            sbSQL.append(" ADD MEMBER ").append(MsDiffUtils.quoteName(member));
-            sbSQL.append(GO);
+            appendAlterRole(member, script, true);
         }
 
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        appendPrivileges(script);
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        StringBuilder sb = new StringBuilder();
-
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         for (String member : members) {
-            sb.append("ALTER ROLE ").append(MsDiffUtils.quoteName(name));
-            sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(member));
-            sb.append(GO).append('\n');
+            appendAlterRole(member, script, false);
         }
-        sb.append(super.getDropSQL(optionExists));
-        return sb.toString();
+        super.getDropSQL(script, optionExists);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsRole newRole = (MsRole) newCondition;
 
-        if (!Objects.equals(getOwner(), newRole.getOwner())) {
-            newRole.alterOwnerSQL(sb);
-        }
+        appendAlterOwner(newRole, script);
 
         if (!Objects.equals(members, newRole.members)) {
             for (String newMember : newRole.members) {
                 if (!members.contains(newMember)) {
-                    sb.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
-                    sb.append(" ADD MEMBER ").append(MsDiffUtils.quoteName(newMember));
-                    sb.append(GO);
+                    appendAlterRole(newMember, script, true);
                 }
             }
 
             for (String oldMember : members) {
                 if (!newRole.members.contains(oldMember)) {
-                    sb.append("\nALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
-                    sb.append(" DROP MEMBER ").append(MsDiffUtils.quoteName(oldMember));
-                    sb.append(GO);
+                    appendAlterRole(oldMember, script, false);
                 }
             }
         }
 
-        alterPrivileges(newRole, sb);
+        alterPrivileges(newRole, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
+    }
+
+    public void appendAlterRole(String member, SQLScript script, boolean needAddMember) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("ALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
+        sql.append(needAddMember ? " ADD " : " DROP ").append("MEMBER ").append(MsDiffUtils.quoteName(member));
+        script.addStatement(sql);
     }
 
     public void addMember(String member) {
@@ -142,11 +134,8 @@ public class MsRole extends PgStatement {
             return true;
         }
 
-        if (obj instanceof MsRole role && super.compare(obj)) {
-            return Objects.equals(members, role.members);
-        }
-
-        return false;
+        return obj instanceof MsRole role && super.compare(obj)
+                && Objects.equals(members, role.members);
     }
 
     @Override

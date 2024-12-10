@@ -1,13 +1,13 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This COLUMN depends on the TYPE: public.typ_range
+-- DEPCY: This COLUMN did depends on the TYPE: public.typ_range
 
 ALTER TABLE ONLY public.distributors
 	DROP COLUMN did;
 
 DROP TYPE public.typ_range;
 
--- DEPCY: This TYPE is a dependency of COLUMN: public.distributors.did
+-- DEPCY: This TYPE typ_range is a dependency of COLUMN: public.distributors.did
 
 CREATE TYPE public.typ_range AS RANGE (
 	subtype = character varying,

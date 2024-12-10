@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgConstraintFk extends PgConstraint implements IConstraintFk {
 
@@ -150,15 +151,18 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     }
 
     @Override
-    protected void compareExtraOptions(StringBuilder sb, PgConstraint newConstr) {
+    protected void compareExtraOptions(PgConstraint newConstr, SQLScript script) {
         if (!compareCommonFields(newConstr)) {
-            appendAlterTable(sb, true);
+            StringBuilder sb = new StringBuilder();
+            appendAlterTable(sb);
             sb.append("\n\tALTER CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
             if (isDeferrable() != newConstr.isDeferrable() && !newConstr.isDeferrable()) {
-                sb.append(" NOT DEFERRABLE;");
+                sb.append(" NOT DEFERRABLE");
+                script.addStatement(sb);
                 return;
             }
-            sb.append(" DEFERRABLE INITIALLY ").append(newConstr.isInitially() ? "DEFERRED" : "IMMEDIATE").append(';');
+            sb.append(" DEFERRABLE INITIALLY ").append(newConstr.isInitially() ? "DEFERRED" : "IMMEDIATE");
+            script.addStatement(sb);
         }
     }
 

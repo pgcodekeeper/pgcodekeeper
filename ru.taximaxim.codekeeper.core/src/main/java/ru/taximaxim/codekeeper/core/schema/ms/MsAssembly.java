@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class MsAssembly extends PgStatement {
 
@@ -52,64 +53,61 @@ public class MsAssembly extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
-        return getAssemblyFullSQL(false);
+    public void getCreationSQL(SQLScript script) {
+        getAssemblyFullSQL(false, script);
     }
 
     /**
      * Returns assembly definition without full binaries
      */
     public String getPreview() {
-        return getAssemblyFullSQL(true);
+        SQLScript script = new SQLScript(getDbType());
+        getAssemblyFullSQL(true, script);
+        return script.getFullScript();
     }
 
-    private String getAssemblyFullSQL(boolean isPreview) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
+    private void getAssemblyFullSQL(boolean isPreview, SQLScript script) {
+        StringBuilder sql = new StringBuilder();
+
+        sql.append("CREATE ASSEMBLY ").append(MsDiffUtils.quoteName(name));
         if (owner != null) {
-            sb.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
+            sql.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
 
-        sb.append("\nFROM ");
+        sql.append("\nFROM ");
         String bin = String.join(",\n", binaries);
 
         if (isPreview && bin.length() > PREVIEW_LENGTH) {
-            sb.append(bin.substring(0, PREVIEW_LENGTH)).append("\n<... PREVIEW TRIMMED>");
+            sql.append(bin.substring(0, PREVIEW_LENGTH)).append("\n<... PREVIEW TRIMMED>");
         } else {
-            sb.append(bin);
+            sql.append(bin);
         }
 
-        sb.append("\nWITH PERMISSION_SET = ").append(permission);
-        sb.append(GO);
-
+        sql.append("\nWITH PERMISSION_SET = ").append(permission);
+        script.addStatement(sql);
         if (!isVisible) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH VISIBILITY = OFF").append(GO);
+            script.addStatement(getAlterAssebly() + " WITH VISIBILITY = OFF");
         }
 
-        appendPrivileges(sb);
-
-        return sb.toString();
+        appendPrivileges(script);
     }
 
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         StringBuilder dropSb = new StringBuilder();
         dropSb.append("DROP ASSEMBLY ");
         if (optionExists) {
             dropSb.append(IF_EXISTS);
         }
         dropSb.append(MsDiffUtils.quoteName(name))
-        .append(" WITH NO DEPENDENTS")
-        .append(GO);
-        return dropSb.toString();
+        .append(" WITH NO DEPENDENTS");
+        script.addStatement(dropSb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         MsAssembly newAss = (MsAssembly) newCondition;
 
         // https://docs.microsoft.com/ru-ru/sql/t-sql/statements/alter-assembly-transact-sql?view=sql-server-2016
@@ -119,21 +117,25 @@ public class MsAssembly extends PgStatement {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(getOwner(), newAss.getOwner())) {
-            newAss.alterOwnerSQL(sb);
-        }
+        appendAlterOwner(newAss, script);
 
         if (newAss.isVisible() != isVisible()) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH VISIBILITY = ").append(newAss.isVisible() ? "ON" : "OFF").append(GO);
+            StringBuilder sql = new StringBuilder();
+            sql.append(getAlterAssebly()).append(" WITH VISIBILITY = ").append(newAss.isVisible() ? "ON" : "OFF");
+            script.addStatement(sql);
         }
 
         if (!Objects.equals(newAss.getPermission(), getPermission())) {
-            sb.append("\nALTER ASSEMBLY ").append(MsDiffUtils.quoteName(name))
-            .append(" WITH PERMISSION_SET = ").append(newAss.getPermission()).append(GO);
+            StringBuilder sb = new StringBuilder();
+            sb.append(getAlterAssebly()).append(" WITH PERMISSION_SET = ").append(newAss.getPermission());
+            script.addStatement(sb);
         }
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
+    }
+
+    private String getAlterAssebly() {
+        return "ALTER ASSEMBLY " + MsDiffUtils.quoteName(name);
     }
 
     @Override

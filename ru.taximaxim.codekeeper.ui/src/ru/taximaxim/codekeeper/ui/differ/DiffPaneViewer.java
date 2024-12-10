@@ -162,14 +162,13 @@ public final class DiffPaneViewer extends Composite {
             return ((MsAssembly) st).getPreview();
         }
 
-        String result = isFormatted ? st.getFullFormattedSQL() : st.getFullSQL();
+        String sql = st.getSQL(isFormatted);
         if (!el.isContainer() || !store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
-            return result;
+            return sql;
         }
 
-        StringBuilder sb = new StringBuilder(result);
-        st.getChildren().forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL)
-                .append(isFormatted ? c.getFullFormattedSQL() : c.getFullSQL()));
+        StringBuilder sb = new StringBuilder(sql);
+        st.getChildren().forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL).append(c.getSQL(isFormatted)));
         return sb.toString();
     }
 }

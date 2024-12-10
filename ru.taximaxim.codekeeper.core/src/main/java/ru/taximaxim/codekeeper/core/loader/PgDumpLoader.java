@@ -188,8 +188,7 @@ public class PgDumpLoader extends DatabaseLoader {
                 tsqlListener = new TSQLOverridesListener((MsDatabase) intoDb, inputObjectName, mode, errors, monitor,
                         overrides);
             } else {
-                tsqlListener = new CustomTSQLParserListener((MsDatabase) intoDb, inputObjectName, mode, errors,
-                        antlrTasks, monitor);
+                tsqlListener = new CustomTSQLParserListener((MsDatabase) intoDb, inputObjectName, mode, errors, monitor);
             }
             AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, tsqlListener, antlrTasks);

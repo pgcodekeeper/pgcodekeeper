@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ICast;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgCast extends PgStatement implements ICast {
 
@@ -99,8 +100,8 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     @Override
-    public String getCreationSQL() {
-        final StringBuilder sbSQL = new StringBuilder();
+    public void getCreationSQL(SQLScript script) {
+        StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE CAST ").append(getQualifiedName());
 
         switch (method) {
@@ -126,23 +127,22 @@ public class PgCast extends PgStatement implements ICast {
             break;
         }
 
-        sbSQL.append(';');
+        script.addStatement(sbSQL);
 
-        return sbSQL.toString();
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgCast newCast = (PgCast) newCondition;
 
         if (!compareUnalterable(newCast)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        compareComments(sb, newCast);
-        return getObjectState(sb, startLength);
+        appendAlterComments(newCast, script);
+        return getObjectState(script, startSize);
     }
 
     private boolean compareUnalterable(PgCast cast) {

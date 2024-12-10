@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public abstract class PgConstraint extends AbstractConstraint {
 
@@ -58,9 +59,9 @@ public abstract class PgConstraint extends AbstractConstraint {
     protected abstract String getErrorCode();
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendAlterTable(sbSQL, false);
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tADD");
         if (!getName().isEmpty()) {
             sbSQL.append(" CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
@@ -82,7 +83,8 @@ public abstract class PgConstraint extends AbstractConstraint {
         sbSQL.append(';');
 
         if (generateNotValid && !isNotValid()) {
-            appendAlterTable(sbSQL, true);
+            sbSQL.append("\n\n");
+            appendAlterTable(sbSQL);
             sbSQL.append(" VALIDATE CONSTRAINT ")
             .append(PgDiffUtils.getQuotedName(getName()))
             .append(';');
@@ -93,10 +95,12 @@ public abstract class PgConstraint extends AbstractConstraint {
         if (getDatabaseArguments().isGenerateExistDoBlock()) {
             StringBuilder sb = new StringBuilder();
             PgDiffUtils.appendSqlWrappedInDo(sb, sbSQL, getErrorCode());
-            return sb.toString();
+            script.addStatement(sb);
+        } else {
+            sbSQL.setLength(sbSQL.length() - 1);
+            script.addStatement(sbSQL);
         }
-
-        return sbSQL.toString();
+        appendComments(script);
     }
 
     protected boolean isGenerateNotValid() {
@@ -115,23 +119,20 @@ public abstract class PgConstraint extends AbstractConstraint {
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
+    public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendAlterTable(sbSQL, false);
+        appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append(IF_EXISTS);
         }
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(';');
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgConstraint newConstr = (PgConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
@@ -140,33 +141,35 @@ public abstract class PgConstraint extends AbstractConstraint {
         }
 
         if (isNotValid() && !newConstr.isNotValid()) {
-            appendAlterTable(sb, true);
-            sb.append("\n\tVALIDATE CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName())).append(';');
+            StringBuilder sbSQL = new StringBuilder();
+            appendAlterTable(sbSQL);
+            sbSQL.append("\n\tVALIDATE CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
+            script.addStatement(sbSQL);
         }
 
-        compareExtraOptions(sb, newConstr);
-        compareComments(sb, newConstr);
-        return getObjectState(sb, startLength);
+        compareExtraOptions(newConstr, script);
+        appendAlterComments(newConstr, script);
+        return getObjectState(script, startSize);
     }
 
     protected boolean compareUnalterable(PgConstraint newConstr) {
         return compareCommonFields(newConstr);
     }
 
-    protected void compareExtraOptions(StringBuilder sb, PgConstraint newConstr) {
+    protected void compareExtraOptions(PgConstraint newConstr, SQLScript script) {
         // subclasses will override if needed
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
-        sb.append("\n\n").append("COMMENT ON CONSTRAINT ");
+    protected void appendCommentSql(SQLScript script) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("COMMENT ON CONSTRAINT ");
         sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
         if (getParent().getStatementType() == DbObjType.DOMAIN) {
             sb.append("DOMAIN ");
         }
-        sb.append(getParent().getQualifiedName()).append(" IS ")
-        .append(checkComments() ? getComment() : "NULL")
-        .append(';');
+        sb.append(getParent().getQualifiedName()).append(" IS ").append(checkComments() ? getComment() : "NULL");
+        script.addStatement(sb.toString(), getCommentsOrder());
     }
 
     @Override

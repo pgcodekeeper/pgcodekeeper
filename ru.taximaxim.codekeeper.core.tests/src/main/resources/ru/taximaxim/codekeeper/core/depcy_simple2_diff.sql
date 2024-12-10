@@ -1,12 +1,12 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the VIEW: public.v2
+-- DEPCY: This VIEW v3 depends on the VIEW: public.v2
 
 DROP VIEW s.v3;
 
 DROP VIEW public.v2;
 
--- DEPCY: This VIEW is a dependency of VIEW: s.v3
+-- DEPCY: This VIEW v2 is a dependency of VIEW: s.v3
 
 CREATE VIEW public.v2 AS
 	SELECT t1.id,

@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class ChColumn extends AbstractColumn {
 
@@ -102,9 +103,9 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
-        sb.append(getAlterTable(false, false)).append("\n\tADD COLUMN ");
+        sb.append(getAlterTable(false)).append("\n\tADD COLUMN ");
         appendIfNotExists(sb);
         sb.append(ChDiffUtils.quoteName(name));
 
@@ -112,8 +113,7 @@ public final class ChColumn extends AbstractColumn {
             sb.append(' ').append(getType());
         }
         appendColumnOptions(sb);
-        sb.append(getSeparator());
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     public void appendColumnOptions(StringBuilder sb) {
@@ -148,61 +148,69 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChColumn newColumn = (ChColumn) newCondition;
 
-        compareTypes(sb, newColumn.getType());
-        compareDefaults(sb, newColumn);
-        compareCodecs(sb, newColumn.getCodecs());
-        compareTtl(sb, newColumn.getTtl(), newColumn.getType());
-        compareComment(sb, newColumn.getComment());
-        return getObjectState(sb, startLength);
+        compareTypes(newColumn.getType(), script);
+        compareDefaults(newColumn, script);
+        compareCodecs(newColumn.getCodecs(), script);
+        compareTtl(newColumn.getTtl(), newColumn.getType(), script);
+        compareComment(newColumn.getComment(), script);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        final StringBuilder sb = new StringBuilder();
-        sb.append(getAlterTable(false, false)).append("\n\tDROP COLUMN ");
+    public void getDropSQL(SQLScript script, boolean optionExists) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.quoteName(name)).append(getSeparator());
-        return sb.toString();
+        sb.append(ChDiffUtils.quoteName(name));
+        script.addStatement(sb);
     }
 
-    private void compareTypes(StringBuilder sb, String newType) {
+    private void compareTypes(String newType, SQLScript script) {
         if (getType().equals(newType)) {
             return;
         }
-        appendAlterColumn(sb, true);
-        sb.append(' ').append(newType).append(getSeparator());
+        StringBuilder sb = new StringBuilder();
+        appendAlterColumn(sb);
+        sb.append(' ').append(newType);
+        script.addStatement(sb);
     }
 
-    private void compareDefaults(StringBuilder sb, ChColumn newColumn) {
+    private void compareDefaults(ChColumn newColumn, SQLScript script) {
         if (Objects.equals(defaultType, newColumn.getDefaultType())
                 && Objects.equals(getDefaultValue(), newColumn.getDefaultValue())) {
             return;
         }
-        appendAlterColumn(sb, true);
+        StringBuilder sb = new StringBuilder();
+        appendAlterColumn(sb);
         if (newColumn.getDefaultType() != null) {
             sb.append(' ').append(newColumn.getDefaultType()).append(' ').append(newColumn.getDefaultValue());
+            script.addStatement(sb);
         } else if ("EPHEMERAL".equals(defaultType)) {
             // because we can't drop EPHEMERAL default type
-            sb.append(" DEFAULT ").append("0").append(getSeparator());
-            appendAlterColumn(sb, true);
-            sb.append(" REMOVE").append(" DEFAULT ");
+            sb.append(" DEFAULT ").append("0");
+            script.addStatement(sb);
+            StringBuilder sbRemove = new StringBuilder();
+            appendAlterColumn(sbRemove);
+            sbRemove.append(" REMOVE").append(" DEFAULT");
+            script.addStatement(sbRemove);
         } else {
             sb.append(" REMOVE ").append(defaultType);
+            script.addStatement(sb);
         }
-        sb.append(getSeparator());
     }
 
-    private void compareCodecs(StringBuilder sb, List<String> newCodecs) {
+    private void compareCodecs(List<String> newCodecs, SQLScript script) {
         if (Objects.equals(codecs, newCodecs)) {
             return;
         }
-        appendAlterColumn(sb, true);
+        StringBuilder sb = new StringBuilder();
+        appendAlterColumn(sb);
         if (newCodecs.isEmpty()) {
             sb.append(" REMOVE CODEC");
         } else {
@@ -213,27 +221,29 @@ public final class ChColumn extends AbstractColumn {
             sb.setLength(sb.length() - 2);
             sb.append(')');
         }
-        sb.append(getSeparator());
+        script.addStatement(sb);
     }
 
-    private void compareTtl(StringBuilder sb, String newTtl, String newType) {
+    private void compareTtl(String newTtl, String newType, SQLScript script) {
         if (Objects.equals(ttl, newTtl)) {
             return;
         }
-        appendAlterColumn(sb, true);
+        StringBuilder sb = new StringBuilder();
+        appendAlterColumn(sb);
         if (newTtl == null) {
             sb.append(" REMOVE TTL");
         } else {
             sb.append(' ').append(newType).append(" TTL ").append(newTtl);
         }
-        sb.append(getSeparator());
+        script.addStatement(sb);
     }
 
-    private void compareComment(StringBuilder sb, String newComment) {
+    private void compareComment(String newComment, SQLScript script) {
         if (Objects.equals(getComment(), newComment)) {
             return;
         }
-        sb.append(getAlterTable(true, false));
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterTable(false));
         if (newComment == null) {
             sb.append(" MODIFY COLUMN ").append(ChDiffUtils.quoteName(name)).append(" REMOVE COMMENT");
         } else {
@@ -241,11 +251,11 @@ public final class ChColumn extends AbstractColumn {
             appendIfExists(sb);
             sb.append(ChDiffUtils.quoteName(name)).append(' ').append(newComment);
         }
-        sb.append(getSeparator());
+        script.addStatement(sb);
     }
 
-    private void appendAlterColumn(StringBuilder sb, boolean nextLine) {
-        sb.append(getAlterTable(nextLine, false)).append(" MODIFY COLUMN ");
+    private void appendAlterColumn(StringBuilder sb) {
+        sb.append(getAlterTable(false)).append(" MODIFY COLUMN ");
         appendIfExists(sb);
         sb.append(ChDiffUtils.quoteName(name));
     }
@@ -275,11 +285,8 @@ public final class ChColumn extends AbstractColumn {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChColumn)) {
-            return false;
-        }
-        var column = (ChColumn) obj;
-        return super.compare(column)
+
+        return obj instanceof ChColumn column && super.compare(column)
                 && Objects.equals(defaultType, column.getDefaultType())
                 && Objects.equals(option, column.getOption())
                 && Objects.equals(ttl, column.getTtl())
@@ -297,12 +304,12 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 }

@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
@@ -45,7 +46,7 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH TEMPLATE ")
         .append(getQualifiedName()).append(" (\n\t");
@@ -54,23 +55,21 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
             sbSql.append("INIT = ").append(initFunction).append(",\n\t");
         }
 
-        sbSql.append("LEXIZE = ").append(lexizeFunction).append(" );");
-
-        return sbSql.toString();
+        sbSql.append("LEXIZE = ").append(lexizeFunction).append(" )");
+        script.addStatement(sbSql);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         if (!compareUnalterable((PgFtsTemplate) newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        compareComments(sb, newCondition);
+        appendAlterComments(newCondition, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override

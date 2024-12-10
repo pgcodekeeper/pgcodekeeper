@@ -56,7 +56,6 @@ public class MsClrProcedure extends AbstractMsClrFunction {
         sbSQL.append(MsDiffUtils.quoteName(getAssembly())).append('.');
         sbSQL.append(MsDiffUtils.quoteName(getAssemblyClass())).append('.');
         sbSQL.append(MsDiffUtils.quoteName(getAssemblyMethod()));
-        sbSQL.append(GO);
     }
 
     @Override

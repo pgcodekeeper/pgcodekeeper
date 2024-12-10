@@ -26,6 +26,7 @@ import java.util.Set;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Subclass when need to reset hashes
@@ -131,16 +132,17 @@ public final class ChEngine implements Serializable, IHashable {
         }
     }
 
-    public void appendAlterSQL(StringBuilder sb, ChEngine newEngine, String prefix) {
-        compareSampleBy(sb, newEngine.sampleBy, prefix);
-        compareTtl(sb, newEngine.ttl, prefix);
-        compareOptions(sb, newEngine.options, prefix);
+    public void appendAlterSQL(ChEngine newEngine, String prefix, SQLScript script) {
+        compareSampleBy(newEngine.sampleBy, prefix, script);
+        compareTtl(newEngine.ttl, prefix, script);
+        compareOptions(newEngine.options, prefix, script);
     }
 
-    private void compareSampleBy(StringBuilder sb, String newSampleBy, String prefix) {
+    private void compareSampleBy(String newSampleBy, String prefix, SQLScript script) {
         if (Objects.equals(sampleBy, newSampleBy)) {
             return;
         }
+        StringBuilder sb = new StringBuilder();
         if (newSampleBy == null) {
             sb.append(prefix);
             sb.append("\n\tREMOVE SAMPLE BY");
@@ -148,24 +150,25 @@ public final class ChEngine implements Serializable, IHashable {
             sb.append(prefix);
             sb.append("\n\tMODIFY SAMPLE BY ").append(newSampleBy);
         }
-        sb.append(';');
+        script.addStatement(sb);
     }
 
-    private void compareTtl(StringBuilder sb, String newTtl, String prefix) {
+    private void compareTtl(String newTtl, String prefix, SQLScript script) {
         if (Objects.equals(ttl, newTtl)) {
             return;
         }
+
+        StringBuilder sb = new StringBuilder();
         sb.append(prefix);
         if (newTtl == null) {
             sb.append("\n\tREMOVE TTL");
         } else {
             sb.append("\n\tMODIFY TTL ").append(newTtl);
         }
-        sb.append(';');
+        script.addStatement(sb);
     }
 
-    private void compareOptions(StringBuilder sb, Map<String, String> newOptions,
-            String prefix) {
+    private void compareOptions(Map<String, String> newOptions, String prefix, SQLScript script) {
         if (options.equals(newOptions)) {
             return;
         }
@@ -195,30 +198,32 @@ public final class ChEngine implements Serializable, IHashable {
             }
         }
 
-        appendAlterOptions(sb, resetOptions, modifyOptions, prefix);
+        appendAlterOptions(resetOptions, modifyOptions, prefix, script);
     }
 
-    private void appendAlterOptions(StringBuilder sb, Set<String> resetOptions,
-            Map<String, String> modifyOptions, String prefix) {
+    private void appendAlterOptions(Set<String> resetOptions, Map<String, String> modifyOptions, String prefix,
+            SQLScript script) {
         if (!resetOptions.isEmpty()) {
+            StringBuilder sb = new StringBuilder();
             sb.append(prefix).append("\n\tRESET SETTING");
             for(String key : resetOptions) {
                 sb.append(' ').append(key).append(',');
             }
             sb.setLength(sb.length() - 1);
-            sb.append(';');
+            script.addStatement(sb);
         }
 
         if (modifyOptions.isEmpty()) {
             return;
         }
 
+        StringBuilder sb = new StringBuilder();
         sb.append(prefix).append("\n\tMODIFY SETTING");
         for (Entry<String, String> option : modifyOptions.entrySet()) {
             sb.append(' ').append(option.getKey()).append('=').append(option.getValue()).append(',');
         }
         sb.setLength(sb.length() - 1);
-        sb.append(';');
+        script.addStatement(sb);
     }
 
     public boolean containsOption(String key) {
@@ -254,12 +259,7 @@ public final class ChEngine implements Serializable, IHashable {
             return true;
         }
 
-        if (!(obj instanceof ChEngine)) {
-            return false;
-        }
-
-        final ChEngine engine = (ChEngine) obj;
-        return compareUnalterable(engine)
+        return obj instanceof final ChEngine engine && compareUnalterable(engine)
                 && Objects.equals(sampleBy, engine.getSampleBy())
                 && Objects.equals(ttl, engine.getTtl())
                 && Objects.equals(options, engine.options);

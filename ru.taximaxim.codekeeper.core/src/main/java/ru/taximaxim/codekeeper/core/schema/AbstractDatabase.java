@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Stores database information.
@@ -197,24 +198,17 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     }
 
     @Override
-    public String getCreationSQL() {
-        return null;
+    public void getCreationSQL(SQLScript script) {
+        // no action
     }
 
     @Override
-    public String getFullSQL() {
-        return null;
-    }
-
-    @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         return ObjectState.NOTHING;
     }
 
     @Override
-    public String getDropSQL(boolean optionExists) {
-        return null;
+    public void getDropSQL(SQLScript script, boolean optionExists) {
     }
 
     @Override
@@ -247,6 +241,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         });
 
         overrides.addAll(lib.getOverrides());
+        lib.getObjReferences().entrySet().forEach(e -> objReferences.putIfAbsent(e.getKey(), e.getValue()));
     }
 
     protected void addOverride(PgOverride override) {

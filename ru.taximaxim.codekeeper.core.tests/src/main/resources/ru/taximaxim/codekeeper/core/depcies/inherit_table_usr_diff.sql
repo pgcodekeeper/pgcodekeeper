@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This SEQUENCE is a dependency of COLUMN: public.t2.c4
+-- DEPCY: This SEQUENCE seq2 is a dependency of COLUMN: public.t2.c4
 
 CREATE SEQUENCE public.seq2
 	START WITH 1

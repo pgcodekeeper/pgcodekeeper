@@ -22,7 +22,7 @@ ALTER TABLE public.cities56 RENAME TO cities56_randomly_generated_part;
 
 ALTER TABLE public.cities_cd_10_to_100 RENAME TO cities_cd_10_to_100_randomly_generated_part;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.cities
+-- DEPCY: This CONSTRAINT constr_check depends on the TABLE: public.cities
 
 ALTER TABLE public.cities_cd
 	DROP CONSTRAINT constr_check;

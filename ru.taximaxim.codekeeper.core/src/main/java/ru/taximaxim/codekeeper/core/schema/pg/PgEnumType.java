@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class PgEnumType extends AbstractType{
 
@@ -42,7 +43,7 @@ public final class PgEnumType extends AbstractType{
         if (!enums.isEmpty()) {
             sb.setLength(sb.length() - 1);
         }
-        sb.append("\n);");
+        sb.append("\n)");
     }
 
     @Override
@@ -75,20 +76,20 @@ public final class PgEnumType extends AbstractType{
     }
 
     @Override
-    protected void compareType(AbstractType newType, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
         List<String> newEnums = ((PgEnumType) newType).getEnums();
         for (int i = 0; i < newEnums.size(); ++i) {
             String value = newEnums.get(i);
             if (!getEnums().contains(value)) {
-                sb.append("\n\nALTER TYPE ").append(getQualifiedName())
+                StringBuilder sql = new StringBuilder();
+                sql.append("ALTER TYPE ").append(getQualifiedName())
                 .append("\n\tADD VALUE ").append(value);
                 if (i == 0) {
-                    sb.append(" BEFORE ").append(getEnums().get(0));
+                    sql.append(" BEFORE ").append(getEnums().get(0));
                 } else {
-                    sb.append(" AFTER ").append(newEnums.get(i - 1));
+                    sql.append(" AFTER ").append(newEnums.get(i - 1));
                 }
-                sb.append(';');
+                script.addStatement(sql);
             }
         }
     }

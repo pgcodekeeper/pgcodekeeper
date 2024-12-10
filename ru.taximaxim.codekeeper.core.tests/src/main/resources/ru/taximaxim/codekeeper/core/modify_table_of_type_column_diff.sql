@@ -3,27 +3,27 @@ SET search_path = pg_catalog;
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field4 DROP DEFAULT;
 
--- DEPCY: This CONSTRAINT depends on the TYPE: public.testtype
+-- DEPCY: This CONSTRAINT testtable_pkey depends on the TYPE: public.testtype
 
 ALTER TABLE public.testtable
 	DROP CONSTRAINT testtable_pkey;
 
--- DEPCY: This COLUMN depends on the TYPE: public.testtype
+-- DEPCY: This COLUMN field3 depends on the TYPE: public.testtype
 
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field3 DROP DEFAULT;
 
--- DEPCY: This COLUMN depends on the TYPE: public.testtype
+-- DEPCY: This COLUMN field2 depends on the TYPE: public.testtype
 
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field2 DROP DEFAULT;
 
--- DEPCY: This COLUMN depends on the TYPE: public.testtype
+-- DEPCY: This COLUMN field1 depends on the TYPE: public.testtype
 
 ALTER TABLE ONLY public.testtable
 	ALTER COLUMN field1 DROP NOT NULL;
 
--- DEPCY: This TABLE depends on the TYPE: public.testtype
+-- DEPCY: This TABLE testtable depends on the TYPE: public.testtype
 
 DROP TABLE public.testtable;
 

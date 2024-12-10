@@ -53,6 +53,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /*
  * implementation notes:
@@ -185,11 +186,11 @@ public class DepcyResolver {
     public void addAlterStatements(PgStatement oldObj, PgStatement newObj) {
         PgStatement oldObjStat = oldObj.getTwin(oldDb);
         PgStatement newObjStat = newObj.getTwin(newDb);
-        StringBuilder sb = new StringBuilder();
         AtomicBoolean isNeedDepcies = new AtomicBoolean();
 
         if (oldObjStat != null) {
-            ObjectState state = oldObjStat.appendAlterSQL(newObjStat, sb, isNeedDepcies);
+            SQLScript script = new SQLScript(oldObjStat.getDbType());
+            ObjectState state = oldObjStat.appendAlterSQL(newObjStat, isNeedDepcies, script);
             if (state.in(ObjectState.RECREATE, ObjectState.ALTER)) {
                 if (isNeedDepcies.get()) {
                     // is state alterable (sb.length() > 0)
@@ -202,7 +203,7 @@ public class DepcyResolver {
                     // ничего делать не нужно
                     // пропускаем колонки таблиц из дроп листа
                     addToListWithoutDepcies(
-                            sb.length() > 0 ? StatementActions.ALTER : StatementActions.DROP,
+                            !script.isEmpty() ? StatementActions.ALTER : StatementActions.DROP,
                                     oldObjStat, null);
                 }
             }
@@ -380,7 +381,9 @@ public class DepcyResolver {
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                action = askAlter(oldObj, newObj, isNeedDepcies);
+                SQLScript script = new SQLScript(newObj.getDbType());
+
+                action = askAlter(oldObj, newObj, isNeedDepcies, script);
 
                 // проверить а не
                 // требует ли пересоздания(Drop/create) родителькие объекты
@@ -420,8 +423,8 @@ public class DepcyResolver {
                 }
 
                 // пропускаем также при recreate
-                StringBuilder sb = new StringBuilder();
-                ObjectState state = oldTable.appendAlterSQL(newTable, sb, new AtomicBoolean());
+                SQLScript script = new SQLScript(newTable.getDbType());
+                ObjectState state = oldTable.appendAlterSQL(newTable, new AtomicBoolean(), script);
                 if (state == ObjectState.RECREATE) {
                     return true;
                 }
@@ -496,7 +499,8 @@ public class DepcyResolver {
             PgStatement oldObj;
             if ((oldObj = newObj.getTwin(oldDb)) != null) {
                 AtomicBoolean isNeedDepcies = new AtomicBoolean();
-                action = askAlter(oldObj, newObj, isNeedDepcies);
+                SQLScript script = new SQLScript(oldObj.getDbType());
+                action = askAlter(oldObj, newObj, isNeedDepcies, script);
                 if (action == StatementActions.NONE) {
                     return true;
                 }
@@ -573,12 +577,11 @@ public class DepcyResolver {
             addToListWithoutDepcies(action, statement, starter);
         }
 
-        protected StatementActions askAlter(PgStatement oldSt, PgStatement newSt,
-                AtomicBoolean isNeedDepcies) {
-            StringBuilder sb = new StringBuilder();
+        protected StatementActions askAlter(PgStatement oldSt, PgStatement newSt, AtomicBoolean isNeedDepcies,
+                SQLScript script) {
             StatementActions alterAction = action;
             // Проверяем меняется ли объект
-            ObjectState state = oldSt.appendAlterSQL(newSt, sb, isNeedDepcies);
+            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcies, script);
             if (state == ObjectState.ALTER) {
                 alterAction = StatementActions.ALTER;
             } else if (state != ObjectState.RECREATE) {
@@ -618,7 +621,9 @@ public class DepcyResolver {
             }
 
             AtomicBoolean isNeedDepcy = new AtomicBoolean();
-            ObjectState state = oldSt.appendAlterSQL(newSt, new StringBuilder(), isNeedDepcy);
+            SQLScript script = new SQLScript(newSt.getDbType());
+
+            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcy, script);
             if (state.in(ObjectState.RECREATE, ObjectState.ALTER) && isNeedDepcy.get()) {
                 needDrop = oldSt;
             }

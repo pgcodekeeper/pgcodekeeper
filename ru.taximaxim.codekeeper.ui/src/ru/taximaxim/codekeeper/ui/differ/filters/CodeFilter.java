@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
@@ -49,24 +50,30 @@ public class CodeFilter extends AbstractFilter {
         return false;
     }
 
+    private String getScript(PgStatement st) {
+        SQLScript script = new SQLScript(st.getDbType());
+        st.getCreationSQL(script);
+        return script.getFullScript();
+    }
+
     private boolean checkSide(TreeElement el, AbstractDatabase db, Set<TreeElement> elements) {
         PgStatement statement = el.getPgStatement(db);
         if (statement != null) {
-            if (searchMatches(statement.getCreationSQL())) {
+            if (searchMatches(getScript(statement))) {
                 return true;
             }
 
             if (el.isSubElement()) {
                 PgStatement parent = statement.getParent();
                 if (parent != null) {
-                    return searchMatches(parent.getCreationSQL());
+                    return searchMatches(getScript(parent));
                 }
             }
 
             if (el.isContainer()) {
                 return el.getChildren().stream().filter(elements::contains)
                         .map(e -> e.getPgStatement(db))
-                        .anyMatch(s -> s != null && searchMatches(s.getCreationSQL()));
+                        .anyMatch(s -> s != null && searchMatches(getScript(s)));
             }
         }
 

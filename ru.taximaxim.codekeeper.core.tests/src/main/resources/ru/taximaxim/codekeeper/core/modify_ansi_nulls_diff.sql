@@ -1,4 +1,4 @@
--- DEPCY: This TRIGGER depends on the TABLE: [dbo].[t1]
+-- DEPCY: This TRIGGER tr1 depends on the TABLE: [dbo].[t1]
 
 DROP TRIGGER [dbo].[tr1]
 GO

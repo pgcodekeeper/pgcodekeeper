@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgDomain extends PgStatement implements ISearchPath {
 
@@ -104,18 +105,18 @@ public class PgDomain extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("CREATE DOMAIN ").append(getQualifiedName())
+    public void getCreationSQL(SQLScript script) {
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE DOMAIN ").append(getQualifiedName())
         .append(" AS ").append(dataType);
         if (collation != null && !collation.isEmpty()) {
-            sb.append(" COLLATE ").append(collation);
+            sql.append(" COLLATE ").append(collation);
         }
         if (notNull) {
-            sb.append(" NOT NULL");
+            sql.append(" NOT NULL");
         }
         if (defaultValue != null && !defaultValue.isEmpty()) {
-            sb.append(" DEFAULT ").append(defaultValue);
+            sql.append(" DEFAULT ").append(defaultValue);
         }
 
         List<AbstractConstraint> notValids = new ArrayList<>();
@@ -123,26 +124,24 @@ public class PgDomain extends PgStatement implements ISearchPath {
             if (constr.isNotValid()) {
                 notValids.add(constr);
             } else {
-                sb.append("\n\tCONSTRAINT ").append(PgDiffUtils.getQuotedName(constr.getName()))
+                sql.append("\n\tCONSTRAINT ").append(PgDiffUtils.getQuotedName(constr.getName()))
                 .append(' ').append(constr.getDefinition());
             }
         }
-        sb.append(';');
+        script.addStatement(sql);
 
         for (AbstractConstraint notValid : notValids) {
-            sb.append("\n\n").append(notValid.getCreationSQL());
+            notValid.getCreationSQL(script);
         }
 
-        appendOwnerSQL(sb);
-        appendPrivileges(sb);
-
-        return sb.toString();
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgDomain newDomain = (PgDomain) newCondition;
 
         if (!Objects.equals(newDomain.getDataType(), getDataType()) ||
@@ -152,85 +151,58 @@ public class PgDomain extends PgStatement implements ISearchPath {
         }
 
         if (!Objects.equals(newDomain.getDefaultValue(), getDefaultValue())) {
-            sb.append("\n\nALTER DOMAIN ").append(getQualifiedName());
+            StringBuilder sql = new StringBuilder();
+            sql.append("ALTER DOMAIN ").append(getQualifiedName());
             if (newDomain.getDefaultValue() == null) {
-                sb.append("\n\tDROP DEFAULT");
+                sql.append("\n\tDROP DEFAULT");
             } else {
-                sb.append("\n\tSET DEFAULT ").append(newDomain.getDefaultValue());
+                sql.append("\n\tSET DEFAULT ").append(newDomain.getDefaultValue());
             }
-            sb.append(';');
+            script.addStatement(sql);
         }
 
         if (newDomain.isNotNull() != isNotNull()) {
-            sb.append("\n\nALTER DOMAIN ").append(getQualifiedName());
+            StringBuilder sql = new StringBuilder();
+            sql.append("ALTER DOMAIN ").append(getQualifiedName());
             if (newDomain.isNotNull()) {
-                sb.append("\n\tSET NOT NULL");
+                sql.append("\n\tSET NOT NULL");
             } else {
-                sb.append("\n\tDROP NOT NULL");
+                sql.append("\n\tDROP NOT NULL");
             }
-            sb.append(';');
+            script.addStatement(sql);
         }
+
+        appendAlterOwner(newDomain, script);
+        alterPrivileges(newDomain, script);
+        appendAlterComments(newDomain, script);
 
         AtomicBoolean needDepcyConstr = new AtomicBoolean();
         for (AbstractConstraint oldConstr : getConstraints()) {
             AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
-                sb.append("\n\n").append(oldConstr.getDropSQL());
+                oldConstr.getDropSQL(script);
             } else {
-                oldConstr.appendAlterSQL(newConstr, sb, needDepcyConstr);
+                ((PgConstraint) oldConstr).appendAlterSQL(newConstr, needDepcyConstr, script);
             }
         }
         for (AbstractConstraint newConstr : newDomain.getConstraints()) {
             if (getConstraint(newConstr.getName()) == null) {
-                sb.append("\n\n").append(newConstr.getCreationSQL());
+                newConstr.getCreationSQL(script);
             }
         }
 
-        if (!Objects.equals(getOwner(), newDomain.getOwner())) {
-            newDomain.appendOwnerSQL(sb);
-        }
-        alterPrivileges(newDomain, sb);
-        compareComments(sb, newDomain);
-
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
-        super.appendComments(sb);
+    public void appendComments(SQLScript script) {
+        super.appendComments(script);
+        appendChildrenComments(script);
+    }
 
+    private void appendChildrenComments(SQLScript script) {
         for (AbstractConstraint c : constraints) {
-            c.appendComments(sb);
-        }
-    }
-
-    @Override
-    public void compareComments(StringBuilder sb, PgStatement newObj) {
-        super.compareComments(sb, newObj);
-
-        PgDomain newDomain = (PgDomain) newObj;
-        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
-            AbstractConstraint oldConstr = getConstraint(newConstr.getName());
-            if (oldConstr != null) {
-                oldConstr.compareComments(sb, newConstr);
-            } else if (newConstr.checkComments()) {
-                sb.setLength(sb.length() + 1);
-            }
-        }
-    }
-
-    @Override
-    public void appendAlterComments(StringBuilder sb, PgStatement newObj) {
-        PgDomain newDomain = (PgDomain) newObj;
-        super.appendAlterComments(sb, newDomain);
-
-        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
-            AbstractConstraint oldConstr = getConstraint(newConstr.getName());
-            if (oldConstr != null) {
-                oldConstr.appendAlterComments(sb, newConstr);
-            } else {
-                newConstr.appendComments(sb);
-            }
+            c.appendComments(script);
         }
     }
 

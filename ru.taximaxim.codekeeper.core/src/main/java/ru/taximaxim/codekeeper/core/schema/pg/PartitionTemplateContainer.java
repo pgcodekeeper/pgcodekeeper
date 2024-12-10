@@ -34,20 +34,20 @@ public class PartitionTemplateContainer implements IHashable {
         return !subElements.isEmpty();
     }
 
-    public void appendCreateSQL(StringBuilder sb) {
-        appendPartitionName(sb);
-        sb.append(SET_SUBPARTITION).append("\n");
-        appendTemplateOptions(sb);
+    public void appendCreateSQL(StringBuilder sql) {
+        appendPartitionName(sql);
+        sql.append(SET_SUBPARTITION).append("\n");
+        appendTemplateOptions(sql);
     }
 
-    public void appendDropSql(StringBuilder sb) {
-        appendPartitionName(sb);
-        sb.append(SET_SUBPARTITION).append(");");
+    public void appendDropSql(StringBuilder sql) {
+        appendPartitionName(sql);
+        sql.append(SET_SUBPARTITION).append(")");
     }
 
-    private void appendPartitionName(StringBuilder sbSQL) {
+    private void appendPartitionName(StringBuilder sql) {
         if (partitionName != null) {
-            sbSQL.append(" ALTER PARTITION ").append(partitionName);
+            sql.append(" ALTER PARTITION ").append(partitionName);
         }
     }
 
@@ -57,7 +57,7 @@ public class PartitionTemplateContainer implements IHashable {
         }
         sbSQL.setLength(sbSQL.length() - 2);
         sbSQL.append("\n");
-        sbSQL.append(");");
+        sbSQL.append(")");
     }
 
     @Override

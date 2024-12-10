@@ -88,7 +88,6 @@ public final class MsType extends AbstractType implements IStatementContainer {
                 sb.append("\nWITH ( MEMORY_OPTIMIZED = ON )");
             }
         }
-        sb.append(GO);
     }
 
     @Override

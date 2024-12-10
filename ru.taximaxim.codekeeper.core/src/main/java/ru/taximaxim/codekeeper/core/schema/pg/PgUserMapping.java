@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
 
@@ -95,7 +96,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE USER MAPPING ");
         appendIfNotExists(sb);
@@ -104,14 +105,12 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
             sb.append(' ');
         }
         appendOptions(sb);
-        sb.append(';');
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgUserMapping newUsm = (PgUserMapping) newCondition;
 
         if (!Objects.equals(newUsm.getUser(), getUser()) ||
@@ -120,22 +119,19 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(newUsm.getOptions(), getOptions())) {
-            compareOptions(newUsm, sb);
-        }
-        return getObjectState(sb, startLength);
+        compareOptions(newUsm, script);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public String getDropSQL(boolean generateExists) {
+    public void getDropSQL(SQLScript script, boolean generateExists) {
         final StringBuilder sbString = new StringBuilder();
         sbString.append("DROP USER MAPPING ");
         if (generateExists) {
             sbString.append(IF_EXISTS);
         }
         sbString.append("FOR ").append(getQualifiedName());
-        sbString.append(';');
-        return sbString.toString();
+        script.addStatement(sbString);
     }
 
     @Override
@@ -148,6 +144,6 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
 
     @Override
     public String getAlterHeader() {
-        return "\n\nALTER USER MAPPING FOR " + getQualifiedName();
+        return "ALTER USER MAPPING FOR " + getQualifiedName();
     }
 }

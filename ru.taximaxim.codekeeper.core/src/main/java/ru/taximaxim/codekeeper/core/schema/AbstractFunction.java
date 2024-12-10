@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public abstract class AbstractFunction extends PgStatement implements IFunction, ISearchPath {
 
@@ -56,13 +56,13 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     }
 
     @Override
-    public final String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         appendFunctionFullSQL(sbSQL, true);
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
@@ -71,9 +71,8 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         AbstractFunction newFunction = (AbstractFunction) newCondition;
 
         if (!compareUnalterable(newFunction)) {
@@ -85,17 +84,15 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
             if (getDbType() == DatabaseType.MS) {
                 isNeedDepcies.set(true);
             }
-
-            newFunction.appendFunctionFullSQL(sb, false);
+            StringBuilder sbSQL = new StringBuilder();
+            newFunction.appendFunctionFullSQL(sbSQL, false);
+            script.addStatement(sbSQL);
         }
 
-        if (!Objects.equals(getOwner(), newFunction.getOwner())) {
-            newFunction.alterOwnerSQL(sb);
-        }
-
-        alterPrivileges(newFunction, sb);
-        compareComments(sb, newFunction);
-        return getObjectState(sb, startLength);
+        appendAlterOwner(newFunction, script);
+        alterPrivileges(newFunction, script);
+        appendAlterComments(newFunction, script);
+        return getObjectState(script, startSize);
     }
 
     protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate);

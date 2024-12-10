@@ -2,7 +2,7 @@ SET TIMEZONE TO 'UTC';
 
 SET search_path = pg_catalog;
 
--- DEPCY: This SCHEMA is a dependency of TABLE: test.test_table
+-- DEPCY: This SCHEMA test is a dependency of TABLE: test.test_table
 
 CREATE SCHEMA test;
 

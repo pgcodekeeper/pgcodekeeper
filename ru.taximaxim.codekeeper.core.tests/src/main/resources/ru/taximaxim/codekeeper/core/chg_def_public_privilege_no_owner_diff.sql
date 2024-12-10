@@ -3,7 +3,6 @@ SET search_path = pg_catalog;
 GRANT ALL ON TYPE public.t TO PUBLIC;
 
 REVOKE ALL ON TABLE public.tbl FROM PUBLIC;
-REVOKE ALL ON TABLE public.tbl FROM PUBLIC;
 
 GRANT ALL ON FUNCTION public.f(s text) TO PUBLIC;
 

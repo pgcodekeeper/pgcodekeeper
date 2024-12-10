@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION is a dependency of FUNCTION: public.f2(anyarray)
+-- DEPCY: This FUNCTION f1 is a dependency of FUNCTION: public.f2(anyarray)
 
 CREATE OR REPLACE FUNCTION public.f1(s anyarray, a anyarray) RETURNS SETOF anyarray
     LANGUAGE plpgsql IMMUTABLE

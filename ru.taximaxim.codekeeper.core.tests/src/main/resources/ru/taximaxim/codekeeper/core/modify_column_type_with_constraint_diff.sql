@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This CONSTRAINT depends on the COLUMN: public.products.unic_number
+-- DEPCY: This CONSTRAINT products_unic_number_check depends on the COLUMN: public.products.unic_number
 
 ALTER TABLE public.products
 	DROP CONSTRAINT products_unic_number_check;

@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class ChDictionary extends PgStatement implements IRelation {
@@ -145,7 +146,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE DICTIONARY ");
         appendIfNotExists(sb);
@@ -180,8 +181,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());
         }
-        sb.append(';');
-        return sb.toString();
+        script.addStatement(sb);
     }
 
     private void appendColumns(StringBuilder sb) {
@@ -198,7 +198,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (!compare(newCondition)) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
@@ -244,11 +244,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ChDictionary)) {
-            return false;
-        }
-        var dictn = (ChDictionary) obj;
-        return super.compare(dictn)
+        return obj instanceof ChDictionary dictn && super.compare(dictn)
                 && Objects.equals(sourceType, dictn.sourceType)
                 && Objects.equals(lifeTime, dictn.lifeTime)
                 && Objects.equals(layOut, dictn.layOut)
@@ -260,12 +256,12 @@ public final class ChDictionary extends PgStatement implements IRelation {
     }
 
     @Override
-    public void appendComments(StringBuilder sb) {
+    public void appendComments(SQLScript script) {
         // no impl
     }
 
     @Override
-    protected void appendCommentSql(StringBuilder sb) {
+    protected void appendCommentSql(SQLScript script) {
         // no impl
     }
 

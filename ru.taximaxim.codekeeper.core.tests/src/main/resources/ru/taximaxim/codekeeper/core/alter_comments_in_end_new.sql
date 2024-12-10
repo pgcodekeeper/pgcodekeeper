@@ -37,7 +37,7 @@ EXECUTE PROCEDURE proc2();
 COMMENT ON EVENT TRIGGER evt1 IS 'altered comment of the event trigger';
 
 CREATE DOMAIN public.dom AS integer NOT NULL DEFAULT (-1)
-    CONSTRAINT dom_check CHECK ((VALUE <> 1));
+    CONSTRAINT dom_check CHECK ((VALUE <> 0));
     
 COMMENT ON DOMAIN public.dom IS 'Domain comment 2';
 

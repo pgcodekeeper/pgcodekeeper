@@ -9,6 +9,22 @@
 
 ### Добавлено
 
+- Добавлены ссылки на объекты библиотек.
+
+### Изменено
+
+- Переписан механизм формирования скрипта миграции, что позволяет более тонко управлять порядком операций. В процессе был исправлен порядок некоторых операций.
+
+### Исправлено
+
+- Исправлена ошибка с загрузкой объекта DOMAIN с ограничением NOT NULL.
+
+### Удалено
+
+## [10.5.0] - 2024-12-10
+
+### Добавлено
+
 - Добавлены комментарии перед командами INSERT в режиме --insert.
 
 ### Изменено
@@ -18,8 +34,6 @@
 ### Исправлено
 
 - Исправлена ошибка с триггерами на секционных таблицах.
-
-### Удалено
 
 ## [10.4.0] - 2024-11-27
 
@@ -2136,7 +2150,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...HEAD
+[10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
 [10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
 [10.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.2.0...v10.3.0

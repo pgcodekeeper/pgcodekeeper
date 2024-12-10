@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgEventTrigger extends PgStatement {
 
@@ -39,7 +40,7 @@ public class PgEventTrigger extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE EVENT TRIGGER ")
         .append(getQualifiedName())
@@ -52,18 +53,21 @@ public class PgEventTrigger extends PgStatement {
             sb.setLength(sb.length() - 2);
             sb.append(")");
         }
-        sb.append("\n\tEXECUTE PROCEDURE ").append(executable).append(";");
-        if (mode != null) {
-            sb.append("\n\nALTER EVENT TRIGGER ").append(getQualifiedName()).append(" ").append(mode).append(";");
-        }
-        appendOwnerSQL(sb);
+        sb.append("\n\tEXECUTE PROCEDURE ").append(executable);
+        script.addStatement(sb);
 
-        return sb.toString();
+        if (mode != null) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("ALTER EVENT TRIGGER ").append(getQualifiedName()).append(" ").append(mode);
+            script.addStatement(sql);
+        }
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgEventTrigger newEventTrigger = (PgEventTrigger) newCondition;
         if (!Objects.equals(getExecutable(), newEventTrigger.getExecutable())
                 || !Objects.equals(getTags(), newEventTrigger.getTags())
@@ -72,16 +76,16 @@ public class PgEventTrigger extends PgStatement {
             return ObjectState.RECREATE;
         }
 
-        final int startLength = sb.length();
         if (!Objects.equals(getMode(), newEventTrigger.getMode())) {
-            sb.append("\nALTER EVENT TRIGGER ").append(getQualifiedName())
+            StringBuilder sql = new StringBuilder();
+            sql.append("ALTER EVENT TRIGGER ").append(getQualifiedName())
             .append(" ").append(newEventTrigger.getMode());
+            script.addStatement(sql);
         }
-        if (!Objects.equals(getOwner(), newEventTrigger.getOwner())) {
-            newEventTrigger.appendOwnerSQL(sb);
-        }
-        compareComments(sb, newEventTrigger);
-        return getObjectState(sb, startLength);
+
+        appendAlterOwner(newEventTrigger, script);
+        appendAlterComments(newEventTrigger, script);
+        return getObjectState(script, startSize);
     }
 
     @Override

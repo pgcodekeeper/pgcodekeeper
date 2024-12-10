@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -34,6 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Postgres schema code generation.
@@ -54,32 +54,26 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
+        script.addStatement(sbSQL);
 
-        sbSQL.append(';');
-
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
-        if (!Objects.equals(getOwner(), newCondition.getOwner())) {
-            newCondition.alterOwnerSQL(sb);
-        }
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
+        appendAlterOwner(newCondition, script);
+        alterPrivileges(newCondition, script);
+        appendAlterComments(newCondition, script);
 
-        alterPrivileges(newCondition, sb);
-        compareComments(sb, newCondition);
-
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     public PgDomain getDomain(String name) {
@@ -193,26 +187,17 @@ public class PgSchema extends AbstractSchema {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case DOMAIN:
-            return getDomain(name);
-        case FTS_PARSER:
-            return getFtsParser(name);
-        case FTS_TEMPLATE:
-            return getFtsTemplate(name);
-        case FTS_DICTIONARY:
-            return getFtsDictionary(name);
-        case FTS_CONFIGURATION:
-            return getFtsConfiguration(name);
-        case OPERATOR:
-            return getOperator(name);
-        case COLLATION:
-            return getCollation(name);
-        case STATISTICS:
-            return getStatistics(name);
-        default:
-            return super.getChild(name, type);
-        }
+        return switch (type) {
+        case DOMAIN -> getDomain(name);
+        case FTS_PARSER -> getFtsParser(name);
+        case FTS_TEMPLATE -> getFtsTemplate(name);
+        case FTS_DICTIONARY -> getFtsDictionary(name);
+        case FTS_CONFIGURATION -> getFtsConfiguration(name);
+        case OPERATOR -> getOperator(name);
+        case COLLATION -> getCollation(name);
+        case STATISTICS -> getStatistics(name);
+        default -> super.getChild(name, type);
+        };
     }
 
     @Override

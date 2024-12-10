@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
@@ -61,7 +62,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE OPERATOR ");
         sbSQL.append(PgDiffUtils.getQuotedName(getSchemaName())).append('.');
@@ -107,12 +108,12 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
             sbSQL.append(join);
         }
 
-        sbSQL.append("\n);");
+        sbSQL.append("\n)");
+        script.addStatement(sbSQL);
 
-        appendOwnerSQL(sbSQL);
-        appendPrivileges(sbSQL);
-
-        return sbSQL.toString();
+        appendOwnerSQL(script);
+        appendPrivileges(script);
+        appendComments(script);
     }
 
     public String getSignature() {
@@ -146,9 +147,8 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgOperator newOperator = (PgOperator) newCondition;
 
         if (!compareUnalterable(newOperator)) {
@@ -161,27 +161,27 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         boolean restrChanged = !Objects.equals(restrict, newOperRestr);
         boolean joinChanged = !Objects.equals(join, newOperJoin);
         if (restrChanged || joinChanged) {
-            sb.append("\n\nALTER OPERATOR ")
+            StringBuilder sql = new StringBuilder();
+            sql.append("ALTER OPERATOR ")
             .append(getQualifiedName())
             .append("\n\tSET (");
             if (restrChanged) {
-                sb.append("RESTRICT = ").append(newOperRestr != null ? newOperRestr : "NONE");
+                sql.append("RESTRICT = ").append(newOperRestr != null ? newOperRestr : "NONE");
                 if (joinChanged) {
-                    sb.append(", ");
+                    sql.append(", ");
                 }
             }
             if (joinChanged) {
-                sb.append("JOIN = ").append(newOperJoin != null ? newOperJoin : "NONE");
+                sql.append("JOIN = ").append(newOperJoin != null ? newOperJoin : "NONE");
             }
-            sb.append(");");
+            sql.append(")");
+            script.addStatement(sql);
         }
 
-        if (!Objects.equals(getOwner(), newOperator.getOwner())) {
-            newOperator.alterOwnerSQL(sb);
-        }
-        compareComments(sb, newOperator);
+        appendAlterOwner(newOperator, script);
+        appendAlterComments(newOperator, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     private boolean compareUnalterable(PgOperator oper) {

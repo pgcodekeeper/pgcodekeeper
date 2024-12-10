@@ -1,6 +1,6 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the COLUMN: public.t1.c1
+-- DEPCY: This VIEW v1 depends on the COLUMN: public.t1.c1
 
 DROP VIEW public.v1;
 

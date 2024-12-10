@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Simple foreign table object
@@ -37,12 +38,12 @@ public class SimpleForeignPgTable extends AbstractForeignTable {
     }
 
     @Override
-    protected void appendColumns(StringBuilder sbSQL, StringBuilder sbOption) {
+    protected void appendColumns(StringBuilder sbSQL, SQLScript script) {
         sbSQL.append(" (\n");
 
         int start = sbSQL.length();
         for (AbstractColumn column : columns) {
-            writeColumn((PgColumn) column, sbSQL, sbOption);
+            writeColumn((PgColumn) column, sbSQL, script);
         }
 
         if (start != sbSQL.length()) {

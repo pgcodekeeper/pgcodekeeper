@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class PgFtsDictionary extends PgStatement
 implements ISimpleOptionContainer, ISearchPath {
@@ -51,24 +52,22 @@ implements ISimpleOptionContainer, ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSql = new StringBuilder();
         sbSql.append("CREATE TEXT SEARCH DICTIONARY ")
         .append(getQualifiedName());
         sbSql.append(" (\n\tTEMPLATE = ").append(template);
 
         options.forEach((k,v) -> sbSql.append(",\n\t").append(k).append(" = ").append(v));
-        sbSql.append(" );");
-
-        appendOwnerSQL(sbSql);
-
-        return sbSql.toString();
+        sbSql.append(" )");
+        script.addStatement(sbSql);
+        appendOwnerSQL(script);
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
 
         if (!newDictionary.getTemplate().equals(template)) {
@@ -76,16 +75,17 @@ implements ISimpleOptionContainer, ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newDictionary, sb);
-        compareComments(sb, newDictionary);
+        compareOptions(newDictionary, script);
+        appendAlterComments(newDictionary, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
     @Override
-    public void appendOptions(IOptionContainer newContainer, StringBuilder setOptions,
-            StringBuilder resetOptions, StringBuilder sb) {
-        sb.append("\n\nALTER TEXT SEARCH DICTIONARY ");
+    public void appendOptions(IOptionContainer newContainer, StringBuilder setOptions, StringBuilder resetOptions,
+            SQLScript script) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("ALTER TEXT SEARCH DICTIONARY ");
         sb.append(getQualifiedName());
         sb.append("\n\t(");
 
@@ -96,9 +96,9 @@ implements ISimpleOptionContainer, ISearchPath {
         if (resetOptions.length() > 0) {
             sb.append(resetOptions);
         }
-
         sb.setLength(sb.length() - 2);
-        sb.append(");");
+        sb.append(")");
+        script.addStatement(sb);
     }
 
     public void setTemplate(final String template) {

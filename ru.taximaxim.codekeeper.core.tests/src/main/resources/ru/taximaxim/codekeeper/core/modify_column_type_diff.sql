@@ -31,7 +31,7 @@ ALTER TABLE public.t_prod_1
 	ALTER COLUMN total_price TYPE numeric(30,6) USING total_price::numeric(30,6), /* TYPE change - table: public.t_prod_1 original: numeric(30,7) new: numeric(30,6) */
 	ALTER COLUMN midle_price TYPE numeric(30,8) USING midle_price::numeric(30,8); /* TYPE change - table: public.t_prod_1 original: numeric(30,7) new: numeric(30,8) */
 
--- DEPCY: This CONSTRAINT depends on the COLUMN: public.t_lot_prod_3.id
+-- DEPCY: This CONSTRAINT id_1 depends on the COLUMN: public.t_lot_prod_3.id
 
 ALTER TABLE public.t_lot_prod_3
 	DROP CONSTRAINT id_1;

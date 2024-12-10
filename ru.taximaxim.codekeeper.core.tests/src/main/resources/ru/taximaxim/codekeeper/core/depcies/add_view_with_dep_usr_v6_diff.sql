@@ -6,7 +6,7 @@ CREATE TABLE public.t1 (
 	c3 integer
 );
 
--- DEPCY: This CONSTRAINT is a dependency of VIEW: public.v6
+-- DEPCY: This CONSTRAINT t1_c1_pk is a dependency of VIEW: public.v6
 
 ALTER TABLE public.t1
 	ADD CONSTRAINT t1_c1_pk PRIMARY KEY (c1);

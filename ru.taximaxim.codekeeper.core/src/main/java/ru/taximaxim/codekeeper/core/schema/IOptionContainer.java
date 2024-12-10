@@ -18,6 +18,8 @@ package ru.taximaxim.codekeeper.core.schema;
 import java.util.List;
 import java.util.Map;
 
+import ru.taximaxim.codekeeper.core.script.SQLScript;
+
 public interface IOptionContainer extends IStatement {
 
     List<String> GP_OPTION_LIST = List.of(
@@ -32,5 +34,6 @@ public interface IOptionContainer extends IStatement {
 
     void addOption(String key, String value);
     Map<String, String> getOptions();
-    void compareOptions(IOptionContainer newContainer, StringBuilder sb);
+
+    void compareOptions(IOptionContainer newContainer, SQLScript script);
 }

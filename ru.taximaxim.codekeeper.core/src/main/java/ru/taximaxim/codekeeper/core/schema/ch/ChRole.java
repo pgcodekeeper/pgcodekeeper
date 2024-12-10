@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public final class ChRole extends PgStatement {
 
@@ -37,7 +38,7 @@ public final class ChRole extends PgStatement {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         appendIfNotExists(sbSQL);
@@ -45,23 +46,24 @@ public final class ChRole extends PgStatement {
         if (!DEF_STORAGE.equals(storageType)) {
             sbSQL.append("\n\tIN ").append(storageType);
         }
-        sbSQL.append(";");
-        appendPrivileges(sbSQL);
-        return sbSQL.toString();
+        script.addStatement(sbSQL);
+        appendPrivileges(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb, AtomicBoolean isNeedDepcies) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         ChRole newRole = (ChRole) newCondition;
-        final int startLength = sb.length();
 
         if (!Objects.equals(storageType, newRole.getStorageType())) {
-            sb.append("MOVE ROLE ")
+            StringBuilder sql = new StringBuilder();
+            sql.append("MOVE ROLE ")
             .append(getQualifiedName()).append(" TO ")
-            .append(newRole.getStorageType()).append(";");
+            .append(newRole.getStorageType());
+            script.addStatement(sql);
         }
-        alterPrivileges(newCondition, sb);
-        return getObjectState(sb, startLength);
+        alterPrivileges(newCondition, script);
+        return getObjectState(script, startSize);
     }
 
     @Override

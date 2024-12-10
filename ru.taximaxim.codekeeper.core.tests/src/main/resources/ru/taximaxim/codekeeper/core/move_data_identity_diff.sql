@@ -1,23 +1,23 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This VIEW depends on the TABLE: public.tbl
+-- DEPCY: This VIEW v depends on the TABLE: public.tbl
 
 DROP VIEW public.v;
 
--- DEPCY: This TRIGGER depends on the TABLE: public.tbl
+-- DEPCY: This TRIGGER events_insert depends on the TABLE: public.tbl
 
 DROP TRIGGER events_insert ON public.tbl;
 
--- DEPCY: This FUNCTION depends on the TABLE: public.tbl
+-- DEPCY: This FUNCTION events_insert_trigger depends on the TABLE: public.tbl
 
 DROP FUNCTION public.events_insert_trigger();
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.tbl
+-- DEPCY: This CONSTRAINT tbl_name22_check depends on the TABLE: public.tbl
 
 ALTER TABLE public.tbl
 	DROP CONSTRAINT tbl_name22_check;
 
--- DEPCY: This CONSTRAINT depends on the TABLE: public.tbl
+-- DEPCY: This CONSTRAINT tbl_pkey depends on the TABLE: public.tbl
 
 ALTER TABLE public.tbl
 	DROP CONSTRAINT tbl_pkey;
@@ -81,7 +81,7 @@ CREATE VIEW public.v AS
     1 AS qwerty
    FROM public.tbl;
 
--- DEPCY: This FUNCTION is a dependency of TRIGGER: public.tbl.events_insert
+-- DEPCY: This FUNCTION events_insert_trigger is a dependency of TRIGGER: public.tbl.events_insert
 
 CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql

@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Stores table rule information.
@@ -102,7 +103,7 @@ public class PgRule extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public String getCreationSQL() {
+    public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE RULE ");
         sbSQL.append(PgDiffUtils.getQuotedName(getName()));
@@ -130,25 +131,17 @@ public class PgRule extends PgStatement implements ISearchPath {
             }
             sbSQL.append(')');
         }
-        sbSQL.append(';');
+        script.addStatement(sbSQL);
 
         if (enabledState != null) {
-            sbSQL.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(enabledState)
-            .append(" RULE ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
+            addAlterTable(enabledState, this, script);
         }
-
-        return sbSQL.toString();
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgRule newRule = (PgRule) newCondition;
 
         if (!compareUnalterable(newRule)) {
@@ -160,17 +153,22 @@ public class PgRule extends PgStatement implements ISearchPath {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
-            sb.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(newEnabledState)
-            .append(" RULE ")
-            .append(PgDiffUtils.getQuotedName(newRule.getName()))
-            .append(';');
+            addAlterTable(newEnabledState, newRule, script);
         }
-        compareComments(sb, newRule);
+        appendAlterComments(newRule, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
+    }
+
+    private void addAlterTable(String enabledState, PgRule rule, SQLScript script) {
+        StringBuilder sql = new StringBuilder();
+        sql.append(ALTER_TABLE)
+        .append(getParent().getQualifiedName())
+        .append(' ')
+        .append(enabledState)
+        .append(" RULE ")
+        .append(PgDiffUtils.getQuotedName(rule.getName()));
+        script.addStatement(sql);
     }
 
     @Override

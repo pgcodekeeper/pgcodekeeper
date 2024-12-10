@@ -1,3 +1,9 @@
+BEGIN TRANSACTION
+GO
+
+ALTER TABLE [dbo].[table2] DISABLE CHANGE_TRACKING
+GO
+
 ALTER TABLE [dbo].[table1]
 	DROP CONSTRAINT [constraint_default_c2]
 GO
@@ -8,9 +14,6 @@ GO
 
 ALTER TABLE [dbo].[table1]
 	DROP CONSTRAINT [constraint_check_c2]
-GO
-
-ALTER TABLE [dbo].[table2] DISABLE CHANGE_TRACKING
 GO
 
 ALTER TABLE [dbo].[table2]
@@ -26,4 +29,7 @@ ALTER TABLE [dbo].[table2]
 GO
 
 ALTER TABLE [dbo].[table2] ENABLE CHANGE_TRACKING WITH (TRACK_COLUMNS_UPDATED = ON)
+GO
+
+COMMIT
 GO

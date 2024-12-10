@@ -7,12 +7,12 @@ ALTER TABLE default.t2_1
 ALTER TABLE default.t2_1
 	DROP INDEX ind3;
 
--- DEPCY: This CONSTRAINT depends on the COLUMN: default.t2_1.col2
+-- DEPCY: This CONSTRAINT ch1 depends on the COLUMN: default.t2_1.col2
 
 ALTER TABLE default.t2_1
 	DROP CONSTRAINT ch1;
 
--- DEPCY: This INDEX depends on the COLUMN: default.t2_1.col2
+-- DEPCY: This INDEX ind1 depends on the COLUMN: default.t2_1.col2
 
 ALTER TABLE default.t2_1
 	DROP INDEX ind1;
