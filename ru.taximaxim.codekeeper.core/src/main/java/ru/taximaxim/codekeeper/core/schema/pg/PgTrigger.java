@@ -81,116 +81,109 @@ public class PgTrigger extends AbstractTrigger {
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("CREATE");
-        if (isConstraint()) {
-            sbSQL.append(" CONSTRAINT");
-        }
-        sbSQL.append(" TRIGGER ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append("\n\t");
-        sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
+        if (!isChild) {
+            sbSQL.append("CREATE");
+            if (isConstraint()) {
+                sbSQL.append(" CONSTRAINT");
+            }
+            sbSQL.append(" TRIGGER ");
+            sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+            sbSQL.append("\n\t");
+            sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
 
-        boolean firstEvent = true;
+            boolean firstEvent = true;
 
-        if (isOnInsert()) {
-            sbSQL.append(" INSERT");
-            firstEvent = false;
-        }
-
-        if (isOnUpdate()) {
-            if (firstEvent) {
+            if (isOnInsert()) {
+                sbSQL.append(" INSERT");
                 firstEvent = false;
-            } else {
-                sbSQL.append(" OR");
             }
 
-            sbSQL.append(" UPDATE");
-
-            if (!updateColumns.isEmpty()) {
-                sbSQL.append(" OF ");
-                for (String updateColumn : updateColumns) {
-                    sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
-                    sbSQL.append(", ");
+            if (isOnUpdate()) {
+                if (firstEvent) {
+                    firstEvent = false;
+                } else {
+                    sbSQL.append(" OR");
                 }
-                sbSQL.setLength(sbSQL.length() - 2);
+
+                sbSQL.append(" UPDATE");
+
+                if (!updateColumns.isEmpty()) {
+                    sbSQL.append(" OF ");
+                    for (String updateColumn : updateColumns) {
+                        sbSQL.append(PgDiffUtils.getQuotedName(updateColumn));
+                        sbSQL.append(", ");
+                    }
+                    sbSQL.setLength(sbSQL.length() - 2);
+                }
             }
+
+            if (isOnDelete()) {
+                if (!firstEvent) {
+                    sbSQL.append(" OR");
+                }
+
+                sbSQL.append(" DELETE");
+            }
+
+            if (isOnTruncate()) {
+                if (!firstEvent) {
+                    sbSQL.append(" OR");
+                }
+
+                sbSQL.append(" TRUNCATE");
+            }
+
+            sbSQL.append(" ON ");
+            sbSQL.append(getParent().getQualifiedName());
+
+            if (isConstraint()) {
+                if (getRefTableName() != null){
+                    sbSQL.append("\n\tFROM ").append(getRefTableName());
+                }
+                if (isImmediate() != null){
+                    sbSQL.append("\n\tDEFERRABLE INITIALLY ")
+                    .append(isImmediate() ? "IMMEDIATE" : "DEFERRED");
+                } else {
+                    sbSQL.append("\n\tNOT DEFERRABLE INITIALLY IMMEDIATE");
+                }
+            }
+
+            if (getOldTable() != null || getNewTable() != null) {
+                sbSQL.append("\n\tREFERENCING ");
+                if (getNewTable() != null) {
+                    sbSQL.append("NEW TABLE AS ");
+                    sbSQL.append(getNewTable());
+                    sbSQL.append(' ');
+                }
+                if (getOldTable() != null) {
+                    sbSQL.append("OLD TABLE AS ");
+                    sbSQL.append(getOldTable());
+                    sbSQL.append(' ');
+                }
+            }
+
+            sbSQL.append("\n\tFOR EACH ");
+            sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
+
+            if (getWhen() != null) {
+                sbSQL.append("\n\tWHEN (");
+                sbSQL.append(getWhen());
+                sbSQL.append(')');
+            }
+
+            sbSQL.append("\n\tEXECUTE PROCEDURE ");
+            sbSQL.append(getFunction());
+            script.addStatement(sbSQL);
         }
-
-        if (isOnDelete()) {
-            if (!firstEvent) {
-                sbSQL.append(" OR");
-            }
-
-            sbSQL.append(" DELETE");
-        }
-
-        if (isOnTruncate()) {
-            if (!firstEvent) {
-                sbSQL.append(" OR");
-            }
-
-            sbSQL.append(" TRUNCATE");
-        }
-
-        sbSQL.append(" ON ");
-        sbSQL.append(getParent().getQualifiedName());
-
-        if (isConstraint()) {
-            if (getRefTableName() != null){
-                sbSQL.append("\n\tFROM ").append(getRefTableName());
-            }
-            if (isImmediate() != null){
-                sbSQL.append("\n\tDEFERRABLE INITIALLY ")
-                .append(isImmediate() ? "IMMEDIATE" : "DEFERRED");
-            } else {
-                sbSQL.append("\n\tNOT DEFERRABLE INITIALLY IMMEDIATE");
-            }
-        }
-
-        if (getOldTable() != null || getNewTable() != null) {
-            sbSQL.append("\n\tREFERENCING ");
-            if (getNewTable() != null) {
-                sbSQL.append("NEW TABLE AS ");
-                sbSQL.append(getNewTable());
-                sbSQL.append(' ');
-            }
-            if (getOldTable() != null) {
-                sbSQL.append("OLD TABLE AS ");
-                sbSQL.append(getOldTable());
-                sbSQL.append(' ');
-            }
-        }
-
-        sbSQL.append("\n\tFOR EACH ");
-        sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
-
-        if (getWhen() != null) {
-            sbSQL.append("\n\tWHEN (");
-            sbSQL.append(getWhen());
-            sbSQL.append(')');
-        }
-
-        sbSQL.append("\n\tEXECUTE PROCEDURE ");
-        sbSQL.append(getFunction());
-        sbSQL.append(';');
-
         if (enabledState != null) {
-            sbSQL.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(enabledState)
-            .append(" TRIGGER ")
-            .append(PgDiffUtils.getQuotedName(getName()))
-            .append(';');
+            addAlterTable(enabledState, this, script);
         }
-
-        return sbSQL.toString();
+        appendComments(script);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, StringBuilder sb,
-            AtomicBoolean isNeedDepcies) {
-        final int startLength = sb.length();
+    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+        int startSize = script.getSize();
         PgTrigger newTrg = (PgTrigger) newCondition;
         if (!compareUnalterable(newTrg)) {
             isNeedDepcies.set(true);
@@ -201,22 +194,22 @@ public class PgTrigger extends AbstractTrigger {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
-            sb.append("\n\nALTER TABLE ")
-            .append(getParent().getQualifiedName())
-            .append(' ')
-            .append(newEnabledState)
-            .append(" TRIGGER ")
-            .append(PgDiffUtils.getQuotedName(newTrg.getName()))
-            .append(';');
+            addAlterTable(newEnabledState, newTrg, script);
         }
-        compareComments(sb, newTrg);
+        appendAlterComments(newTrg, script);
 
-        return getObjectState(sb, startLength);
+        return getObjectState(script, startSize);
     }
 
-    @Override
-    public boolean canDrop() {
-        return !isChild;
+    private void addAlterTable(String enabledState, PgTrigger trigger, SQLScript script) {
+        StringBuilder sql = new StringBuilder();
+        sql.append(ALTER_TABLE)
+        .append(getParent().getQualifiedName())
+        .append(' ')
+        .append(enabledState)
+        .append(" TRIGGER ")
+        .append(PgDiffUtils.getQuotedName(trigger.getName()));
+        script.addStatement(sql);
     }
 
     @Override
@@ -371,9 +364,14 @@ public class PgTrigger extends AbstractTrigger {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof PgTrigger trigger && super.compare(obj)) {
-            return compareUnalterable(trigger)
-                    && Objects.equals(enabledState, trigger.getEnabledState());
+        if (obj instanceof PgTrigger trigger) {
+            boolean areStatesEqual = Objects.equals(enabledState, trigger.getEnabledState());
+            if (isChild || trigger.getIsChild()) {
+                return Objects.equals(name, trigger.name) && areStatesEqual;
+            }
+            if (super.compare(obj)) {
+                return compareUnalterable(trigger) && areStatesEqual;
+            }
         }
         return false;
     }

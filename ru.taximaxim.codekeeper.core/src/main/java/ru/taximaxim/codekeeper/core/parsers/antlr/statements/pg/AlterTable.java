@@ -26,7 +26,6 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_partition_gpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_table_statementContext;
@@ -57,6 +56,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionGpTable;
+import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionTemplateContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraint;
@@ -308,19 +308,14 @@ public class AlterTable extends TableAbstract {
             return;
         }
         PgTrigger trigger;
-        try {
-            trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
-                    tablAction.trigger_name);
-            db.getParentTriggers().put(tablAction.trigger_name.getText(), trigger);
-        }
-        catch (UnresolvedReferenceException e) {
-            var parentTrigger = db.getParentTriggers().get(tablAction.trigger_name.getText());
-            if (parentTrigger == null) {
-                return;
-            }
-            trigger = (PgTrigger) parentTrigger.deepCopy();
+        String triggerName = tablAction.trigger_name.getText();
+        if (tabl.getTrigger(triggerName) == null && tabl instanceof PartitionPgTable) {
+            trigger = new PgTrigger(triggerName);
             trigger.setIsChild(true);
             tabl.addTrigger(trigger);
+        } else {
+            trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
+                    tablAction.trigger_name);
         }
         if (trigger != null) {
             if (tablAction.DISABLE() != null) {
