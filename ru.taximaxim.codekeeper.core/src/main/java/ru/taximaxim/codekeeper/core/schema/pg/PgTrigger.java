@@ -213,6 +213,11 @@ public class PgTrigger extends AbstractTrigger {
     }
 
     @Override
+    public boolean canDrop() {
+        return !isChild;
+    }
+
+    @Override
     public boolean canDropBeforeCreate() {
         return true;
     }
