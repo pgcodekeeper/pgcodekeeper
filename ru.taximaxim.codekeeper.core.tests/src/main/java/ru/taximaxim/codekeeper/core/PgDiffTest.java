@@ -586,6 +586,8 @@ class PgDiffTest {
             "test_encoding_function",
             // Tests scenario where SCHEMAS is compared.
             "compare_schemas",
+            // Test scenario where domain with constraints is altered.
+            "alter_domain_with_constraints"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);
