@@ -29,11 +29,17 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
 
     private static final String ESTABLISHING_MSG = "Establishing JDBC connection with host:port {0}:{1}, db name {2}, username {3}"; // $NON-NLS-1$
 
-    private DbInfo dbInfo;
+    private final DbInfo dbInfo;
+    private final int timeoutSeconds;
 
     public DbInfoJdbcConnector(DbInfo dbInfo) {
+        this(dbInfo, 0);
+    }
+
+    public DbInfoJdbcConnector(DbInfo dbInfo, int timeoutSeconds) {
         super(dbInfo.getDbType());
         this.dbInfo = dbInfo;
+        this.timeoutSeconds = timeoutSeconds;
     }
 
     @Override
@@ -60,6 +66,18 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
         if (!pass.isEmpty()) {
             props.setProperty("password", pass); //$NON-NLS-1$
         }
+
+        switch (dbType) {
+        case PG, MS:
+            props.setProperty("loginTimeout", String.valueOf(timeoutSeconds)); //$NON-NLS-1$
+            break;
+        case CH:
+            props.setProperty("connect_timeout", String.valueOf(timeoutSeconds * 1000)); //$NON-NLS-1$
+            break;
+        default:
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
+        }
+
         var properties = dbInfo.getProperties();
         if (properties != null) {
             properties.entrySet().forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
@@ -89,18 +107,14 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
 
     @Override
     protected String getUrl() {
-        switch (dbType) {
-        case PG:
-            return URL_START_PG + "//" + dbInfo.getDbHost() + ':' + getPort() + '/' + dbInfo.getDbName(); //$NON-NLS-1$
-        case MS:
-            return URL_START_MS + "//" + dbInfo.getDbHost() + ':' + getPort() //$NON-NLS-1$
-            + (isDbNameEscapable() ? ";databaseName={" + dbInfo.getDbName() + '}' : ""); //$NON-NLS-1$ //$NON-NLS-2$
-        case CH:
-            return URL_START_CH + "//" + dbInfo.getDbHost() + ':' + getPort() //$NON-NLS-1$
-            + (dbInfo.getDbName() != null ? '/' + dbInfo.getDbName() : ""); //$NON-NLS-1$
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return switch (dbType) {
+            case PG -> URL_START_PG + "//" + dbInfo.getDbHost() + ':' + getPort() + '/' + dbInfo.getDbName(); //$NON-NLS-1$
+            case MS -> URL_START_MS + "//" + dbInfo.getDbHost() + ':' + getPort() //$NON-NLS-1$
+                        + (isDbNameEscapable() ? ";databaseName={" + dbInfo.getDbName() + '}' : ""); //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-2$
+            case CH -> URL_START_CH + "//" + dbInfo.getDbHost() + ':' + getPort() //$NON-NLS-1$
+                        + (dbInfo.getDbName() != null ? '/' + dbInfo.getDbName() : ""); //$NON-NLS-1$ //$NON-NLS-1$
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
     }
 
     private String getPort() {

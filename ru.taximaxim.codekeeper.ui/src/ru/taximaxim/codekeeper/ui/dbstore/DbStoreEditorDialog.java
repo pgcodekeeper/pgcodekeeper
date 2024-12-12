@@ -28,8 +28,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -58,10 +65,10 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
-import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
+import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
@@ -443,7 +450,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 "https://docs.microsoft.com/sql/connect/jdbc/setting-the-connection-properties"); //$NON-NLS-1$
 
         addLink(tabAreaProperties, Messages.DbPropertyListEditor_ch_link_hint,
-                "https://clickhouse.com/docs/en/integrations/java#jdbc-driver");
+                "https://clickhouse.com/docs/en/integrations/java#jdbc-driver"); //$NON-NLS-1$
 
         propertyListEditor = new DbPropertyListEditor(tabAreaProperties);
         propertyListEditor.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -531,33 +538,51 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                int style;
-                String message;
-                try {
-                    AbstractJdbcConnector connector = new DbInfoJdbcConnector(generateDbInfo());
-                    try (Connection connection = connector.getConnection()) {
-                        style = SWT.OK;
-                        message = Messages.DbStoreEditorDialog_successfull_connection;
-                    }
-                } catch (NumberFormatException ex) {
-                    message = MessageFormat.format(Messages.dbStoreEditorDialog_not_valid_port_number,
-                            txtDbPort.getText());
-                    style = SWT.ICON_ERROR;
-                } catch (SQLException | IOException ex) {
-                    Log.log(Log.LOG_INFO, "Connection test error", ex); //$NON-NLS-1$
-                    message = Messages.DbStoreEditorDialog_failed_connection_reason + ex.getLocalizedMessage();
-                    style = SWT.ICON_ERROR;
-                }
-
-                MessageBox mb = new MessageBox(getShell(), style);
-                mb.setText(style == SWT.ERROR ? Messages.DbStoreEditorDialog_failed_connection
-                        : Messages.DbStoreEditorDialog_success);
-                mb.setMessage(message);
-                mb.open();
+                runTest();
             }
         });
 
         super.createButtonsForButtonBar(parent);
+    }
+
+    private void runTest() {
+        DbInfo testDbInfo = generateDbInfo();
+        getButton(IDialogConstants.CLIENT_ID).setEnabled(false);
+
+        String title = "Connection test for: " + testDbInfo.getName(); //$NON-NLS-1$
+        Job job = new Job(title) {
+
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                var connector = new DbInfoJdbcConnector(testDbInfo, 10);
+                try (Connection connection = connector.getConnection()) {
+                    return Status.OK_STATUS;
+                } catch (NumberFormatException ex) {
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
+                            Messages.dbStoreEditorDialog_not_valid_port_number + txtDbPort.getText(), ex);
+                } catch (SQLException | IOException ex) {
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
+                            Messages.DbStoreEditorDialog_failed_connection_reason, ex);
+                }
+            }
+        };
+
+        job.addJobChangeListener(new JobChangeAdapter() {
+
+            @Override
+            public void done(IJobChangeEvent event) {
+                UiSync.exec(getShell(), () -> {
+                    if (event.getResult().isOK()) {
+                        MessageDialog.open(MessageDialog.INFORMATION, getShell(), title,
+                                Messages.DbStoreEditorDialog_successfull_connection, SWT.NONE);
+                    }
+                    getButton(IDialogConstants.CLIENT_ID).setEnabled(true);
+                });
+            }
+        });
+
+        job.setUser(true);
+        job.schedule();
     }
 
     @Override
