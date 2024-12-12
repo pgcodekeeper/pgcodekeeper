@@ -574,6 +574,9 @@
                </visibleWhen>
             </command>
             <command commandId="ru.taximaxim.codekeeper.ui.command.Format">
+               <visibleWhen
+                     checkEnabled="true">
+               </visibleWhen>
             </command>
             <command 
                 commandId="ru.taximaxim.codekeeper.ui.command.AddComment">
@@ -581,7 +584,6 @@
                      checkEnabled="true">
                </visibleWhen>
             </command>
-            
         </menuContribution>
         <menuContribution locationURI="popup:org.eclipse.ui.projectConfigure?after=additions">
             <command
