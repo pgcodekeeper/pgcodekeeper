@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.text.MessageFormat;
+import java.util.List;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -152,5 +153,11 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(partitionBounds);
+    }
+
+    @Override
+    public void appendMoveDataSql(PgStatement newCondition, SQLScript script, String tblTmpBareName,
+            List<String> identityCols) {
+        // no impl
     }
 }

@@ -307,6 +307,49 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
     }
 
+    @Override
+    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+            List<String> identityColsForMovingData, String cols) {
+        if (!identityColsForMovingData.isEmpty()) {
+            // There can only be one IDENTITY column per table in MSSQL.
+            script.addStatement(getIdentInsertText(tblQName, true));
+        }
+
+        StringBuilder sbInsert = new StringBuilder();
+
+        sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
+        sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
+        script.addStatement(sbInsert);
+
+        if (!identityColsForMovingData.isEmpty()) {
+            // There can only be one IDENTITY column per table in MSSQL.
+            script.addStatement(getIdentInsertText(tblQName, false));
+
+            // DECLARE'd var is only visible within its batch
+            // so we shouldn't need unique names for them here
+            // use the largest numeric type to fit any possible identity value
+            StringBuilder sbSql = new StringBuilder();
+            sbSql.append("DECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
+            .append(PgDiffUtils.quoteString(tblTmpQName))
+            .append("));\nDBCC CHECKIDENT (")
+            .append(PgDiffUtils.quoteString(tblQName))
+            .append(", RESEED, @restart_var);");
+            script.addStatement(sbSql);
+        }
+    }
+
+    private String getIdentInsertText(String name, boolean isOn) {
+        return "SET IDENTITY_INSERT " + name + (isOn ? " ON" : " OFF");
+    }
+
+    @Override
+    protected List<String> getColsForMovingData(AbstractTable newTbl) {
+        return newTbl.getColumns().stream()
+            .filter(c -> containsColumn(c.getName()))
+            .map(MsColumn.class::cast)
+            .filter(msCol -> msCol.getExpression() == null)
+            .map(AbstractColumn::getName).toList();
+    }
 
     @Override
     public void getDropSQL(SQLScript script, boolean generateExists) {

@@ -30,8 +30,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -47,17 +45,14 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
-import ru.taximaxim.codekeeper.core.schema.pg.AbstractForeignTable;
-import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
-import ru.taximaxim.codekeeper.core.schema.pg.GpExternalTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
-import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ActionsToScriptConverter {
@@ -225,8 +220,10 @@ public class ActionsToScriptConverter {
                 script.addStatementWithoutSeparator(depcy);
             }
 
+            var oldObj = obj.getTwin(oldDbFull);
+
             // explicitly deleting a sequence due to a name conflict
-            if (arguments.isDataMovementMode() && obj instanceof PgSequence && obj.getTwin(oldDbFull) != null) {
+            if (arguments.isDataMovementMode() && obj instanceof PgSequence && oldObj != null) {
                 addToDropScript(obj, false);
             }
 
@@ -236,18 +233,9 @@ public class ActionsToScriptConverter {
 
             addToAddScript(obj);
 
-            if (arguments.isDataMovementMode()
-                    && obj.getTwin(oldDbFull) != null
-                    && DbObjType.TABLE == obj.getStatementType()) {
-
-                if (isPartitionTable(obj)) {
-                    addCommandsForMovePartitionData(obj);
-                } else if (!(obj instanceof AbstractForeignTable || obj instanceof PartitionPgTable
-                        || obj instanceof GpExternalTable)) {
-                    addCommandsForMoveData((AbstractTable) obj);
-                }
+            if (arguments.isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {
+                moveData(oldTable, obj);
             }
-
             break;
         case DROP:
             if (depcy != null) {
@@ -255,7 +243,7 @@ public class ActionsToScriptConverter {
             }
             if (arguments.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
-                    && !(obj instanceof AbstractForeignTable || obj instanceof GpExternalTable)
+                    && !(obj instanceof IForeignTable)
                     && obj.getTwin(newDbFull) != null) {
                 addCommandsForRenameTbl((AbstractTable) obj);
             } else {
@@ -310,15 +298,11 @@ public class ActionsToScriptConverter {
         script.addStatement(sb);
     }
 
-    private boolean isPartitionTable(PgStatement obj) {
-        return obj instanceof SimplePgTable simple && simple.getPartitionBy() != null;
-    }
-
     private void fillPartitionTables() {
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
-            if (obj instanceof PartitionPgTable table && action.getAction() == StatementActions.CREATE) {
+            if (action.getAction() == StatementActions.CREATE && obj instanceof PartitionPgTable table) {
                 partitionTables.computeIfAbsent(table.getParentTable(), tables -> new ArrayList<>()).add(table);
             }
         }
@@ -343,32 +327,36 @@ public class ActionsToScriptConverter {
                 .toList();
     }
 
-    private void addCommandsForMovePartitionData(PgStatement obj) {
-        List<PartitionPgTable> tables = partitionTables.get(obj.getQualifiedName());
+    private void moveData(AbstractTable oldTable, PgStatement newObj) {
+        String qname = newObj.getQualifiedName();
+        String tempName = tblTmpNames.get(qname);
+        if (tempName == null) {
+            return;
+        }
+
+        List<PartitionPgTable> tables = partitionTables.get(qname);
         if (tables != null) {
             // print create for partition tables
             for (PartitionPgTable table : tables) {
                 addToAddScript(table);
             }
         }
-        // print insert for parent table
-        addCommandsForMoveData((AbstractTable) obj);
+
+        oldTable.appendMoveDataSql(newObj, script, tempName, tblIdentityCols.get(qname));
 
         if (tables != null) {
             List<PartitionPgTable> list = new ArrayList<>(tables);
             Collections.reverse(list);
-            list.forEach(this::printDropPartition);
+            list.forEach(this::printDropTempTable);
         }
 
-        // print parent drops
-        SimplePgTable parenTable = (SimplePgTable) obj;
-        printDropPartition(parenTable);
+        printDropTempTable(oldTable);
     }
 
-    private void printDropPartition(AbstractPgTable table) {
+    private void printDropTempTable(AbstractTable table) {
         String tblTmpName = tblTmpNames.get(table.getQualifiedName());
         if (tblTmpName != null) {
-            UnaryOperator<String> quoter = PgDiffUtils::getQuotedName;
+            UnaryOperator<String> quoter = Utils.getQuoter(arguments.getDbType());
             StringBuilder sb = new StringBuilder();
             sb.append("DROP TABLE ")
             .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName));
@@ -383,8 +371,7 @@ public class ActionsToScriptConverter {
         }
 
         // skip column to parent
-        if (objStarter.getStatementType() == DbObjType.COLUMN
-                && objStarter.getParent().equals(oldObj)) {
+        if (objStarter.getStatementType() == DbObjType.COLUMN && objStarter.getParent().equals(oldObj)) {
             return null;
         }
 
@@ -474,32 +461,30 @@ public class ActionsToScriptConverter {
         String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
         String qname = oldTbl.getQualifiedName();
 
-        String tmpTblName = getTempName(oldTbl.getName(), tmpSuffix);
+        String tmpTblName = getTempName(oldTbl, tmpSuffix);
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
         tblTmpNames.put(qname, tmpTblName);
 
+        DatabaseType dbtype = arguments.getDbType();
+        List<String> identityCols = new ArrayList<>();
         for (AbstractColumn col : oldTbl.getColumns()) {
-
-            switch (arguments.getDbType()) {
+            switch (dbtype) {
             case PG:
                 PgColumn oldPgCol = (PgColumn) col;
                 PgColumn newPgCol = (PgColumn) oldPgCol.getTwin(newDbFull);
                 if (newPgCol != null && newPgCol.getSequence() != null) {
                     AbstractSequence seq = oldPgCol.getSequence();
                     if (seq != null) {
-                        script.addStatement(getRenameCommand(seq,
-                                getTempName(seq.getName(), tmpSuffix)));
+                        script.addStatement(getRenameCommand(seq, getTempName(seq, tmpSuffix)));
                     }
-                    tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
-                    .add(oldPgCol.getName());
+                    identityCols.add(oldPgCol.getName());
                 }
                 break;
             case MS:
                 MsColumn msCol = (MsColumn) col;
                 if (msCol.isIdentity()) {
-                    tblIdentityCols.computeIfAbsent(qname, k -> new ArrayList<>())
-                    .add(msCol.getName());
+                    identityCols.add(msCol.getName());
                 }
                 if (msCol.getDefaultName() != null) {
                     script.addStatement("ALTER TABLE "
@@ -511,12 +496,17 @@ public class ActionsToScriptConverter {
             case CH:
                 break;
             default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbtype);
             }
+        }
+
+        if (!identityCols.isEmpty()) {
+            tblIdentityCols.put(qname, identityCols);
         }
     }
 
-    private String getTempName(String name, String tmpSuffix) {
+    private String getTempName(PgStatement st, String tmpSuffix) {
+        String name = st.getName();
         if (name.length() > 30) {
             return name.substring(0, 30) + tmpSuffix;
         }
@@ -541,122 +531,5 @@ public class ActionsToScriptConverter {
                 st.getStatementType(), st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
         default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         };
-    }
-
-    /**
-     * Adds commands to the script for move data from the temporary table
-     * to the new table, given the identity columns, and a command to delete
-     * the temporary table.
-     */
-    private void addCommandsForMoveData(AbstractTable newTbl) {
-        AbstractTable oldTbl = (AbstractTable) newTbl.getTwin(oldDbFull);
-        String tblQName = newTbl.getQualifiedName();
-        String tblTmpBareName = tblTmpNames.get(tblQName);
-
-        if (tblTmpBareName == null) {
-            return;
-        }
-        var quoter = Utils.getQuoter(arguments.getDbType());
-        String tblTmpQName = quoter.apply(oldTbl.getSchemaName()) + '.' + quoter.apply(tblTmpBareName);
-
-        List<String> colsForMovingData = getColsForMovingData(newTbl);
-        List<String> identityCols = tblIdentityCols.get(tblQName);
-        List<String> identityColsForMovingData = identityCols == null ? Collections.emptyList()
-                : identityCols.stream().filter(colsForMovingData::contains)
-                .toList();
-
-        if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
-            // There can only be one IDENTITY column per table in MSSQL.
-            script.addStatement(getIdentInsertText(tblQName, true));
-        }
-
-        String cols = colsForMovingData.stream()
-                .map(quoter)
-                .collect(Collectors.joining(", "));
-        StringBuilder sbInsert = new StringBuilder();
-
-        sbInsert.append("INSERT INTO ").append(tblQName).append('(')
-        .append(cols).append(")");
-        if (arguments.getDbType() == DatabaseType.PG && identityCols != null) {
-            sbInsert.append("\nOVERRIDING SYSTEM VALUE");
-        }
-        sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
-        script.addStatement(sbInsert);
-
-        if (arguments.getDbType() == DatabaseType.MS && !identityColsForMovingData.isEmpty()) {
-            // There can only be one IDENTITY column per table in MSSQL.
-            script.addStatement(getIdentInsertText(tblQName, false));
-        }
-
-        if (!identityColsForMovingData.isEmpty()) {
-            switch (arguments.getDbType()) {
-            case PG:
-                for (String colName : identityColsForMovingData) {
-                    StringBuilder sbSql = new StringBuilder();
-                    String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN "
-                            + PgDiffUtils.getQuotedName(colName)
-                            + " RESTART WITH ";
-                    restartWith = PgDiffUtils.quoteStringDollar(restartWith)
-                            + " || restart_var || ';'";
-                    String doBody = "\nDECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence("
-                            + PgDiffUtils.quoteString(tblTmpQName) + ", "
-                            + PgDiffUtils.quoteString(PgDiffUtils.getQuotedName(colName))
-                            + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
-                    sbSql.append("DO LANGUAGE plpgsql ")
-                    .append(PgDiffUtils.quoteStringDollar(doBody));
-                    script.addStatement(sbSql);
-                }
-                break;
-            case MS:
-                // There can only be one IDENTITY column per table in MSSQL.
-                // DECLARE'd var is only visible within its batch
-                // so we shouldn't need unique names for them here
-                // use the largest numeric type to fit any possible identity value
-                StringBuilder sbSql = new StringBuilder();
-                sbSql.append("DECLARE @restart_var numeric(38,0) = (SELECT IDENT_CURRENT (")
-                .append(PgDiffUtils.quoteString(tblTmpQName))
-                .append("));\nDBCC CHECKIDENT (")
-                .append(PgDiffUtils.quoteString(tblQName))
-                .append(", RESEED, @restart_var);");
-                script.addStatement(sbSql.toString());
-                break;
-            default:
-                throw new IllegalArgumentException(
-                        Messages.DatabaseType_unsupported_type + arguments.getDbType());
-            }
-        }
-        if (!isPartitionTable(newTbl)) {
-            script.addStatement("DROP TABLE " + tblTmpQName);
-        }
-    }
-
-    private String getIdentInsertText(String name, boolean isOn) {
-        return "SET IDENTITY_INSERT " + name + (isOn ? " ON" : " OFF");
-    }
-
-    /**
-     * Returns the names of the columns from which data will be moved to another
-     * table, excluding calculated columns.
-     */
-    private List<String> getColsForMovingData(AbstractTable newTbl) {
-        AbstractTable oldTable = (AbstractTable) newTbl.getTwin(oldDbFull);
-        Stream<? extends AbstractColumn> cols = newTbl.getColumns().stream()
-                .filter(c -> oldTable.containsColumn(c.getName()));
-
-        switch (arguments.getDbType()) {
-        case MS:
-            cols = cols.map(MsColumn.class::cast)
-            .filter(msCol -> msCol.getExpression() == null);
-            break;
-        case PG:
-            cols = cols.map(PgColumn.class::cast)
-            .filter(pgCol -> !pgCol.isGenerated());
-            break;
-        case CH:
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        }
-        return cols.map(AbstractColumn::getName).toList();
     }
 }

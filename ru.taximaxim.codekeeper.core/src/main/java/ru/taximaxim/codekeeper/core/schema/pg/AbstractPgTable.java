@@ -458,4 +458,37 @@ public abstract class AbstractPgTable extends AbstractTable {
         copy.setHasOids(getHasOids());
         return copy;
     }
+
+    @Override
+    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+            List<String> identityColsForMovingData, String cols) {
+        StringBuilder sbInsert = new StringBuilder();
+        sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
+        if (!identityColsForMovingData.isEmpty()) {
+            sbInsert.append("\nOVERRIDING SYSTEM VALUE");
+        }
+        sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
+        script.addStatement(sbInsert);
+
+        for (String colName : identityColsForMovingData) {
+            String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN " + PgDiffUtils.getQuotedName(colName)
+                    + " RESTART WITH ";
+            restartWith = PgDiffUtils.quoteStringDollar(restartWith) + " || restart_var || ';'";
+            String doBody = "\nDECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence("
+                    + PgDiffUtils.quoteString(tblTmpQName) + ", "
+                    + PgDiffUtils.quoteString(PgDiffUtils.getQuotedName(colName))
+                    + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
+            script.addStatement("DO LANGUAGE plpgsql " + PgDiffUtils.quoteStringDollar(doBody));
+        }
+    }
+
+    @Override
+    public List<String> getColsForMovingData(AbstractTable newTable) {
+        return newTable.getColumns().stream()
+            .filter(c -> containsColumn(c.getName()))
+            .map(PgColumn.class::cast)
+            .filter(pgCol -> !pgCol.isGenerated())
+            .map(AbstractColumn::getName)
+            .toList();
+    }
 }

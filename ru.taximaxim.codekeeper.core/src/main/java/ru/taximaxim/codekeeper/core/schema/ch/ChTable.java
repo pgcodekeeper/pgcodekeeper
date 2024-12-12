@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.ch;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -220,5 +221,22 @@ public class ChTable extends AbstractTable {
     @Override
     public void compareOptions(IOptionContainer newContainer, SQLScript script) {
         // no impl
+    }
+
+    @Override
+    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+            List<String> identityColsForMovingData, String cols) {
+        StringBuilder sbInsert = new StringBuilder();
+        sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
+        sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
+        script.addStatement(sbInsert);
+    }
+
+    @Override
+    protected List<String> getColsForMovingData(AbstractTable newTable) {
+        return newTable.getColumns().stream()
+            .filter(c -> containsColumn(c.getName()))
+            .map(AbstractColumn::getName)
+            .toList();
     }
 }
