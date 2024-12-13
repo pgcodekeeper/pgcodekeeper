@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -372,6 +373,32 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             signatureCache = appendFunctionSignature(new StringBuilder(), false, false).toString();
         }
         return signatureCache;
+    }
+
+    @Override
+    public boolean needDrop(AbstractFunction newFunction) {
+        Iterator<Argument> iOld = arguments.iterator();
+        Iterator<Argument> iNew = newFunction.getArguments().iterator();
+        while (iOld.hasNext() && iNew.hasNext()) {
+            Argument argOld = iOld.next();
+            Argument argNew = iNew.next();
+            String oldDef = argOld.getDefaultExpression();
+            String newDef = argNew.getDefaultExpression();
+
+            if (oldDef != null && !oldDef.equals(newDef)) {
+                return true;
+            }
+            if (!Objects.equals(argOld.getName(), argNew.getName())) {
+                return true;
+            }
+            if (!Objects.equals(argOld.getDataType(), argNew.getDataType())) {
+                return true;
+            }
+            if (argOld.getMode() != argNew.getMode()) {
+                return true;
+            }
+        }
+        return iOld.hasNext() || iNew.hasNext();
     }
 
     @Override
