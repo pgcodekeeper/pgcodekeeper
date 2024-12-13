@@ -19,13 +19,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Iterator;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
-import ru.taximaxim.codekeeper.core.schema.Argument;
 
 /**
  * Stores Postgres procedure information.
@@ -51,25 +49,6 @@ public class PgProcedure extends AbstractPgFunction {
     @Override
     public void setReturns(String returns) {
         this.returns = returns;
-    }
-
-    @Override
-    public boolean needDrop(AbstractFunction newFunction) {
-        Iterator<Argument> iOld = arguments.iterator();
-        Iterator<Argument> iNew = newFunction.getArguments().iterator();
-        while (iOld.hasNext() && iNew.hasNext()) {
-            Argument argOld = iOld.next();
-            Argument argNew = iNew.next();
-
-            String oldDef = argOld.getDefaultExpression();
-            String newDef = argNew.getDefaultExpression();
-            // allow creation of defaults (old==null && new!=null)
-            if (oldDef != null && !oldDef.equals(newDef)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     @Override

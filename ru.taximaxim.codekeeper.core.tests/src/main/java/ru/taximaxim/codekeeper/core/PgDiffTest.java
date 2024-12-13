@@ -587,7 +587,15 @@ class PgDiffTest {
             // Tests scenario where SCHEMAS is compared.
             "compare_schemas",
             // Test scenario where domain with constraints is altered.
-            "alter_domain_with_constraints"
+            "alter_domain_with_constraints",
+            // Test scenario where defaults are added and removed to procedure arguments
+            "modify_procedure_args_default",
+            // Test scenario where name of procedure argument is changed
+            "modify_procedure_args_name",
+            // Test scenario where type of procedure argument is changed
+            "modify_procedure_args_type",
+            // Test scenario where mode of procedure argument is changed
+            "modify_procedure_args_mode"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);
@@ -638,7 +646,7 @@ class PgDiffTest {
         String script = TestUtils.getScript(fileNameTemplate, args, PgDiffTest.class);
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
     }
-    
+
     @ParameterizedTest
     @ValueSource(strings = {
             "alter_greenplum_table"
