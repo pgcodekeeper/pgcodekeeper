@@ -14,11 +14,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - The mechanism for generating the migration script has been rewritten, allowing for more fine-grained control over the order of operations. In the process, the order of some operations was corrected.
+- Disabled formatting option for read-only files.
 
 ### Fixed
 
 - Fixed error when loading DOMAIN object with NOT NULL constraint.
 - Fixed a bug in generating code for a DOMAIN object with constraints.
+- Fixed UI freeze when testing connection with database.
+- Fixed code generation for CREATE OR REPLACE PROCEDURE command.
 
 ### Removed
 

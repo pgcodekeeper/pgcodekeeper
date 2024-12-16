@@ -35,6 +35,6 @@ public class Format extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        return editor instanceof SQLEditor;
+        return editor instanceof SQLEditor sql && sql.isEditable();
     }
 }

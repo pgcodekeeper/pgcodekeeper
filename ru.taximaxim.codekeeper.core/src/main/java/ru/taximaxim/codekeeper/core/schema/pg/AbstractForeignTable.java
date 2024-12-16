@@ -15,11 +15,13 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.List;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
@@ -29,7 +31,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @since 4.1.1
  * @author galiev_mr
  */
-public abstract class AbstractForeignTable extends AbstractPgTable implements PgForeignOptionContainer {
+public abstract class AbstractForeignTable extends AbstractPgTable implements PgForeignOptionContainer, IForeignTable {
 
     protected final String serverName;
 
@@ -119,5 +121,11 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(serverName);
+    }
+
+    @Override
+    public void appendMoveDataSql(PgStatement newCondition, SQLScript script, String tblTmpBareName,
+            List<String> identityCols) {
+        // no impl
     }
 }

@@ -21,9 +21,11 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
@@ -233,4 +235,32 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
     }
 
     protected abstract AbstractTable getTableCopy();
+
+    /**
+     * Adds commands to the script for move data from the temporary table to the new table, given the identity columns,
+     * and a command to delete the temporary table.
+     */
+    public void appendMoveDataSql(PgStatement newCondition, SQLScript script, String tblTmpBareName,
+            List<String> identityCols) {
+        AbstractTable newTable = (AbstractTable) newCondition;
+        List<String> colsForMovingData = getColsForMovingData(newTable);
+        if (colsForMovingData.isEmpty()) {
+            return;
+        }
+
+        var quoter = Utils.getQuoter(getDbType());
+        String tblTmpQName = quoter.apply(getSchemaName()) + '.' + quoter.apply(tblTmpBareName);
+        String cols = colsForMovingData.stream().map(quoter).collect(Collectors.joining(", "));
+        List<String> identityColsForMovingData = identityCols == null ? Collections.emptyList()
+                : identityCols.stream().filter(colsForMovingData::contains).toList();
+        writeInsert(script, newTable.getQualifiedName(), tblTmpQName, identityColsForMovingData, cols);
+    }
+
+    protected abstract void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+            List<String> identityColsForMovingData, String cols);
+
+    /**
+     * Returns the names of the columns from which data will be moved to another table, excluding calculated columns.
+     */
+    protected abstract List<String> getColsForMovingData(AbstractTable newTable);
 }

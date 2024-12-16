@@ -22,11 +22,12 @@ import java.util.Objects;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
+import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer {
+public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer, IForeignTable {
 
     private boolean isWritable;
     private boolean isWeb;
@@ -335,4 +336,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         return copy;
     }
 
+    @Override
+    public void appendMoveDataSql(PgStatement newCondition, SQLScript script, String tblTmpBareName,
+            List<String> identityCols) {
+        // no impl
+    }
 }

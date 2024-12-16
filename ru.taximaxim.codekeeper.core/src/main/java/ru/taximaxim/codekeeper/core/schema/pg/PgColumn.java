@@ -39,6 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ICompressOptionContainer;
+import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
@@ -418,9 +419,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                 sb.append(COLLATE).append(newCollation);
             }
 
-            if (!getDatabaseArguments().isUsingTypeCastOff()
-                    && !(getParent() instanceof AbstractForeignTable)
-                    && !(getParent() instanceof GpExternalTable)) {
+            if (!getDatabaseArguments().isUsingTypeCastOff() && !(getParent() instanceof IForeignTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
                 .append("::").append(newType);
             }
