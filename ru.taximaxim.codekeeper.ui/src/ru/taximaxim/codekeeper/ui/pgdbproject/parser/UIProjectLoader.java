@@ -431,7 +431,8 @@ public class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isInProject(IPath path, DatabaseType dbType) {
         String dir = path.segment(0);
-        return dir != null && WorkDirs.getDirectoryNames(dbType).stream().anyMatch(dir::equals);
+        return dir != null && (WorkDirs.OVERRIDES.equals(dir)
+                || WorkDirs.getDirectoryNames(dbType).stream().anyMatch(dir::equals));
     }
 
     public static boolean isInProject(IResource resource) {
