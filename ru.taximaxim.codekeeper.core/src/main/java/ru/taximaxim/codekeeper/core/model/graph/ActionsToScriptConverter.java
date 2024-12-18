@@ -230,7 +230,6 @@ public class ActionsToScriptConverter {
             if (obj.isDropBeforeCreate()) {
                 addToDropScript(obj, true);
             }
-
             addToAddScript(obj);
 
             if (arguments.isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {

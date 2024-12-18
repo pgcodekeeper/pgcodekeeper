@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.ms;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
@@ -30,6 +31,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.MsExpressionAnal
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.GeneratedType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
@@ -67,10 +69,21 @@ public class MsTablesReader extends JdbcReader {
             table.setTracked((Boolean) isTracked);
         }
 
+        String cols = res.getString("cols");
+        List <XmlReader> xmlCols = XmlReader.readXML(cols);
         boolean isTextImage = false;
-        for (XmlReader col : XmlReader.readXML(res.getString("cols"))) {
+        for (XmlReader col : xmlCols) {
             isTextImage = isTextImage || col.getBoolean("ti");
             table.addColumn(getColumn(col, schema, loader, null));
+        }
+
+        if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
+            String perStartCol = getPeriodColName(res.getInt("start_col_id"), xmlCols);
+            if (perStartCol != null) {
+                String perEndCol = getPeriodColName(res.getInt("end_col_id"), xmlCols);
+                table.setPeriodStartCol(table.getColumn(perStartCol));
+                table.setPeriodEndCol(table.getColumn(perEndCol));
+            }
         }
 
         if (isTextImage) {
@@ -95,10 +108,19 @@ public class MsTablesReader extends JdbcReader {
         loader.setPrivileges(table, XmlReader.readXML(res.getString("acl")));
     }
 
+    private String getPeriodColName(int colId, List<XmlReader> xmlCols) {
+        if (colId != 0) {
+            var periodCol = xmlCols.stream().filter(col -> col.getInt("id") == colId).findAny().orElse(null);
+            if (periodCol != null) {
+                return periodCol.getString("name");
+            }
+        }
+        return null;
+    }
+
     // 'MsType type' used only for MsTypesReader processing to extract type depcy
     // from column object since it is temporary
-    static AbstractColumn getColumn(XmlReader col, AbstractSchema schema,
-            JdbcLoaderBase loader, MsType type) {
+    static AbstractColumn getColumn(XmlReader col, AbstractSchema schema, JdbcLoaderBase loader, MsType type) {
         MsColumn column = new MsColumn(col.getString("name"));
         String exp = col.getString("def");
         if (exp == null) {
@@ -142,6 +164,15 @@ public class MsTablesReader extends JdbcReader {
                             new MsExpressionAnalysisLauncher(type == null ? column : type,
                                     ctx, loader.getCurrentLocation())));
         }
+
+        if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
+            int colGenerated = col.getInt("gen");
+            if (colGenerated != 0) {
+                column.setGenerated(GeneratedType.parseDbType(colGenerated));
+                column.setHidden(col.getBoolean("hd"));
+            }
+        }
+
         return column;
     }
 
@@ -182,60 +213,64 @@ public class MsTablesReader extends JdbcReader {
             .column("res.durability")
             .column("res.durability_desc");
         }
+
+        if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
+            builder.column("per.start_column_id AS start_col_id");
+            builder.column("per.end_column_id AS end_col_id");
+            builder.join("LEFT JOIN sys.periods per WITH (NOLOCK) ON per.object_id = res.object_id");
+        }
     }
 
     private void addMsColumnsPart(QueryBuilder builder) {
-        String cols = """
-                CROSS APPLY (
-                  SELECT * FROM (
-                    SELECT
-                      c.name,
-                      c.column_id AS id,
-                      SCHEMA_NAME(t.schema_id) AS st,
-                      t.name AS type,
-                      CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size,
-                      c.precision AS pr,
-                      c.scale AS sc,
-                      c.is_sparse AS sp,
-                      c.collation_name AS cn,
-                      object_definition(c.default_object_id) AS dv,
-                      dc.name AS dn,
-                      c.is_nullable AS nl,
-                      c.is_identity AS ii,
-                      ic.seed_value AS s,
-                      ic.increment_value AS i,
-                      ic.is_not_for_replication AS nfr,
-                      c.is_rowguidcol AS rgc,
-                      cc.is_persisted AS ps,
-                      t.is_user_defined AS ud,
-                      cc.definition AS def,
-                      CASE WHEN t.name IN ('GEOMETRY', 'GEOGRAPHY')
-                        OR TYPE_NAME(t.system_type_id) IN ('TEXT', 'NTEXT','IMAGE' ,'XML')
-                        OR (TYPE_NAME(t.system_type_id) IN ('VARCHAR', 'NVARCHAR', 'VARBINARY') AND c.max_length = -1)
-                        THEN 1 ELSE 0 END AS ti%s
-                      FROM sys.columns c WITH (NOLOCK)
-                      JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id
-                      LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id
-                      LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id
-                      LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id
-                      LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id%s
-                      WHERE c.object_id = res.object_id
-                  ) cc ORDER BY cc.id
-                  FOR XML RAW, ROOT
-                ) cc (cols)""";
+        QueryBuilder subSelect = new QueryBuilder()
+                .column("c.name")
+                .column("c.column_id AS id")
+                .column("SCHEMA_NAME(t.schema_id) AS st")
+                .column("t.name AS type")
+                .column("CASE WHEN c.max_length>=0 AND t.name IN (N'nchar', N'nvarchar') THEN c.max_length/2 ELSE c.max_length END AS size")
+                .column("c.precision AS pr")
+                .column("c.scale AS sc")
+                .column("c.is_sparse AS sp")
+                .column("c.collation_name AS cn")
+                .column("object_definition(c.default_object_id) AS dv")
+                .column("dc.name AS dn")
+                .column("c.is_nullable AS nl")
+                .column("c.is_identity AS ii")
+                .column("ic.seed_value AS s")
+                .column("ic.increment_value AS i")
+                .column("ic.is_not_for_replication AS nfr")
+                .column("c.is_rowguidcol AS rgc")
+                .column("cc.is_persisted AS ps")
+                .column("t.is_user_defined AS ud")
+                .column("""
+                        CASE WHEN t.name IN ('GEOMETRY', 'GEOGRAPHY')
+                          OR TYPE_NAME(t.system_type_id) IN ('TEXT', 'NTEXT','IMAGE' ,'XML')
+                          OR (TYPE_NAME(t.system_type_id) IN ('VARCHAR', 'NVARCHAR', 'VARBINARY') AND c.max_length = -1)
+                        THEN 1 ELSE 0 END AS ti""")
+                .column("cc.definition AS def")
+                .from("sys.columns c WITH (NOLOCK)")
+                .join("JOIN sys.types t WITH (NOLOCK) ON c.user_type_id = t.user_type_id")
+                .join("LEFT JOIN sys.computed_columns cc WITH (NOLOCK) ON cc.object_id = c.object_id AND c.column_id = cc.column_id")
+                .join("LEFT JOIN sys.identity_columns ic WITH (NOLOCK) ON c.object_id = ic.object_id AND c.column_id = ic.column_id")
+                .join("LEFT JOIN sys.default_constraints dc WITH (NOLOCK) ON dc.parent_object_id = c.object_id AND c.column_id = dc.parent_column_id")
+                .join("LEFT JOIN sys.objects so WITH (NOLOCK) ON so.object_id = c.object_id")
+                .where("c.object_id = res.object_id");
 
-        String col;
-        String join;
         if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
-            col = ",\n      mc.masking_function AS mf";
-            join = "\n      LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id";
-        } else {
-            col = "";
-            join = "";
+            subSelect.column("c.is_hidden AS hd")
+            .column("c.generated_always_type AS gen")
+            .column("mc.masking_function AS mf")
+            .join("LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id");
         }
 
-        builder.column("cc.cols");
-        builder.join(cols.formatted(col, join));
+        QueryBuilder cols = new QueryBuilder()
+                .column("*")
+                .from(subSelect, "cc ORDER BY cc.id")
+                .postAction("FOR XML RAW, ROOT");
+
+        builder
+        .column("cc.cols")
+        .join("CROSS APPLY", cols, "cc (cols)");
     }
 
     private void addMsTablespacePart(QueryBuilder builder) {

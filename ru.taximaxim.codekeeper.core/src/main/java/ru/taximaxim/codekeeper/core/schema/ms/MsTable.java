@@ -62,6 +62,9 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     private String fileStream;
     private String tablespace;
 
+    private AbstractColumn periodStartCol;
+    private AbstractColumn periodEndCol;
+
     private final Map<String, MsStatistics> statistics = new HashMap<>();
 
     public MsTable(String name) {
@@ -116,7 +119,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     protected void appendColumns(StringBuilder sbSQL) {
         sbSQL.append("(\n");
 
-        int start = sbSQL.length();
         for (AbstractColumn column : columns) {
             sbSQL.append("\t");
             sbSQL.append(column.getFullDefinition());
@@ -134,13 +136,18 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
                 sbSQL.append(",\n");
             }
         }
+        sbSQL.setLength(sbSQL.length() - 2);
+        appendPeriodSystem(sbSQL);
+        sbSQL.append('\n').append(')');
+    }
 
-        if (start != sbSQL.length()) {
-            sbSQL.setLength(sbSQL.length() - 2);
-            sbSQL.append('\n');
+    protected void appendPeriodSystem(StringBuilder sb) {
+        if (periodStartCol != null && periodEndCol != null) {
+            sb.append(",\n\tPERIOD FOR SYSTEM_TIME (");
+            sb.append(MsDiffUtils.quoteName(periodStartCol.getName())).append(", ");
+            sb.append(MsDiffUtils.quoteName(periodEndCol.getName()));
+            sb.append(")");
         }
-
-        sbSQL.append(')');
     }
 
     public List<AbstractConstraint> getPkeys() {
@@ -204,32 +211,38 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
                     || !PgDiffUtils.setlikeEquals(smt.getPkeys(), getPkeys())
                     || !Objects.equals(smt.getOptions(), getOptions())
                     || !Objects.equals(smt.getFileStream(), getFileStream())
+                    || !Objects.equals(smt.getPeriodStartCol(), getPeriodStartCol())
+                    || !Objects.equals(smt.getPeriodEndCol(), getPeriodEndCol())
                     || (smt.getTextImage() != null && getTextImage() != null
-                    && !Objects.equals(smt.getTextImage(), getTextImage()));
+                            && !Objects.equals(smt.getTextImage(), getTextImage()));
         }
 
         return true;
     }
 
-    private void compareTableOptions(MsTable table, SQLScript script) {
-        if (Objects.equals(isTracked, table.isTracked())) {
-            if (pkChanged(table) && isTracked != null) {
-                disableEnableTracking(SQLActionType.MID, script, table);
+    private void compareTableOptions(MsTable newTable, SQLScript script) {
+        compareTracked(newTable, script);
+    }
+
+    private void compareTracked(MsTable newTable, SQLScript script) {
+        if (Objects.equals(isTracked, newTable.isTracked())) {
+            if (pkChanged(newTable) && isTracked != null) {
+                disableEnableTracking(SQLActionType.MID, script, newTable);
             }
             return;
         }
 
-        if (table.isTracked() == null) {
+        if (newTable.isTracked() == null) {
             script.addStatement(disableTracking(), SQLActionType.END);
             return;
         }
 
         if (isTracked == null) {
-            script.addStatement(table.enableTracking(), SQLActionType.END);
+            script.addStatement(newTable.enableTracking(), SQLActionType.END);
             return;
         }
 
-        disableEnableTracking(SQLActionType.END, script, table);
+        disableEnableTracking(SQLActionType.END, script, newTable);
     }
 
     private boolean pkChanged(MsTable table) {
@@ -303,6 +316,24 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         resetHash();
     }
 
+    public AbstractColumn getPeriodStartCol() {
+        return periodStartCol;
+    }
+
+    public void setPeriodStartCol(AbstractColumn periodStartCol) {
+        this.periodStartCol = periodStartCol;
+        resetHash();
+    }
+
+    public AbstractColumn getPeriodEndCol() {
+        return periodEndCol;
+    }
+
+    public void setPeriodEndCol(AbstractColumn periodEndCol) {
+        this.periodEndCol = periodEndCol;
+        resetHash();
+    }
+
     public boolean isMemoryOptimized() {
         return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
     }
@@ -347,7 +378,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return newTbl.getColumns().stream()
             .filter(c -> containsColumn(c.getName()))
             .map(MsColumn.class::cast)
-            .filter(msCol -> msCol.getExpression() == null)
+            .filter(msCol -> msCol.getExpression() == null && msCol.getGenerated() == null)
             .map(AbstractColumn::getName).toList();
     }
 
@@ -363,16 +394,17 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
-        } else if (obj instanceof MsTable table && super.compare(obj)) {
-            return ansiNulls == table.isAnsiNulls()
-                    && Objects.equals(textImage, table.getTextImage())
-                    && Objects.equals(fileStream, table.getFileStream())
-                    && Objects.equals(isTracked, table.isTracked)
-                    && Objects.equals(tablespace, table.getTablespace())
-                    && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
         }
 
-        return false;
+        return obj instanceof MsTable table && super.compare(obj)
+                && ansiNulls == table.isAnsiNulls()
+                && Objects.equals(textImage, table.getTextImage())
+                && Objects.equals(fileStream, table.getFileStream())
+                && Objects.equals(isTracked, table.isTracked)
+                && Objects.equals(tablespace, table.getTablespace())
+                && Objects.equals(periodStartCol, table.getPeriodStartCol())
+                && Objects.equals(periodEndCol, table.getPeriodEndCol())
+                && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
     }
 
     @Override
@@ -383,6 +415,8 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         hasher.put(isAnsiNulls());
         hasher.put(isTracked());
         hasher.put(getTablespace());
+        hasher.put(getPeriodStartCol());
+        hasher.put(getPeriodEndCol());
         hasher.putUnordered(getPkeys());
     }
 
@@ -394,6 +428,8 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         table.setAnsiNulls(isAnsiNulls());
         table.setTracked(isTracked());
         table.setTablespace(getTablespace());
+        table.setPeriodStartCol(getPeriodStartCol());
+        table.setPeriodEndCol(getPeriodEndCol());
 
         if (pkeys != null) {
             table.pkeys = new ArrayList<>();
