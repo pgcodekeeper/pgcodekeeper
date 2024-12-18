@@ -39,11 +39,13 @@ public class MsColumn extends AbstractColumn {
     private boolean isPersisted;
     private boolean isNotForRep;
     private boolean isIdentity;
+    private boolean isHidden;
     private String seed;
     private String increment;
     private String defaultName;
     private String expession;
     private String maskingFunction;
+    private GeneratedType generated;
 
     public MsColumn(String name) {
         super(name);
@@ -80,6 +82,10 @@ public class MsColumn extends AbstractColumn {
             sbDefinition.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
         }
 
+        if (getGenerated() != null) {
+            appendGenerated(sbDefinition);
+        }
+
         if (getExpression() == null) {
             sbDefinition.append(getNullValue() ? NULL : NOT_NULL);
         }
@@ -106,7 +112,6 @@ public class MsColumn extends AbstractColumn {
     @Override
     public void getCreationSQL(SQLScript script) {
         StringBuilder sql = new StringBuilder();
-
         sql.append(getAlterTable(false));
         sql.append("\n\tADD ").append(MsDiffUtils.quoteName(name)).append(' ');
         if (getExpression() != null) {
@@ -128,6 +133,10 @@ public class MsColumn extends AbstractColumn {
 
         if (getMaskingFunction() != null) {
             sql.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
+        }
+
+        if (getGenerated() != null) {
+            appendGenerated(sql);
         }
 
         boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null && !getNullValue();
@@ -190,6 +199,13 @@ public class MsColumn extends AbstractColumn {
         script.addStatement(sb.toString(), orderType);
     }
 
+    private void appendGenerated(StringBuilder sb) {
+        sb.append(" GENERATED ALWAYS AS ").append(generated.getValue());
+        if (isHidden) {
+            sb.append(" HIDDEN");
+        }
+    }
+
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
         int startSize = script.getSize();
@@ -198,7 +214,9 @@ public class MsColumn extends AbstractColumn {
         // recreate column to change identity or computed value
         if (!Objects.equals(newColumn.getSeed(), getSeed())
                 || !Objects.equals(newColumn.getIncrement(), getIncrement())
-                || !Objects.equals(newColumn.getExpression(), getExpression())) {
+                || !Objects.equals(newColumn.getExpression(), getExpression())
+                || newColumn.getGenerated() != getGenerated()
+                || !Objects.equals(newColumn.isHidden, isHidden())) {
             isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
@@ -414,6 +432,24 @@ public class MsColumn extends AbstractColumn {
         resetHash();
     }
 
+    public GeneratedType getGenerated() {
+        return generated;
+    }
+
+    public void setGenerated(GeneratedType generated) {
+        this.generated = generated;
+        resetHash();
+    }
+
+    public boolean isHidden() {
+        return isHidden;
+    }
+
+    public void setHidden(boolean isHidden) {
+        this.isHidden = isHidden;
+        resetHash();
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsColumn col && super.compare(obj)) {
@@ -422,11 +458,13 @@ public class MsColumn extends AbstractColumn {
                     && isPersisted == col.isPersisted()
                     && isNotForRep == col.isNotForRep()
                     && isIdentity == col.isIdentity()
+                    && isHidden == col.isHidden()
                     && Objects.equals(seed, col.getSeed())
                     && Objects.equals(increment, col.getIncrement())
                     && Objects.equals(defaultName, col.getDefaultName())
                     && Objects.equals(expession, col.getExpression())
-                    && Objects.equals(maskingFunction, col.getMaskingFunction());
+                    && Objects.equals(maskingFunction, col.getMaskingFunction())
+                    && generated == col.getGenerated();
         }
 
         return false;
@@ -440,11 +478,13 @@ public class MsColumn extends AbstractColumn {
         hasher.put(isPersisted);
         hasher.put(isNotForRep);
         hasher.put(isIdentity);
+        hasher.put(isHidden);
         hasher.put(seed);
         hasher.put(increment);
         hasher.put(defaultName);
         hasher.put(expession);
         hasher.put(maskingFunction);
+        hasher.put(generated);
     }
 
     @Override
@@ -455,11 +495,13 @@ public class MsColumn extends AbstractColumn {
         copy.setPersisted(isPersisted());
         copy.setNotForRep(isNotForRep());
         copy.isIdentity = isIdentity();
+        copy.isHidden = isHidden();
         copy.seed = getSeed();
         copy.increment = getIncrement();
         copy.setDefaultName(getDefaultName());
         copy.setExpression(getExpression());
         copy.setMaskingFunction(getMaskingFunction());
+        copy.setGenerated(getGenerated());
         return copy;
     }
 

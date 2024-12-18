@@ -275,6 +275,8 @@ class MsDiffTest {
             // Tests scenario where MS COLUMN type is modified, column has constraint.
             // TODO Uncomment the code when dependency columns from constraint will be supported.
             // "modify_ms_column_type_with_constraint",
+            // Tests scenario where MS COLUMN GENERATED option changed.
+            "modify_ms_column_generated",
             // Tests scenario where MS COLUMN options is added.
             "add_ms_column_options",
             // Tests scenario where MS COLUMN options is dropped.

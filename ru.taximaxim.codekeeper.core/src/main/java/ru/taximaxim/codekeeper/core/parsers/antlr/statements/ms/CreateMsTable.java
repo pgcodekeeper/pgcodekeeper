@@ -31,11 +31,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_ta
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Period_for_system_timeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraintContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_element_extendedContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_indexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_optionsContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
+import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -61,13 +63,15 @@ public class CreateMsTable extends MsTableAbstract {
 
         MsTable table = new MsTable(tableName);
 
+        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
+        addSafe(getSchemaSafe(ids), table, ids);
+
         table.setAnsiNulls(ansiNulls);
 
         if (ctx.tablespace != null) {
             String tableSpace = MsDiffUtils.quoteName(ctx.tablespace.getText());
             if (ctx.partition_col_name != null) {
-                tableSpace = tableSpace + '(' +
-                        MsDiffUtils.quoteName(ctx.partition_col_name.getText()) + ')';
+                tableSpace = tableSpace + '(' + MsDiffUtils.quoteName(ctx.partition_col_name.getText()) + ')';
             }
             table.setTablespace(tableSpace);
         }
@@ -87,9 +91,6 @@ public class CreateMsTable extends MsTableAbstract {
         for (Table_element_extendedContext colCtx : ctx.table_elements_extended().table_element_extended()) {
             fillColumn(colCtx, table);
         }
-
-        List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
-        addSafe(getSchemaSafe(ids), table, ids);
     }
 
     private void fillColumn(Table_element_extendedContext tableElementCtx, MsTable table) {
@@ -101,6 +102,7 @@ public class CreateMsTable extends MsTableAbstract {
         Column_defContext colCtx = tableElementCtx.column_def();
         Table_indexContext indCtx;
         Table_constraintContext constrCtx;
+        Period_for_system_timeContext periodCtx;
 
         if (colCtx != null) {
             parseColumnDef(colCtx, table);
@@ -108,8 +110,14 @@ public class CreateMsTable extends MsTableAbstract {
             table.addChild(getMsConstraint(constrCtx, schemaName, tableName));
         } else if ((indCtx = tableElementCtx.table_index()) != null) {
             parseTableIndex(indCtx, table, schemaName, tableName);
+        } else if ((periodCtx = tableElementCtx.period_for_system_time())!= null) {
+            var startCol = getSafe(AbstractTable::getColumn, table, periodCtx.start_col_name);
+            var endCol = getSafe(AbstractTable::getColumn, table, periodCtx.end_col_name);
+
+            table.setPeriodStartCol(startCol);
+            table.setPeriodEndCol(endCol);
         } else {
-            // TODO add COLUMN_SET and PERIOD FOR SYSTEM_TIME support
+            // TODO add COLUMN_SET support
         }
     }
 

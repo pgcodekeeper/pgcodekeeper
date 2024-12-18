@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.GeneratedType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
@@ -223,6 +224,9 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
             col.setSparse(true);
         } else if (option.COLLATE() != null) {
             col.setCollation(getFullCtxText(option.collate));
+        } else if (option.GENERATED() != null) {
+            col.setGenerated(getGenerated(option));
+            col.setHidden(option.HIDDEN_KEYWORD() != null);
         } else if (option.PERSISTED() != null) {
             col.setPersisted(true);
         } else if (option.ROWGUIDCOL() != null) {
@@ -269,6 +273,23 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
             }
             stmt.addChild(index);
         }
+    }
+
+    private GeneratedType getGenerated(Column_optionContext option) {
+        boolean isStart = option.START() != null;
+        if (option.ROW() != null) {
+            return isStart ? GeneratedType.ROW_START : GeneratedType.ROW_END;
+        }
+
+        if (option.TRANSACTION_ID() != null) {
+            return isStart ? GeneratedType.TRAN_START : GeneratedType.TRAN_END;
+        }
+
+        if (option.SEQUENCE_NUMBER() != null) {
+            return isStart ? GeneratedType.SEQ_START : GeneratedType.SEQ_END;
+        }
+
+        throw new IllegalStateException("Unsupported GENERATED ALWAYS column type: " + getFullCtxText(option));
     }
 
     protected void fillColumns(ISimpleColumnContainer stmt, List<Column_with_orderContext> cols, String schema,
