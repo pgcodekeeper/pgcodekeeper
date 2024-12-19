@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -139,12 +137,11 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgServer newServer = (PgServer) newCondition;
         if (!Objects.equals(newServer.getFdw(), getFdw()) ||
                 !Objects.equals(newServer.getType(), getType())) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

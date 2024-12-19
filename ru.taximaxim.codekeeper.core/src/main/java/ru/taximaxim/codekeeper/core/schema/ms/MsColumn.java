@@ -140,7 +140,6 @@ public class MsColumn extends AbstractColumn {
         }
 
         boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null && !getNullValue();
-
         if (isJoinNotNull) {
             sql.append(NOT_NULL);
         }
@@ -151,11 +150,11 @@ public class MsColumn extends AbstractColumn {
 
         if (!isJoinNotNull && getExpression() == null && !getNullValue()) {
             if (getDefaultValue() != null) {
-                script.addStatement(getUpdateSql());
+                addUpdateStatement(script);
             }
 
             StringBuilder sqlAlter = new StringBuilder();
-            sqlAlter.append(getAlterColumn(false, getName())).append(' ').append(getType());
+            sqlAlter.append(getAlterColumn(getName())).append(' ').append(getType());
 
             if (getCollation() != null) {
                 sqlAlter.append(COLLATE).append(getCollation());
@@ -190,7 +189,7 @@ public class MsColumn extends AbstractColumn {
             isNeedDepcies.set(true);
         }
         StringBuilder sb = new StringBuilder();
-        sb.append(getAlterColumn(false, name));
+        sb.append(getAlterColumn(name));
         sb.append(newOption ? " ADD " : " DROP ");
         sb.append(optionName);
 
@@ -207,7 +206,7 @@ public class MsColumn extends AbstractColumn {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsColumn newColumn = (MsColumn) newCondition;
 
@@ -217,7 +216,6 @@ public class MsColumn extends AbstractColumn {
                 || !Objects.equals(newColumn.getExpression(), getExpression())
                 || newColumn.getGenerated() != getGenerated()
                 || !Objects.equals(newColumn.isHidden, isHidden())) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -228,7 +226,7 @@ public class MsColumn extends AbstractColumn {
         if (isNeedDropDefault) {
             compareDefaults(getDefaultName(), getDefaultValue(), null, null, script);
         }
-
+        AtomicBoolean isNeedDepcies = new AtomicBoolean();
         compareTypes(newColumn, isNeedDepcies, script);
 
         String oldDefaultName = isNeedDropDefault ? null : getDefaultName();
@@ -245,8 +243,7 @@ public class MsColumn extends AbstractColumn {
         compareOption(isPersisted(), newColumn.isPersisted(), PERSISTED, isNeedDepcies, script);
 
         alterPrivileges(newColumn, script);
-
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies.get(), script, startSize);
     }
 
     private void compareDefaults(String oldDefaultName, String oldDefault,
@@ -274,47 +271,45 @@ public class MsColumn extends AbstractColumn {
 
     private void compareTypes(MsColumn newColumn, AtomicBoolean isNeedDepcies, SQLScript script) {
         String newCollation = newColumn.getCollation();
-        if (!Objects.equals(getType(), newColumn.getType())
-                || !Objects.equals(newCollation, getCollation())) {
-            isNeedDepcies.set(true);
-            StringBuilder sb = new StringBuilder();
-            sb.append(getAlterColumn(false, newColumn.getName()))
-            .append(' ').append(newColumn.getType());
-
-            if (newCollation != null) {
-                sb.append(COLLATE).append(newCollation);
-            }
-
-            if (getNullValue() == newColumn.getNullValue()) {
-                sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
-            }
-            script.addStatement(sb);
+        if (Objects.equals(getType(), newColumn.getType()) && Objects.equals(newCollation, getCollation())) {
+            return;
         }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterColumn(newColumn.getName())).append(' ').append(newColumn.getType());
+        if (newCollation != null) {
+            sb.append(COLLATE).append(newCollation);
+        }
+        if (getNullValue() == newColumn.getNullValue()) {
+            sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
+        }
+        script.addStatement(sb);
+        isNeedDepcies.set(true);
     }
 
     private void compareNullValues(MsColumn newColumn, AtomicBoolean isNeedDepcies, SQLScript script) {
-        if (newColumn.getNullValue() != getNullValue()) {
-            if (newColumn.getDefaultValue() != null && getNullValue() && !newColumn.getNullValue()) {
-                script.addStatement(getUpdateSql());
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.append(getAlterColumn(false, newColumn.getName()))
-            .append(' ').append(newColumn.getType());
-
-            if (newColumn.getCollation() != null) {
-                sb.append(COLLATE).append(newColumn.getCollation());
-            }
-
-            sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
-            script.addStatement(sb);
-            isNeedDepcies.set(true);
+        if (newColumn.getNullValue() == getNullValue()) {
+            return;
         }
+
+        if (newColumn.getDefaultValue() != null && getNullValue() && !newColumn.getNullValue()) {
+            addUpdateStatement(script);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterColumn(newColumn.getName())).append(' ').append(newColumn.getType());
+        if (newColumn.getCollation() != null) {
+            sb.append(COLLATE).append(newColumn.getCollation());
+        }
+        sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
+        script.addStatement(sb);
+        isNeedDepcies.set(true);
     }
 
     private void compareMaskingFunctions(MsColumn newColumn, SQLScript script) {
         if (!Objects.equals(newColumn.getMaskingFunction(), getMaskingFunction())) {
             StringBuilder sb = new StringBuilder();
-            sb.append(getAlterColumn(false, newColumn.getName()));
+            sb.append(getAlterColumn(newColumn.getName()));
             if (newColumn.getMaskingFunction() != null) {
                 sb.append(" ADD MASKED WITH (FUNCTION = ").append(newColumn.getMaskingFunction()).append(")");
             } else {
@@ -324,17 +319,17 @@ public class MsColumn extends AbstractColumn {
         }
     }
 
-    private String getUpdateSql() {
+    private void addUpdateStatement(SQLScript script) {
         StringBuilder sb = new StringBuilder();
         sb.append("UPDATE ").append(getParent().getQualifiedName())
         .append("\n\tSET ").append(MsDiffUtils.quoteName(name))
         .append(" = DEFAULT WHERE ")
         .append(MsDiffUtils.quoteName(name)).append(" IS").append(NULL);
-        return sb.toString();
+        script.addStatement(sb);
     }
 
-    private String getAlterColumn(boolean only, String column) {
-        return ((AbstractTable) this.getParent()).getAlterTable(only) + ALTER_COLUMN + MsDiffUtils.quoteName(column);
+    private String getAlterColumn(String column) {
+        return ((AbstractTable) this.getParent()).getAlterTable(false) + ALTER_COLUMN + MsDiffUtils.quoteName(column);
     }
 
     @Override

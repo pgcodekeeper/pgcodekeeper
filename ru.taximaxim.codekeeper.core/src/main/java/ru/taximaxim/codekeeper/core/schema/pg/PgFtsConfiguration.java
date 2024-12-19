@@ -21,8 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -76,12 +74,11 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgFtsConfiguration newConf = (PgFtsConfiguration) newCondition;
 
         if (!newConf.getParser().equals(parser)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

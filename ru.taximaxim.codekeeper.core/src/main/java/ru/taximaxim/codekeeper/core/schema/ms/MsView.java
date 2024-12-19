@@ -20,8 +20,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -71,22 +69,22 @@ public class MsView extends AbstractView implements SourceStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsView newView = (MsView) newCondition;
-
+        boolean isNeedDepcies = false;
         if (isAnsiNulls() != newView.isAnsiNulls()
                 || isQuotedIdentified() != newView.isQuotedIdentified()
                 || !Objects.equals(getFirstPart(), newView.getFirstPart())
                 || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
             newView.addViewFullSQL(script, false);
-            isNeedDepcies.set(true);
+            isNeedDepcies = true;
         }
 
         appendAlterOwner(newView, script);
         alterPrivileges(newView, script);
 
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies, script, startSize);
     }
 
     @Override

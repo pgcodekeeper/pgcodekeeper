@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -65,10 +63,9 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
         return ObjectState.NOTHING;

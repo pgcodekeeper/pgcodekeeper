@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -86,12 +85,11 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

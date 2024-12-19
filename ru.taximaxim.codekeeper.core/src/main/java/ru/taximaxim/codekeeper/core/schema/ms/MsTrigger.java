@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -73,16 +71,16 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsTrigger newTrigger = (MsTrigger) newCondition;
-
+        boolean isNeedDepcies = false;
         if (isAnsiNulls() != newTrigger.isAnsiNulls()
                 || isQuotedIdentified() != newTrigger.isQuotedIdentified()
                 || !Objects.equals(getFirstPart(), newTrigger.getFirstPart())
                 || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
             newTrigger.addTriggerFullSQL(script, false);
-            isNeedDepcies.set(true);
+            isNeedDepcies = true;
         }
 
         if (isDisable() != newTrigger.isDisable()) {
@@ -93,8 +91,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
             appendName(sbSQL);
             script.addStatement(sbSQL);
         }
-
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies, script, startSize);
     }
 
     @Override

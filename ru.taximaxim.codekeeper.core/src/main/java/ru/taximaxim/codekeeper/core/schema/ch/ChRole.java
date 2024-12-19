@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -51,7 +49,7 @@ public final class ChRole extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChRole newRole = (ChRole) newCondition;
 

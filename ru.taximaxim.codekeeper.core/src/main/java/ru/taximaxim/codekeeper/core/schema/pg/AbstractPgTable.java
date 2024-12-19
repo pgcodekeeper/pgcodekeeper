@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -180,12 +179,11 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -279,12 +277,12 @@ public abstract class AbstractPgTable extends AbstractTable {
         }
 
         inherits.stream()
-                .filter(e -> !newInherits.contains(e))
-                .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tNO INHERIT ")));
+        .filter(e -> !newInherits.contains(e))
+        .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tNO INHERIT ")));
 
         newInherits.stream()
-                .filter(e -> !inherits.contains(e))
-                .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tINHERIT ")));
+        .filter(e -> !inherits.contains(e))
+        .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tINHERIT ")));
     }
 
     private String getInheritsActions(Inherits inh, String state) {
@@ -472,7 +470,7 @@ public abstract class AbstractPgTable extends AbstractTable {
 
         for (String colName : identityColsForMovingData) {
             String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN " + PgDiffUtils.getQuotedName(colName)
-                    + " RESTART WITH ";
+            + " RESTART WITH ";
             restartWith = PgDiffUtils.quoteStringDollar(restartWith) + " || restart_var || ';'";
             String doBody = "\nDECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence("
                     + PgDiffUtils.quoteString(tblTmpQName) + ", "
@@ -485,10 +483,10 @@ public abstract class AbstractPgTable extends AbstractTable {
     @Override
     public List<String> getColsForMovingData(AbstractTable newTable) {
         return newTable.getColumns().stream()
-            .filter(c -> containsColumn(c.getName()))
-            .map(PgColumn.class::cast)
-            .filter(pgCol -> !pgCol.isGenerated())
-            .map(AbstractColumn::getName)
-            .toList();
+                .filter(c -> containsColumn(c.getName()))
+                .map(PgColumn.class::cast)
+                .filter(pgCol -> !pgCol.isGenerated())
+                .map(AbstractColumn::getName)
+                .toList();
     }
 }

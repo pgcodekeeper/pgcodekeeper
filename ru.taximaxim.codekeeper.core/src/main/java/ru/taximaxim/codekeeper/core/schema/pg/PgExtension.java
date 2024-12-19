@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -84,10 +82,10 @@ public class PgExtension extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgExtension newExt = (PgExtension) newCondition;
-
+        boolean isNeedDepcies = false;
         if (!Objects.equals(newExt.getSchema(), getSchema())) {
             if (!isRelocatable()) {
                 return ObjectState.RECREATE;
@@ -98,13 +96,12 @@ public class PgExtension extends PgStatement {
             .append(" SET SCHEMA ")
             .append(newExt.getSchema());
             script.addStatement(sql);
-            isNeedDepcies.set(true);
+            isNeedDepcies = true;
         }
         // TODO ALTER EXTENSION UPDATE TO ?
 
         appendAlterComments(newExt, script);
-
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies, script, startSize);
     }
 
     @Override

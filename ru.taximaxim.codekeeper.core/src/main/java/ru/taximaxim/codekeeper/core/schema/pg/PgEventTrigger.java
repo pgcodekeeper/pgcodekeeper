@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -66,13 +64,12 @@ public class PgEventTrigger extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgEventTrigger newEventTrigger = (PgEventTrigger) newCondition;
         if (!Objects.equals(getExecutable(), newEventTrigger.getExecutable())
                 || !Objects.equals(getTags(), newEventTrigger.getTags())
                 || !Objects.equals(getEvent(), newEventTrigger.getEvent())) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

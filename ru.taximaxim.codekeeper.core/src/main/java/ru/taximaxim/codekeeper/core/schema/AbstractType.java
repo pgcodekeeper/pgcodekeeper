@@ -46,20 +46,19 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         AbstractType newType = (AbstractType) newCondition;
 
         if (isNeedRecreate(newType)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-
+        AtomicBoolean isNeedDepcies = new AtomicBoolean(false);
         compareType(newType, isNeedDepcies, script);
         appendAlterOwner(newType, script);
         alterPrivileges(newType, script);
         appendAlterComments(newType, script);
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies.get(), script, startSize);
     }
 
     private final boolean isNeedRecreate(AbstractType newType) {

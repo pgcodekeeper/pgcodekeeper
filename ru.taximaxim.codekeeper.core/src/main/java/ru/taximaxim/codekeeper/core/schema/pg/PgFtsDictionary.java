@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -66,12 +64,11 @@ implements ISimpleOptionContainer, ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
 
         if (!newDictionary.getTemplate().equals(template)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

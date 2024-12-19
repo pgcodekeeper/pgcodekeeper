@@ -21,8 +21,6 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -147,13 +145,11 @@ public class PgIndex extends AbstractIndex {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgIndex newIndex = (PgIndex) newCondition;
 
         if (!compareUnalterable(newIndex)) {
-            isNeedDepcies.set(true);
-
             if (getDatabaseArguments().isConcurrentlyMode()) {
                 // generate optimized command sequence for concurrent index creation
                 String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();

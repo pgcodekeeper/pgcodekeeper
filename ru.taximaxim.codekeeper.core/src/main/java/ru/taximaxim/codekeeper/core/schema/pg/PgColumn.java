@@ -251,14 +251,13 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgColumn newColumn = (PgColumn) newCondition;
 
         if (isGenerated() != newColumn.isGenerated()
                 || (isGenerated() && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))
                 || !compareCompressOptions(newColumn)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -268,7 +267,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         if (isNeedDropDefault) {
             compareDefaults(getDefaultValue(), null, null, script);
         }
-
+        AtomicBoolean isNeedDepcies = new AtomicBoolean();
         StringBuilder typeBuilder = new StringBuilder();
         compareTypes(this, newColumn, isNeedDepcies, typeBuilder, true, true);
         if (!typeBuilder.isEmpty()) {
@@ -289,7 +288,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
         compareIdentity(getIdentityType(), newColumn.getIdentityType(), getSequence(), newColumn.getSequence(), script);
         appendAlterComments(newColumn, script);
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies.get(), script, startSize);
     }
 
     private boolean compareCompressOptions(PgColumn newColumn) {
@@ -368,7 +367,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                 script.addStatement(sbSeq.toString());
             }
 
-            oldSequence.appendAlterSQL(newSequence, new AtomicBoolean(), script);
+            oldSequence.appendAlterSQL(newSequence, script);
         }
     }
 

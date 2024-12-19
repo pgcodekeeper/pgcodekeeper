@@ -20,8 +20,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -152,14 +150,12 @@ public class MsIndex extends AbstractIndex {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         if (!compare(newCondition)) {
-            isNeedDepcies.set(true);
-
             MsIndex newIndex = (MsIndex) newCondition;
             if (!isClustered() || newIndex.isClustered()) {
                 newIndex.getCreationSQL(script, true);
-                return ObjectState.ALTER;
+                return ObjectState.ALTER_WITH_DEP;
             }
 
             return ObjectState.RECREATE;

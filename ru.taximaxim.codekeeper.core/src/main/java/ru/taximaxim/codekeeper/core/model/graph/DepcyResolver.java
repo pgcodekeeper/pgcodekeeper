@@ -24,7 +24,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.OptionalInt;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.IntStream;
 
@@ -54,6 +53,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /*
  * implementation notes:
@@ -185,32 +185,34 @@ public class DepcyResolver {
      */
     public void addAlterStatements(PgStatement oldObj, PgStatement newObj) {
         PgStatement oldObjStat = oldObj.getTwin(oldDb);
-        PgStatement newObjStat = newObj.getTwin(newDb);
-        AtomicBoolean isNeedDepcies = new AtomicBoolean();
-
-        if (oldObjStat != null) {
-            SQLScript script = new SQLScript(oldObjStat.getDbType());
-            ObjectState state = oldObjStat.appendAlterSQL(newObjStat, isNeedDepcies, script);
-            if (state.in(ObjectState.RECREATE, ObjectState.ALTER)) {
-                if (isNeedDepcies.get()) {
-                    // is state alterable (sb.length() > 0)
-                    // is checked in the depcy tracker in this case
-                    addDropStatements(oldObjStat);
-                } else if (!inDropsList(oldObjStat)
-                        && (oldObjStat.getStatementType() != DbObjType.COLUMN
-                        || !inDropsList(oldObjStat.getParent()))) {
-                    // объект будет пересоздан ниже в новом состоянии, поэтому
-                    // ничего делать не нужно
-                    // пропускаем колонки таблиц из дроп листа
-                    addToListWithoutDepcies(
-                            !script.isEmpty() ? StatementActions.ALTER : StatementActions.DROP,
-                                    oldObjStat, null);
-                }
-            }
+        if (oldObjStat == null) {
+            return;
         }
+
+        SQLScript script = new SQLScript(oldObjStat.getDbType());
+        PgStatement newObjStat = newObj.getTwin(newDb);
+        ObjectState state = oldObjStat.appendAlterSQL(newObjStat, script);
+
+        if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
+            addDropStatements(oldObjStat);
+            return;
+        }
+
+        if (state == ObjectState.ALTER && !inDropsList(oldObjStat)
+                && (oldObjStat.getStatementType() != DbObjType.COLUMN || !inDropsList(oldObjStat.getParent()))) {
+            // объект будет пересоздан ниже в новом состоянии, поэтому ничего делать не нужно
+            // пропускаем колонки таблиц из дроп листа
+            addToListWithoutDepcies(
+                    !script.isEmpty() ? StatementActions.ALTER : StatementActions.DROP, oldObjStat, null);
+        }
+
+        alterMsTableColumns(oldObjStat, newObjStat);
+    }
+
+    private void alterMsTableColumns(PgStatement oldObjStat, PgStatement newObjStat) {
         // if no depcies were triggered for a MsTable alter
         // check for column layout changes and refresh views
-        if (!isNeedDepcies.get() && oldObjStat instanceof MsTable tOld && newObjStat instanceof MsTable tNew) {
+        if (oldObjStat instanceof MsTable tOld && newObjStat instanceof MsTable tNew) {
             List<AbstractColumn> cOld = tOld.getColumns();
             List<AbstractColumn> cNew = tNew.getColumns();
 
@@ -380,16 +382,14 @@ public class DepcyResolver {
 
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
-                AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 SQLScript script = new SQLScript(newObj.getDbType());
 
-                action = askAlter(oldObj, newObj, isNeedDepcies, script);
-
+                Pair<StatementActions, ObjectState> actionState = askAlter(oldObj, newObj, script);
+                action = actionState.getFirst();
                 // проверить а не
                 // требует ли пересоздания(Drop/create) родителькие объекты
                 IsDropped iter = new IsDropped();
-                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(),
-                        oldObj), iter);
+                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), oldObj), iter);
                 if (iter.needDrop != null && iter.needDrop != oldObj) {
                     action = StatementActions.DROP;
                 }
@@ -400,7 +400,7 @@ public class DepcyResolver {
                 // в случае необходимости изменения (ALter) объекта с
                 // зависимостями нужно сначала создать объект с зависимостями,
                 // потом изменить его
-                if (isNeedDepcies.get() && action == StatementActions.ALTER) {
+                if (actionState.getSecond() == ObjectState.ALTER_WITH_DEP && action == StatementActions.ALTER) {
                     // не добавлять объект, если уже есть в списке
                     if (!createdObjects.contains(newObj)) {
                         addCreateStatements(newObj);
@@ -424,7 +424,7 @@ public class DepcyResolver {
 
                 // пропускаем также при recreate
                 SQLScript script = new SQLScript(newTable.getDbType());
-                ObjectState state = oldTable.appendAlterSQL(newTable, new AtomicBoolean(), script);
+                ObjectState state = oldTable.appendAlterSQL(newTable,  script);
                 if (state == ObjectState.RECREATE) {
                     return true;
                 }
@@ -498,14 +498,16 @@ public class DepcyResolver {
 
             PgStatement oldObj;
             if ((oldObj = newObj.getTwin(oldDb)) != null) {
-                AtomicBoolean isNeedDepcies = new AtomicBoolean();
                 SQLScript script = new SQLScript(oldObj.getDbType());
-                action = askAlter(oldObj, newObj, isNeedDepcies, script);
+                Pair<StatementActions, ObjectState> actionState = askAlter(oldObj, newObj, script);
+                action = actionState.getFirst();
                 if (action == StatementActions.NONE) {
                     return true;
                 }
                 // в случае изменения объекта с зависимостями
-                if (isNeedDepcies.get()) {
+                var state = actionState.getSecond();
+
+                if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
                     addDropStatements(oldObj);
                     if (action == StatementActions.ALTER) {
                         // add alter for old object
@@ -544,6 +546,7 @@ public class DepcyResolver {
             }
         }
     }
+
     /**
      * Используется для прохода по графу зависимостей, содержит общие методы
      */
@@ -577,18 +580,17 @@ public class DepcyResolver {
             addToListWithoutDepcies(action, statement, starter);
         }
 
-        protected StatementActions askAlter(PgStatement oldSt, PgStatement newSt, AtomicBoolean isNeedDepcies,
-                SQLScript script) {
+        protected Pair<StatementActions, ObjectState> askAlter(PgStatement oldSt, PgStatement newSt, SQLScript script) {
             StatementActions alterAction = action;
             // Проверяем меняется ли объект
-            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcies, script);
-            if (state == ObjectState.ALTER) {
+            ObjectState state = oldSt.appendAlterSQL(newSt, script);
+            if (state.in(ObjectState.ALTER, ObjectState.ALTER_WITH_DEP)) {
                 alterAction = StatementActions.ALTER;
-            } else if (state != ObjectState.RECREATE) {
+            } else if (state == ObjectState.NOTHING) {
                 alterAction = StatementActions.NONE;
             }
 
-            return alterAction;
+            return new Pair<>(alterAction, state);
         }
     }
 
@@ -620,11 +622,10 @@ public class DepcyResolver {
                 return;
             }
 
-            AtomicBoolean isNeedDepcy = new AtomicBoolean();
             SQLScript script = new SQLScript(newSt.getDbType());
+            ObjectState state = oldSt.appendAlterSQL(newSt, script);
 
-            ObjectState state = oldSt.appendAlterSQL(newSt, isNeedDepcy, script);
-            if (state.in(ObjectState.RECREATE, ObjectState.ALTER) && isNeedDepcy.get()) {
+            if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
                 needDrop = oldSt;
             }
         }
