@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -127,8 +125,9 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
+        boolean isNeedDepcies = false;
         PgForeignDataWrapper newForeign = (PgForeignDataWrapper) newCondition;
 
         if (!Objects.equals(newForeign.getHandler(), getHandler())) {
@@ -136,7 +135,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             sql.append(getAlterHeader());
             if (newForeign.getHandler() != null) {
                 sql.append(" HANDLER ").append(newForeign.getHandler());
-                isNeedDepcies.set(true);
+                isNeedDepcies = true;
             } else {
                 sql.append(" NO HANDLER");
             }
@@ -148,7 +147,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             sql.append(getAlterHeader());
             if (newForeign.getValidator() != null) {
                 sql.append(" VALIDATOR ").append(newForeign.getValidator());
-                isNeedDepcies.set(true);
+                isNeedDepcies = true;
             } else {
                 sql.append(" NO VALIDATOR");
             }
@@ -160,7 +159,7 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         alterPrivileges(newCondition, script);
         appendAlterComments(newForeign, script);
 
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies, script, startSize);
     }
 
     @Override

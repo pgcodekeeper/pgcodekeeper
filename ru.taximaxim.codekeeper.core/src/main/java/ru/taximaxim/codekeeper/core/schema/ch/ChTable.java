@@ -23,8 +23,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -96,12 +94,11 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChTable newTable = (ChTable) newCondition;
 
         if (isRecreated(newTable)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -235,8 +232,8 @@ public class ChTable extends AbstractTable {
     @Override
     protected List<String> getColsForMovingData(AbstractTable newTable) {
         return newTable.getColumns().stream()
-            .filter(c -> containsColumn(c.getName()))
-            .map(AbstractColumn::getName)
-            .toList();
+                .filter(c -> containsColumn(c.getName()))
+                .map(AbstractColumn::getName)
+                .toList();
     }
 }

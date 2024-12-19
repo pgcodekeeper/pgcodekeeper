@@ -21,6 +21,7 @@ package ru.taximaxim.codekeeper.core.schema;
 public enum ObjectState {
     RECREATE,
     ALTER,
+    ALTER_WITH_DEP,
     NOTHING;
 
     public boolean in(ObjectState... states) {

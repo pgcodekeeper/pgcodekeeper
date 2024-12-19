@@ -28,7 +28,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.Consts;
@@ -177,14 +176,13 @@ public class PgView extends AbstractView implements ISimpleOptionContainer {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgView newView = (PgView) newCondition;
 
         if (isViewModified(newView) || isMatView() != newView.isMatView()
                 || !Objects.equals(getMethod(), newView.getMethod())
                 || !Objects.equals(getDistribution(), newView.getDistribution())) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
@@ -71,19 +69,18 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
+        boolean isNeedDepcies = false;
         AbstractFunction newFunction = (AbstractFunction) newCondition;
 
         if (!compareUnalterable(newFunction)) {
             if (needDrop(newFunction)) {
-                isNeedDepcies.set(true);
                 return ObjectState.RECREATE;
             }
 
-            if (getDbType() == DatabaseType.MS) {
-                isNeedDepcies.set(true);
-            }
+            isNeedDepcies = getDbType() == DatabaseType.MS;
+
             StringBuilder sbSQL = new StringBuilder();
             newFunction.appendFunctionFullSQL(sbSQL, false);
             script.addStatement(sbSQL);
@@ -92,7 +89,8 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
         appendAlterOwner(newFunction, script);
         alterPrivileges(newFunction, script);
         appendAlterComments(newFunction, script);
-        return getObjectState(script, startSize);
+
+        return getObjectState(isNeedDepcies, script, startSize);
     }
 
     protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate);

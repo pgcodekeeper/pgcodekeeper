@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
@@ -211,13 +209,12 @@ public class ChView extends AbstractView {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChView newView = (ChView) newCondition;
 
         if (getViewType() != newView.getViewType() || isViewModified(newView)
                 || !Objects.equals(engine, newView.getEngine())) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

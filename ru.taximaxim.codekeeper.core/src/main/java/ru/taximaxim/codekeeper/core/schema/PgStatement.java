@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
@@ -90,9 +89,9 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean isOwned() {
         return switch (getStatementType()) {
-            case FOREIGN_DATA_WRAPPER, SERVER, EVENT_TRIGGER, FTS_CONFIGURATION, FTS_DICTIONARY, TABLE, VIEW, SCHEMA, 
-            FUNCTION, OPERATOR, PROCEDURE, AGGREGATE, SEQUENCE, COLLATION, TYPE, DOMAIN, ASSEMBLY, STATISTICS -> true;
-            default -> false;
+        case FOREIGN_DATA_WRAPPER, SERVER, EVENT_TRIGGER, FTS_CONFIGURATION, FTS_DICTIONARY, TABLE, VIEW, SCHEMA,
+        FUNCTION, OPERATOR, PROCEDURE, AGGREGATE, SEQUENCE, COLLATION, TYPE, DOMAIN, ASSEMBLY, STATISTICS -> true;
+        default -> false;
         };
     }
 
@@ -452,12 +451,19 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
 
     //return object state to choise further operation
-    public abstract ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script);
+    public abstract ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script);
 
     public ObjectState getObjectState(SQLScript script, int startSize) {
-        return script.getSize() != startSize ? ObjectState.ALTER : ObjectState.NOTHING;
+        return getObjectState(false, script, startSize);
     }
 
+    public ObjectState getObjectState(boolean isNeedDepcies, SQLScript script, int startSize) {
+        if (script.getSize() == startSize) {
+            return ObjectState.NOTHING;
+        }
+
+        return isNeedDepcies ? ObjectState.ALTER_WITH_DEP : ObjectState.ALTER;
+    }
     /**
      * Copies all object properties into a new object and leaves all its children empty.
      *

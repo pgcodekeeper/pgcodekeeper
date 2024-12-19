@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -124,12 +122,11 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgCollation newCollation = (PgCollation) newCondition;
 
         if (!compareUnalterable(newCollation)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

@@ -22,8 +22,6 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractStatistics;
@@ -69,11 +67,10 @@ public class PgStatistics extends AbstractStatistics {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgStatistics newStat = (PgStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 

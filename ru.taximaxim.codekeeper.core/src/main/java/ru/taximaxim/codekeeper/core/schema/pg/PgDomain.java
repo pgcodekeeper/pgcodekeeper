@@ -19,8 +19,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -140,13 +138,12 @@ public class PgDomain extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgDomain newDomain = (PgDomain) newCondition;
 
         if (!Objects.equals(newDomain.getDataType(), getDataType()) ||
                 !Objects.equals(newDomain.getCollation(), getCollation())) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -176,12 +173,11 @@ public class PgDomain extends PgStatement implements ISearchPath {
         alterPrivileges(newDomain, script);
         appendAlterComments(newDomain, script);
 
-        AtomicBoolean needDepcyConstr = new AtomicBoolean();
         for (AbstractConstraint oldConstr : getConstraints()) {
             AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
                 oldConstr.getDropSQL(script);
-            } else if ((oldConstr.appendAlterSQL(newConstr, needDepcyConstr, script) == ObjectState.RECREATE)) {
+            } else if ((oldConstr.appendAlterSQL(newConstr, script) == ObjectState.RECREATE)) {
                 oldConstr.getDropSQL(script);
                 newConstr.getCreationSQL(script);
             }

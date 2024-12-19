@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
@@ -256,9 +255,9 @@ public class ActionsToScriptConverter {
                 return;
             }
             SQLScript temp = new SQLScript(action.getNewObj().getDbType());
-            ObjectState state = obj.appendAlterSQL(action.getNewObj(), new AtomicBoolean(), temp);
+            ObjectState state = obj.appendAlterSQL(action.getNewObj(), temp);
 
-            if (state == ObjectState.ALTER) {
+            if (state.in(ObjectState.ALTER, ObjectState.ALTER_WITH_DEP)) {
                 if (depcy != null) {
                     script.addStatementWithoutSeparator(depcy);
                 }
