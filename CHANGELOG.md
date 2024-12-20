@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - The mechanism for generating the migration script has been rewritten, allowing for more fine-grained control over the order of operations. In the process, the order of some operations was corrected.
 - Disabled formatting option for read-only files.
+- Updated license year.
 
 ### Fixed
 
