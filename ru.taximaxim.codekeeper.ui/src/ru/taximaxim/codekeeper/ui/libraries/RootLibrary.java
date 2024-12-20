@@ -32,13 +32,15 @@ public class RootLibrary extends AbstractLibrary {
      * name value - {@link RootLibrary}
      */
     private static final Map<String, RootLibrary> ROOT_LIBS = new ConcurrentHashMap<>();
+    private final String projectName;
 
-    public static RootLibrary getRootLib(String project) {
-        return ROOT_LIBS.computeIfAbsent(project, k -> new RootLibrary());
+    private RootLibrary(String projectName) {
+        super(null, null, Messages.LibraryContainer_root);
+        this.projectName = projectName;
     }
 
-    private RootLibrary() {
-        super(null, null, Messages.LibraryContainer_root);
+    public String getProject() {
+        return projectName;
     }
 
     @Override
@@ -54,5 +56,9 @@ public class RootLibrary extends AbstractLibrary {
     @Override
     public String getDescription() {
         return Messages.LibraryContainer_root;
+    }
+
+    public static RootLibrary getRootLib(String project) {
+        return ROOT_LIBS.computeIfAbsent(project, k -> new RootLibrary(project));
     }
 }

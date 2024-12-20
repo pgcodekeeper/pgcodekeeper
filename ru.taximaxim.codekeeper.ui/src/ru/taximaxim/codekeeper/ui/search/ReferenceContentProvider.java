@@ -29,6 +29,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
 
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
+import ru.taximaxim.codekeeper.ui.libraries.RootLibrary;
 
 public class ReferenceContentProvider implements ITreeContentProvider {
 
@@ -100,12 +104,26 @@ public class ReferenceContentProvider implements ITreeContentProvider {
         if (element instanceof IProject) {
             return null;
         }
+
         if (element instanceof IResource resource) {
             return resource.getParent();
         }
+
         if (element instanceof PgObjLocation loc) {
-            return ResourcesPlugin.getWorkspace().getRoot()
-                    .getFileForLocation(new Path(loc.getFilePath()));
+            String filePath = loc.getFilePath();
+            if (filePath.contains(LibraryUtils.META_PATH.toString())) {
+                return LibraryStorage.getLibrary(loc.getFilePath());
+            }
+
+            return ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(loc.getFilePath()));
+        }
+
+        if (element instanceof RootLibrary lib) {
+            return ResourcesPlugin.getWorkspace().getRoot().getProject(lib.getProject());
+        }
+
+        if (element instanceof AbstractLibrary lib) {
+            return lib.getParent();
         }
 
         return null;

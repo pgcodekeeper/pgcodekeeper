@@ -36,17 +36,10 @@ public class UrlLibrary extends CacheableLibrary {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(name);
+    protected void appendLibState(StringBuilder sb) {
         if (!exists()) {
             sb.append(" [not loaded]"); //$NON-NLS-1$
         }
-
-        if (parent instanceof RootLibrary) {
-            sb.append(CONCAT_STRING).append(getLibPath());
-        }
-
-        return sb.toString();
     }
 
     @Override
