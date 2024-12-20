@@ -43,6 +43,7 @@ public class FileLibrary extends AbstractLibrary implements IStorage {
         super(parent, path);
         this.project = project;
         this.dbType = dbType;
+        LibraryStorage.addLibrary(this);
     }
 
     public DatabaseType getDbType() {

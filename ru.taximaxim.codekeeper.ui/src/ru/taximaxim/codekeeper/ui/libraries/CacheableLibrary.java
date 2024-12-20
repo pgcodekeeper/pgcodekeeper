@@ -61,6 +61,9 @@ public abstract class CacheableLibrary extends AbstractLibrary {
             if (child instanceof CacheableLibrary lib && lib.exists()) {
                 FileUtils.deleteRecursive(lib.getPath());
             }
+            if (child instanceof FileLibrary lib) {
+                LibraryStorage.removeLibrary(lib.getPath().toString());
+            }
         }
     }
 

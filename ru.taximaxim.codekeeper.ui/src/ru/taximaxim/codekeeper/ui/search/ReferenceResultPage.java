@@ -31,6 +31,10 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class ReferenceResultPage extends AbstractTextSearchViewPage {
@@ -74,8 +78,19 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
     protected void showMatch(Match match, int offset, int length, boolean activate) throws PartInitException {
         PgObjLocation loc = (PgObjLocation) match.getElement();
 
-        IFile file = ResourcesPlugin.getWorkspace().getRoot()
-                .getFileForLocation(new Path(loc.getFilePath()));
+        String filePath = loc.getFilePath();
+        if (filePath.contains(LibraryUtils.META_PATH.toString())) {
+            var lib = LibraryStorage.getLibrary(filePath);
+            if (lib != null) {
+                var project = lib.getProject();
+                var dbType = OpenProjectUtils
+                    .getDatabaseType(ResourcesPlugin.getWorkspace().getRoot().getProject(project));
+                FileUtilsUi.openFileInSqlEditor(loc, project, dbType, true);
+            }
+            return;
+        }
+
+        IFile file = ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(loc.getFilePath()));
 
         if (file == null) {
             return;

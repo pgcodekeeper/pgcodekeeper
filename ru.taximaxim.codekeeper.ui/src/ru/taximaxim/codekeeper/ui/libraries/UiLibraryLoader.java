@@ -63,6 +63,7 @@ public class UiLibraryLoader {
 
     public RootLibrary load(List<PgLibrary> libs) throws IOException {
         RootLibrary root = RootLibrary.getRootLib(project);
+        LibraryStorage.clean(root);
         root.clearChildren();
 
         for (PgLibrary lib : libs) {

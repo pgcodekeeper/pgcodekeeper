@@ -24,7 +24,7 @@ import org.eclipse.swt.graphics.Image;
 
 public abstract class AbstractLibrary {
 
-    protected static final String CONCAT_STRING = " - ";  //$NON-NLS-1$
+    private static final String CONCAT_STRING = " - "; //$NON-NLS-1$
 
     protected final AbstractLibrary parent;
     protected final Path path;
@@ -78,11 +78,18 @@ public abstract class AbstractLibrary {
     public String toString() {
         StringBuilder sb = new StringBuilder(name);
 
+        appendLibState(sb);
+
+        // first level libs
         if (parent instanceof RootLibrary) {
             sb.append(CONCAT_STRING).append(getLibPath());
         }
 
         return sb.toString();
+    }
+
+    protected void appendLibState(StringBuilder sb) {
+        // subclasses will override if needed
     }
 
     public String getLibPath() {
