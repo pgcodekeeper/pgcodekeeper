@@ -18,11 +18,13 @@ package ru.taximaxim.codekeeper.ui.views.navigator;
 import java.io.IOException;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
+import ru.taximaxim.codekeeper.ui.libraries.RootLibrary;
 
 public class NavigationLibrariesContentProvider implements ITreeContentProvider {
 
@@ -37,7 +39,7 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
     public Object[] getChildren(Object parent) {
         if (parent instanceof IProject proj) {
             try {
-                return new Object[] {LibraryUtils.create(proj)};
+                return new Object[] { LibraryUtils.getRoot(proj) };
             } catch (IOException e) {
                 Log.log(e);
             }
@@ -50,6 +52,9 @@ public class NavigationLibrariesContentProvider implements ITreeContentProvider 
 
     @Override
     public Object getParent(Object element) {
+        if (element instanceof RootLibrary lib) {
+            return ResourcesPlugin.getWorkspace().getRoot().getProject(lib.getProject());
+        }
         if (element instanceof AbstractLibrary lib) {
             return lib.getParent();
         }
