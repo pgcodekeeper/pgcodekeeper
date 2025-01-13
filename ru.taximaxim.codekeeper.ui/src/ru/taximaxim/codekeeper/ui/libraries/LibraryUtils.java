@@ -42,6 +42,15 @@ public class LibraryUtils {
                 .load(libs);
     }
 
+    public static RootLibrary getRoot(IProject project) throws IOException {
+        String projectName = project.getName();
+        if (RootLibrary.hasRootLib(projectName)) {
+            return RootLibrary.getRootLib(projectName);
+        }
+
+        return create(project);
+    }
+
     private LibraryUtils() {
         // only statics
     }

@@ -61,4 +61,8 @@ public class RootLibrary extends AbstractLibrary {
     public static RootLibrary getRootLib(String project) {
         return ROOT_LIBS.computeIfAbsent(project, k -> new RootLibrary(project));
     }
+
+    public static boolean hasRootLib(String project) {
+        return ROOT_LIBS.containsKey(project);
+    }
 }
