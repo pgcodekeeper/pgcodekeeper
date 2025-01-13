@@ -121,7 +121,13 @@ public class UiLibraryLoader {
                 readDir(new DirectoryLibrary(parent, path), path);
             }
         } else if (FileUtils.isZipFile(path)) {
-            ZipLibrary zip = new ZipLibrary(null, path, project, dbType);
+            ZipLibrary zip;
+            if (parent instanceof RootLibrary) {
+                zip = new ZipLibrary(parent, path, project, dbType);
+                parent = zip;
+            } else {
+                zip = new ZipLibrary(null, path, project, dbType);
+            }
             zip.load();
             readPath(parent, zip.getPath());
         } else {
@@ -130,7 +136,7 @@ public class UiLibraryLoader {
     }
 
     private boolean isHidden(AbstractLibrary parent, Path path) {
-        return parent instanceof UrlLibrary && ZIP_HASH_END.matcher(path.toString()).find();
+        return parent instanceof CacheableLibrary && ZIP_HASH_END.matcher(path.toString()).find();
     }
 
     private void readDir(AbstractLibrary parent, Path path) throws IOException {
