@@ -65,4 +65,14 @@ public class RootLibrary extends AbstractLibrary {
     public static boolean hasRootLib(String project) {
         return ROOT_LIBS.containsKey(project);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
 }

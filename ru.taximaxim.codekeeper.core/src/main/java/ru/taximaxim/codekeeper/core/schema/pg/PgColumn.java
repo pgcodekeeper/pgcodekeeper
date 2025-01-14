@@ -196,12 +196,11 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         }
     }
 
-    private String getAlterTableColumn(boolean newLine, boolean only, String column) {
-        return getAlterTableColumn(newLine, only, column, true);
+    private String getAlterTableColumn(boolean only, String column) {
+        return getAlterTableColumn(only, column, true);
     }
 
-    private String getAlterTableColumn(boolean newLine, boolean only, String column,
-            boolean needAlterTable) {
+    private String getAlterTableColumn(boolean only, String column, boolean needAlterTable) {
         StringBuilder sb = new StringBuilder();
         if (needAlterTable) {
             sb.append(((AbstractTable) getParent()).getAlterTable(only));
@@ -307,7 +306,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void writeOptions(boolean isCreate, SQLScript script) {
         if (!options.isEmpty()) {
             StringBuilder sb = new StringBuilder();
-            sb.append(getAlterTableColumn(true, true, name));
+            sb.append(getAlterTableColumn(true, name));
             sb.append(isCreate ? " SET (" : " RESET (");
             for (Entry<String, String> option : options.entrySet()) {
                 sb.append(option.getKey());
@@ -335,7 +334,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             AbstractSequence oldSequence, AbstractSequence newSequence, SQLScript script) {
         if (!Objects.equals(oldIdentityType, newIdentityType)) {
             StringBuilder sb = new StringBuilder();
-            sb.append(getAlterTableColumn(true, false, name));
+            sb.append(getAlterTableColumn(false, name));
 
             if (newIdentityType == null) {
                 sb.append(" DROP IDENTITY");
@@ -411,7 +410,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
         if (!Objects.equals(oldType, newType) || (newCollation != null && !newCollation.equals(oldCollation))) {
             isNeedDepcies.set(true);
-            sb.append(getAlterTableColumn(true, false, newColumn.getName(), isNeedAlterTable));
+            sb.append(getAlterTableColumn(false, newColumn.getName(), isNeedAlterTable));
             sb.append(" TYPE ").append(newType);
 
             if (newCollation != null) {
@@ -459,7 +458,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     private String getAlterOption(String action, String key, String value) {
-        return MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTableColumn(true, false, name), action, key, value);
+        return MessageFormat.format(ALTER_FOREIGN_OPTION, getAlterTableColumn(false, name), action, key, value);
     }
 
     /**
@@ -476,7 +475,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         }
 
         if (newNull) {
-            script.addStatement(getAlterTableColumn(true, true, name) + " DROP" + NOT_NULL);
+            script.addStatement(getAlterTableColumn(true, name) + " DROP" + NOT_NULL);
             return;
         }
 
@@ -488,7 +487,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             .append(" IS").append(NULL);
             script.addStatement(sql.toString());
         }
-        script.addStatement(getAlterTableColumn(true, false, name) + " SET" + NOT_NULL);
+        script.addStatement(getAlterTableColumn(false, name) + " SET" + NOT_NULL);
     }
 
     /**
@@ -504,7 +503,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private void compareDefaults(String oldDefault, String newDefault, AtomicBoolean isNeedDepcies, SQLScript script) {
         if (!Objects.equals(oldDefault, newDefault)) {
             StringBuilder sql = new StringBuilder();
-            sql.append(getAlterTableColumn(true, true, name));
+            sql.append(getAlterTableColumn(true, name));
             if (newDefault == null) {
                 sql.append(" DROP DEFAULT");
             } else {
@@ -531,7 +530,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             newStatValue = Integer.valueOf(-1);
         }
         if (newStatValue != null) {
-            script.addStatement(getAlterTableColumn(true, true, name) + " SET STATISTICS " + newStatValue);
+            script.addStatement(getAlterTableColumn(true, name) + " SET STATISTICS " + newStatValue);
         }
     }
 
@@ -552,19 +551,19 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
                     getParent().getName(), getName()));
             script.addStatement(sql);
         } else if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
-            script.addStatement(getAlterTableColumn(true, true, name) + " SET STORAGE " + newStorage);
+            script.addStatement(getAlterTableColumn(true, name) + " SET STORAGE " + newStorage);
         }
     }
 
     private void compareCompression(String oldCompression, String newCompression, SQLScript script) {
         if (newCompression == null && oldCompression != null) {
-            script.addStatement(getAlterTableColumn(true, true, name) + " SET COMPRESSION DEFAULT");
+            script.addStatement(getAlterTableColumn(true, name) + " SET COMPRESSION DEFAULT");
             return;
         }
         if (newCompression == null || newCompression.equalsIgnoreCase(oldCompression)) {
             return;
         }
-        script.addStatement(getAlterTableColumn(true, true, name) + " SET COMPRESSION " + PgDiffUtils.getQuotedName(newCompression));
+        script.addStatement(getAlterTableColumn(true, name) + " SET COMPRESSION " + PgDiffUtils.getQuotedName(newCompression));
     }
 
     /**

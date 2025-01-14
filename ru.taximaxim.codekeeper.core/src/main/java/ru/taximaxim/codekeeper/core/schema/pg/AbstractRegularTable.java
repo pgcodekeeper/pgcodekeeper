@@ -252,8 +252,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     }
 
     @Override
-    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
-        PgSequence sequence = super.writeSequences(column, sbOption, newLine);
+    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption) {
+        PgSequence sequence = super.writeSequences(column, sbOption);
         if (isLogged != sequence.isLogged()) {
             sbOption.append("\nALTER SEQUENCE ").append(sequence.getQualifiedName()).append(" SET ")
             .append(sequence.isLogged() ? "LOGGED;" : "UNLOGGED;");

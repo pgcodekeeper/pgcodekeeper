@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -74,7 +75,7 @@ public class ChIndex extends AbstractIndex {
 
     @Override
     public void getCreationSQL(SQLScript script) {
-        script.addStatement(getAlterTable(false, false) + " ADD " + getDefinition());
+        script.addStatement(getAlterTable() + " ADD " + getDefinition());
     }
 
     @Override
@@ -89,7 +90,7 @@ public class ChIndex extends AbstractIndex {
     @Override
     public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(getAlterTable(false, false)).append("\n\tDROP INDEX ");
+        sb.append(getAlterTable()).append("\n\tDROP INDEX ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
@@ -97,8 +98,8 @@ public class ChIndex extends AbstractIndex {
         script.addStatement(sb);
     }
 
-    private String getAlterTable(boolean nextLine, boolean only) {
-        return ((AbstractTable) getParent()).getAlterTable(only);
+    private String getAlterTable() {
+        return ((AbstractTable) getParent()).getAlterTable(false);
     }
 
     private boolean compareUnalterable(ChIndex newIndex) {

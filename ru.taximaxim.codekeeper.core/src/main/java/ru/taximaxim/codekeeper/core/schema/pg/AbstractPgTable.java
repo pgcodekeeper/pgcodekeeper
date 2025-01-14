@@ -164,7 +164,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         });
     }
 
-    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
+    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption) {
         PgSequence sequence = column.getSequence();
         sbOption.append(getAlterTable(false))
         .append(ALTER_COLUMN)
@@ -357,10 +357,10 @@ public abstract class AbstractPgTable extends AbstractTable {
             StringBuilder sbSeq = new StringBuilder();
             if (getDatabaseArguments().isGenerateExistDoBlock()) {
                 StringBuilder tmpSb = new StringBuilder();
-                writeSequences(column, tmpSb, false);
+                writeSequences(column, tmpSb);
                 PgDiffUtils.appendSqlWrappedInDo(sbSeq, tmpSb, Consts.DUPLICATE_RELATION);
             } else {
-                writeSequences(column, sbSeq, true);
+                writeSequences(column, sbSeq);
                 sbSeq.setLength(sbSeq.length() - 1);
             }
             script.addStatement(sbSeq);
