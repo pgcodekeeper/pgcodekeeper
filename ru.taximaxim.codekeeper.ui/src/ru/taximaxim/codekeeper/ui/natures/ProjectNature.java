@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.ui.handlers.AddBuilder;
 import ru.taximaxim.codekeeper.ui.handlers.RemoveBuilder;
 
 public class ProjectNature implements IProjectNature {
-    
+
     private IProject proj;
 
     @Override
