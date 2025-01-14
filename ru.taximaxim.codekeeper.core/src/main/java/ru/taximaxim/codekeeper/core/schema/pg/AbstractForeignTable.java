@@ -91,8 +91,8 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
-        PgSequence sequence = super.writeSequences(column, sbOption, newLine);
+    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption) {
+        PgSequence sequence = super.writeSequences(column, sbOption);
         if (!sequence.isLogged()) {
             sbOption.append("\nALTER SEQUENCE ").append(sequence.getQualifiedName()).append(" SET UNLOGGED;");
         }
