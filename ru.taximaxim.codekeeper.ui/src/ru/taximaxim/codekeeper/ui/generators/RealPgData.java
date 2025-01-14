@@ -46,7 +46,7 @@ public class RealPgData extends PgData<Double> {
 
     @Override
     protected Double generateRandom(Random ran) {
-        return (end - start + 1) * ran.nextDouble() + start;
+        return (end - start) * ran.nextDouble() + start;
     }
 
     @Override

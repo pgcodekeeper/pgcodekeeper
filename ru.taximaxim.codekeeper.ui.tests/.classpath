@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="src">
+	<classpathentry kind="src" path="src/main/java">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="src" path="resources">
+	<classpathentry kind="src" path="src/main/resources">
 		<attributes>
 			<attribute name="test" value="true"/>
 		</attributes>
