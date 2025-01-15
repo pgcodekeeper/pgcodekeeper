@@ -89,6 +89,15 @@ public class AlterMsTable extends MsTableAbstract {
             }
         } else if (tableActionCtx.CHANGE_TRACKING() != null && tableActionCtx.ENABLE() != null) {
             doSafe(MsTable::setTracked, ((MsTable) table), tableActionCtx.on_off().ON() != null);
+        } else if (tableActionCtx.SET() != null) {
+            var set = tableActionCtx.alter_table_set_action().index_option();
+            if (set != null && set.key.getText().equalsIgnoreCase("SYSTEM_VERSIONING")) {
+                var sysVer = set.index_option_value();
+                if (sysVer.ON() != null) {
+                    doSafe(MsTable::setSysVersioning, ((MsTable) table), getFullCtxText(sysVer));
+                    addHistTableDep(sysVer.on_option(), table);
+                }
+            }
         }
     }
 

@@ -43,6 +43,7 @@ class MsDiffDepciesTest {
             // changed: t1, stat1, stat2
             // user: t1
             "change_ms_table_with_stat_usr",
+            "drop_ms_sys_ver_table_usr_hist_t1",
     })
     void testDepcy(String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, false);

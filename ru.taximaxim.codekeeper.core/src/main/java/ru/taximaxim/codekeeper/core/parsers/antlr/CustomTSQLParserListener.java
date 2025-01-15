@@ -83,8 +83,8 @@ implements TSqlContextProcessor {
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
 
-    public CustomTSQLParserListener(MsDatabase database, String filename,
-            ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor) {
+    public CustomTSQLParserListener(MsDatabase database, String filename, ParserListenerMode mode, List<Object> errors,
+            IProgressMonitor monitor) {
         super(database, filename, mode, errors, monitor);
     }
 

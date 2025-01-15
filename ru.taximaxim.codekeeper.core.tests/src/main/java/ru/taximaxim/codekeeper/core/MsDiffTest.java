@@ -316,6 +316,12 @@ class MsDiffTest {
             "compare_ms_statistics",
             // Test scenario where MS STATISTICS dropped
             "drop_ms_statistics",
+            // Test scenario where sys ver table created
+            "add_ms_table_system_versioning",
+            // Test scenario where sys ver table is altered
+            "alter_ms_table_system_versioning",
+            // Test scenario where alter constraint in sys ver table
+            "alter_ms_constraint_pk_in_system_vers_table",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);

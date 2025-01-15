@@ -212,7 +212,7 @@ public class MsIndicesAndPKReader extends JdbcReader {
 
     protected void addMsColsPart(QueryBuilder builder) {
         QueryBuilder subSelect = new QueryBuilder()
-                .column("c.index_column_id AS id")
+                .column("c.key_ordinal AS id")
                 .column("sc.name")
                 .column("c.is_descending_key AS is_desc")
                 .column("c.is_included_column AS is_inc")
