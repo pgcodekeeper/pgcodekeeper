@@ -91,7 +91,6 @@ public abstract class MsConstraint extends AbstractConstraint {
 
     @Override
     public void getDropSQL(SQLScript script, boolean optionExists) {
-        appendSpecialDropSQL(script);
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
@@ -103,10 +102,6 @@ public abstract class MsConstraint extends AbstractConstraint {
     }
 
     protected void compareOptions(MsConstraint newConstr, SQLScript script) {
-        // subclasses will override if needed
-    }
-
-    protected void appendSpecialDropSQL(SQLScript script) {
         // subclasses will override if needed
     }
 

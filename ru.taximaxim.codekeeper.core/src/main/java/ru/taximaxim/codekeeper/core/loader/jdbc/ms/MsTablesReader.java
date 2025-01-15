@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.loader.jdbc.ms;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
@@ -62,6 +63,14 @@ public class MsTablesReader extends JdbcReader {
             table.addOption("DATA_COMPRESSION", res.getString("data_compression_desc"));
         }
 
+        if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion()) && res.getBoolean("temporal_type")) {
+            appendSystemVersioning(res, table);
+        }
+
+        if (SupportedMsVersion.VERSION_22.isLE(loader.getVersion()) && res.getBoolean("xml_compression")) {
+            table.addOption("XML_COMPRESSION", "ON");
+        }
+
         table.setFileStream(res.getString("file_stream"));
         table.setAnsiNulls(res.getBoolean("uses_ansi_nulls"));
         Object isTracked = res.getObject("is_tracked");
@@ -101,7 +110,6 @@ public class MsTablesReader extends JdbcReader {
 
             table.setTablespace(sb.toString());
         }
-
         loader.setOwner(table, res.getString("owner"));
 
         schema.addTable(table);
@@ -116,6 +124,29 @@ public class MsTablesReader extends JdbcReader {
             }
         }
         return null;
+    }
+
+    private void appendSystemVersioning(ResultSet res, MsTable table) throws SQLException {
+        var histSchemaName = res.getString("hist_schema");
+        if (histSchemaName == null) {
+            return;
+        }
+
+        var histTableName = res.getString("hist_table");
+        var sysVersioning = new StringBuilder("ON");
+        sysVersioning.append(" (HISTORY_TABLE = ").append(MsDiffUtils.quoteName(histSchemaName)).append('.')
+                .append(MsDiffUtils.quoteName(histTableName));
+
+        if (SupportedMsVersion.VERSION_17.isLE(loader.getVersion())) {
+            var histRetPeriod = res.getString("history_retention_period_unit_desc");
+            if (null != histRetPeriod && !Objects.equals("INFINITE", histRetPeriod)) {
+                sysVersioning.append(", HISTORY_RETENTION_PERIOD = ").append(res.getInt("history_retention_period"))
+                .append(' ').append(histRetPeriod);
+            }
+        }
+        sysVersioning.append(')');
+        table.setSysVersioning(sysVersioning.toString());
+        table.addDep(new GenericColumn(histSchemaName, histTableName, DbObjType.TABLE));
     }
 
     // 'MsType type' used only for MsTypesReader processing to extract type depcy
@@ -215,9 +246,24 @@ public class MsTablesReader extends JdbcReader {
         }
 
         if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
-            builder.column("per.start_column_id AS start_col_id");
-            builder.column("per.end_column_id AS end_col_id");
-            builder.join("LEFT JOIN sys.periods per WITH (NOLOCK) ON per.object_id = res.object_id");
+            builder
+            .column("per.start_column_id AS start_col_id")
+            .column("per.end_column_id AS end_col_id")
+            .column("SCHEMA_NAME(hist.schema_id) as hist_schema")
+            .column("hist.name as hist_table")
+            .column("res.temporal_type")
+            .join("LEFT JOIN sys.periods per WITH (NOLOCK) ON per.object_id = res.object_id")
+            .join("LEFT JOIN sys.objects hist WITH (NOLOCK) ON hist.object_id = res.history_table_id");
+        }
+
+        if (SupportedMsVersion.VERSION_17.isLE(loader.getVersion())) {
+            builder
+            .column("res.history_retention_period_unit_desc")
+            .column("res.history_retention_period");
+        }
+
+        if (SupportedMsVersion.VERSION_22.isLE(loader.getVersion())) {
+            builder.column("sp.xml_compression");
         }
     }
 
@@ -257,7 +303,8 @@ public class MsTablesReader extends JdbcReader {
                 .where("c.object_id = res.object_id");
 
         if (SupportedMsVersion.VERSION_16.isLE(loader.getVersion())) {
-            subSelect.column("c.is_hidden AS hd")
+            subSelect
+            .column("c.is_hidden AS hd")
             .column("c.generated_always_type AS gen")
             .column("mc.masking_function AS mf")
             .join("LEFT JOIN sys.masked_columns mc WITH (NOLOCK) ON mc.object_id = c.object_id AND c.column_id = mc.column_id");

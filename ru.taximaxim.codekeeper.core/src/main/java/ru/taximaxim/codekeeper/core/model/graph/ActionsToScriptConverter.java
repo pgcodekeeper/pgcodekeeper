@@ -48,6 +48,8 @@ import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
+import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
@@ -245,6 +247,7 @@ public class ActionsToScriptConverter {
                     && obj.getTwin(newDbFull) != null) {
                 addCommandsForRenameTbl((AbstractTable) obj);
             } else {
+                checkMsTableOptions(obj);
                 addToDropScript(obj, false);
             }
             break;
@@ -266,6 +269,15 @@ public class ActionsToScriptConverter {
             break;
         case NONE:
             throw new IllegalStateException("Not implemented action");
+        }
+    }
+
+    private void checkMsTableOptions(PgStatement obj) {
+        if (obj instanceof MsConstraintPk && obj.getParent() instanceof MsTable oldTable) {
+            MsTable newTable = (MsTable) oldTable.getTwin(newDbFull);
+            if (oldTable.compare(newTable)) {
+                oldTable.compareTableOptions(newTable, script);
+            }
         }
     }
 

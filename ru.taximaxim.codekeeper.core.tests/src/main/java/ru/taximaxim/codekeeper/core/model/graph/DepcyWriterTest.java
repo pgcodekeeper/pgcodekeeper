@@ -75,6 +75,8 @@ public class DepcyWriterTest {
         "function_circle_quotes, 'public\\.\"Func1\"\\(.*'",
         //test searching deps of quoted function by name without quotes and parens for PG
         "function_circle_quotes, 'public\\.func1'",
+        //test searching deps of table with system versioning
+        "ms_sys_ver_table, '\\[dbo\\]\\.\\[t1\\]'",
     })
     void compareBothGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, FILES_POSTFIX.DEPS_TXT, objectName, false);

@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -36,6 +37,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_opt
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_whereContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.On_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
@@ -116,7 +118,27 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
         for (Index_optionContext option : options) {
             String key = option.key.getText();
             String value = getFullCtxText(option.index_option_value());
-            stmt.addOption(key, value);
+            if (Objects.equals("SYSTEM_VERSIONING", key) && stmt instanceof MsTable table) {
+                table.setSysVersioning(value);
+                addHistTableDep(option.index_option_value().on_option(), stmt);
+            } else {
+                stmt.addOption(key, value);
+            }
+        }
+    }
+
+    protected void addHistTableDep(On_optionContext onOpt, IOptionContainer stmt) {
+        if (onOpt == null || isRefMode()) {
+            return;
+        }
+
+        for (var sysVer : onOpt.system_versioning_opt()) {
+            var historyTable = sysVer.history_table_name;
+            if (null != historyTable) {
+                var histSchemaName = historyTable.schema.getText();
+                var histTableName = historyTable.name.getText();
+                ((PgStatement) stmt).addDep(new GenericColumn(histSchemaName, histTableName, DbObjType.TABLE));
+            }
         }
     }
 
