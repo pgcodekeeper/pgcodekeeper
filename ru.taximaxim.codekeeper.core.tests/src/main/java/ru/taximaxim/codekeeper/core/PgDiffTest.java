@@ -595,7 +595,9 @@ class PgDiffTest {
             // Test scenario where type of procedure argument is changed
             "modify_procedure_args_type",
             // Test scenario where mode of procedure argument is changed
-            "modify_procedure_args_mode"
+            "modify_procedure_args_mode",
+            // Test scenario when one child partition index is dropped
+            "drop_pg_child_partition_index"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);
