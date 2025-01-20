@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in generating code for a DOMAIN object with constraints.
 - Fixed UI freeze when testing connection with database.
 - Fixed code generation for CREATE OR REPLACE PROCEDURE command.
+- Fixed a bug in generating code for a INDEX object with attached indexes.
 
 ### Removed
 
