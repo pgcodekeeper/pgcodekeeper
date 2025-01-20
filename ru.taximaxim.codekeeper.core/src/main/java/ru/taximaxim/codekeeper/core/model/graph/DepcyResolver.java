@@ -157,6 +157,11 @@ public class DepcyResolver {
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), statement),
                         new CannotDropTraversalListener(statement));
             }
+
+            if (statement.canDrop() && statement instanceof PgIndex) {
+                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), statement),
+                        new CannotDropTraversalListener(statement));
+            }
         }
     }
 
