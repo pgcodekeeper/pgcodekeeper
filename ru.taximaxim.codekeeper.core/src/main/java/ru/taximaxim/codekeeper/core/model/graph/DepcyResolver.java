@@ -382,6 +382,10 @@ public class DepcyResolver {
 
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
+                if (oldObj instanceof PgIndex && starter instanceof PgIndex) {
+                    return false;
+                }
+
                 SQLScript script = new SQLScript(newObj.getDbType());
 
                 Pair<StatementActions, ObjectState> actionState = askAlter(oldObj, newObj, script);
@@ -392,10 +396,6 @@ public class DepcyResolver {
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), oldObj), iter);
                 if (iter.needDrop != null && iter.needDrop != oldObj) {
                     action = StatementActions.DROP;
-                }
-
-                if (oldObj instanceof PgIndex && starter instanceof PgIndex) {
-                    addToListWithoutDepcies(StatementActions.DROP, oldObj, starter);
                 }
 
                 if (action == StatementActions.NONE) {
