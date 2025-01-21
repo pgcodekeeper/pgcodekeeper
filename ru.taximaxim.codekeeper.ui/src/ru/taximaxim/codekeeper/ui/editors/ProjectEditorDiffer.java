@@ -525,8 +525,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     newDiffer.run(sub.newChild(90));
                     monitor.done();
                 } catch (InvocationTargetException | CoreException e) {
-                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
-                            Messages.error_in_differ_thread, e);
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.error_in_differ_thread, e);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 }

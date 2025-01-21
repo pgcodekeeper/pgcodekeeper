@@ -90,7 +90,10 @@ public class AntlrUtils {
 
     private static String getTokenText(int type, Token token) {
         if (type == SQLLexer.QuotedIdentifier
-                || type == SQLLexer.Character_String_Literal) {
+                // FIXME test this
+                // || type == SQLLexer.UnicodeQuotedIdentifier
+                // || type == SQLLexer.UnicodeEscapeStringConstant
+                || type == SQLLexer.StringConstant) {
             // get text with quotes
             return token.getInputStream().getText(
                     Interval.of(token.getStartIndex(), token.getStopIndex()));

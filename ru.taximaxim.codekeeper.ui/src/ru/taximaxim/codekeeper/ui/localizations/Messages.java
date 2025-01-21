@@ -254,6 +254,8 @@ public final class Messages extends NLS {
 
     public static String ConvertProject_select_type_title;
 
+    public static String CodekeeperWorkbenchErrorHandler_copy_all;
+
     public static String diffPresentationPane_getting_changes_for_diff;
     public static String project_either_closed_or_deleted;
 
@@ -1123,6 +1125,8 @@ public final class Messages extends NLS {
     public static String RenameDefinitionChange_error_resource_already_exists;
 
     public static String RenameDefinitionProcessor_rename_object;
+
+    public static String ErrorMessageDialog_dialog_title;
 
     // SONAR-ON
 

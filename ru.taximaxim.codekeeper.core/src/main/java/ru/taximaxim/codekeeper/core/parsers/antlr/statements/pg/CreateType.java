@@ -24,7 +24,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_type_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_directiveContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_column_definitionContext;
@@ -80,7 +79,7 @@ public final class CreateType extends PgParserAbstract {
 
     private PgEnumType createEnumType(String name) {
         PgEnumType type =  new PgEnumType(name);
-        for (Character_stringContext enume : ctx.enums) {
+        for (var enume : ctx.enums) {
             type.addEnum(enume.getText());
         }
 

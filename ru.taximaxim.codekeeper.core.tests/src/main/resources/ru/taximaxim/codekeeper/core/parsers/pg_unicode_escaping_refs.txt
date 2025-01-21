@@ -1,0 +1,4 @@
+Reference: Object = U&"/0441/043B" (TABLE), action = CREATE, offset = 13, line number = 1, charPositionInLine = 13
+Reference: Object = U&"!0441!043B"UESCAPE'!' (TABLE), action = CREATE, offset = 72, line number = 3, charPositionInLine = 13
+Reference: Object = U&"!0441!043B"UESCAPE'!' (TABLE), action = ALTER, offset = 192, line number = 5, charPositionInLine = 12
+Reference: Object = U&"!0441!043B"UESCAPE'!' (TABLE), action = INSERT, offset = 260, line number = 8, charPositionInLine = 12

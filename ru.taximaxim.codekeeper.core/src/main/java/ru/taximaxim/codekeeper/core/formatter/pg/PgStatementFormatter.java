@@ -98,7 +98,7 @@ public class PgStatementFormatter extends StatementFormatter {
 
     @Override
     protected boolean isNewLineToken(int type) {
-        return type == SQLLexer.New_Line;
+        return type == SQLLexer.NewLine;
     }
 
     @Override

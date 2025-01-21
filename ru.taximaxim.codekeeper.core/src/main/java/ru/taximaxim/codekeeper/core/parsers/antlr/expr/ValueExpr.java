@@ -40,12 +40,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Array_elem
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Array_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Case_expressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_specificationContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Col_labelContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comparison_modContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Date_time_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Datetime_overlapsContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Expr_constContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Extract_functionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Filter_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Frame_boundContext;
@@ -64,6 +64,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.OpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Orderby_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Partition_by_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SconstContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stmt_no_parensContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Sort_specifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.String_value_functionContext;
@@ -72,8 +73,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_subq
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Truth_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Type_coercionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Type_listContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Unsigned_numeric_literalContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Unsigned_value_specificationContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Value_expression_primaryContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Vex_bContext;
@@ -245,12 +244,17 @@ public class ValueExpr extends AbstractExpr {
                 && dataType.ARRAY() == null && dataType.array_type().isEmpty() && dataType.SETOF() == null) {
             // check simple built-in types for reg*** casts
             Value_expression_primaryContext castPrimary = operand.primary();
-            Unsigned_value_specificationContext value;
-            Character_stringContext str;
-            if (castPrimary != null
-                    && (value = castPrimary.unsigned_value_specification()) != null
-                    && (str = value.character_string()) != null) {
-                regCast(str, customType.getText());
+            if (castPrimary == null) {
+                return;
+            }
+            Expr_constContext exprConst = castPrimary.expr_const();
+            if (exprConst == null) {
+                return;
+            }
+
+            SconstContext stringConst = exprConst.sconst();
+            if (stringConst != null) {
+                regCast(stringConst, customType.getText());
             }
         }
     }
@@ -317,7 +321,7 @@ public class ValueExpr extends AbstractExpr {
     private ModPair<String, String> primary(Value_expression_primaryContext primary) {
         ModPair<String, String> ret;
         Indirection_varContext indirection = primary.indirection_var();
-        Unsigned_value_specificationContext unsignedValue;
+        Expr_constContext unsignedValue;
         Select_stmt_no_parensContext subSelectStmt;
         Case_expressionContext caseExpr;
         Comparison_modContext compMod;
@@ -329,7 +333,7 @@ public class ValueExpr extends AbstractExpr {
 
         if (indirection != null) {
             ret = indirectionVar(indirection);
-        } else if ((unsignedValue = primary.unsigned_value_specification()) != null) {
+        } else if ((unsignedValue = primary.expr_const()) != null) {
             ret = new ModPair<>(NONAME, literal(unsignedValue));
         } else if ((function = primary.function_call()) != null) {
             ret = function(function);
@@ -993,7 +997,7 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private void regCast(Character_stringContext strCtx, String regcast) {
+    private void regCast(SconstContext strCtx, String regcast) {
         if (!regcast.startsWith("reg")) {
             return;
         }
@@ -1037,19 +1041,16 @@ public class ValueExpr extends AbstractExpr {
         }
     }
 
-    private String literal(Unsigned_value_specificationContext unsignedValue){
+    private String literal(Expr_constContext constCtx) {
         String ret;
-        Unsigned_numeric_literalContext unsignedNumeric;
-        Character_stringContext charString;
+        SconstContext charString;
         Truth_valueContext truthValue;
 
-        if ((unsignedNumeric = unsignedValue.unsigned_numeric_literal()) != null) {
-            if (unsignedNumeric.NUMBER_LITERAL() != null) {
-                ret = TypesSetManually.INTEGER;
-            } else {
-                ret = TypesSetManually.NUMERIC;
-            }
-        } else if ((charString = unsignedValue.character_string()) != null) {
+        if (constCtx.iconst() != null) {
+            ret = TypesSetManually.INTEGER;
+        } else if (constCtx.fconst() != null) {
+            ret = TypesSetManually.NUMERIC;
+        } else if ((charString = constCtx.sconst()) != null) {
             String text = charString.getText();
             if (text.regionMatches(true, 0, "B", 0, 1) || text.regionMatches(true, 0, "X", 0, 1)) {
                 ret = TypesSetManually.BIT;
@@ -1058,7 +1059,7 @@ public class ValueExpr extends AbstractExpr {
             } else {
                 ret = TypesSetManually.TEXT;
             }
-        } else if ((truthValue = unsignedValue.truth_value()) != null) {
+        } else if ((truthValue = constCtx.truth_value()) != null) {
             if (truthValue.TRUE() != null || truthValue.FALSE() != null) {
                 ret = TypesSetManually.BOOLEAN;
             } else {

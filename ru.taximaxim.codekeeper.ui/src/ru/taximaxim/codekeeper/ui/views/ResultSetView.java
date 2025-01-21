@@ -53,6 +53,7 @@ import org.eclipse.ui.part.ViewPart;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UiUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ResultSetView extends ViewPart {
@@ -226,7 +227,8 @@ public class ResultSetView extends ViewPart {
             @Override
             public void keyPressed(KeyEvent e) {
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                if (selection.isEmpty() || (e.stateMask & SWT.CTRL) != SWT.CTRL || e.keyCode != 'c') {
+
+                if (!UiUtils.isCommandCopy(selection, e)) {
                     return;
                 }
 
@@ -246,7 +248,6 @@ public class ResultSetView extends ViewPart {
                 cb.setContents(new Object[] {sb.toString()}, new Transfer[] {TextTransfer.getInstance()});
             }
         });
-
 
         List<Object> names = results.get(0);
 
