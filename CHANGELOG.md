@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.6.0] - 2025-01-21
+
+### Added
+
 - Added support for MS SQL 2022.
 - Added links to library objects.
 
@@ -24,8 +34,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in generating code for a DOMAIN object with constraints.
 - Fixed UI freeze when testing connection with database.
 - Fixed code generation for CREATE OR REPLACE PROCEDURE command.
-
-### Removed
 
 ## [10.5.0] - 2024-12-10
 
@@ -2155,7 +2163,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...HEAD
+[10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
 [10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
