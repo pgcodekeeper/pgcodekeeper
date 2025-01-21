@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug in generating code for a INDEX object with attached indexes.
+
 ### Removed
 
 ## [10.6.0] - 2025-01-21
@@ -37,7 +39,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in generating code for a DOMAIN object with constraints.
 - Fixed UI freeze when testing connection with database.
 - Fixed code generation for CREATE OR REPLACE PROCEDURE command.
-- Fixed a bug in generating code for a INDEX object with attached indexes.
 
 ## [10.5.0] - 2024-12-10
 
