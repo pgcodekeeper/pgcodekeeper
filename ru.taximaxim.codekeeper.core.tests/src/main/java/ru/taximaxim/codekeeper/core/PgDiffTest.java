@@ -595,7 +595,9 @@ class PgDiffTest {
             // Test scenario where type of procedure argument is changed
             "modify_procedure_args_type",
             // Test scenario where mode of procedure argument is changed
-            "modify_procedure_args_mode"
+            "modify_procedure_args_mode",
+            // Test scenario where object has unicode encoded identifier
+            "compare_pg_unicode_identifiers"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

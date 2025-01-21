@@ -26,7 +26,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceE
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.ConstraintAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.ActionContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collate_identifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Compression_identifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Constr_bodyContext;
@@ -217,7 +216,7 @@ public abstract class TableAbstract extends PgParserAbstract {
         if (options != null) {
             if (table instanceof AbstractForeignTable) {
                 for (Foreign_optionContext option : options.foreign_option()) {
-                    Character_stringContext opt = option.character_string();
+                    var opt = option.sconst();
                     String value = opt == null ? "" : opt.getText();
                     fillOptionParams(value, option.col_label().getText(), false, col::addForeignOption);
                 }

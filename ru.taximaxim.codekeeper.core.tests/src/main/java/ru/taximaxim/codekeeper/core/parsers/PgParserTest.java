@@ -139,7 +139,8 @@ class PgParserTest {
             "user_mapping",
             "view",
             "window",
-            "with"
+            "with",
+            "pg_unicode_escaping"
     })
     void parse(final String fileNameTemplate) throws IOException {
         parse(fileNameTemplate, 0);

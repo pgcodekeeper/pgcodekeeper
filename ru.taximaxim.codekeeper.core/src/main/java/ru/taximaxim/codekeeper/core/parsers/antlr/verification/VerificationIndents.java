@@ -115,7 +115,7 @@ public class VerificationIndents implements IVerification {
     @Override
     public void verify() {
         Token firstToken = tokens.get(0);
-        if (firstToken.getType() != SQLLexer.New_Line
+        if (firstToken.getType() != SQLLexer.NewLine
                 && firstToken.getType() != SQLLexer.BEGIN) {
             addError(firstToken, Messages.VerificationIndents_body_start_rule);
         }
@@ -125,7 +125,7 @@ public class VerificationIndents implements IVerification {
             int length = t.getStopIndex() - t.getStartIndex() + 1;
             int type = t.getType();
 
-            if (type == SQLLexer.New_Line) {
+            if (type == SQLLexer.NewLine) {
                 needSpace = false;
                 // isMixedIndent = false;
                 firstTokenInLine = true;
@@ -282,7 +282,7 @@ public class VerificationIndents implements IVerification {
      */
     private void checkSemicolonAfterSimpleSQL() {
         Token endToken = tokens.stream().filter(
-                token -> token.getType() != SQLLexer.New_Line
+                token -> token.getType() != SQLLexer.NewLine
                 && token.getType() != SQLLexer.Space
                 && token.getType() != SQLLexer.END
                 && token.getType() != Recognizer.EOF)

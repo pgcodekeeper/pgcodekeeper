@@ -23,7 +23,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_foreign_table_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_columnsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
@@ -97,7 +96,7 @@ public class CreateForeignTable extends TableAbstract {
         Define_foreign_optionsContext options = server.define_foreign_options();
         if (options != null){
             for (Foreign_optionContext option : options.foreign_option()) {
-                Character_stringContext opt = option.character_string();
+                var opt = option.sconst();
                 String value = opt == null ? null : opt.getText();
                 fillOptionParams(value, option.col_label().getText(), false, table::addOption);
             }

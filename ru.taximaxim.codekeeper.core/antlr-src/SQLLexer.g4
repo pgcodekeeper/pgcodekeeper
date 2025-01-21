@@ -914,13 +914,8 @@ GREATER_GREATER : '>>';
 DOUBLE_DOT: '..';
 HASH_SIGN: '#';              // last operator rule, sync with CustomSQLAntlrErrorStrategy
 
-BlockComment
-    :   '/*' (BlockComment |.)*? '*/' -> channel(HIDDEN)
-    ;
-
-LineComment
-    :   '--' ~[\r\n]* -> channel(HIDDEN)
-    ;
+BlockComment: '/*' (BlockComment |.)*? '*/' -> channel(HIDDEN);
+LineComment: '--' ~[\r\n]* -> channel(HIDDEN);
 
 // must follow all explicitly defined operators and comments
 // so that they are matched first
@@ -937,17 +932,14 @@ OperatorBasic
     // check so that comment start sequences are not matched by this
     | '-' {_input.LA(1) != '-'}?
     | '/' {_input.LA(1) != '*'}?;
-fragment
-OperatorBasicEnd: [*/<>=];
-fragment
-OperatorSpecial: [~!@#%^&|`?];
+fragment OperatorBasicEnd: [*/<>=];
+fragment OperatorSpecial: [~!@#%^&|`?];
 
-NUMBER_LITERAL : Digit+;
+Integer: Digit+;
 
-fragment
-Digit : '0'..'9';
+fragment Digit: '0'..'9';
 
-REAL_NUMBER
+Numeric
     // fail double dots into a separate token
     // otherwise 1..10 would lex into 2 numbers
     :   Digit+ '.' {_input.LA(1) != '.'}?
@@ -957,9 +949,7 @@ REAL_NUMBER
     |   Digit+ EXPONENT
     ;
 
-DOLLAR_NUMBER
-    : DOLLAR NUMBER_LITERAL
-    ;
+DOLLAR_NUMBER: DOLLAR Integer;
 
 /*
 ===============================================================================
@@ -984,16 +974,11 @@ IdentifierStartChar options {
     | // letters which require multiple UTF-16 code units
     [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isLetter(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
     ;
-fragment
-IdentifierChar
-    : StrictIdentifierChar
-    | '$'
-    ;
-fragment
-StrictIdentifierChar
-    : IdentifierStartChar
-    | [0-9]
-    ;
+
+fragment IdentifierChar: StrictIdentifierChar | '$' ;
+fragment StrictIdentifierChar: IdentifierStartChar | [0-9];
+
+UnicodeQuotedIdentifier: 'U&' QuotedIdentifier;
 
 /* Quoted Identifiers
 *
@@ -1009,35 +994,23 @@ QuotedIdentifier
         }
     ;
 // This is a quoted identifier which only contains valid characters but is not terminated
-fragment UnterminatedQuotedIdentifier
-    : '"'
-    ( '""' | ~[\u0000"] )*
-    ;
+fragment UnterminatedQuotedIdentifier : '"' ( '""' | ~[\u0000"] )*;
 /*
 ===============================================================================
  Literal
 ===============================================================================
 */
 
+StringConstant: [ENXB]? SingleString (StringJoiner SingleString)*;
+
+UnicodeEscapeStringConstant: 'U&' StringConstant;
+
+fragment SingleString : QUOTE_CHAR ( ~'\'' | '\'\'')* QUOTE_CHAR;
+fragment StringJoiner: ((Space | Tab | WhiteSpace | LineComment)* NewLine)+ (Space | Tab | WhiteSpace)*;
+
 // Some Unicode Character Ranges
-fragment
-Control_Characters                  :   '\u0001' .. '\u0008' | '\u000B' | '\u000C' | '\u000E' .. '\u001F';
-fragment
-Extended_Control_Characters         :   '\u0080' .. '\u009F';
-
-Character_String_Literal
-    : [ENXB]? Single_String (String_Joiner Single_String)*
-    ;
-
-fragment
-Single_String
-    : QUOTE_CHAR ( ~'\'' | '\'\'')* QUOTE_CHAR
-    ;
-
-fragment
-String_Joiner
-    :  ((Space | Tab | White_Space | LineComment)* New_Line)+ (Space | Tab | White_Space)*
-    ;
+fragment Control_Characters                  :   '\u0001' .. '\u0008' | '\u000B' | '\u000C' | '\u000E' .. '\u001F';
+fragment Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
 fragment
 EXPONENT : 'E' ('+'|'-')? Digit+ ;
@@ -1052,7 +1025,6 @@ Tag
     : IdentifierStartChar StrictIdentifierChar*
     ;
 
-
 /*
 ===============================================================================
  Whitespace Tokens
@@ -1063,11 +1035,11 @@ Space
   : ' ' -> channel(HIDDEN)
   ;
 
-White_Space
+WhiteSpace
   : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
   ;
 
-New_Line
+NewLine
     : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
     ;
 

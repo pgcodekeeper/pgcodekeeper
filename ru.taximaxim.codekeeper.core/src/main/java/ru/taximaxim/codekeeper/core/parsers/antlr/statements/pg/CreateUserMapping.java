@@ -51,8 +51,7 @@ public class CreateUserMapping extends PgParserAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options != null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                fillOptionParams(option.character_string().getText(),
-                        option.col_label().getText(), false, usm::addOption);
+                fillOptionParams(option.sconst().getText(), option.col_label().getText(), false, usm::addOption);
             }
         }
         addSafe(db, usm, Arrays.asList(userMapping));

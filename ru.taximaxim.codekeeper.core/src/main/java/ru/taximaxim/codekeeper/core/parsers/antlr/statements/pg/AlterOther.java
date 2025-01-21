@@ -165,7 +165,7 @@ public class AlterOther extends PgParserAbstract {
 
         var statCtx = ctx.set_statistics();
         if (statCtx != null && statCtx.DEFAULT() == null) {
-            doSafe(PgStatistics::setStatistics, stat, Integer.parseInt(statCtx.signed_number_literal().getText()));
+            doSafe(PgStatistics::setStatistics, stat, Integer.parseInt(statCtx.signediconst().getText()));
         }
     }
 
