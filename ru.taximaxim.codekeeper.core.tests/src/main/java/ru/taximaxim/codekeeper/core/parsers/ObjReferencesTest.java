@@ -133,6 +133,7 @@ class ObjReferencesTest {
             "view",
             "window",
             "with",
+            "pg_unicode_escaping"
     })
     void comparePgReferences(final String fileNameTemplate) throws IOException, InterruptedException {
         compareReferences(fileNameTemplate, DatabaseType.PG);

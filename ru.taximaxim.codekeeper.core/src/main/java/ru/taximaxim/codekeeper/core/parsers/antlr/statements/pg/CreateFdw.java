@@ -52,7 +52,7 @@ public class CreateFdw extends PgParserAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                fillOptionParams(option.character_string().getText(), option.col_label().getText(), false,fDW::addOption);
+                fillOptionParams(option.sconst().getText(), option.col_label().getText(), false, fDW::addOption);
             }
         }
         addSafe(db, fDW, Arrays.asList(nameCtx));

@@ -27,9 +27,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comment_member_objectContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comment_on_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SconstContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -53,7 +53,7 @@ public class CommentOn extends PgParserAbstract {
 
     @Override
     public void parseObject() {
-        Character_stringContext str = ctx.character_string();
+        SconstContext str = ctx.sconst();
         String comment = str == null ? null : str.getText();
         Comment_member_objectContext obj = ctx.comment_member_object();
 

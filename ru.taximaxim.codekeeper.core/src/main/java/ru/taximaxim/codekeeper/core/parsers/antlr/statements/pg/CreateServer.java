@@ -52,7 +52,7 @@ public class CreateServer extends PgParserAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options!= null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                fillOptionParams(option.character_string().getText(), option.col_label().getText(), false,server::addOption);
+                fillOptionParams(option.sconst().getText(), option.col_label().getText(), false, server::addOption);
             }
         }
         addSafe(db, server, Arrays.asList(ids.get(0)));

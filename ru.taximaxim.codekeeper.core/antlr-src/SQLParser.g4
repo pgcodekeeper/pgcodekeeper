@@ -67,9 +67,9 @@ script_statement
 script_transaction
     : (START TRANSACTION | BEGIN (WORK | TRANSACTION)?) (transaction_mode (COMMA transaction_mode)*)?
     | (COMMIT | END | ABORT | ROLLBACK) (WORK | TRANSACTION)? (AND NO? CHAIN)?
-    | (COMMIT PREPARED | PREPARE TRANSACTION) Character_String_Literal
+    | (COMMIT PREPARED | PREPARE TRANSACTION) sconst
     | (SAVEPOINT | RELEASE SAVEPOINT?) identifier
-    | ROLLBACK PREPARED Character_String_Literal 
+    | ROLLBACK PREPARED sconst
     | ROLLBACK (WORK | TRANSACTION)? TO SAVEPOINT? identifier
     | lock_table
     ;
@@ -113,7 +113,7 @@ additional_statement
     | ANALYZE (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
     | cluster_stmt
     | CHECKPOINT
-    | LOAD Character_String_Literal
+    | LOAD sconst
     | DEALLOCATE PREPARE? (identifier | ALL)
     | RESET ((identifier DOT)? identifier | TIME ZONE | SESSION AUTHORIZATION | ALL)
     | REFRESH MATERIALIZED VIEW CONCURRENTLY? schema_qualified_name (WITH NO? DATA)?
@@ -183,13 +183,13 @@ vacuum_mode
 vacuum_option
     : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | PROCESS_MAIN | TRUNCATE
       | SKIP_DATABASE_STATS | ONLY_DATABASE_STATS) boolean_value?
-    | PARALLEL NUMBER_LITERAL
-    | BUFFER_USAGE_LIMIT (NUMBER_LITERAL identifier)?
+    | PARALLEL iconst
+    | BUFFER_USAGE_LIMIT (iconst identifier)?
     ;
 
 analyze_mode
     : (VERBOSE | SKIP_LOCKED) boolean_value?
-    | BUFFER_USAGE_LIMIT (NUMBER_LITERAL identifier)?
+    | BUFFER_USAGE_LIMIT (iconst identifier)?
     ;
 
 boolean_value
@@ -197,8 +197,8 @@ boolean_value
     | FALSE 
     | OFF 
     | ON 
-    | NUMBER_LITERAL
-    | character_string // 'true', 'false', 'on', 'off'
+    | iconst
+    | sconst // 'true', 'false', 'on', 'off'
     ;
 
 fetch_move_direction
@@ -206,10 +206,10 @@ fetch_move_direction
     | PRIOR
     | FIRST
     | LAST
-    | (ABSOLUTE | RELATIVE)? signed_number_literal
+    | (ABSOLUTE | RELATIVE)? signediconst
     | ALL
-    | FORWARD (NUMBER_LITERAL | ALL)?
-    | BACKWARD (NUMBER_LITERAL | ALL)?
+    | FORWARD (iconst | ALL)?
+    | BACKWARD (iconst | ALL)?
     ;
 
 schema_statement
@@ -344,7 +344,7 @@ alter_extension_statement
 
 alter_extension_action
     : set_schema
-    | UPDATE (TO (identifier | character_string))?
+    | UPDATE (TO (identifier | sconst))?
     | (ADD | DROP) extension_member_object
     ;
 
@@ -424,8 +424,8 @@ partition_gp_action
     | EXCHANGE PARTITION alter_partition_gp_name WITH TABLE name=schema_qualified_name (WITH | WITHOUT VALIDATION)?
     | EXCHANGE DEFAULT PARTITION WITH TABLE identifier (WITH | WITHOUT VALIDATION)?
     | SET SUBPARTITION TEMPLATE (LEFT_PAREN template_spec? RIGHT_PAREN)
-    | SPLIT DEFAULT PARTITION (AT LEFT_PAREN Character_String_Literal RIGHT_PAREN | partition_start_clause) into_partition_gp_clause?
-    | SPLIT PARTITION alter_partition_gp_name AT LEFT_PAREN Character_String_Literal RIGHT_PAREN into_partition_gp_clause?
+    | SPLIT DEFAULT PARTITION (AT LEFT_PAREN sconst RIGHT_PAREN | partition_start_clause) into_partition_gp_clause?
+    | SPLIT PARTITION alter_partition_gp_name AT LEFT_PAREN sconst RIGHT_PAREN into_partition_gp_clause?
     ;
 
 alter_partition_gp_element
@@ -436,8 +436,8 @@ alter_partition_gp_element
 
 alter_partition_gp_name
     : identifier
-    | FOR LEFT_PAREN RANK LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN RIGHT_PAREN
-    | FOR LEFT_PAREN value=(Character_String_Literal| NUMBER_LITERAL) RIGHT_PAREN
+    | FOR LEFT_PAREN RANK LEFT_PAREN iconst RIGHT_PAREN RIGHT_PAREN
+    | FOR LEFT_PAREN (svalue=sconst | ivalue=iconst) RIGHT_PAREN
     ;
 
 into_partition_gp_clause
@@ -500,7 +500,7 @@ identity_body
 alter_identity
     : SET GENERATED (ALWAYS | BY DEFAULT)
     | SET sequence_body
-    | RESTART (WITH? NUMBER_LITERAL)?
+    | RESTART (WITH? iconst)?
     ;
 
 storage_option
@@ -540,8 +540,8 @@ function_actions_common
     | EXTERNAL? SECURITY (INVOKER | DEFINER)
     | EXECUTE ON (ANY | MASTER | COORDINATOR | ALL SEGMENTS | INITPLAN)
     | PARALLEL (SAFE | UNSAFE | RESTRICTED)
-    | COST execution_cost=unsigned_numeric_literal
-    | ROWS result_rows=unsigned_numeric_literal
+    | COST execution_cost=numericonly
+    | ROWS result_rows=numericonly
     | SUPPORT schema_qualified_name
     | SET session_local_option
     | LANGUAGE lang_name=identifier
@@ -550,7 +550,7 @@ function_actions_common
     ;
 
 function_def
-    : definition=character_string (COMMA symbol=character_string)?
+    : definition=sconst (COMMA symbol=sconst)?
     ;
 
 alter_index_statement
@@ -562,7 +562,7 @@ index_def_action
     : rename_to
     | ATTACH PARTITION index=schema_qualified_name
     | NO? DEPENDS ON EXTENSION schema_qualified_name
-    | ALTER COLUMN? (NUMBER_LITERAL | identifier) set_statistics
+    | ALTER COLUMN? (iconst | identifier) set_statistics
     | RESET identifier_list_in_paren
     | set_tablespace
     | SET storage_parameters
@@ -590,11 +590,12 @@ grant_option_for
     ;
 
 alter_sequence_statement
-    : SEQUENCE if_exists? name=schema_qualified_name
-     ( (sequence_body | RESTART (WITH? signed_number_literal)?)*
-    | set_logged
-    | set_schema
-    | rename_to)
+    : SEQUENCE if_exists? name=schema_qualified_name (
+      (sequence_body | RESTART (WITH? numericonly)?)*
+      | set_logged
+      | set_schema
+      | rename_to
+    )
     ;
 
 alter_view_statement
@@ -650,9 +651,9 @@ alter_type_statement
     : TYPE name=schema_qualified_name
       (set_schema
       | rename_to
-      | ADD VALUE if_not_exists? new_enum_value=character_string ((BEFORE | AFTER) existing_enum_value=character_string)?
+      | ADD VALUE if_not_exists? new_enum_value=sconst ((BEFORE | AFTER) existing_enum_value=sconst)?
       | RENAME ATTRIBUTE attribute_name=identifier TO new_attribute_name=identifier cascade_restrict?
-      | RENAME VALUE existing_enum_name=character_string TO new_enum_name=character_string
+      | RENAME VALUE existing_enum_name=sconst TO new_enum_name=sconst
       | type_action (COMMA type_action)*
       | SET LEFT_PAREN type_property (COMMA type_property)* RIGHT_PAREN
       | SET DEFAULT encoding_identifier)
@@ -676,8 +677,8 @@ alter_server_statement
     ;
 
 alter_server_action
-    : (VERSION character_string)? define_foreign_options
-    | VERSION character_string
+    : (VERSION sconst)? define_foreign_options
+    | VERSION sconst
     | rename_to
     ;
 
@@ -745,8 +746,8 @@ index_where
     : EXTENSION if_not_exists? name=identifier 
     WITH?
     (SCHEMA schema=identifier)? 
-    (VERSION (identifier | character_string))?
-    (FROM (identifier | character_string))?
+    (VERSION (identifier | sconst))?
+    (FROM (identifier | sconst))?
     CASCADE?
     ;
 
@@ -762,13 +763,13 @@ create_event_trigger_statement
     ;
 
 event_trigger_filter_variables
-    : identifier IN LEFT_PAREN filter_values+=character_string (COMMA filter_values+=character_string)* RIGHT_PAREN
+    : identifier IN LEFT_PAREN filter_values+=sconst (COMMA filter_values+=sconst)* RIGHT_PAREN
     ;
 
 create_type_statement
     : TYPE name=schema_qualified_name (AS(
         LEFT_PAREN (attrs+=table_column_definition (COMMA attrs+=table_column_definition)*)? RIGHT_PAREN
-        | ENUM LEFT_PAREN ( enums+=character_string (COMMA enums+=character_string)* )? RIGHT_PAREN
+        | ENUM LEFT_PAREN ( enums+=sconst (COMMA enums+=sconst)* )? RIGHT_PAREN
         | RANGE LEFT_PAREN
                 (SUBTYPE EQUAL subtype_name=data_type
                 | SUBTYPE_OPCLASS EQUAL subtype_operator_class=identifier
@@ -785,7 +786,7 @@ create_type_statement
             RIGHT_PAREN)
     | LEFT_PAREN
             // pg_dump prints internallength first
-            (INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE) COMMA)?
+            (INTERNALLENGTH EQUAL (internallength=signediconst | VARIABLE) COMMA)?
             INPUT EQUAL input_function=schema_qualified_name COMMA
             OUTPUT EQUAL output_function=schema_qualified_name
             (COMMA (RECEIVE EQUAL receive_function=schema_qualified_name
@@ -794,16 +795,16 @@ create_type_statement
             | TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name
             | ANALYZE EQUAL analyze_function=schema_qualified_name
             | SUBSCRIPT EQUAL subscript_function=schema_qualified_name
-            | INTERNALLENGTH EQUAL (internallength=signed_numerical_literal | VARIABLE )
+            | INTERNALLENGTH EQUAL (internallength=signediconst | VARIABLE )
             | PASSEDBYVALUE
             | ALIGNMENT EQUAL alignment=data_type
             | STORAGE EQUAL storage=storage_option
             | LIKE EQUAL like_type=data_type
-            | CATEGORY EQUAL category=character_string
+            | CATEGORY EQUAL category=sconst
             | PREFERRED EQUAL preferred=truth_value
             | DEFAULT EQUAL default_value=vex
             | ELEMENT EQUAL element=data_type
-            | DELIMITER EQUAL delimiter=character_string
+            | DELIMITER EQUAL delimiter=sconst
             | COLLATABLE EQUAL collatable=truth_value
             | storage_directive))*
         RIGHT_PAREN)?
@@ -815,7 +816,7 @@ create_domain_statement
     ;
 
 create_server_statement
-    : SERVER if_not_exists? identifier (TYPE type=character_string)? (VERSION version=character_string)?
+    : SERVER if_not_exists? identifier (TYPE type=sconst)? (VERSION version=sconst)?
     FOREIGN DATA WRAPPER identifier
     define_foreign_options?
     ;
@@ -866,7 +867,7 @@ alter_collation_statement
     ;
 
 collation_option
-    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION | RULES) EQUAL (character_string | identifier | DEFAULT)
+    : (LOCALE | LC_COLLATE | LC_CTYPE | PROVIDER | VERSION | RULES) EQUAL (sconst | identifier | DEFAULT)
     | DETERMINISTIC EQUAL boolean_value
     ;
 
@@ -926,7 +927,7 @@ alter_statistics_statement
     ;
 
 set_statistics
-    : SET STATISTICS (signed_number_literal | DEFAULT)
+    : SET STATISTICS (signediconst | DEFAULT)
     ;
 
 alter_foreign_data_wrapper
@@ -1006,18 +1007,18 @@ user_or_role_or_group_common_option
     | (CREATEEXTTABLE | NOCREATEEXTTABLE) LEFT_PAREN attribute (COMMA attribute)* RIGHT_PAREN
     | INHERIT | NOINHERIT
     | LOGIN | NOLOGIN
-    | ENCRYPTED? PASSWORD (password=Character_String_Literal | NULL)
-    | VALID UNTIL date_time=Character_String_Literal
+    | ENCRYPTED? PASSWORD (password=sconst | NULL)
+    | VALID UNTIL date_time=sconst
     ;
 
 attribute
-    : (TYPE | PROTOCOL) EQUAL Character_String_Literal
+    : (TYPE | PROTOCOL) EQUAL sconst
     ;
 
 user_or_role_common_option
     : REPLICATION | NOREPLICATION
     | BYPASSRLS | NOBYPASSRLS
-    | CONNECTION LIMIT signed_number_literal
+    | CONNECTION LIMIT signediconst
     ;
 
 user_or_role_or_group_option_for_create
@@ -1036,7 +1037,7 @@ group_option
 
 create_tablespace_statement
     : TABLESPACE name=identifier (OWNER user_name)?
-    LOCATION directory=Character_String_Literal
+    LOCATION directory=sconst
     with_storage_parameter?
     ;
 
@@ -1085,7 +1086,7 @@ create_aggregate_statement
     ;
 
 aggregate_param
-    : SSPACE EQUAL s_space=NUMBER_LITERAL
+    : SSPACE EQUAL s_space=iconst
     | FINALFUNC EQUAL final_func=schema_qualified_name
     | FINALFUNC_EXTRA
     | FINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
@@ -1096,7 +1097,7 @@ aggregate_param
     | MSFUNC EQUAL ms_func=schema_qualified_name
     | MINVFUNC EQUAL minv_func=schema_qualified_name
     | MSTYPE EQUAL ms_type=data_type
-    | MSSPACE EQUAL ms_space=NUMBER_LITERAL
+    | MSSPACE EQUAL ms_space=iconst
     | MFINALFUNC EQUAL mfinal_func=schema_qualified_name
     | MFINALFUNC_EXTRA
     | MFINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
@@ -1113,17 +1114,27 @@ set_statement
 set_action
     : CONSTRAINTS (ALL | names_references) (DEFERRED | IMMEDIATE)
     | TRANSACTION transaction_mode (COMMA transaction_mode)*
-    | TRANSACTION SNAPSHOT Character_String_Literal
+    | TRANSACTION SNAPSHOT sconst
     | SESSION CHARACTERISTICS AS TRANSACTION transaction_mode (COMMA transaction_mode)*
     | (SESSION | LOCAL)? session_local_option
     ;
 
 session_local_option
-    : SESSION AUTHORIZATION (Character_String_Literal | session_param=identifier | DEFAULT)
-    | TIME ZONE (Character_String_Literal | signed_numerical_literal | LOCAL | DEFAULT)
+    : SESSION AUTHORIZATION (sconst | session_param=identifier | DEFAULT)
+    | TIME ZONE zone_value
     | (config_scope=identifier DOT)? config_param=identifier ((TO | EQUAL) set_statement_value | FROM CURRENT)
     | ROLE (role_param=identifier)
     | XML OPTION (DOCUMENT | CONTENT)
+    ;
+
+zone_value
+    : sconst
+    | identifier
+    | INTERVAL sconst interval_field?
+    | INTERVAL LEFT_PAREN iconst RIGHT_PAREN sconst
+    | numericonly
+    | DEFAULT
+//    | LOCAL
     ;
 
 set_statement_value
@@ -1183,7 +1194,7 @@ rule_member_object
     | FOREIGN DATA WRAPPER names_references
     | FOREIGN SERVER names_references
     | (FUNCTION | PROCEDURE | ROUTINE) func_name+=function_parameters (COMMA func_name+=function_parameters)*
-    | LARGE OBJECT NUMBER_LITERAL (COMMA NUMBER_LITERAL)*
+    | LARGE OBJECT iconst (COMMA iconst)*
     | LANGUAGE names_references
     | PARAMETER names_references
     | SCHEMA schema_names=names_references
@@ -1260,11 +1271,11 @@ granted_by
     ;
 
 comment_on_statement
-    : COMMENT ON comment_member_object IS (character_string | NULL)
+    : COMMENT ON comment_member_object IS (sconst | NULL)
     ;
 
 security_label
-    : SECURITY LABEL (FOR (identifier | character_string))? ON label_member_object IS (character_string | NULL)
+    : SECURITY LABEL (FOR (identifier | sconst))? ON label_member_object IS (sconst | NULL)
     ;
 
 comment_member_object
@@ -1282,7 +1293,7 @@ comment_member_object
     | FOREIGN DATA WRAPPER identifier
     | FOREIGN? TABLE name=schema_qualified_name
     | INDEX name=schema_qualified_name
-    | LARGE OBJECT NUMBER_LITERAL
+    | LARGE OBJECT iconst
     | MATERIALIZED? VIEW name=schema_qualified_name
     | OPERATOR target_operator
     | OPERATOR (FAMILY| CLASS) name=schema_qualified_name USING index_method=identifier
@@ -1313,7 +1324,7 @@ label_member_object
     | DOMAIN schema_qualified_name
     | EVENT TRIGGER identifier
     | FOREIGN? TABLE schema_qualified_name
-    | LARGE OBJECT NUMBER_LITERAL
+    | LARGE OBJECT iconst
     | MATERIALIZED? VIEW schema_qualified_name
     | PROCEDURAL? LANGUAGE schema_qualified_name
     | PUBLICATION identifier
@@ -1327,7 +1338,7 @@ label_member_object
 
 owner_member_object
     : OPERATOR target_operator
-    | LARGE OBJECT NUMBER_LITERAL
+    | LARGE OBJECT iconst
     | (FUNCTION | PROCEDURE | AGGREGATE | ROUTINE) name=schema_qualified_name function_args
     | (TEXT SEARCH DICTIONARY | TEXT SEARCH CONFIGURATION | FOREIGN DATA WRAPPER | EVENT TRIGGER | SERVER | DOMAIN
       | STATISTICS | SCHEMA | SEQUENCE | TYPE | COLLATION | MATERIALIZED? VIEW) if_exists? name=schema_qualified_name
@@ -1377,9 +1388,14 @@ function_return
     : RETURN vex
     ;
 
-character_string
+sconst
     : BeginDollarStringConstant Text_between_Dollar* EndDollarStringConstant
-    | Character_String_Literal
+    | StringConstant
+    | UnicodeEscapeStringConstant uescape?
+    ;
+
+uescape
+    : UESCAPE StringConstant
     ;
 
 function_arguments
@@ -1399,25 +1415,13 @@ create_sequence_statement
 sequence_body
     : AS type=(SMALLINT | INTEGER | BIGINT)
     | SEQUENCE NAME name=schema_qualified_name
-    | INCREMENT BY? incr=signed_numerical_literal
-    | (MINVALUE minval=signed_numerical_literal | NO MINVALUE)
-    | (MAXVALUE maxval=signed_numerical_literal | NO MAXVALUE)
-    | START WITH? start_val=signed_numerical_literal
-    | CACHE cache_val=signed_numerical_literal
+    | INCREMENT BY? incr=numericonly
+    | (MINVALUE minval=numericonly | NO MINVALUE)
+    | (MAXVALUE maxval=numericonly | NO MAXVALUE)
+    | START WITH? start_val=numericonly
+    | CACHE cache_val=numericonly
     | cycle_true=NO? cycle_val=CYCLE
     | OWNED BY col_name=schema_qualified_name
-    ;
-
-signed_number_literal
-    : sign? NUMBER_LITERAL
-    ;
-
-signed_numerical_literal
-    : sign? unsigned_numeric_literal
-    ;
-
-sign
-    : PLUS | MINUS
     ;
 
 create_schema_statement
@@ -1443,7 +1447,7 @@ drop_policy_statement
 
 create_subscription_statement
     : SUBSCRIPTION identifier
-    CONNECTION Character_String_Literal
+    CONNECTION sconst
     PUBLICATION identifier_list
     with_storage_parameter?
     ;
@@ -1453,7 +1457,7 @@ alter_subscription_statement
     ;
 
 alter_subscription_action
-    : CONNECTION character_string
+    : CONNECTION sconst
     | (ADD | DROP | SET) PUBLICATION identifier_list with_storage_parameter?
     | REFRESH PUBLICATION with_storage_parameter?
     | ENABLE
@@ -1495,12 +1499,12 @@ operator_family_action
     ;
 
 add_operator_to_family
-    : OPERATOR unsigned_numeric_literal target_operator (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
-    | FUNCTION unsigned_numeric_literal (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? function_call
+    : OPERATOR iconst target_operator (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
+    | FUNCTION iconst (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? function_call
     ;
 
 drop_operator_from_family
-    : (OPERATOR | FUNCTION) unsigned_numeric_literal LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN
+    : (OPERATOR | FUNCTION) iconst LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN
     ;
 
 drop_operator_family_statement
@@ -1514,10 +1518,10 @@ create_operator_class_statement
     ;
 
 create_operator_class_option
-    : OPERATOR unsigned_numeric_literal name=operator_name 
+    : OPERATOR iconst name=operator_name
         (LEFT_PAREN (data_type | NONE) COMMA (data_type | NONE) RIGHT_PAREN)?
         (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
-    | FUNCTION unsigned_numeric_literal 
+    | FUNCTION iconst
         (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? 
         function_call
     | STORAGE data_type
@@ -1532,7 +1536,7 @@ drop_operator_class_statement
     ;
 
 create_conversion_statement
-    : DEFAULT? CONVERSION schema_qualified_name FOR Character_String_Literal TO Character_String_Literal FROM schema_qualified_name
+    : DEFAULT? CONVERSION schema_qualified_name FOR sconst TO sconst FROM schema_qualified_name
     ;
 
 alter_conversion_statement
@@ -1584,14 +1588,14 @@ copy_statement
 
 copy_from_statement
     : COPY table_cols
-    FROM (PROGRAM? Character_String_Literal | STDIN) 
+    FROM (PROGRAM? sconst | STDIN)
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     (WHERE vex)?
     ;
 
 copy_to_statement
     : COPY (table_cols | LEFT_PAREN data_statement RIGHT_PAREN)
-    TO (PROGRAM? Character_String_Literal | STDOUT)
+    TO (PROGRAM? sconst | STDOUT)
     (WITH? (LEFT_PAREN copy_option_list RIGHT_PAREN | copy_option_list))?
     ;
 
@@ -1603,8 +1607,8 @@ copy_option
     : FORMAT? (TEXT | CSV | BINARY)
     | OIDS boolean_value?
     | FREEZE boolean_value?
-    | (DELIMITER | NULL) AS? Character_String_Literal
-    | (DEFAULT | ENCODING | QUOTE | ESCAPE) Character_String_Literal
+    | (DELIMITER | NULL) AS? sconst
+    | (DEFAULT | ENCODING | QUOTE | ESCAPE) sconst
     | HEADER (boolean_value | MATCH)?
     | FORCE QUOTE (MULTIPLY | identifier_list)
     | FORCE_QUOTE (MULTIPLY | identifier_list_in_paren)
@@ -1653,10 +1657,10 @@ create_database_statement
 
 create_database_option
     : (OWNER | TEMPLATE | ENCODING | STRATEGY | LOCALE | LC_COLLATE | LC_CTYPE | ICU_LOCALE | ICU_RULES | LOCALE_PROVIDER | TABLESPACE)
-       EQUAL? (character_string | identifier | DEFAULT)
+       EQUAL? (sconst | identifier | DEFAULT)
     | alter_database_option
-    | COLLATION_VERSION EQUAL (character_string | identifier | signed_numerical_literal)
-    | OID EQUAL? signed_numerical_literal
+    | COLLATION_VERSION EQUAL (sconst | identifier | numericonly)
+    | OID EQUAL? signediconst
     ;
 
 alter_database_statement
@@ -1665,7 +1669,7 @@ alter_database_statement
 
 alter_database_action
     : WITH? alter_database_option+
-    | WITH? TABLESPACE EQUAL? (character_string | identifier | DEFAULT)
+    | WITH? TABLESPACE EQUAL? (sconst | identifier | DEFAULT)
     | rename_to
     | owner_to
     | set_tablespace
@@ -1675,7 +1679,7 @@ alter_database_action
 
 alter_database_option
     : (ALLOW_CONNECTIONS | IS_TEMPLATE) EQUAL? (boolean_value | DEFAULT)
-    | CONNECTION LIMIT EQUAL? (signed_number_literal | DEFAULT)
+    | CONNECTION LIMIT EQUAL? (signediconst | DEFAULT)
     ;
 
 create_table_statement
@@ -1704,34 +1708,34 @@ create_table_external_statement
     (external_table_location | external_table_execute)
     external_table_format
     define_foreign_options?
-    (ENCODING character_string)? 
+    (ENCODING sconst)?
     external_table_log? 
     distributed_clause?
     ;
 
 external_table_location
-    : LOCATION LEFT_PAREN character_string (COMMA character_string)* RIGHT_PAREN (ON MASTER | ON COORDINATOR)?
+    : LOCATION LEFT_PAREN sconst (COMMA sconst)* RIGHT_PAREN (ON MASTER | ON COORDINATOR)?
     ;
 
 external_table_execute
-    : EXECUTE command=character_string
-    (ON (ALL | COORDINATOR | MASTER | segment_nubmer=NUMBER_LITERAL | HOST hostname=character_string? | SEGMENT segment_id=NUMBER_LITERAL))?
+    : EXECUTE command=sconst
+    (ON (ALL | COORDINATOR | MASTER | segment_nubmer=iconst | HOST hostname=sconst? | SEGMENT segment_id=iconst))?
     ;
 
 external_table_format
-    : FORMAT format_type=character_string (LEFT_PAREN format_options* RIGHT_PAREN | format_options*)
+    : FORMAT format_type=sconst (LEFT_PAREN format_options* RIGHT_PAREN | format_options*)
     ;
 
 format_options
     : HEADER
-    | (QUOTE | DELIMITER | NULL | ESCAPE | NEWLINE) AS? character_string
+    | (QUOTE | DELIMITER | NULL | ESCAPE | NEWLINE) AS? sconst
     | FILL MISSING FIELDS
     | FORCE NOT NULL identifier_list
-    | FORMATTER EQUAL character_string
+    | FORMATTER EQUAL sconst
     ;
 
 external_table_log
-    : (LOG ERRORS PERSISTENTLY?)? SEGMENT REJECT LIMIT NUMBER_LITERAL (ROWS | PERCENT)?
+    : (LOG ERRORS PERSISTENTLY?)? SEGMENT REJECT LIMIT iconst (ROWS | PERCENT)?
     ;
 
 create_table_as_statement
@@ -1772,7 +1776,7 @@ for_values_bound
 partition_bound_spec
     : IN LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
     | FROM partition_bound_part TO partition_bound_part
-    | WITH LEFT_PAREN MODULUS NUMBER_LITERAL COMMA REMAINDER NUMBER_LITERAL RIGHT_PAREN
+    | WITH LEFT_PAREN MODULUS iconst COMMA REMAINDER iconst RIGHT_PAREN
     ;
 
 partition_bound_part
@@ -1840,7 +1844,7 @@ subpartition_element
     ;
 
 partition_values
-    : VALUES LEFT_PAREN val+=Character_String_Literal (COMMA val+=Character_String_Literal)* RIGHT_PAREN
+    : VALUES LEFT_PAREN val+=sconst (COMMA val+=sconst)* RIGHT_PAREN
     ;
 
 gp_partition_with_clause
@@ -1888,7 +1892,7 @@ define_foreign_options
     ;
 
 foreign_option
-    : (ADD | SET | DROP)? col_label character_string?
+    : (ADD | SET | DROP)? col_label sconst?
     ;
 
 list_of_type_column_def
@@ -2060,8 +2064,8 @@ encoding_identifier
 
 storage_directive
     : COMPRESSTYPE EQUAL compress_type=identifier
-    | COMPRESSLEVEL EQUAL compress_level=NUMBER_LITERAL
-    | BLOCKSIZE EQUAL block_size=NUMBER_LITERAL
+    | COMPRESSLEVEL EQUAL compress_level=iconst
+    | BLOCKSIZE EQUAL block_size=iconst
     ;
 
 indirection_var
@@ -2143,7 +2147,11 @@ if_exist_names_restrict_cascade
 */
 
 id_token
-  : Identifier | QuotedIdentifier | tokens_nonkeyword;
+    : Identifier
+    | QuotedIdentifier
+    | UnicodeQuotedIdentifier uescape?
+    | tokens_nonkeyword
+    ;
 
 /*
   old rule for default old identifier behavior
@@ -3363,7 +3371,7 @@ data_type
     ;
 
 array_type
-    : LEFT_BRACKET NUMBER_LITERAL? RIGHT_BRACKET
+    : LEFT_BRACKET iconst? RIGHT_BRACKET
     ;
 
 predefined_type
@@ -3376,7 +3384,7 @@ predefined_type
     | FLOAT precision_param?
     | INT
     | INTEGER
-    | INTERVAL interval_field? type_length?
+    | INTERVAL (interval_field | type_length)?
     | NATIONAL? (CHARACTER | CHAR) VARYING? type_length?
     | NCHAR VARYING? type_length?
     | NUMERIC precision_param?
@@ -3394,22 +3402,22 @@ interval_field
     | DAY
     | HOUR
     | MINUTE
-    | SECOND
+    | SECOND type_length?
     | YEAR TO MONTH
     | DAY TO HOUR
     | DAY TO MINUTE
-    | DAY TO SECOND
+    | DAY TO SECOND type_length?
     | HOUR TO MINUTE
-    | HOUR TO SECOND
-    | MINUTE TO SECOND
+    | HOUR TO SECOND type_length?
+    | MINUTE TO SECOND type_length?
     ;
 
 type_length
-    : LEFT_PAREN NUMBER_LITERAL RIGHT_PAREN
+    : LEFT_PAREN iconst RIGHT_PAREN
     ;
 
 precision_param
-    : LEFT_PAREN precision=NUMBER_LITERAL (COMMA scale=NUMBER_LITERAL)? RIGHT_PAREN
+    : LEFT_PAREN precision=iconst (COMMA scale=iconst)? RIGHT_PAREN
     ;
 
 /*
@@ -3485,7 +3493,7 @@ datetime_overlaps
   ;
 
 value_expression_primary
-  : unsigned_value_specification
+  : expr_const
   | LEFT_PAREN select_stmt_no_parens RIGHT_PAREN indirection_list?
   | case_expression
   | NULL
@@ -3502,16 +3510,33 @@ value_expression_primary
   | datetime_overlaps
   ;
 
-unsigned_value_specification
-  : unsigned_numeric_literal
-  | character_string
-  | truth_value
-  ;
+expr_const
+    : iconst
+    | fconst
+    | sconst
+    | truth_value
+    ;
 
-unsigned_numeric_literal
-  : NUMBER_LITERAL
-  | REAL_NUMBER
-  ;
+iconst
+    : Integer
+    ;
+
+fconst
+    : Numeric
+    ;
+
+numericonly
+    : fconst
+    | PLUS fconst
+    | MINUS fconst
+    | signediconst
+    ;
+
+signediconst
+    : iconst
+    | PLUS iconst
+    | MINUS iconst
+    ;
 
 truth_value
   : TRUE | FALSE | ON // on is reserved but is required by SET statements
@@ -3555,7 +3580,7 @@ function_construct
     ;                       
 
 extract_function
-    : EXTRACT LEFT_PAREN (identifier | character_string) FROM vex RIGHT_PAREN
+    : EXTRACT LEFT_PAREN (identifier | sconst) FROM vex RIGHT_PAREN
     ;
 
 system_function
@@ -3612,12 +3637,12 @@ json_function
     | JSON_ARRAYAGG LEFT_PAREN vex (FORMAT JSON)? orderby_clause? json_on_null_clause? json_return_clause? RIGHT_PAREN
     | JSON_OBJECT LEFT_PAREN json_object_content RIGHT_PAREN
     | JSON_OBJECTAGG LEFT_PAREN json_object_entry json_on_null_clause? json_unique_keys? json_return_clause? RIGHT_PAREN
-    | JSON_EXISTS LEFT_PAREN vex COMMA character_string json_passing_clause? json_behavior_clause? RIGHT_PAREN
-    | JSON_QUERY LEFT_PAREN vex COMMA character_string json_passing_clause? json_return_clause? json_wrapper? json_quotes? json_behavior_clause* RIGHT_PAREN
-    | JSON_VALUE LEFT_PAREN vex COMMA character_string json_passing_clause? json_return_clause? json_behavior_clause* RIGHT_PAREN
+    | JSON_EXISTS LEFT_PAREN vex COMMA sconst json_passing_clause? json_behavior_clause? RIGHT_PAREN
+    | JSON_QUERY LEFT_PAREN vex COMMA sconst json_passing_clause? json_return_clause? json_wrapper? json_quotes? json_behavior_clause* RIGHT_PAREN
+    | JSON_VALUE LEFT_PAREN vex COMMA sconst json_passing_clause? json_return_clause? json_behavior_clause* RIGHT_PAREN
     | JSON_SCALAR LEFT_PAREN vex RIGHT_PAREN
     | JSON_SERIALIZE LEFT_PAREN vex format_json? json_return_clause? RIGHT_PAREN
-    | JSON_TABLE LEFT_PAREN vex COMMA character_string (AS identifier)? json_passing_clause? json_columns json_behavior_clause? RIGHT_PAREN
+    | JSON_TABLE LEFT_PAREN vex COMMA sconst (AS identifier)? json_passing_clause? json_columns json_behavior_clause? RIGHT_PAREN
     ;
 
 json_columns
@@ -3626,9 +3651,9 @@ json_columns
 
 json_table_column
     : vex FOR ORDINALITY
-    | vex data_type format_json? (PATH character_string)? json_wrapper? json_quotes? json_behavior_clause*
-    | vex data_type EXISTS (PATH character_string)? json_behavior_clause*
-    | NESTED PATH? character_string (AS identifier)? json_columns
+    | vex data_type format_json? (PATH sconst)? json_wrapper? json_quotes? json_behavior_clause*
+    | vex data_type EXISTS (PATH sconst)? json_behavior_clause*
+    | NESTED PATH? sconst (AS identifier)? json_columns
     ;
 
 json_wrapper
@@ -3721,8 +3746,8 @@ array_elements
     ;
 
 type_coercion
-    : data_type character_string
-    | INTERVAL character_string interval_field type_length?
+    : data_type sconst
+    | INTERVAL sconst interval_field
     ;
 
 /*
@@ -3956,7 +3981,7 @@ update_set
     ;
 
 notify_stmt
-    : NOTIFY channel=identifier (COMMA payload=character_string)?
+    : NOTIFY channel=identifier (COMMA payload=sconst)?
     ;
 
 truncate_stmt
@@ -3983,8 +4008,8 @@ identifier_list
     ;
 
 anonymous_block
-    : DO (LANGUAGE (identifier | character_string))? character_string
-    | DO character_string LANGUAGE (identifier | character_string)
+    : DO (LANGUAGE (identifier | sconst))? sconst
+    | DO sconst LANGUAGE (identifier | sconst)
     ;
 
 // plpgsql rules
@@ -4109,9 +4134,9 @@ transaction_statement
     ;
 
 message_statement
-    : RAISE log_level? (character_string (COMMA vex)*)? raise_using?
+    : RAISE log_level? (sconst (COMMA vex)*)? raise_using?
     | RAISE log_level? identifier raise_using?
-    | RAISE log_level? SQLSTATE character_string raise_using?
+    | RAISE log_level? SQLSTATE sconst raise_using?
     | ASSERT vex (COMMA vex)?
     ;
 
@@ -4156,7 +4181,7 @@ loop_start
     | FOR alias=identifier IN REVERSE? vex DOUBLE_DOT vex (BY vex)?
     | FOR identifier_list IN plpgsql_query
     | FOR cursor=identifier IN identifier (LEFT_PAREN option (COMMA option)* RIGHT_PAREN)? // cursor loop
-    | FOREACH identifier_list (SLICE NUMBER_LITERAL)? IN ARRAY vex
+    | FOREACH identifier_list (SLICE iconst)? IN ARRAY vex
     ;
 
 using_vex

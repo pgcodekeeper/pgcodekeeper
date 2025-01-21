@@ -58,6 +58,11 @@ public final class PgDiffUtils {
             return true;
         }
 
+        String lowerId = id.toLowerCase(Locale.ROOT);
+        if (lowerId.startsWith("u&\"")) {
+            return true;
+        }
+
         for (int i = 0; i < id.length(); i++) {
             if (!isValidIdChar(id.charAt(i), allowCaps, i != 0)) {
                 return false;
@@ -65,7 +70,7 @@ public final class PgDiffUtils {
         }
 
         if (!allowKeywords) {
-            Keyword keyword = Keyword.KEYWORDS.get(allowCaps ? id.toLowerCase(Locale.ROOT) : id);
+            Keyword keyword = Keyword.KEYWORDS.get(allowCaps ? lowerId: id);
             if (keyword != null && keyword.getCategory() != KeywordCategory.UNRESERVED_KEYWORD) {
                 return false;
             }
