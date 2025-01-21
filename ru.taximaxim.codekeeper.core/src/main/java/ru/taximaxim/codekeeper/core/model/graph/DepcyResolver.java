@@ -157,11 +157,6 @@ public class DepcyResolver {
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), statement),
                         new CannotDropTraversalListener(statement));
             }
-
-            if (statement.canDrop() && statement instanceof PgIndex) {
-                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), statement),
-                        new CannotDropTraversalListener(statement));
-            }
         }
     }
 
@@ -397,6 +392,10 @@ public class DepcyResolver {
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), oldObj), iter);
                 if (iter.needDrop != null && iter.needDrop != oldObj) {
                     action = StatementActions.DROP;
+                }
+
+                if (oldObj instanceof PgIndex && starter instanceof PgIndex) {
+                    addToListWithoutDepcies(StatementActions.DROP, oldObj, starter);
                 }
 
                 if (action == StatementActions.NONE) {
