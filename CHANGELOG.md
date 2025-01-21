@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added support for Unicode escape sequences in identifiers and strings for PostgreSQL.
+- Added the ability to copy all error messages in standalone pgCodeKeeper packages.
 
 ### Changed
 

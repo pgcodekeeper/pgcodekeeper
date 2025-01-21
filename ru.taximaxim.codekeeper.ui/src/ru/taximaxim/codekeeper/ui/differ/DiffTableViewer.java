@@ -128,6 +128,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.UiUtils;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.BuildDepsGraphDialog;
@@ -398,7 +399,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public void keyPressed(KeyEvent e) {
-                if ((e.stateMask & SWT.CTRL) == SWT.CTRL && e.keyCode == 'c') {
+                if (UiUtils.isCommandCopy(e)) {
                     copyObjectNamesToClipboard();
                     e.doit = false;
                 }
