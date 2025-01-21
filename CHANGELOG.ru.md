@@ -9,6 +9,16 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.6.0] - 2025-01-21
+
+### Добавлено
+
 - Добавлена поддержка MS SQL 2022.
 - Добавлены ссылки на объекты библиотек.
 
@@ -24,8 +34,6 @@
 - Исправлена ошибка в генерации кода для объекта DOMAIN с ограничениями.
 - Исправлено зависание интрефейса во время проверки соединения с базой данных.
 - Исправлена ошибка генерации кода для команды CREATE OR REPLACE PROCEDURE.
-
-### Удалено
 
 ## [10.5.0] - 2024-12-10
 
@@ -2156,7 +2164,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...HEAD
+[10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
 [10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1
