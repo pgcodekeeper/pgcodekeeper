@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed a bug in generating code for a INDEX object with attached indexes.
+- Fixed a bug in generating a migration script for partitioned tables with indexes.
 
 ### Removed
 
