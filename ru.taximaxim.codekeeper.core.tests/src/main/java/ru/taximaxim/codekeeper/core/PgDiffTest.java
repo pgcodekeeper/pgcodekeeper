@@ -597,7 +597,9 @@ class PgDiffTest {
             // Test scenario where mode of procedure argument is changed
             "modify_procedure_args_mode",
             // Test scenario where object has unicode encoded identifier
-            "compare_pg_unicode_identifiers"
+            "compare_pg_unicode_identifiers",
+            // Test scenario when one child partition index is dropped
+            "drop_pg_child_partition_index"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

@@ -382,6 +382,10 @@ public class DepcyResolver {
 
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
+                if (oldObj instanceof PgIndex && starter instanceof PgIndex) {
+                    return false;
+                }
+
                 SQLScript script = new SQLScript(newObj.getDbType());
 
                 Pair<StatementActions, ObjectState> actionState = askAlter(oldObj, newObj, script);
