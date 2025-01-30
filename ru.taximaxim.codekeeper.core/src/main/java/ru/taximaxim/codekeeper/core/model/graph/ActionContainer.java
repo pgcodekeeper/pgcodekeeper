@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.util.Objects;
 
+import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
@@ -26,14 +27,14 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 class ActionContainer {
     private final PgStatement oldObj;
     private final PgStatement newObj;
-    private final StatementActions action;
+    private final ObjectState state;
     private final PgStatement starter;
 
     public ActionContainer(PgStatement oldObj, PgStatement newObj,
-            StatementActions action, PgStatement starter) {
+            ObjectState action, PgStatement starter) {
         this.oldObj = oldObj;
         this.newObj = newObj;
-        this.action = action;
+        this.state = action;
         this.starter = starter;
     }
 
@@ -45,8 +46,8 @@ class ActionContainer {
         return newObj;
     }
 
-    public StatementActions getAction() {
-        return action;
+    public ObjectState getState() {
+        return state;
     }
 
     public PgStatement getStarter() {
@@ -57,7 +58,7 @@ class ActionContainer {
     public int hashCode() {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((action == null) ? 0 : action.hashCode());
+        result = prime * result + ((state == null) ? 0 : state.hashCode());
         result = prime * result + ((oldObj == null) ? 0 : oldObj.hashCode());
         result = prime * result + ((newObj == null) ? 0 : newObj.hashCode());
         return result;
@@ -69,7 +70,7 @@ class ActionContainer {
             return true;
         }
         if (obj instanceof ActionContainer cont) {
-            return action == cont.getAction() &&
+            return state == cont.getState() &&
                     Objects.equals(oldObj, cont.getOldObj()) &&
                     Objects.equals(newObj, cont.getNewObj());
         }
@@ -77,6 +78,6 @@ class ActionContainer {
     }
     @Override
     public String toString() {
-        return action + " " + (oldObj == null? " " : oldObj.getName());
+        return state + " " + (oldObj == null? " " : oldObj.getName());
     }
 }
