@@ -53,7 +53,6 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /*
  * implementation notes:
@@ -203,7 +202,7 @@ public class DepcyResolver {
             // объект будет пересоздан ниже в новом состоянии, поэтому ничего делать не нужно
             // пропускаем колонки таблиц из дроп листа
             addToListWithoutDepcies(
-                    !script.isEmpty() ? StatementActions.ALTER : StatementActions.DROP, oldObjStat, null);
+                    !script.isEmpty() ? ObjectState.ALTER : ObjectState.DROP, oldObjStat, null);
         }
 
         alterMsTableColumns(oldObjStat, newObjStat);
@@ -246,7 +245,7 @@ public class DepcyResolver {
             toRecreate.clear();
             oldActionsSize = actions.size();
             for (ActionContainer action : actions) {
-                if (action.getAction() == StatementActions.DROP) {
+                if (action.getState() == ObjectState.DROP) {
                     toRecreate.add(action.getOldObj());
                 }
             }
@@ -300,12 +299,12 @@ public class DepcyResolver {
     public void removeExtraActions() {
         Set<ActionContainer> toRemove = new HashSet<>();
         for (ActionContainer action : actions) {
-            if (action.getAction() != StatementActions.ALTER) {
+            if (action.getState() != ObjectState.ALTER) {
                 continue;
             }
             // case where the selected modified object was recreated due to a dependency
             PgStatement newObj = action.getNewObj();
-            if (actions.contains(new ActionContainer(newObj, newObj, StatementActions.CREATE, null))) {
+            if (actions.contains(new ActionContainer(newObj, newObj, ObjectState.CREATE, null))) {
                 toRemove.add(action);
             }
         }
@@ -346,7 +345,7 @@ public class DepcyResolver {
         }
 
         PgStatement oldObj = statement.getTwin(oldDb);
-        return actions.contains(new ActionContainer(oldObj, oldObj, StatementActions.DROP, null));
+        return actions.contains(new ActionContainer(oldObj, oldObj, ObjectState.DROP, null));
     }
 
     /**
@@ -356,11 +355,11 @@ public class DepcyResolver {
      * @param oldObj Объект из старого состояния
      * @param starter объект который вызвал действие
      */
-    private void addToListWithoutDepcies(StatementActions action,
+    private void addToListWithoutDepcies(ObjectState action,
             PgStatement oldObj, PgStatement starter) {
         switch (action) {
         case CREATE, DROP -> actions.add(new ActionContainer(oldObj, oldObj, action, starter));
-        case ALTER ->  actions.add(new ActionContainer(oldObj, oldObj.getTwin(newDb), action, starter));
+        case ALTER, ALTER_WITH_DEP ->  actions.add(new ActionContainer(oldObj, oldObj.getTwin(newDb), ObjectState.ALTER, starter));
         default -> throw new IllegalStateException("Not implemented action");
         }
     }
@@ -372,13 +371,13 @@ public class DepcyResolver {
     private class DropTraversalAdapter extends CustomTraversalListenerAdapter {
 
         DropTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.DROP);
+            super(starter, ObjectState.DROP);
         }
 
         @Override
         protected boolean notAllowedToAdd(PgStatement oldObj) {
             // Изначально будем удалять объект
-            action = StatementActions.DROP;
+            action = ObjectState.DROP;
 
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
@@ -388,29 +387,31 @@ public class DepcyResolver {
 
                 SQLScript script = new SQLScript(newObj.getDbType());
 
-                Pair<StatementActions, ObjectState> actionState = askAlter(oldObj, newObj, script);
-                action = actionState.getFirst();
+                action = oldObj.appendAlterSQL(newObj, script);
                 // проверить а не
                 // требует ли пересоздания(Drop/create) родителькие объекты
                 IsDropped iter = new IsDropped();
                 customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), oldObj), iter);
                 if (iter.needDrop != null && iter.needDrop != oldObj) {
-                    action = StatementActions.DROP;
+                    action = ObjectState.DROP;
                 }
 
-                if (action == StatementActions.NONE) {
+                if (action == ObjectState.NOTHING) {
                     return true;
                 }
                 // в случае необходимости изменения (ALter) объекта с
                 // зависимостями нужно сначала создать объект с зависимостями,
                 // потом изменить его
-                if (actionState.getSecond() == ObjectState.ALTER_WITH_DEP && action == StatementActions.ALTER) {
+                if (action == ObjectState.ALTER_WITH_DEP) {
                     // не добавлять объект, если уже есть в списке
                     if (!createdObjects.contains(newObj)) {
                         addCreateStatements(newObj);
                         addToList(oldObj);
                     }
                     return true;
+                }
+                if (action == ObjectState.RECREATE) {
+                    action = ObjectState.DROP;
                 }
             }
 
@@ -464,13 +465,13 @@ public class DepcyResolver {
     private class CreateTraversalAdapter extends CustomTraversalListenerAdapter {
 
         CreateTraversalAdapter(PgStatement starter) {
-            super(starter, StatementActions.CREATE);
+            super(starter, ObjectState.CREATE);
         }
 
         @Override
         protected boolean notAllowedToAdd(PgStatement newObj) {
             // Изначально будем создавать объект
-            action = StatementActions.CREATE;
+            action = ObjectState.CREATE;
             if (inDropsList(newObj)) {
                 // always create if droppped before
                 createColumnDependencies(newObj);
@@ -503,27 +504,25 @@ public class DepcyResolver {
             PgStatement oldObj;
             if ((oldObj = newObj.getTwin(oldDb)) != null) {
                 SQLScript script = new SQLScript(oldObj.getDbType());
-                Pair<StatementActions, ObjectState> actionState = askAlter(oldObj, newObj, script);
-                action = actionState.getFirst();
-                if (action == StatementActions.NONE) {
+                action = oldObj.appendAlterSQL(newObj, script);
+                if (action == ObjectState.NOTHING) {
                     return true;
                 }
-                // в случае изменения объекта с зависимостями
-                var state = actionState.getSecond();
 
-                if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
+                if (action.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
                     addDropStatements(oldObj);
-                    if (action == StatementActions.ALTER) {
+                    if (action == ObjectState.ALTER_WITH_DEP) {
                         // add alter for old object
                         addToList(oldObj);
                         return true;
                     }
+                    action = ObjectState.CREATE;
                 }
             }
 
             // если объект (таблица) создается, запускаем создание зависимостей ее колонок
             // сами колонки создадутся неявно вместе с таблицей
-            if (action == StatementActions.CREATE) {
+            if (action == ObjectState.CREATE) {
                 createColumnDependencies(newObj);
             }
 
@@ -562,10 +561,10 @@ public class DepcyResolver {
          * меняется в {@link #notAllowedToAdd(PgStatement)} для вызова
          * добавления в список с правильным действием
          */
-        protected StatementActions action;
+        protected ObjectState action;
 
         CustomTraversalListenerAdapter(PgStatement starter,
-                StatementActions action) {
+                ObjectState action) {
             this.starter = starter;
             this.action = action;
         }
@@ -582,19 +581,6 @@ public class DepcyResolver {
 
         protected void addToList(PgStatement statement) {
             addToListWithoutDepcies(action, statement, starter);
-        }
-
-        protected Pair<StatementActions, ObjectState> askAlter(PgStatement oldSt, PgStatement newSt, SQLScript script) {
-            StatementActions alterAction = action;
-            // Проверяем меняется ли объект
-            ObjectState state = oldSt.appendAlterSQL(newSt, script);
-            if (state.in(ObjectState.ALTER, ObjectState.ALTER_WITH_DEP)) {
-                alterAction = StatementActions.ALTER;
-            } else if (state == ObjectState.NOTHING) {
-                alterAction = StatementActions.NONE;
-            }
-
-            return new Pair<>(alterAction, state);
         }
     }
 
@@ -676,7 +662,7 @@ public class DepcyResolver {
     private class CannotDropTraversalListener extends CustomTraversalListenerAdapter {
 
         public CannotDropTraversalListener(PgStatement starter) {
-            super(starter, StatementActions.DROP);
+            super(starter, ObjectState.DROP);
         }
 
         @Override

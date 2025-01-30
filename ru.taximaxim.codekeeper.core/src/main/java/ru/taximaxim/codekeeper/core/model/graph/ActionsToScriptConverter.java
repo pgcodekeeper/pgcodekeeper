@@ -141,7 +141,7 @@ public class ActionsToScriptConverter {
             PgStatement obj = action.getOldObj();
 
             if (toRefresh.contains(obj)) {
-                if (action.getAction() == StatementActions.CREATE && obj instanceof MsView) {
+                if (action.getState() == ObjectState.CREATE && obj instanceof MsView) {
                     // emit refreshes for views only
                     // refreshes for other objects serve as markers
                     // that allow us to skip unmodified drop+create pairs
@@ -179,7 +179,7 @@ public class ActionsToScriptConverter {
         List<ActionContainer> currentList = null;
         for (ActionContainer action : actions) {
             var oldObj = action.getOldObj();
-            if (action.getAction() == StatementActions.ALTER && oldObj instanceof PgColumn oldCol
+            if (action.getState() == ObjectState.ALTER && oldObj instanceof PgColumn oldCol
                     && oldCol.isJoinable((PgColumn) action.getNewObj())) {
                 String parent = oldObj.getParent().getQualifiedName();
                 if (!parent.equals(previousParent)) {
@@ -215,7 +215,7 @@ public class ActionsToScriptConverter {
 
     private void printAction(ActionContainer action, PgStatement obj) {
         String depcy = getComment(action, obj);
-        switch (action.getAction()) {
+        switch (action.getState()) {
         case CREATE:
             if (depcy != null) {
                 script.addStatementWithoutSeparator(depcy);
@@ -267,7 +267,7 @@ public class ActionsToScriptConverter {
                 script.addAllStatements(temp);
             }
             break;
-        case NONE:
+        default:
             throw new IllegalStateException("Not implemented action");
         }
     }
@@ -312,7 +312,7 @@ public class ActionsToScriptConverter {
         for (ActionContainer action : actions) {
             PgStatement obj = action.getOldObj();
 
-            if (action.getAction() == StatementActions.CREATE && obj instanceof PartitionPgTable table) {
+            if (action.getState() == ObjectState.CREATE && obj instanceof PartitionPgTable table) {
                 partitionTables.computeIfAbsent(table.getParentTable(), tables -> new ArrayList<>()).add(table);
             }
         }
@@ -391,7 +391,7 @@ public class ActionsToScriptConverter {
         }
 
         return MessageFormat.format(
-                action.getAction() == StatementActions.CREATE ?
+                action.getState() == ObjectState.CREATE ?
                         CREATE_COMMENT : DROP_COMMENT,
                         oldObj.getStatementType(),
                         oldObj.getBareName(),
@@ -404,7 +404,7 @@ public class ActionsToScriptConverter {
      */
     private boolean hideAction(ActionContainer action, List<TreeElement> selected) {
         PgStatement obj = action.getOldObj();
-        if (action.getAction() == StatementActions.DROP && !obj.canDrop()) {
+        if (action.getState() == ObjectState.DROP && !obj.canDrop()) {
             addHiddenObj(action, "object cannot be dropped");
             return true;
         }
@@ -433,7 +433,7 @@ public class ActionsToScriptConverter {
     private void addHiddenObj(ActionContainer action, String reason) {
         PgStatement old = action.getOldObj();
         String message = MessageFormat.format(HIDDEN_OBJECT,
-                old.getQualifiedName(), old.getStatementType(), action.getAction(), reason);
+                old.getQualifiedName(), old.getStatementType(), action.getState(), reason);
         script.addStatement(message);
     }
 
@@ -453,7 +453,7 @@ public class ActionsToScriptConverter {
         .map(e -> e.getPgStatement(obj.getDatabase()))
         .anyMatch(obj::equals);
 
-        return switch (action.getAction()) {
+        return switch (action.getState()) {
         case CREATE -> isSelectedObj.test(action.getNewObj());
         case ALTER -> isSelectedObj.test(action.getNewObj()) && isSelectedObj.test(action.getOldObj());
         case DROP -> isSelectedObj.test(action.getOldObj());
