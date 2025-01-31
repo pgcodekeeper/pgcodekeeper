@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug in generating a migration script for partitioned tables with indexes.
+- Fixed parser rule for partitioned tables in Greenplum.
 
 ### Removed
 
