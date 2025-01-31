@@ -1796,29 +1796,12 @@ partition_by
     ;
 
 partition_gp
-    : with_subpartition_template
-    | without_subpartition_template
+    : PARTITION BY partition_type_col sub_part* LEFT_PAREN template_spec RIGHT_PAREN
     ;
 
-with_subpartition_template
-    : PARTITION BY partition_type_col subpartition_pattern* LEFT_PAREN partition_spec RIGHT_PAREN
-    ;
-
-without_subpartition_template
-    : PARTITION BY partition_type_col (SUBPARTITION BY partition_type_col)*
-    LEFT_PAREN partition_spec_with_columns (COMMA partition_spec_with_columns)* RIGHT_PAREN
-    ;
-
-partition_spec_with_columns
-    : partition_spec (LEFT_PAREN subpartition_spec (COMMA subpartition_spec)* RIGHT_PAREN)?
-    ;
-
-subpartition_spec
-    : template_spec (LEFT_PAREN template_spec RIGHT_PAREN)?
-    ;
-
-subpartition_pattern
-    : SUBPARTITION BY partition_type_col SUBPARTITION TEMPLATE LEFT_PAREN template_spec RIGHT_PAREN
+sub_part
+    : SUBPARTITION BY partition_type_col
+    | SUBPARTITION TEMPLATE LEFT_PAREN template_spec RIGHT_PAREN
     ;
 
 partition_type_col
@@ -1826,21 +1809,30 @@ partition_type_col
     ;
 
 template_spec
-    : subpartition_element (COMMA subpartition_element)*
+    : part_element (COMMA part_element)*
     ;
 
-partition_spec
-   : partition_element (COMMA partition_element)*
-   ;
-
-partition_element
-    : (DEFAULT PARTITION identifier | (PARTITION identifier)? (partition_values | partition_start_clause | partition_end_clause))
-    gp_partition_with_clause?
+part_element
+    : part_element_body gp_partition_with_clause? table_space? column_reference_storage_directives?
     ;
 
-subpartition_element
-    : (DEFAULT SUBPARTITION identifier | (SUBPARTITION identifier)? (partition_values | partition_start_clause | partition_end_clause))
-    gp_partition_with_clause?
+sub_part_elements
+    : LEFT_PAREN part_element_body (COMMA part_element_body)* RIGHT_PAREN
+    ;
+
+part_element_body
+    : DEFAULT? (PARTITION | SUBPARTITION) identifier (part_element_body_unit | sub_part_elements*)
+    | part_element_body_unit
+    ;
+
+part_element_body_unit
+    : part_value sub_part_elements*
+    ;
+
+part_value
+    : (partition_values
+    | partition_start_clause
+    | partition_end_clause)
     ;
 
 partition_values
@@ -1848,7 +1840,7 @@ partition_values
     ;
 
 gp_partition_with_clause
-    : with_storage_parameter (gp_table_column_definition)* table_space?
+    : with_storage_parameter (gp_table_column_definition)*
     ;
 
 gp_table_column_definition
@@ -1857,6 +1849,14 @@ gp_table_column_definition
 
 partition_start_clause
     : START partition_val end_clause? partition_every_clause?
+    ;
+
+column_reference_storage_directives
+    : column_reference_storage_directive (COMMA? column_reference_storage_directive)*
+    ;
+
+column_reference_storage_directive
+    : (DEFAULT COLUMN | COLUMN identifier) encoding_identifier
     ;
 
 partition_end_clause
@@ -1981,7 +1981,7 @@ storage_parameters
     ;
 
 storage_parameter_option
-    : storage_parameter_name (EQUAL vex)?
+    : storage_parameter_name (EQUAL (vex | COLUMN))?
     ;
 
 storage_parameter_name
