@@ -70,7 +70,7 @@ class LibDiffTest {
 
         loader.loadLibraries(args, isIgnorePrivileges, libs);
 
-        String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
+        String script = new PgDiff(args).diff(dbOld, dbNew, null);
 
         TestUtils.compareResult(script, fileNameTemplate, getClass());
     }

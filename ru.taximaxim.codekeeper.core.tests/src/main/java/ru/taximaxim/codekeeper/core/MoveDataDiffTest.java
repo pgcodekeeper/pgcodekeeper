@@ -77,7 +77,7 @@ class MoveDataDiffTest {
         TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
-        String script = new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
+        String script = new PgDiff(args).diff(dbOld, dbNew, null);
         String content = script.replaceAll("([0-9a-fA-F]{32})", "randomly_generated_part");
 
         TestUtils.compareResult(content, fileNameTemplate, MoveDataDiffTest.class);

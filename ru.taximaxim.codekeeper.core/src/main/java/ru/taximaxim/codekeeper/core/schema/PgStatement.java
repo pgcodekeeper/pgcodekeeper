@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
-import ru.taximaxim.codekeeper.core.hashers.ShaHasher;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
@@ -393,13 +392,8 @@ public abstract class PgStatement implements IStatement, IHashable {
         return fileForm.formatText();
     }
 
-
-    public void getDropSQL(SQLScript script) {
+    public final void getDropSQL(SQLScript script) {
         getDropSQL(script, getDatabaseArguments().isGenerateExists());
-    }
-
-    public final boolean isDropBeforeCreate() {
-        return canDropBeforeCreate() && getDatabaseArguments().isDropBeforeCreate();
     }
 
     public boolean canDropBeforeCreate() {
@@ -423,30 +417,15 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     /**
-     * Метод заполняет sb выражением изменения объекта, можно ли изменить объект ALTER.<br>
+     * Fill script with object changes and return change type <br>
      * <br>
-     *
-     * Результат работы метода определяется по паре значений: возвращаемое значение и длина sb.length().<br>
-     * Возвращаемое значение говорит о статусе объекта: изменился или нет.<br>
-     * sb.length() говорит о возможностиизменить состояние объекта ALTERом (если объект вообще изменился).<br>
-     * <br>
-     *
-     * {@code sb == 0 and rv == false} - не требуется действий<br>
-     * {@code sb >  0 and rv == false} - illegal state, неизмененный объект с ALTER<br>
-     * {@code sb == 0 and rv == true} - ALTER невозможен, делаем DROP/CREATE<br>
-     * {@code sb >  0 and rv == true} - делаем ALTER
      *
      * @param newCondition
-     *            новое состоятние объекта
-     * @param sb
-     *            скрипт изменения
-     * @param isNeedDepcies
-     *            out параметр: нужно ли использовать зависимости объекта
-     * @return true - необходимо изменить объект, используя DROP в случае невозможности ALTER, false - объект не
-     *         изменился
+     *            new object state
+     * @param script
+     *            script to collect changes
+     * @return object change type
      */
-
-    //return object state to choise further operation
     public abstract ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script);
 
     public ObjectState getObjectState(SQLScript script, int startSize) {
@@ -632,19 +611,6 @@ public abstract class PgStatement implements IStatement, IHashable {
             hash = h;
         }
         return h;
-    }
-
-
-    /**
-     * Compute local hash
-     *
-     * @return hash byte array
-     */
-    public final byte[] shaHash() {
-        ShaHasher hasher = new ShaHasher();
-        computeLocalHash(hasher);
-        computeHash(hasher);
-        return hasher.getArray();
     }
 
     private final void computeLocalHash(Hasher hasher) {

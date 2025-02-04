@@ -93,7 +93,7 @@ public class PgDiff {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
-        return diffDatabaseSchemas(oldDatabase, newDatabase, ignoreList);
+        return diff(oldDatabase, newDatabase, ignoreList);
     }
 
     private void analyzeDatabase(AbstractDatabase db)
@@ -193,9 +193,8 @@ public class PgDiff {
      *
      * @return the loaded database
      */
-    public AbstractDatabase loadDatabaseSchema(SourceFormat format, String srcPath)
+    private AbstractDatabase loadDatabaseSchema(SourceFormat format, String srcPath)
             throws InterruptedException, IOException {
-
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
         if (arguments.getIgnoreSchemaList() != null) {
@@ -215,15 +214,15 @@ public class PgDiff {
         }
     }
 
-    public String diffDatabaseSchemas(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
-            IgnoreList ignoreList) throws InterruptedException, IOException {
+    public String diff(AbstractDatabase oldDbFull, AbstractDatabase newDbFull, IgnoreList ignoreList)
+            throws InterruptedException, IOException {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
 
         return switch (arguments.getDbType()) {
-            case MS -> diffMsDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
-            case PG -> diffPgDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
-            case CH -> diffChDatabaseSchemas(root, oldDbFull, newDbFull, null, null, ignoreList);
+            case MS -> diffMs(root, oldDbFull, newDbFull, null, null, ignoreList);
+            case PG -> diffPg(root, oldDbFull, newDbFull, null, null, ignoreList);
+            case CH -> diffCh(root, oldDbFull, newDbFull, null, null, ignoreList);
             default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         };
     }
@@ -237,17 +236,14 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
         return switch (arguments.getDbType()) {
-            case MS -> diffMsDatabaseSchemas(root, oldDbFull, newDbFull,
-                                additionalDepciesSource, additionalDepciesTarget, null);
-            case PG -> diffPgDatabaseSchemas(root, oldDbFull, newDbFull,
-                                additionalDepciesSource, additionalDepciesTarget, null);
-            case CH -> diffChDatabaseSchemas(root, oldDbFull, newDbFull,
-                                additionalDepciesSource, additionalDepciesTarget, null);
+            case MS -> diffMs(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
+            case PG -> diffPg(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
+            case CH -> diffCh(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
             default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
         };
     }
 
-    private String diffPgDatabaseSchemas(
+    private String diffPg(
             TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -279,8 +275,9 @@ public class PgDiff {
         if (!depRes.getActions().isEmpty()) {
             script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN);
         }
-        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull)
-        .fillScript(selected);
+
+        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
+
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION", SQLActionType.END);
         }
@@ -317,7 +314,7 @@ public class PgDiff {
         }
     }
 
-    private String diffMsDatabaseSchemas(
+    private String diffMs(
             TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -331,9 +328,8 @@ public class PgDiff {
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
-
-        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(),
-                arguments, oldDbFull, newDbFull).fillScript(selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(), arguments, oldDbFull,
+                newDbFull).fillScript(selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT", SQLActionType.END);
@@ -342,7 +338,7 @@ public class PgDiff {
         return script.getFullScript();
     }
 
-    private String diffChDatabaseSchemas(
+    private String diffCh(
             TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
@@ -351,9 +347,7 @@ public class PgDiff {
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
-        createScript(depRes, selected, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget);
-
+        createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
         new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
 
         return script.getFullScript();
@@ -389,8 +383,7 @@ public class PgDiff {
                 depRes.addDropStatements(st.getPgStatement(oldDbFull));
                 break;
             case BOTH:
-                depRes.addAlterStatements(st.getPgStatement(oldDbFull),
-                        st.getPgStatement(newDbFull));
+                depRes.addAlterStatements(st.getPgStatement(oldDbFull), st.getPgStatement(newDbFull));
                 break;
             case RIGHT:
                 depRes.addCreateStatements(st.getPgStatement(newDbFull));
