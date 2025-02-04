@@ -16,11 +16,11 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChSchema extends AbstractSchema {
+public final class ChSchema extends AbstractSchema {
 
     private String engine = "Atomic";
     private Map<String, ChDictionary> dictionaries = new LinkedHashMap<>();
@@ -44,20 +44,8 @@ public class ChSchema extends AbstractSchema {
         resetHash();
     }
 
-    public String getEngine() {
-        return engine;
-    }
-
-    public void addDictionary(final ChDictionary dictionary) {
+    private void addDictionary(final ChDictionary dictionary) {
         addUnique(dictionaries, dictionary);
-    }
-
-    public Collection<ChDictionary> getDictionaries() {
-        return Collections.unmodifiableCollection(dictionaries.values());
-    }
-
-    public ChDictionary getDictionary(String name) {
-        return dictionaries.get(name);
     }
 
     @Override
@@ -69,7 +57,7 @@ public class ChSchema extends AbstractSchema {
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         if (type == DbObjType.DICTIONARY) {
-            return getDictionary(name);
+            return dictionaries.get(name);
         }
         return super.getChild(name, type);
     }
@@ -135,9 +123,9 @@ public class ChSchema extends AbstractSchema {
                 && compareUnalterable(schema);
     }
 
-    protected boolean compareUnalterable(ChSchema newSchema) {
-        return Objects.equals(engine, newSchema.getEngine())
-                && Objects.equals(getComment(), newSchema.getComment());
+    private boolean compareUnalterable(ChSchema newSchema) {
+        return Objects.equals(engine, newSchema.engine)
+                && Objects.equals(comment, newSchema.comment);
     }
 
     @Override

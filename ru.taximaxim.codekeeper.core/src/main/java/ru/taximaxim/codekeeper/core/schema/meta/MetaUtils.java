@@ -62,7 +62,7 @@ public final class MetaUtils {
         return tree;
     }
 
-    public static MetaStatement createMetaFromStatement(PgStatement st) {
+    private static MetaStatement createMetaFromStatement(PgStatement st) {
         DbObjType type = st.getStatementType();
         PgObjLocation loc = getLocation(st, type);
         MetaStatement meta;

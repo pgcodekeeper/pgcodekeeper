@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -27,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer {
+public final class PgForeignDataWrapper extends PgStatement implements PgForeignOptionContainer {
 
     private String handler;
     private String validator;
@@ -53,17 +54,9 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         resetHash();
     }
 
-    public String getHandler() {
-        return handler;
-    }
-
     public void setHandler(String handler) {
         this.handler = handler;
         resetHash();
-    }
-
-    public String getValidator() {
-        return validator;
     }
 
     public void setValidator(String validator) {
@@ -90,30 +83,30 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         }
 
         if (obj instanceof PgForeignDataWrapper fdw && super.compare(obj)) {
-            return Objects.equals(handler, fdw.getHandler())
-                    && Objects.equals(validator, fdw.getValidator())
-                    && Objects.equals(options, fdw.getOptions());
+            return Objects.equals(handler, fdw.handler)
+                    && Objects.equals(validator, fdw.validator)
+                    && Objects.equals(options, fdw.options);
         }
         return false;
     }
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE FOREIGN DATA WRAPPER ");
-        sb.append(PgDiffUtils.getQuotedName(getName()));
-        if (getHandler() != null) {
-            sb.append(" HANDLER ").append(getHandler());
+        sb.append(PgDiffUtils.getQuotedName(name));
+        if (handler != null) {
+            sb.append(" HANDLER ").append(handler);
         }
-        if (getValidator() != null) {
-            sb.append(" VALIDATOR ").append(getValidator());
+        if (validator != null) {
+            sb.append(" VALIDATOR ").append(validator);
         }
-        if (!getOptions().isEmpty()) {
+        if (!options.isEmpty()) {
             sb.append(' ');
         }
         appendOptions(sb);
@@ -130,11 +123,11 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
         boolean isNeedDepcies = false;
         PgForeignDataWrapper newForeign = (PgForeignDataWrapper) newCondition;
 
-        if (!Objects.equals(newForeign.getHandler(), getHandler())) {
+        if (!Objects.equals(newForeign.handler, handler)) {
             StringBuilder sql = new StringBuilder();
             sql.append(getAlterHeader());
-            if (newForeign.getHandler() != null) {
-                sql.append(" HANDLER ").append(newForeign.getHandler());
+            if (newForeign.handler != null) {
+                sql.append(" HANDLER ").append(newForeign.handler);
                 isNeedDepcies = true;
             } else {
                 sql.append(" NO HANDLER");
@@ -142,11 +135,11 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
             script.addStatement(sql);
         }
 
-        if (!Objects.equals(newForeign.getValidator(), getValidator())) {
+        if (!Objects.equals(newForeign.validator, validator)) {
             StringBuilder sql = new StringBuilder();
             sql.append(getAlterHeader());
-            if (newForeign.getValidator() != null) {
-                sql.append(" VALIDATOR ").append(newForeign.getValidator());
+            if (newForeign.validator != null) {
+                sql.append(" VALIDATOR ").append(newForeign.validator);
                 isNeedDepcies = true;
             } else {
                 sql.append(" NO VALIDATOR");
@@ -164,10 +157,10 @@ public class PgForeignDataWrapper extends PgStatement implements PgForeignOption
 
     @Override
     public PgStatement shallowCopy() {
-        PgForeignDataWrapper copyFwd = new PgForeignDataWrapper(getName());
+        PgForeignDataWrapper copyFwd = new PgForeignDataWrapper(name);
         copyBaseFields(copyFwd);
-        copyFwd.setHandler(getHandler());
-        copyFwd.setValidator(getValidator());
+        copyFwd.setHandler(handler);
+        copyFwd.setValidator(validator);
         copyFwd.options.putAll(options);
         return copyFwd;
     }

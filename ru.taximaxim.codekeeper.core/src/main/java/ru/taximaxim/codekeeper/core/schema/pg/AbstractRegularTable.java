@@ -52,7 +52,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     @Override
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("CREATE ");
-        if (!isLogged()) {
+        if (!isLogged) {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("TABLE ");
@@ -78,8 +78,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
             sql.append(partitionBy);
         }
 
-        if (!Consts.HEAP.equals(getMethod())) {
-            sql.append("\nUSING ").append(PgDiffUtils.getQuotedName(getMethod()));
+        if (!Consts.HEAP.equals(method)) {
+            sql.append("\nUSING ").append(PgDiffUtils.getQuotedName(method));
         }
 
         StringBuilder sb = new StringBuilder();
@@ -130,10 +130,6 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         return getAlterTable(only) + securityType + "ROW LEVEL SECURITY";
     }
 
-    public String getMethod() {
-        return method;
-    }
-
     public void setMethod(String using) {
         this.method = using;
         resetHash();
@@ -144,13 +140,13 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         super.compareTableOptions(newTable, script);
 
         AbstractRegularTable newRegTable = (AbstractRegularTable) newTable;
-        if (!Objects.equals(tablespace, newRegTable.getTablespace())) {
+        if (!Objects.equals(tablespace, newRegTable.tablespace)) {
             StringBuilder sql = new StringBuilder();
 
             sql.append(getAlterTable(false))
             .append("\n\tSET TABLESPACE ");
 
-            String newSpace = newRegTable.getTablespace();
+            String newSpace = newRegTable.tablespace;
             sql.append(newSpace == null ? Consts.PG_DEFAULT : newSpace);
             script.addStatement(sql);
         }
@@ -187,7 +183,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
             StringBuilder sql = new StringBuilder();
             sql.append(getAlterTable(false));
             sql.append(" SET ");
-            String newDistribution = newRegTable.getDistribution();
+            String newDistribution = newRegTable.distribution;
             if (distribution != null && distribution.startsWith("DISTRIBUTED BY")
                     && (newDistribution == null || !newDistribution.startsWith("DISTRIBUTED REPLICATED"))) {
                 sql.append("WITH (REORGANIZE=true) ");
@@ -205,7 +201,7 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     /**
      * append default value for greenplum db DISTRIBUTED clause
      */
-    protected void appendDefaultDistribution(AbstractRegularTable newTable, StringBuilder sql) {
+    private void appendDefaultDistribution(AbstractRegularTable newTable, StringBuilder sql) {
         sql.append("DISTRIBUTED ");
 
         String columnName = null;
@@ -247,8 +243,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
             return true;
         }
 
-        return !Objects.equals(getMethod(), regTable.getMethod())
-                || !Objects.equals(getPartitionBy(), regTable.getPartitionBy());
+        return !Objects.equals(method, regTable.method)
+                || !Objects.equals(partitionBy, regTable.partitionBy);
     }
 
     @Override
@@ -270,26 +266,14 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         resetHash();
     }
 
-    public String getTablespace() {
-        return tablespace;
-    }
-
     public void setTablespace(final String tablespace) {
         this.tablespace = tablespace;
         resetHash();
     }
 
-    public boolean isRowSecurity() {
-        return isRowSecurity;
-    }
-
     public void setRowSecurity(final boolean isRowSecurity) {
         this.isRowSecurity = isRowSecurity;
         resetHash();
-    }
-
-    public boolean isForceSecurity() {
-        return isForceSecurity;
     }
 
     public void setForceSecurity(final boolean isForceSecurity) {
@@ -306,10 +290,6 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
         resetHash();
     }
 
-    public String getDistribution() {
-        return distribution;
-    }
-
     public void setDistribution(String distribution) {
         this.distribution = distribution;
         resetHash();
@@ -318,13 +298,13 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof AbstractRegularTable table && super.compare(obj)) {
-            return Objects.equals(tablespace, table.getTablespace())
-                    && isLogged == table.isLogged()
-                    && isRowSecurity == table.isRowSecurity()
-                    && isForceSecurity == table.isForceSecurity()
-                    && Objects.equals(partitionBy, table.getPartitionBy())
-                    && Objects.equals(distribution, table.getDistribution())
-                    && Objects.equals(method, table.getMethod());
+            return Objects.equals(tablespace, table.tablespace)
+                    && isLogged == table.isLogged
+                    && isRowSecurity == table.isRowSecurity
+                    && isForceSecurity == table.isForceSecurity
+                    && Objects.equals(partitionBy, table.partitionBy)
+                    && Objects.equals(distribution, table.distribution)
+                    && Objects.equals(method, table.method);
         }
 
         return false;
@@ -333,13 +313,13 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     @Override
     public AbstractTable shallowCopy() {
         AbstractRegularTable copy = (AbstractRegularTable) super.shallowCopy();
-        copy.setLogged(isLogged());
-        copy.setTablespace(getTablespace());
-        copy.setRowSecurity(isRowSecurity());
-        copy.setForceSecurity(isForceSecurity());
-        copy.setPartitionBy(getPartitionBy());
-        copy.setDistribution(getDistribution());
-        copy.setMethod(getMethod());
+        copy.setLogged(isLogged);
+        copy.setTablespace(tablespace);
+        copy.setRowSecurity(isRowSecurity);
+        copy.setForceSecurity(isForceSecurity);
+        copy.setPartitionBy(partitionBy);
+        copy.setDistribution(distribution);
+        copy.setMethod(method);
         return copy;
     }
 

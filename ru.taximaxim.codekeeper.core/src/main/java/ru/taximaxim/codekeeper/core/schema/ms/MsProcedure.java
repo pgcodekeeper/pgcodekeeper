@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 
-public class MsProcedure extends AbstractMsFunction {
+public final class MsProcedure extends AbstractMsFunction {
 
     public MsProcedure(String name) {
         super(name);
@@ -46,6 +46,6 @@ public class MsProcedure extends AbstractMsFunction {
 
     @Override
     protected AbstractMsFunction getFunctionCopy() {
-        return new MsProcedure(getName());
+        return new MsProcedure(name);
     }
 }

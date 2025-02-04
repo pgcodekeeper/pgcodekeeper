@@ -20,7 +20,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  *
  * @author fordfrog
  */
-public class PgDatabase extends AbstractDatabase {
+public final class PgDatabase extends AbstractDatabase {
 
     private final Map<String, PgExtension> extensions = new LinkedHashMap<>();
     private final Map<String, PgEventTrigger> eventTriggers = new LinkedHashMap<>();
@@ -57,10 +56,6 @@ public class PgDatabase extends AbstractDatabase {
         super(arguments);
     }
 
-    public boolean containsExtension(final String name) {
-        return getExtension(name) != null;
-    }
-
     @Override
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         super.fillChildrenList(l);
@@ -74,24 +69,16 @@ public class PgDatabase extends AbstractDatabase {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case SCHEMA:
-            return getSchema(name);
-        case EXTENSION:
-            return getExtension(name);
-        case EVENT_TRIGGER:
-            return getEventTrigger(name);
-        case FOREIGN_DATA_WRAPPER:
-            return getForeignDW(name);
-        case SERVER:
-            return getServer(name);
-        case USER_MAPPING:
-            return getUserMapping(name);
-        case CAST:
-            return getCast(name);
-        default:
-            return null;
-        }
+        return switch (type) {
+            case SCHEMA -> getSchema(name);
+            case EXTENSION -> extensions.get(name);
+            case EVENT_TRIGGER -> eventTriggers.get(name);
+            case FOREIGN_DATA_WRAPPER -> fdws.get(name);
+            case SERVER -> servers.get(name);
+            case USER_MAPPING -> userMappings.get(name);
+            case CAST -> casts.get(name);
+            default -> null;
+        };
     }
 
     @Override
@@ -136,28 +123,15 @@ public class PgDatabase extends AbstractDatabase {
         return extensions.get(name);
     }
 
-    /**
-     * Getter for {@link #extensions}. The list cannot be modified.
-     *
-     * @return {@link #extensions}
-     */
-    public Collection<PgExtension> getExtensions() {
-        return Collections.unmodifiableCollection(extensions.values());
-    }
-
-    public void addExtension(final PgExtension extension) {
+    private void addExtension(final PgExtension extension) {
         addUnique(extensions, extension);
-    }
-
-    public Collection<PgEventTrigger> getEventTriggers() {
-        return Collections.unmodifiableCollection(eventTriggers.values());
     }
 
     public PgEventTrigger getEventTrigger(final String name) {
         return eventTriggers.get(name);
     }
 
-    public void addEventTrigger(final PgEventTrigger et) {
+    private void addEventTrigger(final PgEventTrigger et) {
         addUnique(eventTriggers, et);
     }
 
@@ -173,16 +147,7 @@ public class PgDatabase extends AbstractDatabase {
         return fdws.get(name);
     }
 
-    /**
-     * Getter for {@link #fdws}. The list cannot be modified.
-     *
-     * @return {@link #fdws}
-     */
-    public Collection<PgForeignDataWrapper> getForeignDWs() {
-        return Collections.unmodifiableCollection(fdws.values());
-    }
-
-    public void addForeignDW(final PgForeignDataWrapper fDW) {
+    private void addForeignDW(final PgForeignDataWrapper fDW) {
         addUnique(fdws, fDW);
     }
 
@@ -190,23 +155,11 @@ public class PgDatabase extends AbstractDatabase {
         return servers.get(name);
     }
 
-    public Collection<PgServer> getServers() {
-        return Collections.unmodifiableCollection(servers.values());
-    }
-
-    public void addServer(final PgServer server) {
+    private void addServer(final PgServer server) {
         addUnique(servers, server);
     }
 
-    public PgUserMapping getUserMapping(final String name) {
-        return userMappings.get(name);
-    }
-
-    public Collection<PgUserMapping> getUserMappings() {
-        return Collections.unmodifiableCollection(userMappings.values());
-    }
-
-    public void addUserMapping(final PgUserMapping userMapping) {
+    private void addUserMapping(final PgUserMapping userMapping) {
         addUnique(userMappings, userMapping);
     }
 
@@ -222,16 +175,7 @@ public class PgDatabase extends AbstractDatabase {
         return casts.get(name);
     }
 
-    /**
-     * Getter for {@link #casts}. The list cannot be modified.
-     *
-     * @return {@link #casts}
-     */
-    public Collection<PgCast> getCasts() {
-        return Collections.unmodifiableCollection(casts.values());
-    }
-
-    public void addCast(final PgCast cast) {
+    private void addCast(final PgCast cast) {
         addUnique(casts, cast);
     }
 
@@ -277,7 +221,7 @@ public class PgDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        return new PgDatabase(getArguments());
+        return new PgDatabase(arguments);
     }
 
     @Override

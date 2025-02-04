@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChUser;
 
-public class ChUsersReader extends AbstractStatementReader {
+public final class ChUsersReader extends AbstractStatementReader {
 
     private static final String LOCAL = "localhost";
     private static final String IP = "::/0";
@@ -64,14 +64,7 @@ public class ChUsersReader extends AbstractStatementReader {
             user.setDefaultDatabase(defDb);
         }
 
-        for (var role : user.getDefRoles()) {
-            user.addDep(new GenericColumn(role, DbObjType.ROLE));
-        }
-
-        for (var role : user.getExceptRoles()) {
-            user.addDep(new GenericColumn(role, DbObjType.ROLE));
-        }
-        db.addUser(user);
+        db.addChild(user);
     }
 
     private void fillHosts(ResultSet res, ChUser user) throws SQLException {
@@ -109,7 +102,7 @@ public class ChUsersReader extends AbstractStatementReader {
             }
         }
 
-        if (!isAnyHost && user.getHosts().isEmpty()) {
+        if (!isAnyHost && user.hasHosts()) {
             user.addHost("NONE");
         }
     }

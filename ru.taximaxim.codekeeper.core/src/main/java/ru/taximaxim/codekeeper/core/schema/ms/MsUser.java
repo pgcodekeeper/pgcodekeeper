@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -26,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsUser extends PgStatement {
+public final class MsUser extends PgStatement {
 
     // TODO PASSWORD, DEFAULT_LANGUAGE, ALLOW_ENCRYPTED_VALUE_MODIFICATIONS
     private String schema;
@@ -45,14 +46,14 @@ public class MsUser extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE USER ");
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(name));
         if (login != null) {
             sbSQL.append(" FOR LOGIN ").append(MsDiffUtils.quoteName(login));
         }
@@ -80,23 +81,23 @@ public class MsUser extends PgStatement {
 
         StringBuilder sbSql = new StringBuilder();
 
-        if (!Objects.equals(getLogin(), newUser.getLogin())) {
-            sbSql.append("LOGIN = ").append(MsDiffUtils.quoteName(newUser.getLogin())).append(", ");
+        if (!Objects.equals(login, newUser.login)) {
+            sbSql.append("LOGIN = ").append(MsDiffUtils.quoteName(newUser.login)).append(", ");
         }
 
-        String newSchema = newUser.getSchema();
-        if (!Objects.equals(getSchema(), newSchema)) {
+        String newSchema = newUser.schema;
+        if (!Objects.equals(schema, newSchema)) {
             if (newSchema == null) {
                 newSchema = Consts.DBO;
             }
             sbSql.append("DEFAULT_SCHEMA = ").append(MsDiffUtils.quoteName(newSchema)).append(", ");
         }
-        if (!Objects.equals(getLanguage(), newUser.getLanguage())) {
+        if (!Objects.equals(language, newUser.language)) {
             sbSql.append("DEFAULT_LANGUAGE = ")
-            .append(newUser.getLanguage() == null ? "NONE" : newUser.getLanguage())
+            .append(newUser.language == null ? "NONE" : newUser.language)
             .append(", ");
         }
-        if (!isAllowEncrypted() == newUser.allowEncrypted) {
+        if (!allowEncrypted == newUser.allowEncrypted) {
             sbSql.append("ALLOW_ENCRYPTED_VALUE_MODIFICATIONS = ").append(newUser.allowEncrypted ? "ON" : "OFF")
             .append(", ");
         }
@@ -114,10 +115,6 @@ public class MsUser extends PgStatement {
         return getObjectState(script, startSize);
     }
 
-    public String getSchema() {
-        return schema;
-    }
-
     public void setSchema(String schema) {
         if (Consts.DBO.equals(schema)) {
             return;
@@ -126,26 +123,14 @@ public class MsUser extends PgStatement {
         resetHash();
     }
 
-    public String getLogin() {
-        return login;
-    }
-
     public void setLogin(String login) {
         this.login = login;
         resetHash();
     }
 
-    public String getLanguage() {
-        return language;
-    }
-
     public void setLanguage(String defaultLng) {
         this.language = defaultLng;
         resetHash();
-    }
-
-    public boolean isAllowEncrypted() {
-        return allowEncrypted;
     }
 
     public void setAllowEncrypted(boolean allowEncrypted) {
@@ -163,12 +148,12 @@ public class MsUser extends PgStatement {
 
     @Override
     public MsUser shallowCopy() {
-        MsUser userDst = new MsUser(getName());
+        MsUser userDst = new MsUser(name);
         copyBaseFields(userDst);
-        userDst.setSchema(getSchema());
-        userDst.setLogin(getLogin());
-        userDst.setLanguage(getLanguage());
-        userDst.setAllowEncrypted(isAllowEncrypted());
+        userDst.setSchema(schema);
+        userDst.setLogin(login);
+        userDst.setLanguage(language);
+        userDst.setAllowEncrypted(allowEncrypted);
         return userDst;
     }
 
@@ -179,10 +164,10 @@ public class MsUser extends PgStatement {
         }
 
         if (obj instanceof MsUser user && super.compare(obj)) {
-            return Objects.equals(schema, user.getSchema())
-                    && Objects.equals(login, user.getLogin())
-                    && Objects.equals(language, user.getLanguage())
-                    && allowEncrypted == user.isAllowEncrypted();
+            return Objects.equals(schema, user.schema)
+                    && Objects.equals(login, user.login)
+                    && Objects.equals(language, user.language)
+                    && allowEncrypted == user.allowEncrypted;
         }
         return false;
     }

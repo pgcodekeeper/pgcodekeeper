@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.hashers.IHashable;
 import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
 
-public class PartitionTemplateContainer implements IHashable {
+public final class PartitionTemplateContainer implements IHashable {
 
     private static final String SET_SUBPARTITION = "\nSET SUBPARTITION TEMPLATE (";
 
@@ -49,13 +49,13 @@ public class PartitionTemplateContainer implements IHashable {
         return !subElements.isEmpty();
     }
 
-    public void appendCreateSQL(StringBuilder sql) {
+    void appendCreateSQL(StringBuilder sql) {
         appendPartitionName(sql);
         sql.append(SET_SUBPARTITION).append("\n");
         appendTemplateOptions(sql);
     }
 
-    public void appendDropSql(StringBuilder sql) {
+    void appendDropSql(StringBuilder sql) {
         appendPartitionName(sql);
         sql.append(SET_SUBPARTITION).append(")");
     }
@@ -66,7 +66,7 @@ public class PartitionTemplateContainer implements IHashable {
         }
     }
 
-    protected void appendTemplateOptions(StringBuilder sbSQL) {
+    private void appendTemplateOptions(StringBuilder sbSQL) {
         for (var elem : subElements) {
             sbSQL.append("  ").append(elem).append(",").append("\n");
         }

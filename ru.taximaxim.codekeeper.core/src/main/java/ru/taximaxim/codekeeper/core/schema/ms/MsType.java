@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,14 +53,14 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
     @Override
     protected void appendDef(StringBuilder sb) {
-        if (getBaseType() != null) {
-            sb.append(" FROM ").append(getBaseType());
-            if (isNotNull()) {
+        if (baseType != null) {
+            sb.append(" FROM ").append(baseType);
+            if (isNotNull) {
                 sb.append(" NOT NULL");
             }
-        } else if (getAssemblyName() != null) {
-            sb.append("\nEXTERNAL NAME ").append(MsDiffUtils.quoteName(getAssemblyName()))
-            .append('.').append(MsDiffUtils.quoteName(getAssemblyClass()));
+        } else if (assemblyName != null) {
+            sb.append("\nEXTERNAL NAME ").append(MsDiffUtils.quoteName(assemblyName))
+            .append('.').append(MsDiffUtils.quoteName(assemblyClass));
         } else {
             sb.append(" AS TABLE(");
             for (String col : columns) {
@@ -84,7 +83,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
             sb.append("\n)");
 
-            if (isMemoryOptimized()) {
+            if (isMemoryOptimized) {
                 sb.append("\nWITH ( MEMORY_OPTIMIZED = ON )");
             }
         }
@@ -97,11 +96,11 @@ public final class MsType extends AbstractType implements IStatementContainer {
         }
 
         MsType type = (MsType) newType;
-        return isNotNull() == type.isNotNull()
-                && isMemoryOptimized() == type.isMemoryOptimized()
-                && Objects.equals(getBaseType(), type.getBaseType())
-                && Objects.equals(getAssemblyName(), type.getAssemblyName())
-                && Objects.equals(getAssemblyClass(), type.getAssemblyClass())
+        return isNotNull == type.isNotNull
+                && isMemoryOptimized == type.isMemoryOptimized
+                && Objects.equals(baseType, type.baseType)
+                && Objects.equals(assemblyName, type.assemblyName)
+                && Objects.equals(assemblyClass, type.assemblyClass)
                 && columns.equals(type.columns)
                 && PgDiffUtils.setlikeEquals(indices, type.indices)
                 && PgDiffUtils.setlikeEquals(constraints, type.constraints);
@@ -109,12 +108,12 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
     @Override
     protected AbstractType getTypeCopy() {
-        MsType copy = new MsType(getName());
-        copy.setNotNull(isNotNull());
-        copy.setMemoryOptimized(isMemoryOptimized());
-        copy.setBaseType(getBaseType());
-        copy.setAssemblyName(getAssemblyName());
-        copy.setAssemblyClass(getAssemblyClass());
+        MsType copy = new MsType(name);
+        copy.setNotNull(isNotNull);
+        copy.setMemoryOptimized(isMemoryOptimized);
+        copy.setBaseType(baseType);
+        copy.setAssemblyName(assemblyName);
+        copy.setAssemblyClass(assemblyClass);
         copy.columns.addAll(columns);
         copy.indices.addAll(indices);
         copy.constraints.addAll(constraints);
@@ -142,17 +141,9 @@ public final class MsType extends AbstractType implements IStatementContainer {
         hasher.put(constraints);
     }
 
-    public String getBaseType() {
-        return baseType;
-    }
-
     public void setBaseType(String baseType) {
         this.baseType = baseType;
         resetHash();
-    }
-
-    public boolean isNotNull() {
-        return isNotNull;
     }
 
     public void setNotNull(boolean isNotNull) {
@@ -160,17 +151,9 @@ public final class MsType extends AbstractType implements IStatementContainer {
         resetHash();
     }
 
-    public String getAssemblyName() {
-        return assemblyName;
-    }
-
     public void setAssemblyName(String assemblyName) {
         this.assemblyName = assemblyName;
         resetHash();
-    }
-
-    public String getAssemblyClass() {
-        return assemblyClass;
     }
 
     public void setAssemblyClass(String assemblyClass) {
@@ -178,25 +161,9 @@ public final class MsType extends AbstractType implements IStatementContainer {
         resetHash();
     }
 
-    public boolean isMemoryOptimized() {
-        return isMemoryOptimized;
-    }
-
     public void setMemoryOptimized(boolean isMemoryOptimized) {
         this.isMemoryOptimized = isMemoryOptimized;
         resetHash();
-    }
-
-    public List<String> getColumns() {
-        return Collections.unmodifiableList(columns);
-    }
-
-    public List<String> getConstraints() {
-        return Collections.unmodifiableList(constraints);
-    }
-
-    public List<String> getIndices() {
-        return Collections.unmodifiableList(indices);
     }
 
     @Override

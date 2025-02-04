@@ -77,8 +77,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
         sbSQL.append("\n    ");
 
-        if (getLanguage() != null) {
-            sbSQL.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(getLanguage()));
+        if (language != null) {
+            sbSQL.append("LANGUAGE ").append(PgDiffUtils.getQuotedName(language));
         }
 
         if (!transforms.isEmpty()) {
@@ -90,49 +90,49 @@ public abstract class AbstractPgFunction extends AbstractFunction {
             sbSQL.setLength(sbSQL.length() - 2);
         }
 
-        if (isWindow()) {
+        if (isWindow) {
             sbSQL.append(" WINDOW");
         }
 
-        if (getVolatileType() != null) {
-            sbSQL.append(' ').append(getVolatileType());
+        if (volatileType != null) {
+            sbSQL.append(' ').append(volatileType);
         }
 
-        if (isStrict()) {
+        if (isStrict) {
             sbSQL.append(" STRICT");
         }
 
-        if (getExecuteOn() != null) {
-            sbSQL.append(" EXECUTE ON ").append(getExecuteOn());
+        if (executeOn != null) {
+            sbSQL.append(" EXECUTE ON ").append(executeOn);
         }
 
-        if (isSecurityDefiner()) {
+        if (isSecurityDefiner) {
             sbSQL.append(" SECURITY DEFINER");
         }
 
-        if (isLeakproof()) {
+        if (isLeakproof) {
             sbSQL.append(" LEAKPROOF");
         }
 
-        if (getParallel() != null) {
-            sbSQL.append(" PARALLEL ").append(getParallel());
+        if (parallel != null) {
+            sbSQL.append(" PARALLEL ").append(parallel);
         }
 
-        if (getCost() != null) {
-            sbSQL.append(" COST ").append(getCost());
+        if (cost != null) {
+            sbSQL.append(" COST ").append(cost);
         }
 
-        if (DEFAULT_PROROWS != getRows()) {
+        if (DEFAULT_PROROWS != rows) {
             sbSQL.append(" ROWS ");
-            if (getRows() % 1 == 0) {
-                sbSQL.append((int)getRows());
+            if (rows % 1 == 0) {
+                sbSQL.append((int)rows);
             } else {
-                sbSQL.append(getRows());
+                sbSQL.append(rows);
             }
         }
 
-        if (getSupportFunc() != null) {
-            sbSQL.append(" SUPPORT ").append(getSupportFunc());
+        if (supportFunc != null) {
+            sbSQL.append(" SUPPORT ").append(supportFunc);
         }
 
         for (Entry<String, String> param : configurations.entrySet()) {
@@ -146,10 +146,10 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         }
 
         sbSQL.append("\n    ");
-        if (!isInStatementBody()) {
+        if (!inStatementBody) {
             sbSQL.append("AS ");
         }
-        sbSQL.append(getBody());
+        sbSQL.append(body);
     }
 
     /**
@@ -164,7 +164,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     @Override
     protected StringBuilder appendFullName(StringBuilder sb) {
-        sb.append(PgDiffUtils.getQuotedName(getParent().getName())).append('.');
+        sb.append(PgDiffUtils.getQuotedName(parent.getName())).append('.');
         appendFunctionSignature(sb, false, true);
         return sb;
     }
@@ -200,10 +200,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         return sb;
     }
 
-    public boolean isWindow() {
-        return isWindow;
-    }
-
     public void setWindow(boolean isWindow) {
         this.isWindow = isWindow;
         resetHash();
@@ -219,7 +215,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         if (cost != null) {
             String val = "" + (cost % 1 == 0 ? cost.intValue() : cost);
 
-            if ("internal".equals(getLanguage()) || "c".equals(getLanguage())) {
+            if ("internal".equals(language) || "c".equals(language)) {
                 if (DEFAULT_INTERNAL_PROCOST != cost) {
                     this.cost = val;
                 }
@@ -231,17 +227,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-    public String getVolatileType() {
-        return volatileType;
-    }
-
     public void setVolatileType(String volatileType) {
         this.volatileType = volatileType;
         resetHash();
-    }
-
-    public boolean isStrict() {
-        return isStrict;
     }
 
     public void setStrict(boolean isStrict) {
@@ -249,30 +237,14 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-    public boolean isSecurityDefiner() {
-        return isSecurityDefiner;
-    }
-
     public void setSecurityDefiner(boolean isSecurityDefiner) {
         this.isSecurityDefiner = isSecurityDefiner;
         resetHash();
     }
 
-    public boolean isLeakproof() {
-        return isLeakproof;
-    }
-
     public void setLeakproof(boolean isLeakproof) {
         this.isLeakproof = isLeakproof;
         resetHash();
-    }
-
-    public String getCost() {
-        return cost;
-    }
-
-    public float getRows() {
-        return rows;
     }
 
     public void setRows(float rows) {
@@ -301,22 +273,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         setBody(args.isKeepNewlines() ? body : body.replace("\r", ""));
     }
 
-    public String getBody() {
-        return body;
-    }
-
-
-    public List<String> getTransform() {
-        return Collections.unmodifiableList(transforms);
-    }
-
     public void addTransform(String datatype) {
         transforms.add(datatype);
         resetHash();
-    }
-
-    public Map<String, String> getConfigurations() {
-        return Collections.unmodifiableMap(configurations);
     }
 
     public void addConfiguration(String par, String val) {
@@ -324,17 +283,9 @@ public abstract class AbstractPgFunction extends AbstractFunction {
         resetHash();
     }
 
-    public String getSupportFunc() {
-        return supportFunc;
-    }
-
     public void setSupportFunc(String supportFunc) {
         this.supportFunc = supportFunc;
         resetHash();
-    }
-
-    public String getExecuteOn() {
-        return executeOn;
     }
 
     public void setExecuteOn(String executeOn) {
@@ -404,20 +355,20 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     @Override
     protected boolean compareUnalterable(AbstractFunction function) {
         if (function instanceof AbstractPgFunction func && super.compareUnalterable(function)) {
-            return Objects.equals(body, func.getBody())
-                    && isWindow == func.isWindow()
-                    && Objects.equals(language, func.getLanguage())
-                    && Objects.equals(parallel, func.getParallel())
-                    && Objects.equals(volatileType, func.getVolatileType())
-                    && isStrict == func.isStrict()
-                    && isSecurityDefiner == func.isSecurityDefiner()
-                    && isLeakproof == func.isLeakproof()
-                    && rows == func.getRows()
-                    && Objects.equals(cost, func.getCost())
+            return Objects.equals(body, func.body)
+                    && isWindow == func.isWindow
+                    && Objects.equals(language, func.language)
+                    && Objects.equals(parallel, func.parallel)
+                    && Objects.equals(volatileType, func.volatileType)
+                    && isStrict == func.isStrict
+                    && isSecurityDefiner == func.isSecurityDefiner
+                    && isLeakproof == func.isLeakproof
+                    && rows == func.rows
+                    && Objects.equals(cost, func.cost)
                     && Objects.equals(transforms, func.transforms)
                     && Objects.equals(configurations, func.configurations)
-                    && Objects.equals(executeOn, func.getExecuteOn())
-                    && Objects.equals(supportFunc, func.getSupportFunc());
+                    && Objects.equals(executeOn, func.executeOn)
+                    && Objects.equals(supportFunc, func.supportFunc);
         }
 
         return false;
@@ -446,29 +397,29 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     public AbstractFunction shallowCopy() {
         AbstractPgFunction functionDst = (AbstractPgFunction) super.shallowCopy();
         functionDst.setReturns(getReturns());
-        functionDst.setSupportFunc(getSupportFunc());
-        functionDst.setBody(getBody());
-        functionDst.setWindow(isWindow());
-        functionDst.language = getLanguage();
-        functionDst.setVolatileType(getVolatileType());
-        functionDst.setStrict(isStrict());
-        functionDst.setSecurityDefiner(isSecurityDefiner());
-        functionDst.setLeakproof(isLeakproof());
-        functionDst.setRows(getRows());
-        functionDst.cost = getCost();
-        functionDst.setParallel(getParallel());
+        functionDst.setSupportFunc(supportFunc);
+        functionDst.setBody(body);
+        functionDst.setWindow(isWindow);
+        functionDst.language = language;
+        functionDst.setVolatileType(volatileType);
+        functionDst.setStrict(isStrict);
+        functionDst.setSecurityDefiner(isSecurityDefiner);
+        functionDst.setLeakproof(isLeakproof);
+        functionDst.setRows(rows);
+        functionDst.cost = cost;
+        functionDst.setParallel(parallel);
         functionDst.transforms.addAll(transforms);
         functionDst.returnsColumns.putAll(returnsColumns);
         functionDst.configurations.putAll(configurations);
-        functionDst.setInStatementBody(isInStatementBody());
-        functionDst.setExecuteOn(getExecuteOn());
+        functionDst.setInStatementBody(inStatementBody);
+        functionDst.setExecuteOn(executeOn);
 
         return functionDst;
     }
 
     @Override
     public String getQualifiedName() {
-        return getParent().getQualifiedName() + '.' + getName();
+        return parent.getQualifiedName() + '.' + getName();
     }
 
     public class PgArgument extends Argument {

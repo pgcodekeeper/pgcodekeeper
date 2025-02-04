@@ -40,7 +40,7 @@ public final class ChRole extends PgStatement {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         appendIfNotExists(sbSQL);
-        sbSQL.append(ChDiffUtils.getQuotedName(getName()));
+        sbSQL.append(ChDiffUtils.getQuotedName(name));
         if (!DEF_STORAGE.equals(storageType)) {
             sbSQL.append("\n\tIN ").append(storageType);
         }
@@ -89,7 +89,7 @@ public final class ChRole extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -99,7 +99,7 @@ public final class ChRole extends PgStatement {
 
     @Override
     public PgStatement shallowCopy() {
-        ChRole copy = new ChRole(getName());
+        ChRole copy = new ChRole(name);
         copyBaseFields(copy);
         copy.setStorageType(storageType);
         return copy;

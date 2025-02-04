@@ -53,10 +53,6 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    public List<String> getIncludes() {
-        return Collections.unmodifiableList(includes);
-    }
-
     @Override
     public Set<String> getColumns() {
         return Collections.unmodifiableSet(columnNames);
@@ -80,26 +76,14 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    public Map<String, String> getParams() {
-        return Collections.unmodifiableMap(params);
-    }
-
     public void setIndexMethod(String indexMethod) {
         this.indexMethod = indexMethod;
         resetHash();
     }
 
-    public String getIndexMethod() {
-        return indexMethod;
-    }
-
     public void setPredicate(String predicate) {
         this.predicate = predicate;
         resetHash();
-    }
-
-    public String getPredicate() {
-        return predicate;
     }
 
     @Override
@@ -108,21 +92,17 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         resetHash();
     }
 
-    public String getTablespace() {
-        return tablespace;
-    }
-
     @Override
     public String getDefinition() {
         var sbSQL = new StringBuilder();
         sbSQL.append("EXCLUDE");
-        if (getIndexMethod() != null) {
-            sbSQL.append(" USING ").append(getIndexMethod());
+        if (indexMethod != null) {
+            sbSQL.append(" USING ").append(indexMethod);
         }
         appendSimpleColumns(sbSQL, columns);
         appendIndexParam(sbSQL);
-        if (getPredicate() != null) {
-            sbSQL.append(" WHERE ").append(getPredicate());
+        if (predicate != null) {
+            sbSQL.append(" WHERE ").append(predicate);
         }
         return sbSQL.toString();
     }
@@ -154,7 +134,7 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         sbSQL.append(')');
     }
 
-    public void appendIndexParam(StringBuilder sb) {
+    private void appendIndexParam(StringBuilder sb) {
         if (!includes.isEmpty()) {
             sb.append(" INCLUDE ");
             StatementUtils.appendCols(sb, includes, DatabaseType.PG);
@@ -183,9 +163,9 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
                 && Objects.equals(params, con.params)
                 && Objects.equals(includes, con.includes)
                 && Objects.equals(columns, con.columns)
-                && Objects.equals(getIndexMethod(), con.getIndexMethod())
-                && Objects.equals(getPredicate(), con.getPredicate())
-                && Objects.equals(getTablespace(), con.getTablespace());
+                && Objects.equals(indexMethod, con.indexMethod)
+                && Objects.equals(predicate, con.predicate)
+                && Objects.equals(tablespace, con.tablespace);
     }
 
     @Override
@@ -206,9 +186,9 @@ public final class PgConstraintExclude extends PgConstraint implements PgIndexPa
         con.includes.addAll(includes);
         con.columnNames.addAll(columnNames);
         con.columns.addAll(columns);
-        con.setIndexMethod(getIndexMethod());
-        con.setPredicate(getPredicate());
-        con.setTablespace(getTablespace());
+        con.setIndexMethod(indexMethod);
+        con.setPredicate(predicate);
+        con.setTablespace(tablespace);
         return con;
     }
 

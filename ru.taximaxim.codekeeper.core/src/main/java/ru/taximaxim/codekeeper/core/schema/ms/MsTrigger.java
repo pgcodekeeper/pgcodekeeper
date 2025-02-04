@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -25,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsTrigger extends AbstractTrigger implements SourceStatement {
+public final class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     private boolean ansiNulls;
     private boolean quotedIdentified;
@@ -42,7 +43,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     public void getCreationSQL(SQLScript script) {
         addTriggerFullSQL(script, true);
 
-        if (isDisable()) {
+        if (isDisable) {
             StringBuilder sb = new StringBuilder();
             sb.append("\nDISABLE TRIGGER ");
             appendName(sb);
@@ -52,9 +53,9 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     private void addTriggerFullSQL(SQLScript script, boolean isCreate) {
         final StringBuilder sbSQL = new StringBuilder();
-        sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
+        sbSQL.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-        sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
+        sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         appendSourceStatement(isCreate, sbSQL);
         script.addStatement(sbSQL);
@@ -64,9 +65,9 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     public StringBuilder appendName(StringBuilder sb) {
         sb.append(MsDiffUtils.quoteName(getSchemaName()))
         .append('.')
-        .append(MsDiffUtils.quoteName(getName()))
+        .append(MsDiffUtils.quoteName(name))
         .append(" ON ")
-        .append(getParent().getQualifiedName());
+        .append(parent.getQualifiedName());
         return sb;
     }
 
@@ -75,18 +76,18 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         int startSize = script.getSize();
         MsTrigger newTrigger = (MsTrigger) newCondition;
         boolean isNeedDepcies = false;
-        if (isAnsiNulls() != newTrigger.isAnsiNulls()
-                || isQuotedIdentified() != newTrigger.isQuotedIdentified()
-                || !Objects.equals(getFirstPart(), newTrigger.getFirstPart())
-                || !Objects.equals(getSecondPart(), newTrigger.getSecondPart())) {
+        if (ansiNulls != newTrigger.ansiNulls
+                || quotedIdentified != newTrigger.quotedIdentified
+                || !Objects.equals(firstPart, newTrigger.firstPart)
+                || !Objects.equals(secondPart, newTrigger.secondPart)) {
             newTrigger.addTriggerFullSQL(script, false);
             isNeedDepcies = true;
         }
 
-        if (isDisable() != newTrigger.isDisable()) {
+        if (isDisable != newTrigger.isDisable) {
             StringBuilder sbSQL = new StringBuilder();
             sbSQL.append('\n');
-            sbSQL.append(newTrigger.isDisable() ? "DISABLE" : "ENABLE");
+            sbSQL.append(newTrigger.isDisable ? "DISABLE" : "ENABLE");
             sbSQL.append(" TRIGGER ");
             appendName(sbSQL);
             script.addStatement(sbSQL);
@@ -98,7 +99,7 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     protected StringBuilder appendFullName(StringBuilder sb) {
         sb.append(MsDiffUtils.quoteName(getSchemaName()))
         .append('.')
-        .append(MsDiffUtils.quoteName(getName()));
+        .append(MsDiffUtils.quoteName(name));
         return sb;
     }
 
@@ -110,11 +111,11 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsTrigger trigger && super.compare(obj)) {
-            return Objects.equals(getFirstPart(), trigger.getFirstPart())
-                    && Objects.equals(getSecondPart(), trigger.getSecondPart())
-                    && isQuotedIdentified() == trigger.isQuotedIdentified()
-                    && isAnsiNulls() == trigger.isAnsiNulls()
-                    && isDisable() == trigger.isDisable();
+            return Objects.equals(firstPart, trigger.firstPart)
+                    && Objects.equals(secondPart, trigger.secondPart)
+                    && quotedIdentified == trigger.quotedIdentified
+                    && ansiNulls == trigger.ansiNulls
+                    && isDisable == trigger.isDisable;
         }
 
         return false;
@@ -122,21 +123,21 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(getFirstPart());
-        hasher.put(getSecondPart());
-        hasher.put(isQuotedIdentified());
-        hasher.put(isAnsiNulls());
-        hasher.put(isDisable());
+        hasher.put(firstPart);
+        hasher.put(secondPart);
+        hasher.put(quotedIdentified);
+        hasher.put(ansiNulls);
+        hasher.put(isDisable);
     }
 
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        MsTrigger trigger = new MsTrigger(getName());
-        trigger.setFirstPart(getFirstPart());
-        trigger.setSecondPart(getSecondPart());
-        trigger.setAnsiNulls(isAnsiNulls());
-        trigger.setQuotedIdentified(isQuotedIdentified());
-        trigger.setDisable(isDisable());
+        MsTrigger trigger = new MsTrigger(name);
+        trigger.setFirstPart(firstPart);
+        trigger.setSecondPart(secondPart);
+        trigger.setAnsiNulls(ansiNulls);
+        trigger.setQuotedIdentified(quotedIdentified);
+        trigger.setDisable(isDisable);
         return trigger;
     }
 
@@ -145,21 +146,9 @@ public class MsTrigger extends AbstractTrigger implements SourceStatement {
         resetHash();
     }
 
-    public boolean isAnsiNulls() {
-        return ansiNulls;
-    }
-
     public void setQuotedIdentified(boolean quotedIdentified) {
         this.quotedIdentified = quotedIdentified;
         resetHash();
-    }
-
-    public boolean isQuotedIdentified() {
-        return quotedIdentified;
-    }
-
-    public boolean isDisable() {
-        return isDisable;
     }
 
     public void setDisable(boolean isDisable) {

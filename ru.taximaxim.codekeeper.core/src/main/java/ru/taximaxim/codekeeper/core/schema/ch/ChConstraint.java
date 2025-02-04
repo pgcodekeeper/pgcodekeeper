@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -24,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChConstraint extends AbstractConstraint {
+public final class ChConstraint extends AbstractConstraint {
 
     private final boolean isAssume;
     private String expr;
@@ -34,23 +35,15 @@ public class ChConstraint extends AbstractConstraint {
         this.isAssume = isAssume;
     }
 
-    public boolean isAssume() {
-        return isAssume;
-    }
-
     public void setExpr(String expr) {
         this.expr = expr;
         resetHash();
     }
 
-    public String getExpr() {
-        return expr;
-    }
-
     @Override
     public String getDefinition() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(isAssume() ? "ASSUME " : "CHECK ").append(getExpr());
+        sb.append(isAssume ? "ASSUME " : "CHECK ").append(expr);
         return sb.toString();
     }
 
@@ -79,13 +72,13 @@ public class ChConstraint extends AbstractConstraint {
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName()));
+        sb.append(ChDiffUtils.getQuotedName(name));
         script.addStatement(sb);
     }
 
     private boolean compareUnalterable(ChConstraint newConstr) {
-        return Objects.equals(isAssume, newConstr.isAssume())
-                && Objects.equals(expr, newConstr.getExpr());
+        return Objects.equals(isAssume, newConstr.isAssume)
+                && Objects.equals(expr, newConstr.expr);
     }
 
     @Override

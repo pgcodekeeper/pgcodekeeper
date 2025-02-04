@@ -39,6 +39,6 @@ public abstract class AbstractStatistics extends PgStatement implements ISearchP
 
     @Override
     public ISchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 }

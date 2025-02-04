@@ -50,7 +50,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 /**
  * Stores column information.
  */
-public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, ICompressOptionContainer  {
+public final class PgColumn extends AbstractColumn implements ISimpleOptionContainer, ICompressOptionContainer {
 
     private static final Logger LOG = LoggerFactory.getLogger(PgColumn.class);
 
@@ -82,17 +82,17 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         String cName = PgDiffUtils.getQuotedName(name);
         sbDefinition.append(cName);
 
-        if (getType() == null) {
+        if (type == null) {
             sbDefinition.append(" WITH OPTIONS");
         } else {
             sbDefinition.append(' ');
-            sbDefinition.append(getType());
-            if (getCompression() != null) {
-                sbDefinition.append(COMPRESSION).append(PgDiffUtils.getQuotedName(getCompression()));
+            sbDefinition.append(type);
+            if (compression != null) {
+                sbDefinition.append(COMPRESSION).append(PgDiffUtils.getQuotedName(compression));
             }
 
-            if (getCollation() != null) {
-                sbDefinition.append(COLLATE).append(getCollation());
+            if (collation != null) {
+                sbDefinition.append(COLLATE).append(collation);
             }
         }
 
@@ -105,12 +105,12 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     private StringBuilder definitionDefaultNotNull(StringBuilder sbDefinition) {
-        if (getDefaultValue() != null && !isGenerated()) {
+        if (defaultValue != null && !isGenerated) {
             sbDefinition.append(" DEFAULT ");
-            sbDefinition.append(getDefaultValue());
+            sbDefinition.append(defaultValue);
         }
 
-        if (!getNullValue()) {
+        if (!nullValue) {
             sbDefinition.append(NOT_NULL);
         }
 
@@ -118,9 +118,9 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     private StringBuilder generatedAlwaysAsStored(StringBuilder sbDefinition) {
-        if (isGenerated()) {
+        if (isGenerated) {
             sbDefinition.append(" GENERATED ALWAYS AS (")
-            .append(getDefaultValue())
+            .append(defaultValue)
             .append(") STORED");
         }
         return sbDefinition;
@@ -131,21 +131,21 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         StringBuilder sb = new StringBuilder();
 
         boolean mergeDefaultNotNull = false;
-        if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
+        if (type != null && getParentCol((AbstractPgTable) parent) == null) {
             sb.append(getAlterTable(false));
             sb.append("\n\tADD COLUMN ");
             appendIfNotExists(sb);
             sb.append(PgDiffUtils.getQuotedName(name))
             .append(' ')
-            .append(getType());
-            if (getCompression() != null) {
-                sb.append(COMPRESSION).append(PgDiffUtils.getQuotedName(getCompression()));
+            .append(type);
+            if (compression != null) {
+                sb.append(COMPRESSION).append(PgDiffUtils.getQuotedName(compression));
             }
-            if (getCollation() != null) {
-                sb.append(COLLATE).append(getCollation());
+            if (collation != null) {
+                sb.append(COLLATE).append(collation);
             }
 
-            mergeDefaultNotNull = !getNullValue();
+            mergeDefaultNotNull = !nullValue;
             if (mergeDefaultNotNull) {
                 // for NOT NULL columns we'd emit a time consuming UPDATE column=DEFAULT anyway
                 // so we can merge DEFAULT with column definition with no performance loss
@@ -161,19 +161,19 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
         // column may have a default expression or a generation expression
         // (https://www.postgresql.org/docs/12/catalog-pg-attribute.html) (param - 'atthasdef')
-        if (!mergeDefaultNotNull && !isGenerated()) {
-            compareDefaults(null, getDefaultValue(), new AtomicBoolean(), script);
-            compareNullValues(true, getNullValue(), getDefaultValue() != null, script);
+        if (!mergeDefaultNotNull && !isGenerated) {
+            compareDefaults(null, defaultValue, new AtomicBoolean(), script);
+            compareNullValues(true, nullValue, defaultValue != null, script);
         }
-        compareStorages(null, getStorage(), script);
+        compareStorages(null, storage, script);
 
         appendPrivileges(script);
 
         compareForeignOptions(Collections.<String, String>emptyMap(), fOptions, script);
         writeOptions(true, script);
 
-        compareStats(null, getStatistics(), script);
-        compareIdentity(null, getIdentityType(), null, getSequence(), script);
+        compareStats(null, statistics, script);
+        compareIdentity(null, identityType, null, sequence, script);
 
         appendComments(script);
     }
@@ -203,7 +203,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     private String getAlterTableColumn(boolean only, String column, boolean needAlterTable) {
         StringBuilder sb = new StringBuilder();
         if (needAlterTable) {
-            sb.append(((AbstractTable) getParent()).getAlterTable(only));
+            sb.append(((AbstractTable) parent).getAlterTable(only));
         }
         sb.append(ALTER_COLUMN + PgDiffUtils.getQuotedName(column));
         return sb.toString();
@@ -211,7 +211,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
     @Override
     public void getDropSQL(SQLScript script, boolean optionExists) {
-        if (getType() != null && getParentCol((AbstractPgTable) getParent()) == null) {
+        if (type != null && getParentCol((AbstractPgTable) parent) == null) {
             boolean addOnly = true;
 
             //// Condition for partitioned tables.
@@ -220,7 +220,6 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             // Because of impossible inherit from partitioned tables, this
             // condition will also be true for cases when a partitioned table
             // does not have sections.
-            PgStatement parent = getParent();
             if (parent instanceof AbstractRegularTable regTable) {
                 addOnly = regTable.getPartitionBy() == null;
             }
@@ -230,21 +229,21 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             if (optionExists) {
                 dropSb.append(IF_EXISTS);
             }
-            dropSb.append(PgDiffUtils.getQuotedName(getName()));
+            dropSb.append(PgDiffUtils.getQuotedName(name));
             script.addStatement(dropSb);
             return;
         }
 
-        compareDefaults(getDefaultValue(), null, null, script);
-        compareNullValues(getNullValue(), true, false, script);
-        compareStorages(getStorage(), null, script);
+        compareDefaults(defaultValue, null, null, script);
+        compareNullValues(nullValue, true, false, script);
+        compareStorages(storage, null, script);
 
         alterPrivileges(new PgColumn(name), script);
 
         compareForeignOptions(fOptions, Collections.<String, String>emptyMap(), script);
         writeOptions(false, script);
-        compareStats(getStatistics(), null, script);
-        compareIdentity(getIdentityType(), null, getSequence(), null, script);
+        compareStats(statistics, null, script);
+        compareIdentity(identityType, null, sequence, null, script);
 
         appendComments(script);
     }
@@ -254,17 +253,17 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         int startSize = script.getSize();
         PgColumn newColumn = (PgColumn) newCondition;
 
-        if (isGenerated() != newColumn.isGenerated()
-                || (isGenerated() && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue()))
+        if (isGenerated != newColumn.isGenerated
+                || (isGenerated && !Objects.equals(defaultValue, newColumn.defaultValue))
                 || !compareCompressOptions(newColumn)) {
             return ObjectState.RECREATE;
         }
 
-        boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
-                && !Objects.equals(getDefaultValue(), newColumn.getDefaultValue());
+        boolean isNeedDropDefault = !Objects.equals(type, newColumn.type)
+                && !Objects.equals(defaultValue, newColumn.defaultValue);
 
         if (isNeedDropDefault) {
-            compareDefaults(getDefaultValue(), null, null, script);
+            compareDefaults(defaultValue, null, null, script);
         }
         AtomicBoolean isNeedDepcies = new AtomicBoolean();
         StringBuilder typeBuilder = new StringBuilder();
@@ -273,27 +272,27 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             script.addStatement(typeBuilder);
         }
 
-        String oldDefault = isNeedDropDefault ? null : getDefaultValue();
-        compareDefaults(oldDefault, newColumn.getDefaultValue(), isNeedDepcies, script);
-        compareNullValues(getNullValue(), newColumn.getNullValue(), newColumn.getDefaultValue() != null, script);
-        compareStorages(getStorage(), newColumn.getStorage(), script);
-        compareCompression(getCompression(), newColumn.getCompression(), script);
+        String oldDefault = isNeedDropDefault ? null : defaultValue;
+        compareDefaults(oldDefault, newColumn.defaultValue, isNeedDepcies, script);
+        compareNullValues(nullValue, newColumn.nullValue, newColumn.defaultValue != null, script);
+        compareStorages(storage, newColumn.storage, script);
+        compareCompression(compression, newColumn.compression, script);
 
         alterPrivileges(newColumn, script);
 
         compareOptions(newColumn, script);
-        compareForeignOptions(getForeignOptions(), newColumn.getForeignOptions(), script);
-        compareStats(getStatistics(), newColumn.getStatistics(), script);
+        compareForeignOptions(fOptions, newColumn.fOptions, script);
+        compareStats(statistics, newColumn.statistics, script);
 
-        compareIdentity(getIdentityType(), newColumn.getIdentityType(), getSequence(), newColumn.getSequence(), script);
+        compareIdentity(identityType, newColumn.identityType, sequence, newColumn.sequence, script);
         appendAlterComments(newColumn, script);
         return getObjectState(isNeedDepcies.get(), script, startSize);
     }
 
     private boolean compareCompressOptions(PgColumn newColumn) {
-        return Objects.equals(getCompressType(), newColumn.getCompressType())
-                && getCompressLevel() == newColumn.getCompressLevel()
-                && getBlockSize() == newColumn.getBlockSize();
+        return Objects.equals(compressType, newColumn.compressType)
+                && compressLevel == newColumn.compressLevel
+                && blockSize == newColumn.blockSize;
     }
 
     /**
@@ -371,13 +370,13 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     public boolean isJoinable(PgColumn newColumn) {
-        return newColumn.getType() != null
-                && (!Objects.equals(getType(), newColumn.getType())
-                        || !Objects.equals(getCollation(), newColumn.getCollation()))
-                && Objects.equals(getDefaultValue(), newColumn.getDefaultValue())
-                && getNullValue() == newColumn.getNullValue()
+        return newColumn.type != null
+                && (!Objects.equals(type, newColumn.type)
+                        || !Objects.equals(collation, newColumn.collation))
+                && Objects.equals(defaultValue, newColumn.defaultValue)
+                && nullValue == newColumn.nullValue
                 && compareColOptions(newColumn)
-                && Objects.equals(getComment(), newColumn.getComment());
+                && Objects.equals(comment, newColumn.comment);
     }
 
     public void joinAction(StringBuilder sb, PgColumn newColumn, boolean isNeedAlterTable,
@@ -399,31 +398,31 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
      */
     private void compareTypes(PgColumn oldColumn, PgColumn newColumn, AtomicBoolean isNeedDepcies,
             StringBuilder sb, boolean isNeedAlterTable, boolean isLastColumn) {
-        String oldType = oldColumn.getType();
-        String newType = newColumn.getType();
+        String oldType = oldColumn.type;
+        String newType = newColumn.type;
         if (newType == null) {
             return;
         }
 
-        String oldCollation = oldColumn.getCollation();
-        String newCollation = newColumn.getCollation();
+        String oldCollation = oldColumn.collation;
+        String newCollation = newColumn.collation;
 
         if (!Objects.equals(oldType, newType) || (newCollation != null && !newCollation.equals(oldCollation))) {
             isNeedDepcies.set(true);
-            sb.append(getAlterTableColumn(false, newColumn.getName(), isNeedAlterTable));
+            sb.append(getAlterTableColumn(false, newColumn.name, isNeedAlterTable));
             sb.append(" TYPE ").append(newType);
 
             if (newCollation != null) {
                 sb.append(COLLATE).append(newCollation);
             }
 
-            if (!getDatabaseArguments().isUsingTypeCastOff() && !(getParent() instanceof IForeignTable)) {
-                sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.getName()))
+            if (!getDatabaseArguments().isUsingTypeCastOff() && !(parent instanceof IForeignTable)) {
+                sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.name))
                 .append("::").append(newType);
             }
             sb.append(isLastColumn ? ";" : ",");
             sb.append(" /* " + MessageFormat.format(Messages.Table_TypeParameterChange,
-                    newColumn.getParent().getParent().getName() + '.' + newColumn.getParent().getName(),
+                    newColumn.parent.getParent().getName() + '.' + newColumn.parent.getName(),
                     oldType, newType) + " */");
         }
     }
@@ -481,7 +480,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
         if (hasDefault) {
             StringBuilder sql = new StringBuilder();
-            sql.append("UPDATE ").append(getParent().getQualifiedName())
+            sql.append("UPDATE ").append(parent.getQualifiedName())
             .append("\n\tSET ").append(PgDiffUtils.getQuotedName(name))
             .append(" = DEFAULT WHERE ").append(PgDiffUtils.getQuotedName(name))
             .append(" IS").append(NULL);
@@ -548,7 +547,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             sql = new StringBuilder();
             sql.append(MessageFormat.format(
                     Messages.Storage_WarningUnableToDetermineStorageType,
-                    getParent().getName(), getName()));
+                    parent.getName(), name));
             script.addStatement(sql);
         } else if (newStorage != null && !newStorage.equalsIgnoreCase(oldStorage)) {
             script.addStatement(getAlterTableColumn(true, name) + " SET STORAGE " + newStorage);
@@ -580,7 +579,7 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
             }
 
             AbstractPgTable parentTbl = (AbstractPgTable) parent;
-            AbstractColumn parentCol = parentTbl.getColumn(getName());
+            AbstractColumn parentCol = parentTbl.getColumn(name);
             if (parentCol == null) {
                 parentCol = getParentCol(parentTbl);
             }
@@ -619,28 +618,16 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         resetHash();
     }
 
-    public String getCompressType() {
-        return compressType;
-    }
-
     @Override
     public void setCompressLevel(int compressLevel) {
         this.compressLevel = compressLevel;
         resetHash();
     }
 
-    public int getCompressLevel() {
-        return compressLevel;
-    }
-
     @Override
     public void setBlockSize(int blockSize) {
         this.blockSize = blockSize;
         resetHash();
-    }
-
-    public int getBlockSize() {
-        return blockSize;
     }
 
     public boolean isInherit() {
@@ -702,11 +689,6 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
         resetHash();
     }
 
-    public String getCompression() {
-        return compression;
-    }
-
-
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PgColumn col && super.compare(obj)) {
@@ -717,16 +699,16 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
     }
 
     private boolean compareColOptions(PgColumn col) {
-        return Objects.equals(statistics, col.getStatistics())
-                && Objects.equals(storage, col.getStorage())
-                && Objects.equals(identityType, col.getIdentityType())
-                && isInherit == col.isInherit()
-                && isGenerated == col.isGenerated()
+        return Objects.equals(statistics, col.statistics)
+                && Objects.equals(storage, col.storage)
+                && Objects.equals(identityType, col.identityType)
+                && isInherit == col.isInherit
+                && isGenerated == col.isGenerated
                 && options.equals(col.options)
                 && fOptions.equals(col.fOptions)
                 && compareCompressOptions(col)
-                && Objects.equals(sequence, col.getSequence())
-                && Objects.equals(compression, col.getCompression());
+                && Objects.equals(sequence, col.sequence)
+                && Objects.equals(compression, col.compression);
     }
 
     @Override
@@ -748,19 +730,19 @@ public class PgColumn extends AbstractColumn implements ISimpleOptionContainer, 
 
     @Override
     protected AbstractColumn getColumnCopy() {
-        PgColumn copy = new PgColumn(getName());
-        copy.setStatistics(getStatistics());
-        copy.setStorage(getStorage());
+        PgColumn copy = new PgColumn(name);
+        copy.setStatistics(statistics);
+        copy.setStorage(storage);
         copy.options.putAll(options);
         copy.fOptions.putAll(fOptions);
-        copy.setCompressType(getCompressType());
-        copy.setCompressLevel(getCompressLevel());
-        copy.setBlockSize(getBlockSize());
-        copy.setIdentityType(getIdentityType());
-        copy.setSequence(getSequence());
-        copy.setCompression(getCompression());
-        copy.setInherit(isInherit());
-        copy.setGenerated(isGenerated());
+        copy.setCompressType(compressType);
+        copy.setCompressLevel(compressLevel);
+        copy.setBlockSize(blockSize);
+        copy.setIdentityType(identityType);
+        copy.setSequence(sequence);
+        copy.setCompression(compression);
+        copy.setInherit(isInherit);
+        copy.setGenerated(isGenerated);
         return copy;
     }
 }

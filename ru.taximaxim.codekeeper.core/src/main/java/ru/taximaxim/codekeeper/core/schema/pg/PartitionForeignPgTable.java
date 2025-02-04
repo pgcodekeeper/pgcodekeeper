@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionForeignPgTable extends AbstractForeignTable implements IPartitionTable {
+public final class PartitionForeignPgTable extends AbstractForeignTable implements IPartitionTable {
 
     private final String partitionBounds;
 
@@ -52,8 +52,8 @@ public class PartitionForeignPgTable extends AbstractForeignTable implements IPa
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
-                || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable)newTable).getPartitionBounds()))
-                || !inherits.equals(((AbstractPgTable)newTable).inherits);
+                || !(Objects.equals(partitionBounds, ((PartitionForeignPgTable) newTable).partitionBounds))
+                || !inherits.equals(((AbstractPgTable) newTable).inherits);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class PartitionForeignPgTable extends AbstractForeignTable implements IPa
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PartitionForeignPgTable table && super.compare(obj)) {
-            return Objects.equals(partitionBounds, table.getPartitionBounds());
+            return Objects.equals(partitionBounds, table.partitionBounds);
         }
 
         return false;

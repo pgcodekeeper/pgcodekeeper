@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChFunction extends PgStatement implements IFunction {
+public final class ChFunction extends PgStatement implements IFunction {
 
     private String body;
     private final List<Argument> arguments = new ArrayList<>();
@@ -69,7 +69,7 @@ public class ChFunction extends PgStatement implements IFunction {
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CREATE FUNCTION ").append(ChDiffUtils.getQuotedName(getName())).append(" AS ");
+        sb.append("CREATE FUNCTION ").append(ChDiffUtils.getQuotedName(name)).append(" AS ");
         fillArgs(sb);
         sb.append(" -> ").append(body);
         script.addStatement(sb);
@@ -108,7 +108,7 @@ public class ChFunction extends PgStatement implements IFunction {
 
     @Override
     public ChDatabase getDatabase() {
-        return (ChDatabase) getParent();
+        return (ChDatabase) parent;
     }
 
     @Override
@@ -129,10 +129,10 @@ public class ChFunction extends PgStatement implements IFunction {
 
     @Override
     public PgStatement shallowCopy() {
-        ChFunction copy = new ChFunction(getName());
+        ChFunction copy = new ChFunction(name);
         copyBaseFields(copy);
         copy.arguments.addAll(arguments);
-        copy.setBody(getBody());
+        copy.setBody(body);
         return copy;
     }
 
@@ -144,10 +144,6 @@ public class ChFunction extends PgStatement implements IFunction {
     @Override
     public Map<String, String> getReturnsColumns() {
         return Collections.emptyMap();
-    }
-
-    public void addReturnsColumn(String name, String type) {
-        //unused
     }
 
     @Override

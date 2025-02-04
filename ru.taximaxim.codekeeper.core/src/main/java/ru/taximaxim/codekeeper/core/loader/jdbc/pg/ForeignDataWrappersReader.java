@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgForeignDataWrapper;
 
-public class ForeignDataWrappersReader extends AbstractStatementReader {
+public final class ForeignDataWrappersReader extends AbstractStatementReader {
 
     private final PgDatabase db;
 
@@ -62,7 +62,7 @@ public class ForeignDataWrappersReader extends AbstractStatementReader {
         loader.setOwner(f, res.getLong("fdwowner"));
         loader.setPrivileges(f, res.getString("fdwacl"), null);
         loader.setAuthor(f, res);
-        db.addForeignDW(f);
+        db.addChild(f);
     }
 
     @Override

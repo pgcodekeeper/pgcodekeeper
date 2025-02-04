@@ -24,11 +24,12 @@ import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.AbstractStatementReader;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.XmlReaderException;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
-public class ChPrivillegesReader extends AbstractStatementReader {
+public final class ChPrivillegesReader extends AbstractStatementReader {
 
     private final ChDatabase db;
 
@@ -41,7 +42,7 @@ public class ChPrivillegesReader extends AbstractStatementReader {
     protected void processResult(ResultSet result) throws SQLException, XmlReaderException{
         String user = result.getString("user_name");
         String role = result.getString("role_name");
-        PgStatement st = user != null ? db.getUser(user) : db.getRole(role);
+        PgStatement st = user != null ? db.getChild(user, DbObjType.USER) : db.getChild(role, DbObjType.ROLE);
 
         String database = getNameOrAsterisk(result.getString("database"));
         String table = getNameOrAsterisk(result.getString("table"));

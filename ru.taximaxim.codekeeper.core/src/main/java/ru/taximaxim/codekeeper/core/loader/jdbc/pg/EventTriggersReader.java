@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
 
-public class EventTriggersReader extends AbstractStatementReader {
+public final class EventTriggersReader extends AbstractStatementReader {
 
     private final PgDatabase db;
 
@@ -73,7 +73,7 @@ public class EventTriggersReader extends AbstractStatementReader {
         loader.setOwner(evt, res.getString("rolname"));
         loader.setComment(evt, res);
         loader.setAuthor(evt, res);
-        db.addEventTrigger(evt);
+        db.addChild(evt);
     }
 
     @Override

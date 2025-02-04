@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
 
-public class MsFunction extends AbstractMsFunction {
+public final class MsFunction extends AbstractMsFunction {
 
     private FuncTypes funcType = FuncTypes.SCALAR;
 
@@ -47,13 +47,13 @@ public class MsFunction extends AbstractMsFunction {
     @Override
     protected boolean compareUnalterable(AbstractFunction func) {
         return func instanceof AbstractMsFunction && super.compareUnalterable(func)
-                && Objects.equals(getFuncType(), ((MsFunction) func).getFuncType());
+                && Objects.equals(funcType, ((MsFunction) func).funcType);
     }
 
     @Override
     public boolean needDrop(AbstractFunction newFunction) {
         if (newFunction instanceof MsFunction msFunction) {
-            return getFuncType() != msFunction.getFuncType();
+            return funcType != msFunction.funcType;
         }
 
         return true;
@@ -62,18 +62,14 @@ public class MsFunction extends AbstractMsFunction {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(getFuncType());
+        hasher.put(funcType);
     }
 
     @Override
     protected AbstractMsFunction getFunctionCopy() {
-        MsFunction func = new MsFunction(getName());
-        func.setFuncType(getFuncType());
+        MsFunction func = new MsFunction(name);
+        func.setFuncType(funcType);
         return func;
-    }
-
-    public FuncTypes getFuncType() {
-        return funcType;
     }
 
     public void setFuncType(FuncTypes funcType) {

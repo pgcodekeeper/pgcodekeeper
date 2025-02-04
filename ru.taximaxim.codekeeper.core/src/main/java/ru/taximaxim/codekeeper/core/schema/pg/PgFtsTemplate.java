@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -24,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgFtsTemplate extends PgStatement implements ISearchPath {
+public final class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     private String initFunction;
     private String lexizeFunction;
@@ -40,7 +41,7 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 
     @Override
@@ -71,10 +72,10 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     @Override
     public PgFtsTemplate shallowCopy() {
-        PgFtsTemplate templateDst = new PgFtsTemplate(getName());
+        PgFtsTemplate templateDst = new PgFtsTemplate(name);
         copyBaseFields(templateDst);
-        templateDst.setInitFunction(getInitFunction());
-        templateDst.setLexizeFunction(getLexizeFunction());
+        templateDst.setInitFunction(initFunction);
+        templateDst.setLexizeFunction(lexizeFunction);
         return templateDst;
     }
 
@@ -102,17 +103,9 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
         hasher.put(lexizeFunction);
     }
 
-    public String getInitFunction() {
-        return initFunction;
-    }
-
     public void setInitFunction(final String initFunction) {
         this.initFunction = initFunction;
         resetHash();
-    }
-
-    public String getLexizeFunction() {
-        return lexizeFunction;
     }
 
     public void setLexizeFunction(final String lexizeFunction) {

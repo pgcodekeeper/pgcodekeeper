@@ -34,7 +34,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @since 4.1.1
  * @author galiev_mr
  */
-public class PartitionPgTable extends AbstractRegularTable implements IPartitionTable {
+public final class PartitionPgTable extends AbstractRegularTable implements IPartitionTable {
 
     private final String partitionBounds;
 
@@ -96,16 +96,16 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
 
     @Override
     protected void convertTable(SQLScript script) {
-        Inherits newInherits = getInherits().get(0);
+        Inherits newInherits = inherits.get(0);
         StringBuilder sql = appendTablePartiton(newInherits.getQualifiedName(), "ATTACH");
-        sql.append(' ').append(getPartitionBounds());
+        sql.append(' ').append(partitionBounds);
         script.addStatement(sql);
     }
 
     private StringBuilder appendTablePartiton(String tableName, String state) {
         return new StringBuilder(ALTER_TABLE).append(tableName)
                 .append(MessageFormat.format("\n\t{0} PARTITION ", state))
-                .append(PgDiffUtils.getQuotedName(getParent().getName()))
+                .append(PgDiffUtils.getQuotedName(parent.getName()))
                 .append('.')
                 .append(PgDiffUtils.getQuotedName(getName()));
     }
@@ -115,10 +115,10 @@ public class PartitionPgTable extends AbstractRegularTable implements IPartition
         super.compareTableOptions(newTable, script);
 
         if (newTable instanceof PartitionPgTable table) {
-            String newBounds = table.getPartitionBounds();
+            String newBounds = table.partitionBounds;
 
             Inherits oldInherits = inherits.get(0);
-            Inherits newInherits = newTable.getInherits().get(0);
+            Inherits newInherits = newTable.inherits.get(0);
 
             if (!Objects.equals(partitionBounds, newBounds)
                     || !Objects.equals(oldInherits, newInherits)) {

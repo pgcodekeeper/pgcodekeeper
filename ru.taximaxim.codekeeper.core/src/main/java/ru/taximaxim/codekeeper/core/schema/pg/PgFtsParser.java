@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -24,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgFtsParser extends PgStatement implements ISearchPath {
+public final class PgFtsParser extends PgStatement implements ISearchPath {
 
     private static final String NEW_LINE = ",\n\t";
 
@@ -45,7 +46,7 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 
     @Override
@@ -79,13 +80,13 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
 
     @Override
     public PgFtsParser shallowCopy() {
-        PgFtsParser parserDst = new PgFtsParser(getName());
+        PgFtsParser parserDst = new PgFtsParser(name);
         copyBaseFields(parserDst);
-        parserDst.setStartFunction(getStartFunction());
-        parserDst.setGetTokenFunction(getGetTokenFunction());
-        parserDst.setEndFunction(getEndFunction());
-        parserDst.setLexTypesFunction(getLexTypesFunction());
-        parserDst.setHeadLineFunction(getHeadLineFunction());
+        parserDst.setStartFunction(startFunction);
+        parserDst.setGetTokenFunction(getTokenFunction);
+        parserDst.setEndFunction(endFunction);
+        parserDst.setLexTypesFunction(lexTypesFunction);
+        parserDst.setHeadLineFunction(headLineFunction);
         return parserDst;
     }
 
@@ -119,17 +120,9 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
         hasher.put(lexTypesFunction);
     }
 
-    public String getStartFunction() {
-        return startFunction;
-    }
-
     public void setStartFunction(final String startFunction) {
         this.startFunction = startFunction;
         resetHash();
-    }
-
-    public String getGetTokenFunction() {
-        return getTokenFunction;
     }
 
     public void setGetTokenFunction(final String getTokenFunction) {
@@ -137,26 +130,14 @@ public class PgFtsParser extends PgStatement implements ISearchPath {
         resetHash();
     }
 
-    public String getEndFunction() {
-        return endFunction;
-    }
-
     public void setEndFunction(final String endFunction) {
         this.endFunction = endFunction;
         resetHash();
     }
 
-    public String getLexTypesFunction() {
-        return lexTypesFunction;
-    }
-
     public void setLexTypesFunction(final String lexTypesFunction) {
         this.lexTypesFunction = lexTypesFunction;
         resetHash();
-    }
-
-    public String getHeadLineFunction() {
-        return headLineFunction;
     }
 
     public void setHeadLineFunction(final String headLineFunction) {

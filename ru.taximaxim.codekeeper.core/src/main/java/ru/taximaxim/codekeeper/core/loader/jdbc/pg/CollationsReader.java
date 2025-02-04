@@ -27,9 +27,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
-public class CollationsReader extends JdbcReader {
+public final class CollationsReader extends JdbcReader {
 
     public CollationsReader(JdbcLoaderBase loader) {
         super(loader);
@@ -93,7 +92,7 @@ public class CollationsReader extends JdbcReader {
         loader.setOwner(coll, res.getLong("collowner"));
         loader.setAuthor(coll, res);
 
-        ((PgSchema) schema).addCollation(coll);
+        schema.addChild(coll);
     }
 
     @Override

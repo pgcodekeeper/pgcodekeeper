@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
-public class MetaOperator extends MetaStatement implements IOperator {
+public final class MetaOperator extends MetaStatement implements IOperator {
 
     private static final long serialVersionUID = 5893184839623238431L;
 

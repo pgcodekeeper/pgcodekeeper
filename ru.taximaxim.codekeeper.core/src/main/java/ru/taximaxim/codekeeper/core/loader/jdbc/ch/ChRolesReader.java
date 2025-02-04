@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChRole;
 
-public class ChRolesReader extends AbstractStatementReader {
+public final class ChRolesReader extends AbstractStatementReader {
 
     private final ChDatabase db;
 
@@ -46,7 +46,7 @@ public class ChRolesReader extends AbstractStatementReader {
         if (storage != null) {
             role.setStorageType(storage);
         }
-        db.addRole(role);
+        db.addChild(role);
     }
 
     @Override

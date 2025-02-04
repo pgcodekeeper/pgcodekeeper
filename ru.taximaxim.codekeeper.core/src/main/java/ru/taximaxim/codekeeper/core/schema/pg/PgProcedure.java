@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 /**
  * Stores Postgres procedure information.
  */
-public class PgProcedure extends AbstractPgFunction {
+public final class PgProcedure extends AbstractPgFunction {
 
     private String returns;
 
@@ -67,6 +67,6 @@ public class PgProcedure extends AbstractPgFunction {
 
     @Override
     protected AbstractPgFunction getFunctionCopy() {
-        return new PgProcedure(getBareName());
+        return new PgProcedure(name);
     }
 }

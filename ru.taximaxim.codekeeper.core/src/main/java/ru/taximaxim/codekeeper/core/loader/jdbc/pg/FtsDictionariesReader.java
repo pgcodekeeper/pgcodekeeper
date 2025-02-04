@@ -26,9 +26,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
-public class FtsDictionariesReader extends JdbcReader {
+public final class FtsDictionariesReader extends JdbcReader {
 
     public FtsDictionariesReader(JdbcLoaderBase loader) {
         super(loader);
@@ -57,7 +56,7 @@ public class FtsDictionariesReader extends JdbcReader {
         // COMMENT
         loader.setComment(dic, res);
         loader.setAuthor(dic, res);
-        ((PgSchema) schema).addFtsDictionary(dic);
+        schema.addChild(dic);
     }
 
     @Override

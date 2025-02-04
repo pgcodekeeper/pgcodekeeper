@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @author galiev_mr
  *
  */
-public class SimplePgTable extends AbstractRegularTable {
+public final class SimplePgTable extends AbstractRegularTable {
 
     public SimplePgTable(String name) {
         super(name);

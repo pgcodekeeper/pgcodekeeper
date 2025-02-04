@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgUserMapping;
 
-public class UserMappingReader extends AbstractStatementReader {
+public final class UserMappingReader extends AbstractStatementReader {
 
     private final PgDatabase db;
 
@@ -58,7 +58,7 @@ public class UserMappingReader extends AbstractStatementReader {
         }
 
         loader.setAuthor(usm, res);
-        db.addUserMapping(usm);
+        db.addChild(usm);
     }
 
     @Override

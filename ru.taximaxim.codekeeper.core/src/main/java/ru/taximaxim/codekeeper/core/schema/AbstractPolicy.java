@@ -39,17 +39,9 @@ public abstract class AbstractPolicy extends PgStatement {
         return DbObjType.POLICY;
     }
 
-    public EventType getEvent() {
-        return event;
-    }
-
     public void setEvent(EventType event) {
         this.event = event;
         resetHash();
-    }
-
-    public Set<String> getRoles() {
-        return Collections.unmodifiableSet(roles);
     }
 
     public void addRole(String role) {
@@ -57,17 +49,9 @@ public abstract class AbstractPolicy extends PgStatement {
         resetHash();
     }
 
-    public String getUsing() {
-        return using;
-    }
-
     public void setUsing(String using) {
         this.using = using;
         resetHash();
-    }
-
-    public boolean isPermissive() {
-        return isPermissive;
     }
 
     public void setPermissive(boolean isPermissive) {
@@ -79,10 +63,10 @@ public abstract class AbstractPolicy extends PgStatement {
     public AbstractPolicy shallowCopy() {
         AbstractPolicy copy = getPolicyCopy();
         copyBaseFields(copy);
-        copy.setPermissive(isPermissive());
-        copy.setEvent(getEvent());
+        copy.setPermissive(isPermissive);
+        copy.setEvent(event);
         copy.roles.addAll(roles);
-        copy.setUsing(getUsing());
+        copy.setUsing(using);
         return copy;
     }
 
@@ -106,7 +90,7 @@ public abstract class AbstractPolicy extends PgStatement {
             return isPermissive == police.isPermissive
                     && event == police.event
                     && roles.equals(police.roles)
-                    && Objects.equals(getUsing(), police.getUsing());
+                    && Objects.equals(using, police.using);
         }
 
         return false;

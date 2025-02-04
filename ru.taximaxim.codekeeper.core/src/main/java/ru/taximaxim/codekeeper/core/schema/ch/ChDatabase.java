@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public class ChDatabase extends AbstractDatabase {
+public final class ChDatabase extends AbstractDatabase {
 
     private final Map<String, ChFunction> functions = new LinkedHashMap<>();
     private final Map<String, ChPolicy> policies = new LinkedHashMap<>();
@@ -52,20 +51,14 @@ public class ChDatabase extends AbstractDatabase {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case SCHEMA:
-            return getSchema(name);
-        case FUNCTION:
-            return getFunction(name);
-        case POLICY:
-            return getPolicy(name);
-        case USER:
-            return getUser(name);
-        case ROLE:
-            return getRole(name);
-        default:
-            return null;
-        }
+        return switch (type) {
+            case SCHEMA -> getSchema(name);
+            case FUNCTION -> functions.get(name);
+            case POLICY -> policies.get(name);
+            case USER -> users.get(name);
+            case ROLE -> roles.get(name);
+            default -> null;
+        };
     }
 
     @Override
@@ -92,103 +85,19 @@ public class ChDatabase extends AbstractDatabase {
         }
     }
 
-    /**
-     * Returns function of given name or null if the extension has not been found.
-     *
-     * @param name
-     *            function name
-     *
-     * @return found function or null
-     */
-    public ChFunction getFunction(final String name) {
-        return functions.get(name);
-    }
-
-    /**
-     * Getter for {@link #functions}. The list cannot be modified.
-     *
-     * @return {@link #functions}
-     */
-    public Collection<ChFunction> getFunctions() {
-        return Collections.unmodifiableCollection(functions.values());
-    }
-
-    public void addFunction(final ChFunction function) {
+    private void addFunction(final ChFunction function) {
         addUnique(functions, function);
     }
 
-    /**
-     * Finds policy according to specified policy {@code name}.
-     *
-     * @param name
-     *            name of the policy to be searched
-     *
-     * @return found policy or null if no such policy has been found
-     */
-    public ChPolicy getPolicy(final String name) {
-        return policies.get(name);
-    }
-
-    /**
-     * Getter for {@link #policies}. The list cannot be modified.
-     *
-     * @return {@link #policies}
-     */
-    public Collection<ChPolicy> getPolicies() {
-        return Collections.unmodifiableCollection(policies.values());
-    }
-
-    public void addPolicy(final ChPolicy policy) {
+    private void addPolicy(final ChPolicy policy) {
         addUnique(policies, policy);
     }
 
-    /**
-     * Returns user of given name or null if the user has not been found.
-     *
-     * @param name
-     *            user name
-     *
-     * @return found user or null
-     */
-    public ChUser getUser(final String name) {
-        return users.get(name);
-    }
-
-    /**
-     * Getter for {@link #users}. The list cannot be modified.
-     *
-     * @return {@link #users}
-     */
-    public Collection<ChUser> getUsers() {
-        return Collections.unmodifiableCollection(users.values());
-    }
-
-    public void addUser(final ChUser user) {
+    private void addUser(final ChUser user) {
         addUnique(users, user);
     }
 
-    /**
-     * Finds role according to specified role {@code name}.
-     *
-     * @param name
-     *            name of the role to be searched
-     *
-     * @return found role or null if no such role has been found
-     */
-    public ChRole getRole(final String name) {
-        return roles.get(name);
-    }
-
-    /**
-     * Getter for {@link #roles}. The list cannot be modified.
-     *
-     * @return {@link #roles}
-     */
-    public Collection<ChRole> getRoles() {
-        return Collections.unmodifiableCollection(roles.values());
-    }
-
-    public void addRole(final ChRole role) {
+    private void addRole(final ChRole role) {
         addUnique(roles, role);
     }
 
@@ -219,7 +128,7 @@ public class ChDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        return new ChDatabase(getArguments());
+        return new ChDatabase(arguments);
     }
 
     @Override

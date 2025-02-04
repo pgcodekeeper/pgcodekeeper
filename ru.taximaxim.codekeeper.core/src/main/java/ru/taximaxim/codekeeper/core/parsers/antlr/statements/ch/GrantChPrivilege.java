@@ -26,6 +26,7 @@ import java.util.Map.Entry;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Columns_permissionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Privilegy_stmtContext;
@@ -35,7 +36,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 
-public class GrantChPrivilege extends ChParserAbstract {
+public final class GrantChPrivilege extends ChParserAbstract {
 
     private final Privilegy_stmtContext ctx;
     private final String state;
@@ -129,8 +130,8 @@ public class GrantChPrivilege extends ChParserAbstract {
 
     // get user or role statement
     private PgStatement getStatement(String name) {
-        PgStatement st = db.getUser(name);
-        return st != null ? st : db.getRole(name);
+        PgStatement st = db.getChild(name, DbObjType.USER);
+        return st != null ? st : db.getChild(name, DbObjType.ROLE);
     }
 
     private List<IdentifierContext> getUsersOrRoles() {

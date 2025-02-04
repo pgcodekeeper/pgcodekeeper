@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 
-public class StatementUtils {
+public final class StatementUtils {
 
     /** Checks if the order of the table columns has changed.<br><br>
      *
@@ -56,7 +56,8 @@ public class StatementUtils {
      * Some table is no longer inherited. If table did not have a column c1,
      * we must return true, but we cannot track this right now. Method will return false. <br><br>
      *
-     * @param newTable - new table
+     * @param newColumns - new columns
+     * @param oldColumns - old columns
      * @return true if order was changed or order is ignored
      * @since 5.1.7
      */

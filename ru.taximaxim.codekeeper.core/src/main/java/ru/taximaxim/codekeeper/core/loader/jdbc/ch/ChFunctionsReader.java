@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 
-public class ChFunctionsReader extends AbstractStatementReader {
+public final class ChFunctionsReader extends AbstractStatementReader {
 
     private final ChDatabase db;
 
@@ -49,7 +49,7 @@ public class ChFunctionsReader extends AbstractStatementReader {
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_function_stmt(),
                 ctx -> new CreateChFunction(ctx, db).parseObject(function));
 
-        db.addFunction(function);
+        db.addChild(function);
     }
 
     @Override

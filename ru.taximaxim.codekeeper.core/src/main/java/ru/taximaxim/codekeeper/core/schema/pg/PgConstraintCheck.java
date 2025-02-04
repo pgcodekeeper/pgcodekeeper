@@ -36,24 +36,16 @@ public final class PgConstraintCheck extends PgConstraint {
         resetHash();
     }
 
-    public boolean isInherit() {
-        return isInherit;
-    }
-
     public void setExpression(String expresion) {
         this.expression = expresion;
         resetHash();
     }
 
-    public String getExpression() {
-        return expression;
-    }
-
     @Override
     public String getDefinition() {
         var sbSQL = new StringBuilder();
-        sbSQL.append("CHECK (").append(getExpression()).append(')');
-        if (!isInherit()) {
+        sbSQL.append("CHECK (").append(expression).append(')');
+        if (!isInherit) {
             sbSQL.append(" NO INHERIT");
         }
         return sbSQL.toString();
@@ -71,8 +63,8 @@ public final class PgConstraintCheck extends PgConstraint {
     protected boolean compareUnalterable(PgConstraint newConstr) {
         if (newConstr instanceof PgConstraintCheck con) {
             return super.compareUnalterable(con)
-                    && isInherit() == con.isInherit()
-                    && Objects.equals(getExpression(), con.getExpression());
+                    && isInherit == con.isInherit
+                    && Objects.equals(expression, con.expression);
         }
         return false;
     }
@@ -87,8 +79,8 @@ public final class PgConstraintCheck extends PgConstraint {
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new PgConstraintCheck(name);
-        con.setInherit(isInherit());
-        con.setExpression(getExpression());
+        con.setInherit(isInherit);
+        con.setExpression(expression);
         return con;
     }
 

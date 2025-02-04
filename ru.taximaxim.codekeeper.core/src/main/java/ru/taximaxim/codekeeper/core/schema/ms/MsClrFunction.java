@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
 
-public class MsClrFunction extends AbstractMsClrFunction {
+public final class MsClrFunction extends AbstractMsClrFunction {
 
     private String returns;
     private FuncTypes funcType = FuncTypes.SCALAR;
@@ -80,13 +80,9 @@ public class MsClrFunction extends AbstractMsClrFunction {
         }
 
         sbSQL.append("AS\nEXTERNAL NAME ");
-        sbSQL.append(MsDiffUtils.quoteName(getAssembly())).append('.');
-        sbSQL.append(MsDiffUtils.quoteName(getAssemblyClass())).append('.');
-        sbSQL.append(MsDiffUtils.quoteName(getAssemblyMethod()));
-    }
-
-    public FuncTypes getFuncType() {
-        return funcType;
+        sbSQL.append(MsDiffUtils.quoteName(assembly)).append('.');
+        sbSQL.append(MsDiffUtils.quoteName(assemblyClass)).append('.');
+        sbSQL.append(MsDiffUtils.quoteName(assemblyMethod));
     }
 
     public void setFuncType(FuncTypes funcType) {
@@ -113,15 +109,15 @@ public class MsClrFunction extends AbstractMsClrFunction {
 
     @Override
     protected boolean compareUnalterable(AbstractFunction func) {
-        return func instanceof MsClrFunction clrFunc && super.compareUnalterable(func)
+        return func instanceof MsClrFunction newClrFunc && super.compareUnalterable(func)
                 && Objects.equals(returns, func.getReturns())
-                && Objects.equals(getFuncType(), clrFunc.getFuncType());
+                && Objects.equals(funcType, newClrFunc.funcType);
     }
 
     @Override
     public boolean needDrop(AbstractFunction newFunction) {
-        if (newFunction instanceof MsClrFunction clrFunc) {
-            return getFuncType() != clrFunc.getFuncType();
+        if (newFunction instanceof MsClrFunction newClrFunc) {
+            return funcType != newClrFunc.funcType;
         }
 
         return true;
@@ -131,15 +127,14 @@ public class MsClrFunction extends AbstractMsClrFunction {
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
         hasher.put(getReturns());
-        hasher.put(getFuncType());
+        hasher.put(funcType);
     }
 
     @Override
     protected AbstractMsClrFunction getFunctionCopy() {
-        MsClrFunction func =  new MsClrFunction(getName(), getAssembly(),
-                getAssemblyClass(), getAssemblyMethod());
-        func.setFuncType(getFuncType());
-        func.setReturns(getReturns());
+        MsClrFunction func = new MsClrFunction(name, assembly, assemblyClass, assemblyMethod);
+        func.setFuncType(funcType);
+        func.setReturns(returns);
         return func;
     }
 }

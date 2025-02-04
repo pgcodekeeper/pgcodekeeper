@@ -61,7 +61,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
     public static Stream<PgStatement> columnAdder(PgStatement st) {
         Stream<PgStatement> newStream = Stream.of(st);
         if (st.getStatementType() == DbObjType.TABLE) {
-            newStream = Stream.concat(newStream, ((AbstractTable)st).getColumns().stream());
+            newStream = Stream.concat(newStream, ((AbstractTable)st).columns.stream());
         }
 
         return newStream;
@@ -84,7 +84,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
      */
     public AbstractColumn getColumn(final String name) {
         for (AbstractColumn column : columns) {
-            if (column.getName().equals(name)) {
+            if (column.name.equals(name)) {
                 return column;
             }
         }
@@ -126,7 +126,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
             return false;
         }
 
-        return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
+        return StatementUtils.isColumnsOrderChanged(newTable.columns, columns);
     }
 
     protected void appendColumnsPriliges(SQLScript script) {

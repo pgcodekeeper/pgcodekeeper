@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -29,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgFtsDictionary extends PgStatement
+public final class PgFtsDictionary extends PgStatement
 implements ISimpleOptionContainer, ISearchPath {
 
     private String template;
@@ -46,7 +47,7 @@ implements ISimpleOptionContainer, ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 
     @Override
@@ -68,7 +69,7 @@ implements ISimpleOptionContainer, ISearchPath {
         int startSize = script.getSize();
         PgFtsDictionary newDictionary = (PgFtsDictionary) newCondition;
 
-        if (!newDictionary.getTemplate().equals(template)) {
+        if (!newDictionary.template.equals(template)) {
             return ObjectState.RECREATE;
         }
 
@@ -103,10 +104,6 @@ implements ISimpleOptionContainer, ISearchPath {
         resetHash();
     }
 
-    public String getTemplate() {
-        return template;
-    }
-
     @Override
     public void addOption(String option, String value) {
         options.put(option, value);
@@ -120,9 +117,9 @@ implements ISimpleOptionContainer, ISearchPath {
 
     @Override
     public PgFtsDictionary shallowCopy() {
-        PgFtsDictionary dictDst = new PgFtsDictionary(getName());
+        PgFtsDictionary dictDst = new PgFtsDictionary(name);
         copyBaseFields(dictDst);
-        dictDst.setTemplate(getTemplate());
+        dictDst.setTemplate(template);
         dictDst.options.putAll(options);
         return dictDst;
     }

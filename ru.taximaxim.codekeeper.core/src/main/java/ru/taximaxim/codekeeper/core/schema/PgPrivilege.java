@@ -39,7 +39,7 @@ public class PgPrivilege implements IHashable {
     private final DatabaseType dbType;
 
     public boolean isRevoke() {
-        return "REVOKE".equalsIgnoreCase(getState());
+        return "REVOKE".equalsIgnoreCase(state);
     }
 
     public PgPrivilege(String state, String permission, String name, String role, boolean isGrantOption, DatabaseType dbType) {
@@ -55,10 +55,10 @@ public class PgPrivilege implements IHashable {
         StringBuilder sb = new StringBuilder();
         sb.append(state).append(' ').append(permission);
         if (name != null) {
-            sb.append(" ON ").append(getName());
+            sb.append(" ON ").append(name);
         }
 
-        sb.append(isRevoke() ? " FROM ": " TO ").append(getRole());
+        sb.append(isRevoke() ? " FROM ": " TO ").append(role);
 
         if (isGrantOption) {
             String cascade = dbType == DatabaseType.CH ? "" : " CASCADE";
@@ -120,7 +120,7 @@ public class PgPrivilege implements IHashable {
                 .append(typeName)
                 .append(' ');
         if (newObj instanceof AbstractPgFunction func) {
-            sbName.append(PgDiffUtils.getQuotedName(func.getParent().getName()))
+            sbName.append(PgDiffUtils.getQuotedName(func.parent.getName()))
             .append('.');
             func.appendFunctionSignature(sbName, false, true);
         } else {
@@ -134,7 +134,7 @@ public class PgPrivilege implements IHashable {
                 "ALL", name, "PUBLIC", false, DatabaseType.PG);
         script.addStatement(priv.getCreationSQL());
 
-        String owner = newObj.getOwner();
+        String owner = newObj.owner;
         if (owner == null) {
             return;
         }
@@ -156,11 +156,11 @@ public class PgPrivilege implements IHashable {
         }
 
         if (obj instanceof PgPrivilege priv) {
-            return isGrantOption == priv.isGrantOption()
-                    && Objects.equals(state, priv.getState())
-                    && Objects.equals(permission, priv.getPermission())
-                    && Objects.equals(role, priv.getRole())
-                    && Objects.equals(name, priv.getName());
+            return isGrantOption == priv.isGrantOption
+                    && Objects.equals(state, priv.state)
+                    && Objects.equals(permission, priv.permission)
+                    && Objects.equals(role, priv.role)
+                    && Objects.equals(name, priv.name);
         }
 
         return false;
@@ -187,10 +187,6 @@ public class PgPrivilege implements IHashable {
         return getCreationSQL();
     }
 
-    public String getState() {
-        return state;
-    }
-
     public String getPermission() {
         return permission;
     }
@@ -201,9 +197,5 @@ public class PgPrivilege implements IHashable {
 
     public String getName() {
         return name;
-    }
-
-    public boolean isGrantOption() {
-        return isGrantOption;
     }
 }

@@ -43,7 +43,7 @@ public abstract class AbstractTrigger extends PgStatement implements ISearchPath
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent().getParent();
+        return (AbstractSchema) parent.parent;
     }
 
     @Override

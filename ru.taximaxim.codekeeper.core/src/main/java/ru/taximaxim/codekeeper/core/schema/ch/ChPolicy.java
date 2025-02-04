@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -38,10 +37,6 @@ public final class ChPolicy extends AbstractPolicy {
     public void addExcept(String except) {
         this.excepts.add(except);
         resetHash();
-    }
-
-    public Set<String> getExcepts() {
-        return Collections.unmodifiableSet(excepts);
     }
 
     @Override
@@ -68,7 +63,7 @@ public final class ChPolicy extends AbstractPolicy {
             sbSQL.append("\n  USING ").append(using);
         }
 
-        if (!isPermissive()) {
+        if (!isPermissive) {
             sbSQL.append("\n  AS RESTRICTIVE");
         }
 
@@ -123,7 +118,7 @@ public final class ChPolicy extends AbstractPolicy {
 
     @Override
     protected AbstractPolicy getPolicyCopy() {
-        ChPolicy policy = new ChPolicy(getName());
+        ChPolicy policy = new ChPolicy(name);
         policy.excepts.addAll(excepts);
         return policy;
     }
@@ -135,6 +130,6 @@ public final class ChPolicy extends AbstractPolicy {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 }

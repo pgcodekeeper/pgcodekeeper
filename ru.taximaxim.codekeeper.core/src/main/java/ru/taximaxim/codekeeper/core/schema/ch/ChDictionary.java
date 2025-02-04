@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,17 +53,9 @@ public final class ChDictionary extends PgStatement implements IRelation {
         resetHash();
     }
 
-    public String getSourceType() {
-        return sourceType;
-    }
-
     public void setLifeTime(String lifeTime) {
         this.lifeTime = lifeTime;
         resetHash();
-    }
-
-    public String getLifeTime() {
-        return lifeTime;
     }
 
     public void setLayOut(String layOut) {
@@ -72,26 +63,14 @@ public final class ChDictionary extends PgStatement implements IRelation {
         resetHash();
     }
 
-    public String getLayOut() {
-        return layOut;
-    }
-
     public void setPk(String pk) {
         this.pk = pk;
         resetHash();
     }
 
-    public String getPk() {
-        return pk;
-    }
-
     public void setRange(String range) {
         this.range = range;
         resetHash();
-    }
-
-    public String getRange(String range) {
-        return range;
     }
 
     public void addColumn(final AbstractColumn column) {
@@ -108,7 +87,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
      *
      * @return found column or null if no such column has been found
      */
-    public AbstractColumn getColumn(final String name) {
+    private AbstractColumn getColumn(final String name) {
         for (AbstractColumn column : columns) {
             if (column.getName().equals(name)) {
                 return column;
@@ -117,31 +96,14 @@ public final class ChDictionary extends PgStatement implements IRelation {
         return null;
     }
 
-    /**
-     * Getter for {@link #columns}. The list cannot be modified.
-     *
-     * @return {@link #columns}
-     */
-    public List<AbstractColumn> getColumns() {
-        return Collections.unmodifiableList(columns);
-    }
-
     public void addSource(String key, String value) {
         sources.put(key, value);
         resetHash();
     }
 
-    public Map<String, String> getSources() {
-        return Collections.unmodifiableMap(sources);
-    }
-
     public void addOption(String option, String value) {
         options.put(option, value);
         resetHash();
-    }
-
-    public Map <String, String> getOptions() {
-        return Collections.unmodifiableMap(options);
     }
 
     @Override
@@ -216,7 +178,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
 
     @Override
     public ISchema getContainingSchema() {
-        return (ChSchema) getParent();
+        return (ChSchema) parent;
     }
 
     @Override
