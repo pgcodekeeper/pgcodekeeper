@@ -228,9 +228,10 @@ public class ActionsToScriptConverter {
                 addToDropScript(obj, false);
             }
 
-            if (obj.isDropBeforeCreate()) {
+            if (arguments.isDropBeforeCreate() && obj.canDropBeforeCreate()) {
                 addToDropScript(obj, true);
             }
+
             addToAddScript(obj);
 
             if (arguments.isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {

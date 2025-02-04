@@ -98,7 +98,7 @@ public final class TestUtils {
 
     public static void runDiffSame(AbstractDatabase db, String template, PgDiffArguments args)
             throws IOException, InterruptedException {
-        String script = new PgDiff(args).diffDatabaseSchemas(db, db, null);
+        String script = new PgDiff(args).diff(db, db, null);
         Assertions.assertEquals("", script.trim(), "File name template: " + template);
     }
 
@@ -150,7 +150,7 @@ public final class TestUtils {
         TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
 
         args.setAddTransaction(needTransaction);
-        return new PgDiff(args).diffDatabaseSchemas(dbOld, dbNew, null);
+        return new PgDiff(args).diff(dbOld, dbNew, null);
     }
 
     /**

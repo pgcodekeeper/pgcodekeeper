@@ -99,12 +99,18 @@ public class DepcyResolver {
      */
     private final Set<PgStatement> createdObjects = new HashSet<>();
 
+    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase) {
+        this.oldDb = oldDatabase;
+        this.newDb = newDatabase;
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase);
+        this.newDepcyGraph = new DepcyGraph(newDatabase);
+    }
+
     /**
      * Добавить ручную зависимость к старому графу
      * @param depcies ручная зависимость
      */
-    public void addCustomDepciesToOld(
-            List<Entry<PgStatement, PgStatement>> depcies) {
+    public void addCustomDepciesToOld(List<Entry<PgStatement, PgStatement>> depcies) {
         oldDepcyGraph.addCustomDepcies(depcies);
     }
 
@@ -112,8 +118,7 @@ public class DepcyResolver {
      * Добавить ручную зависимость к новому графу
      * @param depcies ручная зависимость
      */
-    public void addCustomDepciesToNew(
-            List<Entry<PgStatement, PgStatement>> depcies) {
+    public void addCustomDepciesToNew(List<Entry<PgStatement, PgStatement>> depcies) {
         newDepcyGraph.addCustomDepcies(depcies);
     }
 
@@ -128,52 +133,37 @@ public class DepcyResolver {
         return Collections.unmodifiableSet(toRefresh);
     }
 
-    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase) {
-        this.oldDb = oldDatabase;
-        this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase);
-        this.newDepcyGraph = new DepcyGraph(newDatabase);
-    }
-
     /**
-     * При удалении объекта из старой базы добавляет для удаления все объекты из
-     * старой базы. <br>
-     * Объекта не существует в новой базе, но существует в старой, мы его
-     * удаляем, и удаляем из старой базы все объекты, которым этот объект
-     * требуется, т.к. они будут ошибочны, при отсутсвии этого объекта.
+     * При удалении объекта из старой базы добавляет для удаления все объекты из старой базы. <br>
+     * Объекта не существует в новой базе, но существует в старой, мы его удаляем. И удаляем из старой базы все объекты,
+     * которым этот объект требуется, т.к. они будут ошибочны, при отсутсвии этого объекта.
      *
-     * @param toDrop
+     * @param statement
      *            объект для удаления из старой базы
      */
-    public void addDropStatements(PgStatement toDrop) {
-        PgStatement statement = toDrop.getTwin(oldDb);
+    public void addDropStatements(PgStatement statement) {
         if (oldDepcyGraph.getReversedGraph().containsVertex(statement) && droppedObjects.add(statement)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    oldDepcyGraph.getReversedGraph(), statement);
-            customIteration(dfi, new DropTraversalAdapter(statement));
+            var dfi = new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), statement);
+            iterate(dfi, new DropTraversalAdapter(statement));
 
             if (!statement.canDrop() && statement.getParent().getTwin(newDb) != null) {
-                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), statement),
-                        new CannotDropTraversalListener(statement));
+                dfi = new DepthFirstIterator<>(oldDepcyGraph.getGraph(), statement);
+                iterate(dfi, new CannotDropAdapter(statement));
             }
         }
     }
 
     /**
-     * При создании объекта в новой базе добавляет для создания все объекты из
-     * новой базы. <br>
-     * Объект существует в новой базе, но не существует в старой, мы его
-     * создаем, а также добавляем для создания все объекты, которые трубуются
-     * для правильной работы создаваемого объекта.
+     * При создании объекта в новой базе добавляет для создания все объекты из новой базы. <br>
+     * Объект существует в новой базе, но не существует в старой. Мы его создаем, а также добавляем для создания все
+     * объекты, которые требуются для правильной работы создаваемого объекта.
      *
-     * @param toCreate
+     * @param statement
      */
-    public void addCreateStatements(PgStatement toCreate) {
-        PgStatement statement = toCreate.getTwin(newDb);
+    public void addCreateStatements(PgStatement statement) {
         if (newDepcyGraph.getGraph().containsVertex(statement) && createdObjects.add(statement)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getGraph(), statement);
-            customIteration(dfi, new CreateTraversalAdapter(statement));
+            var dfi = new DepthFirstIterator<>(newDepcyGraph.getGraph(), statement);
+            iterate(dfi, new CreateTraversalAdapter(statement));
         }
     }
 
@@ -182,27 +172,18 @@ public class DepcyResolver {
      * @param oldObj исходный объект
      * @param newObj новый объект
      */
-    public void addAlterStatements(PgStatement oldObj, PgStatement newObj) {
-        PgStatement oldObjStat = oldObj.getTwin(oldDb);
-        if (oldObjStat == null) {
-            return;
-        }
-
-        SQLScript script = new SQLScript(oldObjStat.getDbType());
-        PgStatement newObjStat = newObj.getTwin(newDb);
-        ObjectState state = oldObjStat.appendAlterSQL(newObjStat, script);
-
+    public void addAlterStatements(PgStatement oldObjStat, PgStatement newObjStat) {
+        ObjectState state = getObjectState(oldObjStat, newObjStat);
         if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
             addDropStatements(oldObjStat);
             return;
         }
 
+        // добавляем измененные объекты
+        // пропускаем колонки таблиц из дроп листа
         if (state == ObjectState.ALTER && !inDropsList(oldObjStat)
                 && (oldObjStat.getStatementType() != DbObjType.COLUMN || !inDropsList(oldObjStat.getParent()))) {
-            // объект будет пересоздан ниже в новом состоянии, поэтому ничего делать не нужно
-            // пропускаем колонки таблиц из дроп листа
-            addToListWithoutDepcies(
-                    !script.isEmpty() ? ObjectState.ALTER : ObjectState.DROP, oldObjStat, null);
+            addToListWithoutDepcies(ObjectState.ALTER, oldObjStat, null);
         }
 
         alterMsTableColumns(oldObjStat, newObjStat);
@@ -227,8 +208,7 @@ public class DepcyResolver {
                 }
             }
             if (colLayoutChanged) {
-                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), tOld),
-                        new RefreshTableDeps());
+                iterate(new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), tOld), new RefreshTableDeps());
             }
         }
     }
@@ -254,34 +234,36 @@ public class DepcyResolver {
                 if (newSt != null) {
                     // add views to emit refreshes
                     // others are to block drop+create pairs for unchanged statements
-                    if (needRefresh(drop, newSt)) {
+                    if (canRefresh(drop, newSt)) {
                         toRefresh.add(newSt);
                     }
 
-                    addCreateStatements(drop);
+                    addCreateStatements(newSt);
                 }
             }
         }
     }
 
-    private boolean needRefresh(PgStatement drop, PgStatement newSt) {
-        if (!(newSt instanceof SourceStatement)) {
-            return false;
-        }
-        if (newSt instanceof AbstractMsFunction && isMsTypeDep(newSt))  {
-            return false;
-        }
-        if (newSt instanceof MsView view && view.isSchemaBinding()) {
-            return false;
+    private boolean canRefresh(PgStatement drop, PgStatement newSt) {
+        if (newSt instanceof SourceStatement) {
+            if (newSt instanceof AbstractMsFunction && isMsTypeDep(newSt)) {
+                return false;
+            }
+
+            if (newSt instanceof MsView view && view.isSchemaBinding()) {
+                return false;
+            }
+
+            return newSt.equals(drop) && !inDropsList(newSt.getParent());
         }
 
-        return newSt.equals(drop) && !inDropsList(newSt.getParent());
+        return false;
     }
 
     // check if obj dependence of ms Type
     private boolean isMsTypeDep(PgStatement newSt) {
         var graph = newDepcyGraph.getGraph();
-        for (DefaultEdge edge : newDepcyGraph.getGraph().edgeSet()) {
+        for (DefaultEdge edge : graph.edgeSet()) {
             PgStatement source = graph.getEdgeSource(edge);
             if (newSt.equals(source)) {
                 PgStatement target = graph.getEdgeTarget(edge);
@@ -319,8 +301,7 @@ public class DepcyResolver {
      * @param action
      *            список объектов из итератора
      */
-    private void customIteration(
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi,
+    private void iterate(DepthFirstIterator<PgStatement, DefaultEdge> dfi,
             TraversalListenerAdapter<PgStatement, DefaultEdge> adapter) {
         dfi.addTraversalListener(adapter);
         while (dfi.hasNext()) {
@@ -359,9 +340,14 @@ public class DepcyResolver {
             PgStatement oldObj, PgStatement starter) {
         switch (action) {
         case CREATE, DROP -> actions.add(new ActionContainer(oldObj, oldObj, action, starter));
-        case ALTER, ALTER_WITH_DEP ->  actions.add(new ActionContainer(oldObj, oldObj.getTwin(newDb), ObjectState.ALTER, starter));
+        case ALTER, ALTER_WITH_DEP -> actions
+            .add(new ActionContainer(oldObj, oldObj.getTwin(newDb), ObjectState.ALTER, starter));
         default -> throw new IllegalStateException("Not implemented action");
         }
+    }
+
+    private ObjectState getObjectState(PgStatement oldSt, PgStatement newSt) {
+        return oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType()));
     }
 
     /**
@@ -375,43 +361,41 @@ public class DepcyResolver {
         }
 
         @Override
-        protected boolean notAllowedToAdd(PgStatement oldObj) {
+        protected boolean canAdd(PgStatement oldObj) {
+            if (!oldObj.canDrop()) {
+                return true;
+            }
+
             // Изначально будем удалять объект
             action = ObjectState.DROP;
 
             PgStatement newObj = oldObj.getTwin(newDb);
             if (newObj != null) {
-                if (oldObj instanceof PgIndex && starter instanceof PgIndex) {
-                    return false;
-                }
-
-                SQLScript script = new SQLScript(newObj.getDbType());
-
-                action = oldObj.appendAlterSQL(newObj, script);
-                // проверить а не
-                // требует ли пересоздания(Drop/create) родителькие объекты
+                // проверить требует ли пересоздания(Drop/create) родителькие объекты
                 IsDropped iter = new IsDropped();
-                customIteration(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), oldObj), iter);
+                iterate(new DepthFirstIterator<>(oldDepcyGraph.getGraph(), oldObj), iter);
                 if (iter.needDrop != null && iter.needDrop != oldObj) {
                     action = ObjectState.DROP;
-                }
+                } else {
+                    action = getObjectState(oldObj, newObj);
 
-                if (action == ObjectState.NOTHING) {
-                    return true;
-                }
-                // в случае необходимости изменения (ALter) объекта с
-                // зависимостями нужно сначала создать объект с зависимостями,
-                // потом изменить его
-                if (action == ObjectState.ALTER_WITH_DEP) {
-                    // не добавлять объект, если уже есть в списке
-                    if (!createdObjects.contains(newObj)) {
-                        addCreateStatements(newObj);
-                        addToList(oldObj);
+                    if (action == ObjectState.NOTHING) {
+                        return false;
                     }
-                    return true;
-                }
-                if (action == ObjectState.RECREATE) {
-                    action = ObjectState.DROP;
+                    // в случае необходимости изменения (ALter) объекта с
+                    // зависимостями нужно сначала создать объект с зависимостями,
+                    // потом изменить его
+                    if (action == ObjectState.ALTER_WITH_DEP) {
+                        // не добавлять объект, если уже есть в списке
+                        if (!createdObjects.contains(newObj)) {
+                            addCreateStatements(newObj);
+                            addToList(oldObj);
+                        }
+                        return false;
+                    }
+                    if (action == ObjectState.RECREATE) {
+                        action = ObjectState.DROP;
+                    }
                 }
             }
 
@@ -424,25 +408,24 @@ public class DepcyResolver {
                     // случай, если дроп зависимости тянет колонку, которую мы не пишем
                     // потому что дропается таблица - дропаем таблицу
                     addDropStatements(oldTable);
-                    return true;
+                    return false;
                 }
 
                 // пропускаем также при recreate
-                SQLScript script = new SQLScript(newTable.getDbType());
-                ObjectState state = oldTable.appendAlterSQL(newTable,  script);
-                if (state == ObjectState.RECREATE) {
-                    return true;
+                ObjectState parentState = getObjectState(oldTable, newTable);
+                if (parentState == ObjectState.RECREATE) {
+                    return false;
                 }
 
                 // пропускать колонки при смене типа таблицы
                 if (!oldTable.getClass().equals(newTable.getClass())) {
-                    return true;
+                    return false;
                 }
 
                 // пропускаем колонки типизированных таблиц, если изменился тип
                 if (oldTable instanceof TypedPgTable typedTable
                         && !Objects.equals(typedTable.getOfType(), ((TypedPgTable) newTable).getOfType())) {
-                    return true;
+                    return false;
                 }
             }
 
@@ -451,10 +434,10 @@ public class DepcyResolver {
             if (oldObj instanceof PgSequence seq) {
                 GenericColumn ownedBy = seq.getOwnedBy();
                 if (ownedBy != null && newDb.getStatement(ownedBy) == null) {
-                    return true;
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
     }
 
@@ -469,52 +452,51 @@ public class DepcyResolver {
         }
 
         @Override
-        protected boolean notAllowedToAdd(PgStatement newObj) {
+        protected boolean canAdd(PgStatement newObj) {
             // Изначально будем создавать объект
             action = ObjectState.CREATE;
+            // always create if droppped before
             if (inDropsList(newObj)) {
-                // always create if droppped before
                 createColumnDependencies(newObj);
-                return false;
+                return true;
             }
 
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
-                if (oldTable == null || ((AbstractTable)oldTable).isRecreated(newTable)) {
+                if (oldTable == null || ((AbstractTable) oldTable).isRecreated(newTable)) {
                     // columns are integrated into CREATE TABLE
-                    return true;
+                    return false;
                 }
 
                 // columns are integrated into CREATE TABLE OF TYPE
                 if (newTable instanceof TypedPgTable newTypedTable) {
                     TypedPgTable oldTypedTable = (TypedPgTable) oldTable;
-                    if (!Objects.equals(newTypedTable.getOfType(),
-                            oldTypedTable.getOfType())) {
-                        return true;
+                    if (!Objects.equals(newTypedTable.getOfType(), oldTypedTable.getOfType())) {
+                        return false;
                     }
                 }
 
                 // пропускать колонки при смене типа таблицы
                 if (!oldTable.getClass().equals(newTable.getClass())) {
-                    return true;
+                    return false;
                 }
             }
 
-            PgStatement oldObj;
-            if ((oldObj = newObj.getTwin(oldDb)) != null) {
-                SQLScript script = new SQLScript(oldObj.getDbType());
-                action = oldObj.appendAlterSQL(newObj, script);
+            PgStatement oldObj = newObj.getTwin(oldDb);
+            if (oldObj != null) {
+                action = getObjectState(oldObj, newObj);
                 if (action == ObjectState.NOTHING) {
-                    return true;
+                    return false;
                 }
 
+                // в случае изменения объекта с зависимостями
                 if (action.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
                     addDropStatements(oldObj);
                     if (action == ObjectState.ALTER_WITH_DEP) {
                         // add alter for old object
                         addToList(oldObj);
-                        return true;
+                        return false;
                     }
                     action = ObjectState.CREATE;
                 }
@@ -537,7 +519,7 @@ public class DepcyResolver {
                 }
             }
 
-            return false;
+            return true;
         }
 
         private void createColumnDependencies(PgStatement newObj) {
@@ -553,18 +535,15 @@ public class DepcyResolver {
     /**
      * Используется для прохода по графу зависимостей, содержит общие методы
      */
-    private abstract class CustomTraversalListenerAdapter extends
-    TraversalListenerAdapter<PgStatement, DefaultEdge> {
+    private abstract class CustomTraversalListenerAdapter extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
 
-        protected PgStatement starter;
+        protected final PgStatement starter;
         /**
-         * меняется в {@link #notAllowedToAdd(PgStatement)} для вызова
-         * добавления в список с правильным действием
+         * меняется в {@link #canAdd(PgStatement)} для вызова добавления в список с правильным действием
          */
         protected ObjectState action;
 
-        CustomTraversalListenerAdapter(PgStatement starter,
-                ObjectState action) {
+        CustomTraversalListenerAdapter(PgStatement starter, ObjectState action) {
             this.starter = starter;
             this.action = action;
         }
@@ -572,12 +551,12 @@ public class DepcyResolver {
         @Override
         public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
             PgStatement statement = e.getVertex();
-            if (statement.getStatementType() != DbObjType.DATABASE && !notAllowedToAdd(statement)) {
+            if (statement.getStatementType() != DbObjType.DATABASE && canAdd(statement)) {
                 addToList(statement);
             }
         }
 
-        protected abstract boolean notAllowedToAdd(PgStatement statement);
+        protected abstract boolean canAdd(PgStatement statement);
 
         protected void addToList(PgStatement statement) {
             addToListWithoutDepcies(action, statement, starter);
@@ -592,6 +571,7 @@ public class DepcyResolver {
             if (needDrop != null) {
                 return;
             }
+
             PgStatement oldSt = e.getVertex();
             PgStatement newSt = oldSt.getTwin(newDb);
             DbObjType type = oldSt.getStatementType();
@@ -606,15 +586,13 @@ public class DepcyResolver {
                 return;
             }
 
-            if ((type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE)
+            if (type.in(DbObjType.FUNCTION, DbObjType.PROCEDURE)
                     && oldSt.getDbType() != DatabaseType.CH
                     && !((AbstractFunction) oldSt).needDrop((AbstractFunction) newSt)) {
                 return;
             }
 
-            SQLScript script = new SQLScript(newSt.getDbType());
-            ObjectState state = oldSt.appendAlterSQL(newSt, script);
-
+            ObjectState state = getObjectState(oldSt, newSt);
             if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
                 needDrop = oldSt;
             }
@@ -659,9 +637,9 @@ public class DepcyResolver {
         }
     }
 
-    private class CannotDropTraversalListener extends CustomTraversalListenerAdapter {
+    private class CannotDropAdapter extends CustomTraversalListenerAdapter {
 
-        public CannotDropTraversalListener(PgStatement starter) {
+        public CannotDropAdapter(PgStatement starter) {
             super(starter, ObjectState.DROP);
         }
 
@@ -676,9 +654,9 @@ public class DepcyResolver {
         }
 
         @Override
-        protected boolean notAllowedToAdd(PgStatement statement) {
+        protected boolean canAdd(PgStatement statement) {
             // unused
-            return false;
+            return true;
         }
     }
 }
