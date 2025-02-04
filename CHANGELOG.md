@@ -9,17 +9,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.7.0] - 2025-02-04
+
+### Added
+
 - Added support for Unicode escape sequences in identifiers and strings for PostgreSQL.
 - Added the ability to copy all error messages in standalone pgCodeKeeper packages.
-
-### Changed
 
 ### Fixed
 
 - Fixed a bug in generating a migration script for partitioned tables with indexes.
 - Fixed parser rule for partitioned tables in Greenplum.
-
-### Removed
 
 ## [10.6.0] - 2025-01-21
 
@@ -2169,7 +2175,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...HEAD
+[10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
 [10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0

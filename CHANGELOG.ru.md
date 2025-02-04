@@ -9,17 +9,23 @@
 
 ### Добавлено
 
-- Добавлена поддержка спецпоследовательностей Unicode в идентификаторах и строках для PostgreSQL.
-- Добавлена возможность копировать все сообщений об ошибке в самостоятельных сборках pgCodeKeeper.
-
 ### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.7.0] - 2025-02-04
+
+### Добавлено
+
+- Добавлена поддержка спецпоследовательностей Unicode в идентификаторах и строках для PostgreSQL.
+- Добавлена возможность копировать все сообщения об ошибке в самостоятельных сборках pgCodeKeeper.
 
 ### Исправлено
 
 - Исправлена ошибка в генерации скрипта миграции для партиционных таблиц с индексами.
 - Исправлено правило парсера для секционированных таблиц в Greenplum.
-
-### Удалено
 
 ## [10.6.0] - 2025-01-21
 
@@ -2170,7 +2176,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...HEAD
+[10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
 [10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
