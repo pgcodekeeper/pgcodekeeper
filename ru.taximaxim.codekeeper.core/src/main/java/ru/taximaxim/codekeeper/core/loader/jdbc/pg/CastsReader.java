@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCast;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCast.CastMethod;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class CastsReader extends AbstractStatementReader {
+public final class CastsReader extends AbstractStatementReader {
 
     private final PgDatabase db;
 
@@ -107,7 +107,7 @@ public class CastsReader extends AbstractStatementReader {
         loader.setComment(cast, res);
         loader.setAuthor(cast, res);
 
-        db.addCast(cast);
+        db.addChild(cast);
     }
 
     private void addDep(PgStatement statement, String objectName) {

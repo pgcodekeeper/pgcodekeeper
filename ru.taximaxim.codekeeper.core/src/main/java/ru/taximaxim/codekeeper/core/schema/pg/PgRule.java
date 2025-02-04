@@ -16,9 +16,9 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @author akifiev_an
  *
  */
-public class PgRule extends PgStatement implements ISearchPath {
+public final class PgRule extends PgStatement implements ISearchPath {
 
     private EventType event;
     private String condition;
@@ -51,17 +51,9 @@ public class PgRule extends PgStatement implements ISearchPath {
         return DbObjType.RULE;
     }
 
-    public EventType getEvent() {
-        return event;
-    }
-
     public void setEvent(EventType event) {
         this.event = event;
         resetHash();
-    }
-
-    public String getCondition() {
-        return condition;
     }
 
     public void setCondition(String condition) {
@@ -69,26 +61,14 @@ public class PgRule extends PgStatement implements ISearchPath {
         resetHash();
     }
 
-    public boolean isInstead() {
-        return instead;
-    }
-
     public void setInstead(boolean instead) {
         this.instead = instead;
         resetHash();
     }
 
-    public List<String> getCommands() {
-        return Collections.unmodifiableList(commands);
-    }
-
     public void addCommand(String command) {
         commands.add(command);
         resetHash();
-    }
-
-    public String getEnabledState() {
-        return enabledState;
     }
 
     public void setEnabledState(String enabledState) {
@@ -104,14 +84,14 @@ public class PgRule extends PgStatement implements ISearchPath {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE RULE ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
-        sbSQL.append(" AS\n    ON ").append(getEvent());
-        sbSQL.append(" TO ").append(getParent().getQualifiedName());
-        if (getCondition() != null && !getCondition().isEmpty()){
-            sbSQL.append("\n  WHERE ").append(getCondition());
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
+        sbSQL.append(" AS\n    ON ").append(event);
+        sbSQL.append(" TO ").append(parent.getQualifiedName());
+        if (condition != null && !condition.isEmpty()){
+            sbSQL.append("\n  WHERE ").append(condition);
         }
         sbSQL.append(" DO ");
-        if (isInstead()){
+        if (instead){
             sbSQL.append("INSTEAD ");
         }
         switch (commands.size()) {
@@ -145,8 +125,8 @@ public class PgRule extends PgStatement implements ISearchPath {
         if (!compareUnalterable(newRule)) {
             return ObjectState.RECREATE;
         }
-        String newEnabledState = newRule.getEnabledState();
-        if (!Objects.equals(getEnabledState(), newEnabledState)) {
+        String newEnabledState = newRule.enabledState;
+        if (!Objects.equals(enabledState, newEnabledState)) {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
@@ -160,18 +140,18 @@ public class PgRule extends PgStatement implements ISearchPath {
     private void addAlterTable(String enabledState, PgRule rule, SQLScript script) {
         StringBuilder sql = new StringBuilder();
         sql.append(ALTER_TABLE)
-        .append(getParent().getQualifiedName())
+        .append(parent.getQualifiedName())
         .append(' ')
         .append(enabledState)
         .append(" RULE ")
-        .append(PgDiffUtils.getQuotedName(rule.getName()));
+        .append(PgDiffUtils.getQuotedName(rule.name));
         script.addStatement(sql);
     }
 
     @Override
     protected StringBuilder appendFullName(StringBuilder sb) {
-        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
-        sb.append(getParent().getQualifiedName());
+        sb.append(PgDiffUtils.getQuotedName(name)).append(" ON ");
+        sb.append(parent.getQualifiedName());
         return sb;
     }
 
@@ -182,13 +162,13 @@ public class PgRule extends PgStatement implements ISearchPath {
 
     @Override
     public PgRule shallowCopy() {
-        PgRule ruleDst = new PgRule(getName());
+        PgRule ruleDst = new PgRule(name);
         copyBaseFields(ruleDst);
-        ruleDst.setEvent(getEvent());
-        ruleDst.setCondition(getCondition());
-        ruleDst.setInstead(isInstead());
+        ruleDst.setEvent(event);
+        ruleDst.setCondition(condition);
+        ruleDst.setInstead(instead);
         ruleDst.commands.addAll(commands);
-        ruleDst.setEnabledState(getEnabledState());
+        ruleDst.setEnabledState(enabledState);
         return ruleDst;
     }
 
@@ -200,7 +180,7 @@ public class PgRule extends PgStatement implements ISearchPath {
 
         if (obj instanceof PgRule rule && super.compare(obj)) {
             return compareUnalterable(rule)
-                    && Objects.equals(enabledState, rule.getEnabledState());
+                    && Objects.equals(enabledState, rule.enabledState);
         }
 
         return false;
@@ -208,8 +188,8 @@ public class PgRule extends PgStatement implements ISearchPath {
 
     private boolean compareUnalterable(PgRule rule) {
         return event == rule.event
-                && Objects.equals(condition, rule.getCondition())
-                && instead == rule.isInstead()
+                && Objects.equals(condition, rule.condition)
+                && instead == rule.instead
                 && commands.equals(rule.commands);
     }
 
@@ -224,7 +204,7 @@ public class PgRule extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) this.getParent().getParent();
+        return (AbstractSchema) parent.getParent();
     }
 
     @Override

@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  */
 public abstract class AbstractDatabase extends PgStatement implements IDatabase {
 
-    private PgDiffArguments arguments;
+    protected PgDiffArguments arguments;
 
     private SupportedPgVersion version;
 
@@ -238,8 +238,8 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
             analysisLaunchers.add(l);
         });
 
-        overrides.addAll(lib.getOverrides());
-        lib.getObjReferences().entrySet().forEach(e -> objReferences.putIfAbsent(e.getKey(), e.getValue()));
+        overrides.addAll(lib.overrides);
+        lib.objReferences.entrySet().forEach(e -> objReferences.putIfAbsent(e.getKey(), e.getValue()));
     }
 
     protected void addOverride(PgOverride override) {
@@ -248,14 +248,14 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     protected void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
-        PgStatement parent = st.getParent();
+        PgStatement parent = st.parent;
         String parentName = parent.getName();
         IStatementContainer cont;
 
         if (isFirstLevelType(type)) {
             cont = this;
         } else if (st.isSubElement()) {
-            cont = getSchema(parent.getParent().getName()).getStatementContainer(parentName);
+            cont = getSchema(parent.parent.getName()).getStatementContainer(parentName);
         } else {
             cont = getSchema(parentName);
         }

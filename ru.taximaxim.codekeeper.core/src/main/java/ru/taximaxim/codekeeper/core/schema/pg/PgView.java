@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgView extends AbstractPgView {
+public final class PgView extends AbstractPgView {
 
     private final Map<String, String> defaultValues = new LinkedHashMap<>();
 
@@ -142,7 +142,7 @@ public class PgView extends AbstractPgView {
 
     @Override
     protected AbstractView getViewCopy() {
-        PgView view = new PgView(getName());
+        PgView view = new PgView(name);
         view.defaultValues.putAll(defaultValues);
         return view;
     }

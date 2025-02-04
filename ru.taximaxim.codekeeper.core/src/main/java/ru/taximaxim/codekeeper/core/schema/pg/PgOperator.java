@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -26,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgOperator extends PgStatement implements IOperator, ISearchPath {
+public final class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
     private String procedure;
     private String leftArg;
@@ -153,8 +154,8 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
             return ObjectState.RECREATE;
         }
 
-        String newOperRestr = newOperator.getRestrict();
-        String newOperJoin = newOperator.getJoin();
+        String newOperRestr = newOperator.restrict;
+        String newOperJoin = newOperator.join;
         boolean restrChanged = !Objects.equals(restrict, newOperRestr);
         boolean joinChanged = !Objects.equals(join, newOperJoin);
         if (restrChanged || joinChanged) {
@@ -182,13 +183,13 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
     }
 
     private boolean compareUnalterable(PgOperator oper) {
-        return Objects.equals(procedure, oper.getProcedure())
-                && Objects.equals(leftArg, oper.getLeftArg())
-                && Objects.equals(rightArg, oper.getRightArg())
-                && Objects.equals(commutator, oper.getCommutator())
-                && Objects.equals(negator, oper.getNegator())
-                && isMerges == oper.isMerges()
-                && isHashes == oper.isHashes();
+        return Objects.equals(procedure, oper.procedure)
+                && Objects.equals(leftArg, oper.leftArg)
+                && Objects.equals(rightArg, oper.rightArg)
+                && Objects.equals(commutator, oper.commutator)
+                && Objects.equals(negator, oper.negator)
+                && isMerges == oper.isMerges
+                && isHashes == oper.isHashes;
     }
 
     /**
@@ -203,7 +204,7 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
     @Override
     public String getQualifiedName() {
-        return getParent().getQualifiedName() + '.' + getName();
+        return parent.getQualifiedName() + '.' + getName();
     }
 
     @Override
@@ -214,8 +215,8 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
         if (obj instanceof PgOperator oper && super.compare(obj)) {
             return compareUnalterable(oper)
-                    && Objects.equals(restrict, oper.getRestrict())
-                    && Objects.equals(join, oper.getJoin());
+                    && Objects.equals(restrict, oper.restrict)
+                    && Objects.equals(join, oper.join);
         }
 
         return false;
@@ -223,19 +224,15 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(getProcedure());
-        hasher.put(getLeftArg());
-        hasher.put(getRightArg());
-        hasher.put(getCommutator());
-        hasher.put(getNegator());
-        hasher.put(isMerges());
-        hasher.put(isHashes());
-        hasher.put(getRestrict());
-        hasher.put(getJoin());
-    }
-
-    public String getProcedure() {
-        return procedure;
+        hasher.put(procedure);
+        hasher.put(leftArg);
+        hasher.put(rightArg);
+        hasher.put(commutator);
+        hasher.put(negator);
+        hasher.put(isMerges);
+        hasher.put(isHashes);
+        hasher.put(restrict);
+        hasher.put(join);
     }
 
     public void setProcedure(String procedure) {
@@ -263,17 +260,9 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         resetHash();
     }
 
-    public String getCommutator() {
-        return commutator;
-    }
-
     public void setCommutator(String commutator) {
         this.commutator = commutator;
         resetHash();
-    }
-
-    public String getNegator() {
-        return negator;
     }
 
     public void setNegator(String negator) {
@@ -281,17 +270,9 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         resetHash();
     }
 
-    public boolean isMerges() {
-        return isMerges;
-    }
-
     public void setMerges(boolean isMerges) {
         this.isMerges = isMerges;
         resetHash();
-    }
-
-    public boolean isHashes() {
-        return isHashes;
     }
 
     public void setHashes(boolean isHashes) {
@@ -299,17 +280,9 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
         resetHash();
     }
 
-    public String getRestrict() {
-        return restrict;
-    }
-
     public void setRestrict(String restrict) {
         this.restrict = restrict;
         resetHash();
-    }
-
-    public String getJoin() {
-        return join;
     }
 
     public void setJoin(String join) {
@@ -319,22 +292,22 @@ public class PgOperator extends PgStatement implements IOperator, ISearchPath {
 
     @Override
     public PgOperator shallowCopy() {
-        PgOperator operatorDst = new PgOperator(getBareName());
+        PgOperator operatorDst = new PgOperator(name);
         copyBaseFields(operatorDst);
-        operatorDst.setProcedure(getProcedure());
-        operatorDst.setLeftArg(getLeftArg());
-        operatorDst.setRightArg(getRightArg());
-        operatorDst.setCommutator(getCommutator());
-        operatorDst.setNegator(getNegator());
-        operatorDst.setMerges(isMerges());
-        operatorDst.setHashes(isHashes());
-        operatorDst.setRestrict(getRestrict());
-        operatorDst.setJoin(getJoin());
+        operatorDst.setProcedure(procedure);
+        operatorDst.setLeftArg(leftArg);
+        operatorDst.setRightArg(rightArg);
+        operatorDst.setCommutator(commutator);
+        operatorDst.setNegator(negator);
+        operatorDst.setMerges(isMerges);
+        operatorDst.setHashes(isHashes);
+        operatorDst.setRestrict(restrict);
+        operatorDst.setJoin(join);
         return operatorDst;
     }
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 }

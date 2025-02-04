@@ -16,9 +16,9 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgEventTrigger extends PgStatement {
+public final class PgEventTrigger extends PgStatement {
 
     private String executable;
     private final List<String> tags = new ArrayList<>();
@@ -67,16 +67,16 @@ public class PgEventTrigger extends PgStatement {
     public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgEventTrigger newEventTrigger = (PgEventTrigger) newCondition;
-        if (!Objects.equals(getExecutable(), newEventTrigger.getExecutable())
-                || !Objects.equals(getTags(), newEventTrigger.getTags())
-                || !Objects.equals(getEvent(), newEventTrigger.getEvent())) {
+        if (!Objects.equals(executable, newEventTrigger.executable)
+                || !Objects.equals(tags, newEventTrigger.tags)
+                || !Objects.equals(event, newEventTrigger.event)) {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(getMode(), newEventTrigger.getMode())) {
+        if (!Objects.equals(mode, newEventTrigger.mode)) {
             StringBuilder sql = new StringBuilder();
             sql.append("ALTER EVENT TRIGGER ").append(getQualifiedName())
-            .append(" ").append(newEventTrigger.getMode());
+            .append(" ").append(newEventTrigger.mode);
             script.addStatement(sql);
         }
 
@@ -120,23 +120,19 @@ public class PgEventTrigger extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
     public PgStatement shallowCopy() {
-        PgEventTrigger evt = new PgEventTrigger(getName());
+        PgEventTrigger evt = new PgEventTrigger(name);
         copyBaseFields(evt);
-        evt.setEvent(getEvent());
-        evt.setExecutable(getExecutable());
+        evt.setEvent(event);
+        evt.setExecutable(executable);
         evt.tags.addAll(tags);
-        evt.setMode(getMode());
+        evt.setMode(mode);
 
         return evt;
-    }
-
-    public String getExecutable() {
-        return executable;
     }
 
     public void setExecutable(String executable) {
@@ -144,26 +140,14 @@ public class PgEventTrigger extends PgStatement {
         resetHash();
     }
 
-    public List<String> getTags() {
-        return Collections.unmodifiableList(tags);
-    }
-
     public void addTag(String tag) {
         this.tags.add(tag);
         resetHash();
     }
 
-    public String getEvent() {
-        return event;
-    }
-
     public void setEvent(String event) {
         this.event = event;
         resetHash();
-    }
-
-    public String getMode() {
-        return mode;
     }
 
     public void setMode(String mode) {

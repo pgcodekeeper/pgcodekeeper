@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 
-public class MetaStorage implements Serializable {
+public final class MetaStorage implements Serializable {
 
     private static final long serialVersionUID = 8194906497159326596L;
 

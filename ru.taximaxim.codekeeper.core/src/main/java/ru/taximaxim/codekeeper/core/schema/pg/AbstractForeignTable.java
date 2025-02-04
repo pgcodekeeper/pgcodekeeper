@@ -55,13 +55,13 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     protected boolean isNeedRecreate(AbstractTable newTable) {
         return super.isNeedRecreate(newTable)
                 || !this.getClass().equals(newTable.getClass())
-                || !Objects.equals(serverName, ((AbstractForeignTable) newTable).getServerName());
+                || !Objects.equals(serverName, ((AbstractForeignTable) newTable).serverName);
     }
 
     @Override
     public void appendOptions(StringBuilder sqlOption) {
         sqlOption.append("\nSERVER ").append(PgDiffUtils.getQuotedName(serverName));
-        if (!getOptions().isEmpty()) {
+        if (!options.isEmpty()) {
             sqlOption.append('\n');
         }
         PgForeignOptionContainer.super.appendOptions(sqlOption);
@@ -104,14 +104,10 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
         // untransformable
     }
 
-    public String getServerName() {
-        return serverName;
-    }
-
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof AbstractForeignTable table && super.compare(obj)) {
-            return Objects.equals(serverName, table.getServerName());
+            return Objects.equals(serverName, table.serverName);
         }
 
         return false;

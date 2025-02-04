@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -30,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsView extends AbstractView implements SourceStatement {
+public final class MsView extends AbstractView implements SourceStatement {
 
     private boolean ansiNulls;
     private boolean quotedIdentified;
@@ -59,9 +60,9 @@ public class MsView extends AbstractView implements SourceStatement {
 
     private void addViewFullSQL(SQLScript script, boolean isCreate) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
+        sb.append("SET QUOTED_IDENTIFIER ").append(quotedIdentified ? "ON" : "OFF");
         sb.append(GO).append('\n');
-        sb.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
+        sb.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sb.append(GO).append('\n');
 
         appendSourceStatement(isCreate, sb);
@@ -73,10 +74,10 @@ public class MsView extends AbstractView implements SourceStatement {
         int startSize = script.getSize();
         MsView newView = (MsView) newCondition;
         boolean isNeedDepcies = false;
-        if (isAnsiNulls() != newView.isAnsiNulls()
-                || isQuotedIdentified() != newView.isQuotedIdentified()
-                || !Objects.equals(getFirstPart(), newView.getFirstPart())
-                || !Objects.equals(getSecondPart(), newView.getSecondPart())) {
+        if (ansiNulls != newView.ansiNulls
+                || quotedIdentified != newView.quotedIdentified
+                || !Objects.equals(firstPart, newView.firstPart)
+                || !Objects.equals(secondPart, newView.secondPart)) {
             newView.addViewFullSQL(script, false);
             isNeedDepcies = true;
         }
@@ -95,10 +96,10 @@ public class MsView extends AbstractView implements SourceStatement {
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsView view && super.compare(obj)) {
-            return Objects.equals(getFirstPart(), view.getFirstPart())
-                    && Objects.equals(getSecondPart(), view.getSecondPart())
-                    && isQuotedIdentified() == view.isQuotedIdentified()
-                    && isAnsiNulls() == view.isAnsiNulls();
+            return Objects.equals(firstPart, view.firstPart)
+                    && Objects.equals(secondPart, view.secondPart)
+                    && quotedIdentified == view.quotedIdentified
+                    && ansiNulls == view.ansiNulls;
         }
 
         return false;
@@ -106,20 +107,20 @@ public class MsView extends AbstractView implements SourceStatement {
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(getFirstPart());
-        hasher.put(getSecondPart());
-        hasher.put(isQuotedIdentified());
-        hasher.put(isAnsiNulls());
+        hasher.put(firstPart);
+        hasher.put(secondPart);
+        hasher.put(quotedIdentified);
+        hasher.put(ansiNulls);
     }
 
     @Override
     protected AbstractView getViewCopy() {
-        MsView view = new MsView(getName());
-        view.setFirstPart(getFirstPart());
-        view.setSecondPart(getSecondPart());
-        view.setAnsiNulls(isAnsiNulls());
-        view.setQuotedIdentified(isQuotedIdentified());
-        view.setSchemaBinding(isSchemaBinding());
+        MsView view = new MsView(name);
+        view.setFirstPart(firstPart);
+        view.setSecondPart(secondPart);
+        view.setAnsiNulls(ansiNulls);
+        view.setQuotedIdentified(quotedIdentified);
+        view.setSchemaBinding(schemaBinding);
         return view;
     }
 
@@ -146,7 +147,7 @@ public class MsView extends AbstractView implements SourceStatement {
         l.add(statistics.values());
     }
 
-    public void addStatistics(final MsStatistics stat) {
+    private void addStatistics(final MsStatistics stat) {
         addUnique(statistics, stat);
     }
 
@@ -169,17 +170,9 @@ public class MsView extends AbstractView implements SourceStatement {
         resetHash();
     }
 
-    public boolean isAnsiNulls() {
-        return ansiNulls;
-    }
-
     public void setQuotedIdentified(boolean quotedIdentified) {
         this.quotedIdentified = quotedIdentified;
         resetHash();
-    }
-
-    public boolean isQuotedIdentified() {
-        return quotedIdentified;
     }
 
     @Override

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChTable extends AbstractTable {
+public final class ChTable extends AbstractTable {
 
     private final Map<String, String> projections = new LinkedHashMap<>();
 
@@ -47,17 +47,9 @@ public class ChTable extends AbstractTable {
         resetHash();
     }
 
-    public Map<String, String> getProjections() {
-        return Collections.unmodifiableMap(projections);
-    }
-
     public void setEngine(ChEngine engine) {
         this.engine = engine;
         resetHash();
-    }
-
-    public ChEngine getEngine() {
-        return engine;
     }
 
     public void setPkExpr(String pkExpr) {
@@ -102,8 +94,8 @@ public class ChTable extends AbstractTable {
             return ObjectState.RECREATE;
         }
 
-        compareProjections(newTable.getProjections(), script);
-        engine.appendAlterSQL(newTable.getEngine(), getAlterTable(false), script);
+        compareProjections(newTable.projections, script);
+        engine.appendAlterSQL(newTable.engine, getAlterTable(false), script);
         compareComment(newTable.getComment(), script);
         return getObjectState(script, startSize);
     }
@@ -170,9 +162,9 @@ public class ChTable extends AbstractTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        var newEngine = ((ChTable) newTable).getEngine();
+        var newEngine = ((ChTable) newTable).engine;
         return !engine.compareUnalterable(newEngine)
-                && !engine.isModifybleSampleBy(newEngine.getSampleBy());
+                && !engine.isModifybleSampleBy(newEngine);
     }
 
     @Override
@@ -194,14 +186,14 @@ public class ChTable extends AbstractTable {
         }
         return obj instanceof ChTable table && super.compare(table)
                 && Objects.equals(projections, table.projections)
-                && Objects.equals(engine, table.getEngine());
+                && Objects.equals(engine, table.engine);
     }
 
     @Override
     protected AbstractTable getTableCopy() {
         var table = new ChTable(name);
         table.projections.putAll(projections);
-        table.setEngine(getEngine());
+        table.setEngine(engine);
         return table;
     }
 

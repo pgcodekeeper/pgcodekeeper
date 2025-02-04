@@ -21,6 +21,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Locale;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
@@ -32,7 +33,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 /**
  * Stores sequence information.
  */
-public class PgSequence extends AbstractSequence {
+public final class PgSequence extends AbstractSequence {
 
     private static final String ALTER_SEQUENCE = "ALTER SEQUENCE ";
     private GenericColumn ownedBy;
@@ -54,8 +55,8 @@ public class PgSequence extends AbstractSequence {
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
 
-        if (!BIGINT.equals(getDataType())) {
-            sbSQL.append("\n\tAS ").append(getDataType());
+        if (!BIGINT.equals(dataType)) {
+            sbSQL.append("\n\tAS ").append(dataType);
         }
 
         fillSequenceBody(sbSQL);
@@ -69,40 +70,40 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     public void fillSequenceBody(StringBuilder sbSQL) {
-        if (getStartWith() != null) {
+        if (startWith != null) {
             sbSQL.append("\n\tSTART WITH ");
-            sbSQL.append(getStartWith());
+            sbSQL.append(startWith);
         }
 
-        if (getIncrement() != null) {
+        if (increment != null) {
             sbSQL.append("\n\tINCREMENT BY ");
-            sbSQL.append(getIncrement());
+            sbSQL.append(increment);
         }
 
         sbSQL.append("\n\t");
 
-        if (getMaxValue() == null) {
+        if (maxValue == null) {
             sbSQL.append("NO MAXVALUE");
         } else {
             sbSQL.append("MAXVALUE ");
-            sbSQL.append(getMaxValue());
+            sbSQL.append(maxValue);
         }
 
         sbSQL.append("\n\t");
 
-        if (getMinValue() == null) {
+        if (minValue == null) {
             sbSQL.append("NO MINVALUE");
         } else {
             sbSQL.append("MINVALUE ");
-            sbSQL.append(getMinValue());
+            sbSQL.append(minValue);
         }
 
-        if (getCache() != null) {
+        if (cache != null) {
             sbSQL.append("\n\tCACHE ");
-            sbSQL.append(getCache());
+            sbSQL.append(cache);
         }
 
-        if (isCycle()) {
+        if (cycle) {
             sbSQL.append("\n\tCYCLE");
         }
     }
@@ -110,14 +111,14 @@ public class PgSequence extends AbstractSequence {
     /**
      * Creates SQL statement for modification "OWNED BY" parameter.
      */
-    public void getOwnedBySQL(SQLScript script) {
-        if (getOwnedBy() == null) {
+    private void getOwnedBySQL(SQLScript script) {
+        if (ownedBy == null) {
             return;
         }
         final StringBuilder sbSQL = new StringBuilder();
 
         sbSQL.append(ALTER_SEQUENCE).append(getQualifiedName());
-        sbSQL.append("\n\tOWNED BY ").append(getOwnedBy().getQualifiedName());
+        sbSQL.append("\n\tOWNED BY ").append(ownedBy.getQualifiedName());
         script.addStatement(sbSQL.toString(), SQLActionType.END);
     }
 
@@ -144,7 +145,7 @@ public class PgSequence extends AbstractSequence {
         alterPrivileges(newSequence, script);
         appendAlterComments(newSequence, script);
 
-        if (!Objects.equals(getOwnedBy(), newSequence.getOwnedBy())) {
+        if (!Objects.equals(ownedBy, newSequence.ownedBy)) {
             newSequence.getOwnedBySQL(script);
         }
 
@@ -152,57 +153,57 @@ public class PgSequence extends AbstractSequence {
     }
 
     private boolean compareSequenceBody(PgSequence newSequence, StringBuilder sbSQL) {
-        final String oldType = getDataType();
-        final String newType = newSequence.getDataType();
+        final String oldType = dataType;
+        final String newType = newSequence.dataType;
 
         if (!oldType.equals(newType)) {
             sbSQL.append("\n\tAS ");
             sbSQL.append(newType);
         }
 
-        final String newIncrement = newSequence.getIncrement();
-        if (newIncrement != null && !newIncrement.equals(getIncrement())) {
+        final String newIncrement = newSequence.increment;
+        if (newIncrement != null && !newIncrement.equals(increment)) {
             sbSQL.append("\n\tINCREMENT BY ");
             sbSQL.append(newIncrement);
         }
 
-        final String newMinValue = newSequence.getMinValue();
-        if (newMinValue == null && getMinValue() != null) {
+        final String newMinValue = newSequence.minValue;
+        if (newMinValue == null && minValue != null) {
             sbSQL.append("\n\tNO MINVALUE");
-        } else if (newMinValue != null && !newMinValue.equals(getMinValue())) {
+        } else if (newMinValue != null && !newMinValue.equals(minValue)) {
             sbSQL.append("\n\tMINVALUE ");
             sbSQL.append(newMinValue);
         }
 
-        final String newMaxValue = newSequence.getMaxValue();
-        if (newMaxValue == null && getMaxValue() != null) {
+        final String newMaxValue = newSequence.maxValue;
+        if (newMaxValue == null && maxValue != null) {
             sbSQL.append("\n\tNO MAXVALUE");
-        } else if (newMaxValue != null && !newMaxValue.equals(getMaxValue())) {
+        } else if (newMaxValue != null && !newMaxValue.equals(maxValue)) {
             sbSQL.append("\n\tMAXVALUE ");
             sbSQL.append(newMaxValue);
         }
 
-        final String newStart = newSequence.getStartWith();
-        if (newStart != null && !newStart.equals(getStartWith())) {
+        final String newStart = newSequence.startWith;
+        if (newStart != null && !newStart.equals(startWith)) {
             sbSQL.append("\n\tSTART WITH ");
             sbSQL.append(newStart);
         }
 
-        final String newCache = newSequence.getCache();
-        if (newCache != null && !newCache.equals(getCache())) {
+        final String newCache = newSequence.cache;
+        if (newCache != null && !newCache.equals(cache)) {
             sbSQL.append("\n\tCACHE ");
             sbSQL.append(newCache);
         }
 
-        final boolean newCycle = newSequence.isCycle();
-        if (isCycle() && !newCycle) {
+        final boolean newCycle = newSequence.cycle;
+        if (cycle && !newCycle) {
             sbSQL.append("\n\tNO CYCLE");
-        } else if (!isCycle() && newCycle) {
+        } else if (!cycle && newCycle) {
             sbSQL.append("\n\tCYCLE");
         }
 
-        final GenericColumn newOwnedBy = newSequence.getOwnedBy();
-        if (newOwnedBy == null && getOwnedBy() != null) {
+        final GenericColumn newOwnedBy = newSequence.ownedBy;
+        if (newOwnedBy == null && ownedBy != null) {
             sbSQL.append("\n\tOWNED BY NONE");
         }
 
@@ -226,7 +227,7 @@ public class PgSequence extends AbstractSequence {
             this.minValue = "" + min;
         }
 
-        if (getStartWith() == null) {
+        if (startWith == null) {
             if (this.minValue != null) {
                 setStartWith(this.minValue);
             } else {
@@ -239,8 +240,8 @@ public class PgSequence extends AbstractSequence {
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PgSequence seq && super.compare(obj)) {
-            return Objects.equals(ownedBy, seq.getOwnedBy())
-                    && isLogged == seq.isLogged();
+            return Objects.equals(ownedBy, seq.ownedBy)
+                    && isLogged == seq.isLogged;
         }
 
         return false;
@@ -278,8 +279,8 @@ public class PgSequence extends AbstractSequence {
 
     @Override
     protected AbstractSequence getSequenceCopy() {
-        PgSequence sequence = new PgSequence(getName());
-        sequence.setOwnedBy(getOwnedBy());
+        PgSequence sequence = new PgSequence(name);
+        sequence.setOwnedBy(ownedBy);
         return sequence;
     }
 

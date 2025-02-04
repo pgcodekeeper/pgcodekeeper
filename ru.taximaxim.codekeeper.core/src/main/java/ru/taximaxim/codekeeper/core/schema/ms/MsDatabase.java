@@ -32,11 +32,9 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
 /**
- * Stores database information.
- *
- * @author fordfrog
+ * Stores MS SQL database information.
  */
-public class MsDatabase extends AbstractDatabase {
+public final class MsDatabase extends AbstractDatabase {
 
     private final Map<String, MsAssembly> assemblies = new LinkedHashMap<>();
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
@@ -55,18 +53,13 @@ public class MsDatabase extends AbstractDatabase {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case SCHEMA:
-            return getSchema(name);
-        case ASSEMBLY:
-            return getAssembly(name);
-        case ROLE:
-            return getRole(name);
-        case USER:
-            return getUser(name);
-        default:
-            return null;
-        }
+        return switch (type) {
+            case SCHEMA -> getSchema(name);
+            case ASSEMBLY -> assemblies.get(name);
+            case ROLE -> roles.get(name);
+            case USER -> users.get(name);
+            default -> null;
+        };
     }
 
     @Override
@@ -190,7 +183,7 @@ public class MsDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        return new MsDatabase(getArguments());
+        return new MsDatabase(arguments);
     }
 
     @Override

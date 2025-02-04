@@ -47,7 +47,6 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
@@ -232,7 +231,7 @@ class PgAntlrLoaderTest {
 
         PgExtension ext = new PgExtension("postgis");
         ext.setSchema("postgis");
-        ((PgDatabase) d).addExtension(ext);
+        d.addChild(ext);
         ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
 
         schema = d.getSchema(Consts.PUBLIC);

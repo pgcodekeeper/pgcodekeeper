@@ -89,7 +89,7 @@ implements IRelation, IStatementContainer, ISearchPath {
 
     public final boolean isClustered() {
         for (AbstractIndex ind : getIndexes()) {
-            if (ind.isClustered()) {
+            if (ind.isClustered) {
                 return true;
             }
         }

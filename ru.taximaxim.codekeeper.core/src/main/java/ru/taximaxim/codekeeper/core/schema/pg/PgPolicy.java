@@ -34,10 +34,6 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         super(name);
     }
 
-    public String getCheck() {
-        return check;
-    }
-
     public void setCheck(String check) {
         this.check = check;
         resetHash();
@@ -49,7 +45,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         sbSQL.append("CREATE POLICY ");
         appendFullName(sbSQL);
 
-        if (!isPermissive()) {
+        if (!isPermissive) {
             sbSQL.append("\n  AS RESTRICTIVE");
         }
 
@@ -82,8 +78,8 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         }
 
         Set<String> newRoles = newPolice.roles;
-        String newUsing = newPolice.getUsing();
-        String newCheck = newPolice.getCheck();
+        String newUsing = newPolice.using;
+        String newCheck = newPolice.check;
 
         if (!Objects.equals(roles, newRoles) || !Objects.equals(using, newUsing)
                 || !Objects.equals(check, newCheck)) {
@@ -116,15 +112,15 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
     @Override
     protected StringBuilder appendFullName(StringBuilder sb) {
-        sb.append(PgDiffUtils.getQuotedName(getName()));
-        sb.append(" ON ").append(getParent().getQualifiedName());
+        sb.append(PgDiffUtils.getQuotedName(name));
+        sb.append(" ON ").append(parent.getQualifiedName());
         return sb;
     }
 
     @Override
     protected AbstractPolicy getPolicyCopy() {
-        PgPolicy copy = new PgPolicy(getName());
-        copy.setCheck(getCheck());
+        PgPolicy copy = new PgPolicy(name);
+        copy.setCheck(check);
         return copy;
     }
 
@@ -135,7 +131,7 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
         }
 
         if (obj instanceof PgPolicy police && super.compare(obj)) {
-            return Objects.equals(getCheck(), police.getCheck());
+            return Objects.equals(check, police.check);
         }
 
         return false;
@@ -143,15 +139,15 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
     private boolean compareUnalterable(PgPolicy police) {
         // we can alter but cannot remove
-        if (using != null && police.getUsing() == null) {
+        if (using != null && police.using == null) {
             return false;
         }
 
-        if (check != null && police.getCheck() == null) {
+        if (check != null && police.check == null) {
             return false;
         }
 
-        return event == police.event && isPermissive == police.isPermissive();
+        return event == police.event && isPermissive == police.isPermissive;
     }
 
     @Override
@@ -167,6 +163,6 @@ public final class PgPolicy extends AbstractPolicy implements ISearchPath {
 
     @Override
     public final AbstractSchema getContainingSchema() {
-        return (AbstractSchema) this.getParent().getParent();
+        return (AbstractSchema) parent.getParent();
     }
 }

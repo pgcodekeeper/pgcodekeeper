@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @author galiev_mr
  *
  */
-public class SimpleForeignPgTable extends AbstractForeignTable {
+public final class SimpleForeignPgTable extends AbstractForeignTable {
 
     public SimpleForeignPgTable(String name, String serverName) {
         super(name, serverName);

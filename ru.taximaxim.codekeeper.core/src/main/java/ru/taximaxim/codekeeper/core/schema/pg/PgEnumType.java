@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -48,8 +47,8 @@ public final class PgEnumType extends AbstractType{
 
     @Override
     protected boolean compareUnalterable(AbstractType newType) {
-        Iterator<String> ni = ((PgEnumType) newType).getEnums().iterator();
-        for (String oldEnum : getEnums()) {
+        Iterator<String> ni = ((PgEnumType) newType).enums.iterator();
+        for (String oldEnum : enums) {
             if (!ni.hasNext()) {
                 // some old members were removed in new, can't alter
                 return false;
@@ -77,25 +76,21 @@ public final class PgEnumType extends AbstractType{
 
     @Override
     protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
-        List<String> newEnums = ((PgEnumType) newType).getEnums();
+        List<String> newEnums = ((PgEnumType) newType).enums;
         for (int i = 0; i < newEnums.size(); ++i) {
             String value = newEnums.get(i);
-            if (!getEnums().contains(value)) {
+            if (!enums.contains(value)) {
                 StringBuilder sql = new StringBuilder();
                 sql.append("ALTER TYPE ").append(getQualifiedName())
                 .append("\n\tADD VALUE ").append(value);
                 if (i == 0) {
-                    sql.append(" BEFORE ").append(getEnums().get(0));
+                    sql.append(" BEFORE ").append(enums.get(0));
                 } else {
                     sql.append(" AFTER ").append(newEnums.get(i - 1));
                 }
                 script.addStatement(sql);
             }
         }
-    }
-
-    public List<String> getEnums() {
-        return Collections.unmodifiableList(enums);
     }
 
     public void addEnum(String value) {
@@ -105,7 +100,7 @@ public final class PgEnumType extends AbstractType{
 
     @Override
     protected AbstractType getTypeCopy() {
-        PgEnumType copy = new PgEnumType(getName());
+        PgEnumType copy = new PgEnumType(name);
         copy.enums.addAll(enums);
         return copy;
     }

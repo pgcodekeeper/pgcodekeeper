@@ -101,6 +101,6 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) this.getParent();
+        return (AbstractSchema) parent;
     }
 }

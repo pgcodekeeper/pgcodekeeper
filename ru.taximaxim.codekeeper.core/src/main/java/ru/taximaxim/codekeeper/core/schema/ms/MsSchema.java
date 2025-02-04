@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 /**
  * MS SQL schema code generation.
  */
-public class MsSchema extends AbstractSchema {
+public final class MsSchema extends AbstractSchema {
 
     public MsSchema(String name) {
         super(name);
@@ -35,7 +35,7 @@ public class MsSchema extends AbstractSchema {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(name));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
@@ -53,7 +53,7 @@ public class MsSchema extends AbstractSchema {
 
     @Override
     protected AbstractSchema getSchemaCopy() {
-        return new MsSchema(getName());
+        return new MsSchema(name);
     }
 
     @Override

@@ -19,18 +19,17 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractTrigger;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-
-public class PgTrigger extends AbstractTrigger {
+public final class PgTrigger extends AbstractTrigger {
 
     public enum TgTypes {
         BEFORE, AFTER, INSTEAD_OF
@@ -48,12 +47,12 @@ public class PgTrigger extends AbstractTrigger {
      * Whether the trigger should be fired FOR EACH ROW or FOR EACH STATEMENT.
      * Default is FOR EACH STATEMENT.
      */
-    private boolean forEachRow;
-    private boolean onDelete;
-    private boolean onInsert;
-    private boolean onUpdate;
-    private boolean onTruncate;
-    private boolean constraint;
+    private boolean isForEachRow;
+    private boolean isOnDelete;
+    private boolean isOnInsert;
+    private boolean isOnUpdate;
+    private boolean isOnTruncate;
+    private boolean isConstraint;
     private Boolean isImmediate;
     /**
      * Optional list of columns for UPDATE event.
@@ -79,22 +78,22 @@ public class PgTrigger extends AbstractTrigger {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE");
-        if (isConstraint()) {
+        if (isConstraint) {
             sbSQL.append(" CONSTRAINT");
         }
         sbSQL.append(" TRIGGER ");
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
         sbSQL.append("\n\t");
-        sbSQL.append(getType() == TgTypes.INSTEAD_OF ? "INSTEAD OF" : getType());
+        sbSQL.append(tgType == TgTypes.INSTEAD_OF ? "INSTEAD OF" : tgType);
 
         boolean firstEvent = true;
 
-        if (isOnInsert()) {
+        if (isOnInsert) {
             sbSQL.append(" INSERT");
             firstEvent = false;
         }
 
-        if (isOnUpdate()) {
+        if (isOnUpdate) {
             if (firstEvent) {
                 firstEvent = false;
             } else {
@@ -113,7 +112,7 @@ public class PgTrigger extends AbstractTrigger {
             }
         }
 
-        if (isOnDelete()) {
+        if (isOnDelete) {
             if (!firstEvent) {
                 sbSQL.append(" OR");
             }
@@ -121,7 +120,7 @@ public class PgTrigger extends AbstractTrigger {
             sbSQL.append(" DELETE");
         }
 
-        if (isOnTruncate()) {
+        if (isOnTruncate) {
             if (!firstEvent) {
                 sbSQL.append(" OR");
             }
@@ -130,45 +129,45 @@ public class PgTrigger extends AbstractTrigger {
         }
 
         sbSQL.append(" ON ");
-        sbSQL.append(getParent().getQualifiedName());
+        sbSQL.append(parent.getQualifiedName());
 
-        if (isConstraint()) {
-            if (getRefTableName() != null){
-                sbSQL.append("\n\tFROM ").append(getRefTableName());
+        if (isConstraint) {
+            if (refTableName != null){
+                sbSQL.append("\n\tFROM ").append(refTableName);
             }
-            if (isImmediate() != null){
+            if (isImmediate != null) {
                 sbSQL.append("\n\tDEFERRABLE INITIALLY ")
-                .append(isImmediate() ? "IMMEDIATE" : "DEFERRED");
+                    .append(isImmediate.booleanValue() ? "IMMEDIATE" : "DEFERRED");
             } else {
                 sbSQL.append("\n\tNOT DEFERRABLE INITIALLY IMMEDIATE");
             }
         }
 
-        if (getOldTable() != null || getNewTable() != null) {
+        if (oldTable != null || newTable != null) {
             sbSQL.append("\n\tREFERENCING ");
-            if (getNewTable() != null) {
+            if (newTable != null) {
                 sbSQL.append("NEW TABLE AS ");
-                sbSQL.append(getNewTable());
+                sbSQL.append(newTable);
                 sbSQL.append(' ');
             }
-            if (getOldTable() != null) {
+            if (oldTable != null) {
                 sbSQL.append("OLD TABLE AS ");
-                sbSQL.append(getOldTable());
+                sbSQL.append(oldTable);
                 sbSQL.append(' ');
             }
         }
 
         sbSQL.append("\n\tFOR EACH ");
-        sbSQL.append(isForEachRow() ? "ROW" : "STATEMENT");
+        sbSQL.append(isForEachRow ? "ROW" : "STATEMENT");
 
-        if (getWhen() != null) {
+        if (when != null) {
             sbSQL.append("\n\tWHEN (");
-            sbSQL.append(getWhen());
+            sbSQL.append(when);
             sbSQL.append(')');
         }
 
         sbSQL.append("\n\tEXECUTE PROCEDURE ");
-        sbSQL.append(getFunction());
+        sbSQL.append(function);
         script.addStatement(sbSQL);
 
         if (enabledState != null) {
@@ -184,8 +183,8 @@ public class PgTrigger extends AbstractTrigger {
         if (!compareUnalterable(newTrg)) {
             return ObjectState.RECREATE;
         }
-        String newEnabledState = newTrg.getEnabledState();
-        if (!Objects.equals(getEnabledState(), newEnabledState)) {
+        String newEnabledState = newTrg.enabledState;
+        if (!Objects.equals(enabledState, newEnabledState)) {
             if (newEnabledState == null) {
                 newEnabledState = "ENABLE";
             }
@@ -199,11 +198,11 @@ public class PgTrigger extends AbstractTrigger {
     private void addAlterTable(String enabledState, PgTrigger trigger, SQLScript script) {
         StringBuilder sql = new StringBuilder();
         sql.append(ALTER_TABLE)
-        .append(getParent().getQualifiedName())
+        .append(parent.getQualifiedName())
         .append(' ')
         .append(enabledState)
         .append(" TRIGGER ")
-        .append(PgDiffUtils.getQuotedName(trigger.getName()));
+        .append(PgDiffUtils.getQuotedName(trigger.name));
         script.addStatement(sql);
     }
 
@@ -214,8 +213,8 @@ public class PgTrigger extends AbstractTrigger {
 
     @Override
     protected StringBuilder appendFullName(StringBuilder sb) {
-        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
-        sb.append(getParent().getQualifiedName());
+        sb.append(PgDiffUtils.getQuotedName(name)).append(" ON ");
+        sb.append(parent.getQualifiedName());
         return sb;
     }
 
@@ -224,17 +223,9 @@ public class PgTrigger extends AbstractTrigger {
         resetHash();
     }
 
-    public TgTypes getType() {
-        return tgType;
-    }
-
-    public void setForEachRow(final boolean forEachRow) {
-        this.forEachRow = forEachRow;
+    public void setForEachRow(final boolean isForEachRow) {
+        this.isForEachRow = isForEachRow;
         resetHash();
-    }
-
-    public boolean isForEachRow() {
-        return forEachRow;
     }
 
     public void setFunction(final String function) {
@@ -242,48 +233,29 @@ public class PgTrigger extends AbstractTrigger {
         resetHash();
     }
 
-    protected String getFunction() {
-        return function;
-    }
-
-    public void setOnDelete(final boolean onDelete) {
-        this.onDelete = onDelete;
+    public void setOnDelete(final boolean isOnDelete) {
+        this.isOnDelete = isOnDelete;
         resetHash();
     }
 
-    public boolean isOnDelete() {
-        return onDelete;
-    }
-
-    public void setOnInsert(final boolean onInsert) {
-        this.onInsert = onInsert;
+    public void setOnInsert(final boolean isOnInsert) {
+        this.isOnInsert = isOnInsert;
         resetHash();
     }
 
-    public boolean isOnInsert() {
-        return onInsert;
-    }
-
-    public void setOnUpdate(final boolean onUpdate) {
-        this.onUpdate = onUpdate;
+    public void setOnUpdate(final boolean isOnUpdate) {
+        this.isOnUpdate = isOnUpdate;
         resetHash();
     }
 
-    public boolean isOnUpdate() {
-        return onUpdate;
-    }
-
-    public boolean isOnTruncate() {
-        return onTruncate;
-    }
-
-    public void setOnTruncate(final boolean onTruncate) {
-        this.onTruncate = onTruncate;
+    public void setOnTruncate(final boolean isOnTruncate) {
+        this.isOnTruncate = isOnTruncate;
         resetHash();
     }
 
-    public Set<String> getUpdateColumns() {
-        return Collections.unmodifiableSet(updateColumns);
+    public void setConstraint(final boolean isConstraint) {
+        this.isConstraint = isConstraint;
+        resetHash();
     }
 
     public void addUpdateColumn(final String columnName) {
@@ -291,35 +263,14 @@ public class PgTrigger extends AbstractTrigger {
         resetHash();
     }
 
-    public String getWhen() {
-        return when;
-    }
-
     public void setWhen(final String when) {
         this.when = when;
         resetHash();
     }
 
-    public Boolean isImmediate() {
-        return isImmediate;
-    }
-
     public void setImmediate(final Boolean isImmediate) {
         this.isImmediate = isImmediate;
         resetHash();
-    }
-
-    public boolean isConstraint() {
-        return constraint;
-    }
-
-    public void setConstraint(final boolean constraint) {
-        this.constraint = constraint;
-        resetHash();
-    }
-
-    public String getRefTableName() {
-        return refTableName;
     }
 
     public void setRefTableName(final String refTableName) {
@@ -332,21 +283,9 @@ public class PgTrigger extends AbstractTrigger {
         resetHash();
     }
 
-    public String getOldTable() {
-        return oldTable;
-    }
-
     public void setNewTable(String newTable) {
         this.newTable = newTable;
         resetHash();
-    }
-
-    public String getNewTable() {
-        return newTable;
-    }
-
-    public String getEnabledState() {
-        return enabledState;
     }
 
     public void setEnabledState(String enabledState) {
@@ -361,25 +300,25 @@ public class PgTrigger extends AbstractTrigger {
         }
         if (obj instanceof PgTrigger trigger && super.compare(obj)) {
             return compareUnalterable(trigger)
-                    && Objects.equals(enabledState, trigger.getEnabledState());
+                    && Objects.equals(enabledState, trigger.enabledState);
         }
         return false;
     }
 
     private boolean compareUnalterable(PgTrigger trigger) {
-        return tgType == trigger.getType()
-                && (forEachRow == trigger.isForEachRow())
-                && Objects.equals(function, trigger.getFunction())
-                && (onDelete == trigger.isOnDelete())
-                && (onInsert == trigger.isOnInsert())
-                && (onUpdate == trigger.isOnUpdate())
-                && (onTruncate == trigger.isOnTruncate())
-                && Objects.equals(isImmediate, trigger.isImmediate())
-                && Objects.equals(refTableName, trigger.getRefTableName())
-                && (constraint == trigger.isConstraint())
-                && Objects.equals(when, trigger.getWhen())
-                && Objects.equals(newTable, trigger.getNewTable())
-                && Objects.equals(oldTable, trigger.getOldTable())
+        return tgType == trigger.tgType
+                && (isForEachRow == trigger.isForEachRow)
+                && Objects.equals(function, trigger.function)
+                && (isOnDelete == trigger.isOnDelete)
+                && (isOnInsert == trigger.isOnInsert)
+                && (isOnUpdate == trigger.isOnUpdate)
+                && (isOnTruncate == trigger.isOnTruncate)
+                && Objects.equals(isImmediate, trigger.isImmediate)
+                && Objects.equals(refTableName, trigger.refTableName)
+                && (isConstraint == trigger.isConstraint)
+                && Objects.equals(when, trigger.when)
+                && Objects.equals(newTable, trigger.newTable)
+                && Objects.equals(oldTable, trigger.oldTable)
                 && Objects.equals(updateColumns, trigger.updateColumns);
 
     }
@@ -387,15 +326,15 @@ public class PgTrigger extends AbstractTrigger {
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(tgType);
-        hasher.put(forEachRow);
+        hasher.put(isForEachRow);
         hasher.put(function);
-        hasher.put(onDelete);
-        hasher.put(onInsert);
-        hasher.put(onTruncate);
-        hasher.put(onUpdate);
+        hasher.put(isOnDelete);
+        hasher.put(isOnInsert);
+        hasher.put(isOnTruncate);
+        hasher.put(isOnUpdate);
         hasher.put(when);
         hasher.put(updateColumns);
-        hasher.put(constraint);
+        hasher.put(isConstraint);
         hasher.put(isImmediate);
         hasher.put(refTableName);
         hasher.put(newTable);
@@ -405,22 +344,22 @@ public class PgTrigger extends AbstractTrigger {
 
     @Override
     protected AbstractTrigger getTriggerCopy() {
-        PgTrigger trigger = new PgTrigger(getName());
-        trigger.setType(getType());
-        trigger.setForEachRow(isForEachRow());
-        trigger.setFunction(getFunction());
-        trigger.setOnDelete(isOnDelete());
-        trigger.setOnInsert(isOnInsert());
-        trigger.setOnTruncate(isOnTruncate());
-        trigger.setOnUpdate(isOnUpdate());
-        trigger.setConstraint(isConstraint());
-        trigger.setWhen(getWhen());
-        trigger.setImmediate(isImmediate());
-        trigger.setRefTableName(getRefTableName());
-        trigger.setNewTable(getNewTable());
-        trigger.setOldTable(getOldTable());
+        PgTrigger trigger = new PgTrigger(name);
+        trigger.setType(tgType);
+        trigger.setForEachRow(isForEachRow);
+        trigger.setFunction(function);
+        trigger.setOnDelete(isOnDelete);
+        trigger.setOnInsert(isOnInsert);
+        trigger.setOnTruncate(isOnTruncate);
+        trigger.setOnUpdate(isOnUpdate);
+        trigger.setConstraint(isConstraint);
+        trigger.setWhen(when);
+        trigger.setImmediate(isImmediate);
+        trigger.setRefTableName(refTableName);
+        trigger.setNewTable(newTable);
+        trigger.setOldTable(oldTable);
         trigger.updateColumns.addAll(updateColumns);
-        trigger.setEnabledState(getEnabledState());
+        trigger.setEnabledState(enabledState);
         return trigger;
     }
 }

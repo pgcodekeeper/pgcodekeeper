@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -27,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgServer extends PgStatement implements PgForeignOptionContainer {
+public final class PgServer extends PgStatement implements PgForeignOptionContainer {
 
     private String type;
     private String version;
@@ -43,17 +44,9 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
         return "ALTER SERVER " + getQualifiedName();
     }
 
-    public String getType() {
-        return type;
-    }
-
     public void setType(String type) {
         this.type = type;
         resetHash();
-    }
-
-    public String getVersion() {
-        return version;
     }
 
     public void setVersion(String version) {
@@ -100,17 +93,17 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
             return true;
         }
         if (obj instanceof PgServer srv && super.compare(obj)) {
-            return Objects.equals(type, srv.getType())
-                    && Objects.equals(version, srv.getVersion())
-                    && Objects.equals(fdw, srv.getFdw())
-                    && Objects.equals(options, srv.getOptions());
+            return Objects.equals(type, srv.type)
+                    && Objects.equals(version, srv.version)
+                    && Objects.equals(fdw, srv.fdw)
+                    && Objects.equals(options, srv.options);
         }
         return false;
     }
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -118,15 +111,15 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE SERVER ");
         appendIfNotExists(sb);
-        sb.append(PgDiffUtils.getQuotedName(getName()));
-        if (getType() != null) {
-            sb.append(" TYPE ").append(getType());
+        sb.append(PgDiffUtils.getQuotedName(name));
+        if (type != null) {
+            sb.append(" TYPE ").append(type);
         }
-        if (getVersion() != null) {
-            sb.append(" VERSION ").append(getVersion());
+        if (version != null) {
+            sb.append(" VERSION ").append(version);
         }
-        sb.append(" FOREIGN DATA WRAPPER ").append(PgDiffUtils.getQuotedName(getFdw()));
-        if (!getOptions().isEmpty()) {
+        sb.append(" FOREIGN DATA WRAPPER ").append(PgDiffUtils.getQuotedName(fdw));
+        if (!options.isEmpty()) {
             sb.append(' ');
         }
         appendOptions(sb);
@@ -140,15 +133,15 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
     public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgServer newServer = (PgServer) newCondition;
-        if (!Objects.equals(newServer.getFdw(), getFdw()) ||
-                !Objects.equals(newServer.getType(), getType())) {
+        if (!Objects.equals(newServer.fdw, fdw) ||
+                !Objects.equals(newServer.type, type)) {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(newServer.getVersion(), getVersion())) {
+        if (!Objects.equals(newServer.version, version)) {
             StringBuilder sql = new StringBuilder();
             sql.append(getAlterHeader());
-            sql.append(" VERSION ").append(newServer.getVersion());
+            sql.append(" VERSION ").append(newServer.version);
             script.addStatement(sql);
         }
 
@@ -162,7 +155,7 @@ public class PgServer extends PgStatement implements PgForeignOptionContainer {
 
     @Override
     public PgStatement shallowCopy() {
-        PgServer copyServer = new PgServer(getName());
+        PgServer copyServer = new PgServer(name);
         copyBaseFields(copyServer);
         copyServer.setType(type);
         copyServer.setVersion(version);

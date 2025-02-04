@@ -52,10 +52,11 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
     protected static final String ALTER_COLUMN = " ALTER COLUMN ";
 
     protected String query;
-    protected String normalizedQuery;
-    protected final Map<String, String> columnComments = new LinkedHashMap<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
-    protected final List<String> columnNames = new ArrayList<>();
+
+    private String normalizedQuery;
+    private final Map<String, String> columnComments = new LinkedHashMap<>();
+    private final List<String> columnNames = new ArrayList<>();
 
     protected AbstractPgView(String name) {
         super(name);
@@ -200,8 +201,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
             return true;
         }
 
-        List<String> oldColumnNames = getColumnNames();
-        List<String> newColumnNames = newView.getColumnNames();
+        List<String> oldColumnNames = columnNames;
+        List<String> newColumnNames = newView.columnNames;
 
         if (oldColumnNames.isEmpty() && newColumnNames.isEmpty()) {
             return !normalizedQuery.equals(newView.normalizedQuery);
@@ -213,15 +214,6 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
     public void addColumnName(String colName) {
         columnNames.add(colName);
         resetHash();
-    }
-
-    /**
-     * Getter for {@link #columnNames}. The list cannot be modified.
-     *
-     * @return {@link #columnNames}
-     */
-    public List<String> getColumnNames() {
-        return Collections.unmodifiableList(columnNames);
     }
 
     public void setQuery(final String query, final String normalizedQuery) {

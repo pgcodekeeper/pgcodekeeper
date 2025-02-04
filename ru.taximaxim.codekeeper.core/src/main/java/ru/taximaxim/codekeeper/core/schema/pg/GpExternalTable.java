@@ -54,7 +54,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     @Override
     protected void appendName(StringBuilder sbSQL) {
         sbSQL.append("CREATE ");
-        if (isWritable()) {
+        if (isWritable) {
             sbSQL.append("WRITABLE ");
         }
         sbSQL.append("EXTERNAL ");
@@ -169,17 +169,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         resetHash();
     }
 
-    public boolean isWritable() {
-        return isWritable;
-    }
-
     public void setWeb(boolean isWeb) {
         this.isWeb = isWeb;
         resetHash();
-    }
-
-    public boolean isWeb() {
-        return isWeb;
     }
 
     public void setRejectLimit(int rejectLimit) {
@@ -187,17 +179,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         resetHash();
     }
 
-    public int getRejectLimit() {
-        return rejectLimit;
-    }
-
     public void setDistribution(String distribution) {
         this.distribution = distribution;
         resetHash();
-    }
-
-    public String getDistribution() {
-        return distribution;
     }
 
     public void setUrLocation(List<String> urLocation) {
@@ -210,17 +194,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         resetHash();
     }
 
-    public List<String> getUrLocation() {
-        return urLocation;
-    }
-
     public void setExLocation(String exLocation) {
         this.exLocation = exLocation;
         resetHash();
-    }
-
-    public String getExLocation() {
-        return exLocation;
     }
 
     public void setCommand(String command) {
@@ -228,17 +204,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         resetHash();
     }
 
-    public String getCommand() {
-        return command;
-    }
-
     public void setFormatType(String formatType) {
         this.formatType = formatType;
         resetHash();
-    }
-
-    public String getFormatType() {
-        return formatType;
     }
 
     public void setFormatOptions(String formatOptions) {
@@ -246,17 +214,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         resetHash();
     }
 
-    public String getFormatOptions() {
-        return formateOptions;
-    }
-
     public void setRowReject(boolean isRowReject) {
         this.isRowReject = isRowReject;
         resetHash();
-    }
-
-    public boolean isRowReject() {
-        return isRowReject;
     }
 
     public void setEncoding(String encoding) {
@@ -264,17 +224,9 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
         resetHash();
     }
 
-    public String getEncoding() {
-        return encoding;
-    }
-
     public void setIsLogErrors(boolean isLogErrors) {
         this.isLogErrors = isLogErrors;
         resetHash();
-    }
-
-    public boolean isLogErrors() {
-        return isLogErrors;
     }
 
     @Override
@@ -287,18 +239,18 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     private boolean compareExternalOptions(GpExternalTable table) {
-        return isWritable == table.isWritable()
-                && isWeb == table.isWeb()
-                && rejectLimit == table.getRejectLimit()
-                && Objects.equals(distribution, table.getDistribution())
-                && Objects.equals(urLocation, table.getUrLocation())
-                && Objects.equals(exLocation, table.getExLocation())
-                && Objects.equals(command, table.getCommand())
-                && Objects.equals(formatType, table.getFormatType())
-                && Objects.equals(formateOptions, table.getFormatOptions())
-                && Objects.equals(encoding, table.getEncoding())
-                && isRowReject == table.isRowReject()
-                && isLogErrors == table.isLogErrors();
+        return isWritable == table.isWritable
+                && isWeb == table.isWeb
+                && rejectLimit == table.rejectLimit
+                && Objects.equals(distribution, table.distribution)
+                && Objects.equals(urLocation, table.urLocation)
+                && Objects.equals(exLocation, table.exLocation)
+                && Objects.equals(command, table.command)
+                && Objects.equals(formatType, table.formatType)
+                && Objects.equals(formateOptions, table.formateOptions)
+                && Objects.equals(encoding, table.encoding)
+                && isRowReject == table.isRowReject
+                && isLogErrors == table.isLogErrors;
     }
 
     @Override
@@ -321,18 +273,18 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     @Override
     public AbstractTable shallowCopy() {
         GpExternalTable copy = (GpExternalTable) super.shallowCopy();
-        copy.setWritable(isWritable());
-        copy.setWeb(isWeb());
-        copy.setRejectLimit(getRejectLimit());
-        copy.setDistribution(getDistribution());
-        copy.setUrLocation(getUrLocation());
-        copy.setExLocation(getExLocation());
-        copy.setCommand(getCommand());
-        copy.setFormatType(getFormatType());
-        copy.setFormatOptions(getFormatOptions());
-        copy.setEncoding(getEncoding());
-        copy.setRowReject(isRowReject());
-        copy.setIsLogErrors(isLogErrors());
+        copy.setWritable(isWritable);
+        copy.setWeb(isWeb);
+        copy.setRejectLimit(rejectLimit);
+        copy.setDistribution(distribution);
+        copy.setUrLocation(urLocation);
+        copy.setExLocation(exLocation);
+        copy.setCommand(command);
+        copy.setFormatType(formatType);
+        copy.setFormatOptions(formateOptions);
+        copy.setEncoding(encoding);
+        copy.setRowReject(isRowReject);
+        copy.setIsLogErrors(isLogErrors);
         return copy;
     }
 

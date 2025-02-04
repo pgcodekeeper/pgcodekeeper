@@ -21,6 +21,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.List;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -34,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgIndex extends AbstractIndex {
+public final class PgIndex extends AbstractIndex {
 
     private static final String ALTER_INDEX = "ALTER INDEX ";
     private Inherits inherit;
@@ -52,7 +53,7 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     public void getCreationSQL(SQLScript script) {
-        getCreationSQL(script, getName());
+        getCreationSQL(script, name);
         appendComments(script);
     }
 
@@ -60,7 +61,7 @@ public class PgIndex extends AbstractIndex {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
 
-        if (isUnique()) {
+        if (unique) {
             sbSQL.append("UNIQUE ");
         }
 
@@ -73,20 +74,19 @@ public class PgIndex extends AbstractIndex {
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name))
         .append(" ON ");
-        PgStatement par = getParent();
-        if (par instanceof AbstractRegularTable regTable && regTable.getPartitionBy() != null) {
+        if (parent instanceof AbstractRegularTable regTable && regTable.getPartitionBy() != null) {
             sbSQL.append("ONLY ");
         }
-        sbSQL.append(par.getQualifiedName());
-        if (getMethod() != null) {
-            sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(getMethod()));
+        sbSQL.append(parent.getQualifiedName());
+        if (method != null) {
+            sbSQL.append(" USING ").append(PgDiffUtils.getQuotedName(method));
         }
         appendSimpleColumns(sbSQL, columns);
         appendIndexParam(sbSQL);
         appendWhere(sbSQL);
         script.addStatement(sbSQL);
 
-        if (isClustered()) {
+        if (isClustered) {
             script.addStatement(appendClusterSql());
         }
 
@@ -134,14 +134,14 @@ public class PgIndex extends AbstractIndex {
             sb.append("\nWITH");
             StatementUtils.appendOptionsWithParen(sb, options, DatabaseType.PG);
         }
-        if (getTablespace() != null) {
-            sb.append("\nTABLESPACE ").append(getTablespace());
+        if (tablespace != null) {
+            sb.append("\nTABLESPACE ").append(tablespace);
         }
     }
 
     @Override
     public String getQualifiedName() {
-        return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(getName());
+        return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(name);
     }
 
     @Override
@@ -152,7 +152,7 @@ public class PgIndex extends AbstractIndex {
         if (!compareUnalterable(newIndex)) {
             if (getDatabaseArguments().isConcurrentlyMode()) {
                 // generate optimized command sequence for concurrent index creation
-                String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + getName();
+                String tmpName = "tmp" + PgDiffUtils.RANDOM.nextInt(Integer.MAX_VALUE) + "_" + name;
                 newIndex.getCreationSQL(script, tmpName);
                 script.addStatement("BEGIN TRANSACTION");
                 getDropSQL(script);
@@ -171,21 +171,21 @@ public class PgIndex extends AbstractIndex {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(getTablespace(), newIndex.getTablespace())) {
+        if (!Objects.equals(tablespace, newIndex.tablespace)) {
             StringBuilder sql = new StringBuilder();
             sql.append(ALTER_INDEX).append(newIndex.getQualifiedName())
             .append(" SET TABLESPACE ");
 
-            String newSpace = newIndex.getTablespace();
+            String newSpace = newIndex.tablespace;
             sql.append(newSpace == null ? Consts.PG_DEFAULT : newSpace);
             script.addStatement(sql);
         }
 
-        if (newIndex.isClustered() != isClustered()) {
-            if (newIndex.isClustered()) {
+        if (newIndex.isClustered != isClustered) {
+            if (newIndex.isClustered) {
                 script.addStatement(newIndex.appendClusterSql());
-            } else if (!((PgStatementContainer) newIndex.getParent()).isClustered()) {
-                script.addStatement(ALTER_TABLE + newIndex.getParent().getQualifiedName() + " SET WITHOUT CLUSTER");
+            } else if (!((PgStatementContainer) newIndex.parent).isClustered()) {
+                script.addStatement(ALTER_TABLE + newIndex.parent.getQualifiedName() + " SET WITHOUT CLUSTER");
             }
         }
 
@@ -196,7 +196,7 @@ public class PgIndex extends AbstractIndex {
     }
 
     private String appendClusterSql() {
-        return "ALTER " + getParent().getTypeName() + ' ' + getParent().getQualifiedName() + " CLUSTER ON " + getName();
+        return "ALTER " + parent.getTypeName() + ' ' + parent.getQualifiedName() + " CLUSTER ON " + name;
     }
 
     public String getMethod() {
@@ -206,10 +206,6 @@ public class PgIndex extends AbstractIndex {
     public void setMethod(String method) {
         this.method = method;
         resetHash();
-    }
-
-    public Inherits getInherit() {
-        return inherit;
     }
 
     public void addInherit(final String schemaName, final String indexName) {
@@ -247,10 +243,10 @@ public class PgIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        PgIndex index =  new PgIndex(getName());
+        PgIndex index =  new PgIndex(name);
         index.inherit = inherit;
-        index.setMethod(getMethod());
-        index.setNullsDistinction(isNullsDistinction());
+        index.setMethod(method);
+        index.setNullsDistinction(nullsDistinction);
         return index;
     }
 }

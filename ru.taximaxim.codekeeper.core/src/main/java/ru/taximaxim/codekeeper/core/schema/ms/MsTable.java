@@ -41,11 +41,8 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Base MS SQL table class
- *
- * @since 5.3.1.
- * @author galiev_mr
  */
-public class MsTable extends AbstractTable implements ISimpleOptionContainer {
+public final class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
     private static final String MEMORY_OPTIMIZED = "MEMORY_OPTIMIZED";
 
@@ -109,14 +106,14 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         }
     }
 
-    protected void appendName(StringBuilder sbSQL) {
+    private void appendName(StringBuilder sbSQL) {
         sbSQL.append("SET QUOTED_IDENTIFIER ON").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("CREATE TABLE ").append(getQualifiedName());
     }
 
-    protected void appendColumns(StringBuilder sbSQL) {
+    private void appendColumns(StringBuilder sbSQL) {
         sbSQL.append("(\n");
 
         for (AbstractColumn column : columns) {
@@ -141,7 +138,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         sbSQL.append('\n').append(')');
     }
 
-    protected void appendPeriodSystem(StringBuilder sb) {
+    private void appendPeriodSystem(StringBuilder sb) {
         if (periodStartCol != null && periodEndCol != null) {
             sb.append(",\n\tPERIOD FOR SYSTEM_TIME (");
             sb.append(MsDiffUtils.quoteName(periodStartCol.getName())).append(", ");
@@ -166,19 +163,19 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         }
     }
 
-    protected void appendOptions(StringBuilder sbSQL) {
+    private void appendOptions(StringBuilder sbSQL) {
         int startLength = sbSQL.length();
         if (tablespace != null) {
             // tablespace already quoted
             sbSQL.append(" ON ").append(tablespace).append(' ');
         }
 
-        if (getTextImage() != null) {
-            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(getTextImage())).append(' ');
+        if (textImage != null) {
+            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(textImage)).append(' ');
         }
 
-        if (getFileStream() != null) {
-            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append(' ');
+        if (fileStream != null) {
+            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(fileStream)).append(' ');
         }
 
         if (sbSQL.length() > startLength) {
@@ -206,15 +203,15 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
         if (newTable instanceof MsTable smt) {
-            return !Objects.equals(smt.getTablespace(), getTablespace())
-                    || isAnsiNulls() != smt.isAnsiNulls()
+            return !Objects.equals(smt.tablespace, tablespace)
+                    || ansiNulls != smt.ansiNulls
                     || !PgDiffUtils.setlikeEquals(smt.getPkeys(), getPkeys())
-                    || !Objects.equals(smt.getOptions(), getOptions())
-                    || !Objects.equals(smt.getFileStream(), getFileStream())
-                    || !Objects.equals(smt.getPeriodStartCol(), getPeriodStartCol())
-                    || !Objects.equals(smt.getPeriodEndCol(), getPeriodEndCol())
-                    || (smt.getTextImage() != null && getTextImage() != null
-                            && !Objects.equals(smt.getTextImage(), getTextImage()));
+                    || !Objects.equals(smt.options, options)
+                    || !Objects.equals(smt.fileStream, fileStream)
+                    || !Objects.equals(smt.periodStartCol, periodStartCol)
+                    || !Objects.equals(smt.periodEndCol, periodEndCol)
+                    || (smt.textImage != null && textImage != null
+                            && !Objects.equals(smt.textImage, textImage));
         }
 
         return true;
@@ -302,17 +299,9 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         super.getDropSQL(script, generateExists);
     }
 
-    public String getFileStream() {
-        return fileStream;
-    }
-
     public void setFileStream(String fileStream) {
         this.fileStream = fileStream;
         resetHash();
-    }
-
-    public String getTextImage() {
-        return textImage;
     }
 
     public void setTextImage(String textImage) {
@@ -325,13 +314,10 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         resetHash();
     }
 
-    public boolean isAnsiNulls() {
-        return ansiNulls;
-    }
-
     public boolean isTracked() {
         return isTracked != null && isTracked;
     }
+
 
     public void setTracked(final Boolean isTracked) {
         this.isTracked = isTracked;
@@ -347,17 +333,9 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         resetHash();
     }
 
-    public AbstractColumn getPeriodStartCol() {
-        return periodStartCol;
-    }
-
     public void setPeriodStartCol(AbstractColumn periodStartCol) {
         this.periodStartCol = periodStartCol;
         resetHash();
-    }
-
-    public AbstractColumn getPeriodEndCol() {
-        return periodEndCol;
     }
 
     public void setPeriodEndCol(AbstractColumn periodEndCol) {
@@ -366,11 +344,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     public boolean isMemoryOptimized() {
-        return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
-    }
-
-    public String getSysVersioning() {
-        return sysVersioning;
+        return "ON".equalsIgnoreCase(options.get(MEMORY_OPTIMIZED));
     }
 
     public void setSysVersioning(String sysVersioning) {
@@ -429,13 +403,13 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         }
 
         return obj instanceof MsTable table && super.compare(obj)
-                && ansiNulls == table.isAnsiNulls()
-                && Objects.equals(textImage, table.getTextImage())
-                && Objects.equals(fileStream, table.getFileStream())
+                && ansiNulls == table.ansiNulls
+                && Objects.equals(textImage, table.textImage)
+                && Objects.equals(fileStream, table.fileStream)
                 && Objects.equals(isTracked, table.isTracked)
-                && Objects.equals(tablespace, table.getTablespace())
-                && Objects.equals(periodStartCol, table.getPeriodStartCol())
-                && Objects.equals(periodEndCol, table.getPeriodEndCol())
+                && Objects.equals(tablespace, table.tablespace)
+                && Objects.equals(periodStartCol, table.periodStartCol)
+                && Objects.equals(periodEndCol, table.periodEndCol)
                 && Objects.equals(sysVersioning, table.sysVersioning)
                 && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
     }
@@ -443,13 +417,13 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(getTextImage());
-        hasher.put(getFileStream());
-        hasher.put(isAnsiNulls());
+        hasher.put(textImage);
+        hasher.put(fileStream);
+        hasher.put(ansiNulls);
         hasher.put(isTracked);
-        hasher.put(getTablespace());
-        hasher.put(getPeriodStartCol());
-        hasher.put(getPeriodEndCol());
+        hasher.put(tablespace);
+        hasher.put(periodStartCol);
+        hasher.put(periodEndCol);
         hasher.put(sysVersioning);
         hasher.putUnordered(getPkeys());
     }
@@ -457,13 +431,13 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     @Override
     protected MsTable getTableCopy() {
         MsTable table = new MsTable(name);
-        table.setFileStream(getFileStream());
-        table.setTextImage(getTextImage());
-        table.setAnsiNulls(isAnsiNulls());
+        table.setFileStream(fileStream);
+        table.setTextImage(textImage);
+        table.setAnsiNulls(ansiNulls);
         table.setTracked(isTracked);
-        table.setTablespace(getTablespace());
-        table.setPeriodStartCol(getPeriodStartCol());
-        table.setPeriodEndCol(getPeriodEndCol());
+        table.setTablespace(tablespace);
+        table.setPeriodStartCol(periodStartCol);
+        table.setPeriodEndCol(periodEndCol);
         table.setSysVersioning(sysVersioning);
 
         if (pkeys != null) {
@@ -501,7 +475,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         l.add(statistics.values());
     }
 
-    public void addStatistics(final MsStatistics stat) {
+    private void addStatistics(final MsStatistics stat) {
         addUnique(statistics, stat);
     }
 

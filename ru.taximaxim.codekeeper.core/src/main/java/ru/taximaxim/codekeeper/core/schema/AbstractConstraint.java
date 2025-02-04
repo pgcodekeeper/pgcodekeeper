@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
  */
 public abstract class AbstractConstraint extends PgStatement implements IConstraint, ISearchPath {
 
-    private boolean notValid;
+    protected boolean isNotValid;
 
     protected AbstractConstraint(String name) {
         super(name);
@@ -51,26 +51,26 @@ public abstract class AbstractConstraint extends PgStatement implements IConstra
     }
 
     public boolean isNotValid() {
-        return notValid;
+        return isNotValid;
     }
 
     public void setNotValid(boolean notValid) {
-        this.notValid = notValid;
+        this.isNotValid = notValid;
         resetHash();
     }
 
     @Override
     public PgObjLocation getLocation() {
-        PgObjLocation location = getMeta().getLocation();
+        PgObjLocation location = meta.getLocation();
         if (location == null) {
-            location = getParent().getLocation();
+            location = parent.getLocation();
         }
         return location;
     }
 
     @Override
     public void setLocation(PgObjLocation location) {
-        getMeta().setLocation(location);
+        meta.setLocation(location);
     }
 
     @Override
@@ -80,7 +80,7 @@ public abstract class AbstractConstraint extends PgStatement implements IConstra
         }
 
         if (obj instanceof AbstractConstraint con && super.compare(obj)) {
-            return notValid == con.isNotValid();
+            return isNotValid == con.isNotValid;
         }
 
         return false;
@@ -88,19 +88,19 @@ public abstract class AbstractConstraint extends PgStatement implements IConstra
 
     @Override
     public void computeHash(Hasher hasher) {
-        hasher.put(notValid);
+        hasher.put(isNotValid);
     }
 
     @Override
     public AbstractConstraint shallowCopy() {
         AbstractConstraint constraintDst = getConstraintCopy();
         copyBaseFields(constraintDst);
-        constraintDst.setNotValid(isNotValid());
+        constraintDst.setNotValid(isNotValid);
         return constraintDst;
     }
 
     protected void appendAlterTable(StringBuilder sb) {
-        sb.append("ALTER ").append(getParent().getStatementType().name()).append(' ');
+        sb.append("ALTER ").append(parent.getStatementType().name()).append(' ');
         sb.append(getParent().getQualifiedName());
     }
 
@@ -108,12 +108,12 @@ public abstract class AbstractConstraint extends PgStatement implements IConstra
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent().getParent();
+        return (AbstractSchema) parent.parent;
     }
 
     @Override
     public String getTableName() {
-        return getParent().getName();
+        return parent.name;
     }
 
     @Override

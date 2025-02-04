@@ -36,10 +36,10 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 public abstract class AbstractIndex extends PgStatement
 implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
 
-    private String where;
-    private String tablespace;
-    private boolean unique;
-    private boolean isClustered;
+    protected String where;
+    protected String tablespace;
+    protected boolean unique;
+    protected boolean isClustered;
 
     protected final List<SimpleColumn> columns = new ArrayList<>();
     protected final List<String> includes = new ArrayList<>();
@@ -52,10 +52,6 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
 
     protected AbstractIndex(String name) {
         super(name);
-    }
-
-    public boolean isClustered() {
-        return isClustered;
     }
 
     public void setClustered(boolean isClustered) {
@@ -88,10 +84,6 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
         resetHash();
     }
 
-    public List<String> getIncludes() {
-        return Collections.unmodifiableList(includes);
-    }
-
     public boolean isUnique() {
         return unique;
     }
@@ -99,10 +91,6 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
     public void setUnique(final boolean unique) {
         this.unique = unique;
         resetHash();
-    }
-
-    public String getWhere() {
-        return where;
     }
 
     public void setWhere(final String where) {
@@ -138,8 +126,8 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
 
         if (obj instanceof AbstractIndex index && super.compare(obj)) {
             return compareUnalterable(index)
-                    && isClustered == index.isClustered()
-                    && Objects.equals(tablespace, index.getTablespace())
+                    && isClustered == index.isClustered
+                    && Objects.equals(tablespace, index.tablespace)
                     && Objects.equals(options, index.options);
         }
 
@@ -150,7 +138,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
         return Objects.equals(columns, index.columns)
                 && Objects.equals(where, index.where)
                 && Objects.equals(includes, index.includes)
-                && unique == index.isUnique();
+                && unique == index.unique;
     }
 
     @Override
@@ -168,10 +156,10 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
     public AbstractIndex shallowCopy() {
         AbstractIndex indexDst = getIndexCopy();
         copyBaseFields(indexDst);
-        indexDst.setUnique(isUnique());
-        indexDst.setClustered(isClustered());
-        indexDst.setWhere(getWhere());
-        indexDst.setTablespace(getTablespace());
+        indexDst.setUnique(unique);
+        indexDst.setClustered(isClustered);
+        indexDst.setWhere(where);
+        indexDst.setTablespace(tablespace);
         indexDst.columns.addAll(columns);
         indexDst.options.putAll(options);
         indexDst.includes.addAll(includes);
@@ -180,7 +168,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
 
     protected void appendWhere(StringBuilder sbSQL) {
         if (where != null) {
-            sbSQL.append("\nWHERE ").append(getWhere());
+            sbSQL.append("\nWHERE ").append(where);
         }
     }
 
@@ -188,7 +176,7 @@ implements ISimpleOptionContainer, ISimpleColumnContainer, ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent().getParent();
+        return (AbstractSchema) parent.parent;
     }
 
     @Override

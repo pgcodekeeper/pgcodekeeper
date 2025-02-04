@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 /**
  * Stores Postgres function information.
  */
-public class PgFunction extends AbstractPgFunction {
+public final class PgFunction extends AbstractPgFunction {
 
     private String returns;
 

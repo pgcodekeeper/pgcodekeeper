@@ -42,13 +42,13 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
             new Pair<>("cache_value", BIGINT), new Pair<>("log_cnt", BIGINT),
             new Pair<>("is_cycled", "boolean"), new Pair<>("is_called", "boolean"));
 
-    private String cache;
+    protected String cache;
     protected String increment;
     protected String maxValue;
     protected String minValue;
-    private String startWith;
-    private boolean cycle;
-    private String dataType = BIGINT;
+    protected String startWith;
+    protected boolean cycle;
+    protected String dataType = BIGINT;
 
     @Override
     public DbObjType getStatementType() {
@@ -64,10 +64,6 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
         resetHash();
     }
 
-    public String getCache() {
-        return cache;
-    }
-
     @Override
     public Stream<Pair<String, String>> getRelationColumns() {
         return relationColumns.stream();
@@ -76,10 +72,6 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
     public void setCycle(final boolean cycle) {
         this.cycle = cycle;
         resetHash();
-    }
-
-    public boolean isCycle() {
-        return cycle;
     }
 
     public abstract void setMinMaxInc(long inc, Long max, Long min, String dataType, long presicion);
@@ -102,25 +94,9 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
         };
     }
 
-    public String getIncrement() {
-        return increment;
-    }
-
-    public String getMaxValue() {
-        return maxValue;
-    }
-
-    public String getMinValue() {
-        return minValue;
-    }
-
     public void setStartWith(final String startWith) {
         this.startWith = startWith;
         resetHash();
-    }
-
-    public String getStartWith() {
-        return startWith;
     }
 
     public void setDataType(final String dataType) {
@@ -139,13 +115,13 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
         }
 
         if (obj instanceof AbstractSequence seq && super.compare(obj)) {
-            return cycle == seq.isCycle()
-                    && Objects.equals(increment, seq.getIncrement())
-                    && Objects.equals(minValue, seq.getMinValue())
-                    && Objects.equals(maxValue, seq.getMaxValue())
-                    && Objects.equals(startWith, seq.getStartWith())
-                    && Objects.equals(cache, seq.getCache())
-                    && Objects.equals(dataType, seq.getDataType());
+            return cycle == seq.cycle
+                    && Objects.equals(increment, seq.increment)
+                    && Objects.equals(minValue, seq.minValue)
+                    && Objects.equals(maxValue, seq.maxValue)
+                    && Objects.equals(startWith, seq.startWith)
+                    && Objects.equals(cache, seq.cache)
+                    && Objects.equals(dataType, seq.dataType);
         }
 
         return false;
@@ -166,13 +142,13 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
     public AbstractSequence shallowCopy() {
         AbstractSequence sequenceDst = getSequenceCopy();
         copyBaseFields(sequenceDst);
-        sequenceDst.setCache(getCache());
-        sequenceDst.setCycle(isCycle());
-        sequenceDst.increment = getIncrement();
-        sequenceDst.maxValue = getMaxValue();
-        sequenceDst.minValue = getMinValue();
-        sequenceDst.dataType = getDataType();
-        sequenceDst.setStartWith(getStartWith());
+        sequenceDst.setCache(cache);
+        sequenceDst.setCycle(cycle);
+        sequenceDst.increment = increment;
+        sequenceDst.maxValue = maxValue;
+        sequenceDst.minValue = minValue;
+        sequenceDst.dataType = dataType;
+        sequenceDst.setStartWith(startWith);
         return sequenceDst;
     }
 
@@ -182,6 +158,6 @@ public abstract class AbstractSequence extends PgStatement implements IRelation,
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 }

@@ -33,7 +33,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 
     @Override

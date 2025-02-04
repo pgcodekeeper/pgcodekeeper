@@ -206,7 +206,7 @@ public abstract class AbstractPgTable extends AbstractTable {
 
         // check greenplum options
         for (String gpOption : GP_OPTION_LIST) {
-            if (!Objects.equals(getOption(gpOption), newTable.getOption(gpOption))) {
+            if (!Objects.equals(options.get(gpOption), newTable.getOption(gpOption))) {
                 return true;
             }
         }
@@ -259,18 +259,18 @@ public abstract class AbstractPgTable extends AbstractTable {
      * @param sb - StringBuilder for statements
      */
     protected void compareTableOptions(AbstractPgTable newTable, SQLScript script) {
-        if (hasOids != newTable.getHasOids()) {
+        if (hasOids != newTable.hasOids) {
             StringBuilder sql = new StringBuilder();
             sql.append(getAlterTable(true))
             .append(" SET ")
-            .append(newTable.getHasOids() ? "WITH" : "WITHOUT")
+            .append(newTable.hasOids ? "WITH" : "WITHOUT")
             .append(" OIDS");
             script.addStatement(sql);
         }
     }
 
     protected void compareInherits(AbstractPgTable newTable, SQLScript script) {
-        List<Inherits> newInherits = newTable.getInherits();
+        List<Inherits> newInherits = newTable.inherits;
 
         if (newTable instanceof PartitionPgTable) {
             return;
@@ -301,10 +301,6 @@ public abstract class AbstractPgTable extends AbstractTable {
      */
     public List<Inherits> getInherits() {
         return Collections.unmodifiableList(inherits);
-    }
-
-    public boolean getHasOids() {
-        return hasOids;
     }
 
     public void setHasOids(final boolean hasOids) {
@@ -436,7 +432,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (this == obj) {
             return true;
         } else if (obj instanceof AbstractPgTable table && super.compare(obj)) {
-            return hasOids == table.getHasOids()
+            return hasOids == table.hasOids
                     && inherits.equals(table.inherits);
         }
         return false;
@@ -453,7 +449,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     public AbstractTable shallowCopy() {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
-        copy.setHasOids(getHasOids());
+        copy.setHasOids(hasOids);
         return copy;
     }
 

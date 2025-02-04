@@ -54,10 +54,6 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         resetHash();
     }
 
-    public Set<String> getDelActCols() {
-        return Collections.unmodifiableSet(delActCols);
-    }
-
     public void addDelActCol(String col) {
         delActCols.add(col);
         resetHash();
@@ -98,26 +94,14 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         resetHash();
     }
 
-    public String getMatch() {
-        return match;
-    }
-
     public void setDelAction(String delAction) {
         this.delAction = delAction;
         resetHash();
     }
 
-    public String getDelAction() {
-        return delAction;
-    }
-
     public void setUpdAction(String updAction) {
         this.updAction = updAction;
         resetHash();
-    }
-
-    public String getUpdAction() {
-        return updAction;
     }
 
     @Override
@@ -130,21 +114,21 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         var sbSQL = new StringBuilder();
         sbSQL.append("FOREIGN KEY ");
         StatementUtils.appendCols(sbSQL, columns, getDbType());
-        sbSQL.append(" REFERENCES ").append(PgDiffUtils.getQuotedName(getForeignSchema())).append('.')
-        .append(PgDiffUtils.getQuotedName(getForeignTable()));
+        sbSQL.append(" REFERENCES ").append(PgDiffUtils.getQuotedName(foreignSchema)).append('.')
+        .append(PgDiffUtils.getQuotedName(foreignTable));
         if (!refs.isEmpty()) {
-            StatementUtils.appendCols(sbSQL, getForeignColumns(), getDbType());
+            StatementUtils.appendCols(sbSQL, refs, getDbType());
         }
-        if (getMatch() != null) {
-            sbSQL.append(" MATCH ").append(getMatch());
+        if (match != null) {
+            sbSQL.append(" MATCH ").append(match);
         }
-        if (getUpdAction() != null) {
-            sbSQL.append(" ON UPDATE ").append(getUpdAction());
+        if (updAction != null) {
+            sbSQL.append(" ON UPDATE ").append(updAction);
         }
-        if (getDelAction() != null) {
-            sbSQL.append(" ON DELETE ").append(getDelAction());
+        if (delAction != null) {
+            sbSQL.append(" ON DELETE ").append(delAction);
             if (!delActCols.isEmpty()) {
-                StatementUtils.appendCols(sbSQL, getDelActCols(), getDbType());
+                StatementUtils.appendCols(sbSQL, delActCols, getDbType());
             }
         }
         return sbSQL.toString();
@@ -155,13 +139,13 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
         if (!compareCommonFields(newConstr)) {
             StringBuilder sb = new StringBuilder();
             appendAlterTable(sb);
-            sb.append("\n\tALTER CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
-            if (isDeferrable() != newConstr.isDeferrable() && !newConstr.isDeferrable()) {
+            sb.append("\n\tALTER CONSTRAINT ").append(PgDiffUtils.getQuotedName(name));
+            if (deferrable != newConstr.deferrable && !newConstr.deferrable) {
                 sb.append(" NOT DEFERRABLE");
                 script.addStatement(sb);
                 return;
             }
-            sb.append(" DEFERRABLE INITIALLY ").append(newConstr.isInitially() ? "DEFERRED" : "IMMEDIATE");
+            sb.append(" DEFERRABLE INITIALLY ").append(newConstr.initially ? "DEFERRED" : "IMMEDIATE");
             script.addStatement(sb);
         }
     }
@@ -179,14 +163,14 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     protected boolean compareUnalterable(PgConstraint newConstr) {
         var con = (PgConstraintFk) newConstr;
         return isPrimaryKey() == con.isPrimaryKey()
-                && Objects.equals(getForeignSchema(), con.getForeignSchema())
-                && Objects.equals(getForeignTable(), con.getForeignTable())
+                && Objects.equals(foreignSchema, con.foreignSchema)
+                && Objects.equals(foreignTable, con.foreignTable)
                 && Objects.equals(columns, con.columns)
                 && Objects.equals(delActCols, con.delActCols)
                 && Objects.equals(refs, con.refs)
-                && Objects.equals(getMatch(), con.getMatch())
-                && Objects.equals(getDelAction(), con.getDelAction())
-                && Objects.equals(getUpdAction(), con.getUpdAction());
+                && Objects.equals(match, con.match)
+                && Objects.equals(delAction, con.delAction)
+                && Objects.equals(updAction, con.updAction);
     }
 
     @Override
@@ -205,14 +189,14 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new PgConstraintFk(name);
-        con.setForeignSchema(getForeignSchema());
-        con.setForeignTable(getForeignTable());
+        con.setForeignSchema(foreignSchema);
+        con.setForeignTable(foreignTable);
         con.columns.addAll(columns);
         con.delActCols.addAll(delActCols);
         con.refs.addAll(refs);
-        con.setMatch(getMatch());
-        con.setDelAction(getDelAction());
-        con.setUpdAction(getUpdAction());
+        con.setMatch(match);
+        con.setDelAction(delAction);
+        con.setUpdAction(updAction);
         return con;
     }
 }

@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MaterializedPgView extends AbstractPgView {
+public final class MaterializedPgView extends AbstractPgView {
 
     private String distribution;
     private String method = Consts.HEAP;

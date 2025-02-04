@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -24,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgCast extends PgStatement implements ICast {
+public final class PgCast extends PgStatement implements ICast {
 
     public enum CastMethod {
         FUNCTION, BINARY, INOUT
@@ -59,17 +60,9 @@ public class PgCast extends PgStatement implements ICast {
         resetHash();
     }
 
-    public CastMethod getMethod() {
-        return method;
-    }
-
     public void setMethod(CastMethod method) {
         this.method = method;
         resetHash();
-    }
-
-    public String getFunction() {
-        return function;
     }
 
     public void setFunction(String function) {
@@ -89,7 +82,7 @@ public class PgCast extends PgStatement implements ICast {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -170,11 +163,11 @@ public class PgCast extends PgStatement implements ICast {
 
     @Override
     public PgCast shallowCopy() {
-        PgCast copy = new PgCast(getSource(), getTarget());
+        PgCast copy = new PgCast(source, target);
         copyBaseFields(copy);
-        copy.setContext(getContext());
-        copy.setMethod(getMethod());
-        copy.setFunction(getFunction());
+        copy.setContext(context);
+        copy.setMethod(method);
+        copy.setFunction(function);
         return copy;
     }
 }

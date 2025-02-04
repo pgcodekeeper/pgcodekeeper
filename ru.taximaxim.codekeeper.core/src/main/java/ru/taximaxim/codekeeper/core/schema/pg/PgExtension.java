@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -29,7 +30,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  *
  * @author Alexander Levsha
  */
-public class PgExtension extends PgStatement {
+public final class PgExtension extends PgStatement {
 
     private String schema;
     private boolean relocatable;
@@ -52,17 +53,13 @@ public class PgExtension extends PgStatement {
         resetHash();
     }
 
-    public boolean isRelocatable() {
-        return relocatable;
-    }
-
     public void setRelocatable(boolean relocatable) {
         this.relocatable = relocatable;
     }
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -72,9 +69,9 @@ public class PgExtension extends PgStatement {
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
 
-        if (getSchema() != null && !getSchema().isEmpty()) {
+        if (schema != null && !schema.isEmpty()) {
             sbSQL.append(" SCHEMA ");
-            sbSQL.append(getSchema());
+            sbSQL.append(schema);
         }
 
         script.addStatement(sbSQL);
@@ -86,13 +83,13 @@ public class PgExtension extends PgStatement {
         int startSize = script.getSize();
         PgExtension newExt = (PgExtension) newCondition;
         boolean isNeedDepcies = false;
-        if (!Objects.equals(newExt.getSchema(), getSchema())) {
-            if (!isRelocatable()) {
+        if (!Objects.equals(newExt.schema, getSchema())) {
+            if (!relocatable) {
                 return ObjectState.RECREATE;
             }
             StringBuilder sql = new StringBuilder();
             sql.append("ALTER EXTENSION ")
-            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(PgDiffUtils.getQuotedName(name))
             .append(" SET SCHEMA ")
             .append(newExt.getSchema());
             script.addStatement(sql);
@@ -111,7 +108,7 @@ public class PgExtension extends PgStatement {
         }
 
         if (obj instanceof PgExtension ext && super.compare(obj)) {
-            return Objects.equals(schema, ext.getSchema());
+            return Objects.equals(schema, ext.schema);
         }
 
         return false;
@@ -124,9 +121,9 @@ public class PgExtension extends PgStatement {
 
     @Override
     public PgExtension shallowCopy() {
-        PgExtension extDst = new PgExtension(getName());
+        PgExtension extDst = new PgExtension(name);
         copyBaseFields(extDst);
-        extDst.setSchema(getSchema());
+        extDst.setSchema(schema);
         return extDst;
     }
 }

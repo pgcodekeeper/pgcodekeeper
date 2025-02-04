@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 
-public class PgAggregate extends AbstractPgFunction {
+public final class PgAggregate extends AbstractPgFunction {
 
     public enum AggKinds {
         NORMAL, ORDERED, HYPOTHETICAL
@@ -215,26 +215,26 @@ public class PgAggregate extends AbstractPgFunction {
     protected boolean compareUnalterable(AbstractFunction func) {
         if (func instanceof PgAggregate aggr && super.compareUnalterable(func)) {
             return directCount == aggr.directCount
-                    && Objects.equals(kind, aggr.getKind())
-                    && Objects.equals(sFunc, aggr.getSFunc())
-                    && Objects.equals(sType, aggr.getSType())
-                    && sSpace == aggr.getSSpace()
-                    && Objects.equals(finalFunc, aggr.getFinalFunc())
-                    && isFinalFuncExtra == aggr.isFinalFuncExtra()
-                    && Objects.equals(finalFuncModify, aggr.getFinalFuncModify())
-                    && Objects.equals(combineFunc, aggr.getCombineFunc())
-                    && Objects.equals(serialFunc, aggr.getSerialFunc())
-                    && Objects.equals(deserialFunc, aggr.getDeserialFunc())
-                    && Objects.equals(initCond, aggr.getInitCond())
-                    && Objects.equals(mSFunc, aggr.getMSFunc())
-                    && Objects.equals(mInvFunc, aggr.getMInvFunc())
-                    && Objects.equals(mSType, aggr.getMSType())
-                    && mSSpace == aggr.getMSSpace()
-                    && Objects.equals(mFinalFunc, aggr.getMFinalFunc())
-                    && isMFinalFuncExtra == aggr.isMFinalFuncExtra()
-                    && Objects.equals(mFinalFuncModify, aggr.getMFinalFuncModify())
-                    && Objects.equals(mInitCond, aggr.getMInitCond())
-                    && Objects.equals(sortOp, aggr.getSortOp());
+                    && Objects.equals(kind, aggr.kind)
+                    && Objects.equals(sFunc, aggr.sFunc)
+                    && Objects.equals(sType, aggr.sType)
+                    && sSpace == aggr.sSpace
+                    && Objects.equals(finalFunc, aggr.finalFunc)
+                    && isFinalFuncExtra == aggr.isFinalFuncExtra
+                    && Objects.equals(finalFuncModify, aggr.finalFuncModify)
+                    && Objects.equals(combineFunc, aggr.combineFunc)
+                    && Objects.equals(serialFunc, aggr.serialFunc)
+                    && Objects.equals(deserialFunc, aggr.deserialFunc)
+                    && Objects.equals(initCond, aggr.initCond)
+                    && Objects.equals(mSFunc, aggr.mSFunc)
+                    && Objects.equals(mInvFunc, aggr.mInvFunc)
+                    && Objects.equals(mSType, aggr.mSType)
+                    && mSSpace == aggr.mSSpace
+                    && Objects.equals(mFinalFunc, aggr.mFinalFunc)
+                    && isMFinalFuncExtra == aggr.isMFinalFuncExtra
+                    && Objects.equals(mFinalFuncModify, aggr.mFinalFuncModify)
+                    && Objects.equals(mInitCond, aggr.mInitCond)
+                    && Objects.equals(sortOp, aggr.sortOp);
         }
 
         return false;
@@ -284,10 +284,6 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getSFunc() {
-        return sFunc;
-    }
-
     public void setSFunc(String sFunc) {
         this.sFunc = sFunc;
         resetHash();
@@ -300,10 +296,6 @@ public class PgAggregate extends AbstractPgFunction {
     public void setSType(String sType) {
         this.sType = sType;
         resetHash();
-    }
-
-    public int getSSpace() {
-        return sSpace;
     }
 
     public void setSSpace(int sSpace) {
@@ -320,17 +312,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public boolean isFinalFuncExtra() {
-        return isFinalFuncExtra;
-    }
-
     public void setFinalFuncExtra(boolean isFinalFuncExtra) {
         this.isFinalFuncExtra = isFinalFuncExtra;
         resetHash();
-    }
-
-    public ModifyType getFinalFuncModify() {
-        return finalFuncModify;
     }
 
     public void setFinalFuncModify(ModifyType finalFuncModify) {
@@ -338,17 +322,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getCombineFunc() {
-        return combineFunc;
-    }
-
     public void setCombineFunc(String combineFunc) {
         this.combineFunc = combineFunc;
         resetHash();
-    }
-
-    public String getSerialFunc() {
-        return serialFunc;
     }
 
     public void setSerialFunc(String serialFunc) {
@@ -356,17 +332,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getDeserialFunc() {
-        return deserialFunc;
-    }
-
     public void setDeserialFunc(String deserialFunc) {
         this.deserialFunc = deserialFunc;
         resetHash();
-    }
-
-    public String getInitCond() {
-        return initCond;
     }
 
     public void setInitCond(String initCond) {
@@ -374,17 +342,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getMSFunc() {
-        return mSFunc;
-    }
-
     public void setMSFunc(String mSFunc) {
         this.mSFunc = mSFunc;
         resetHash();
-    }
-
-    public String getMInvFunc() {
-        return mInvFunc;
     }
 
     public void setMInvFunc(String mInvFunc) {
@@ -401,17 +361,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public int getMSSpace() {
-        return mSSpace;
-    }
-
     public void setMSSpace(int mSSpace) {
         this.mSSpace = mSSpace;
         resetHash();
-    }
-
-    public String getMFinalFunc() {
-        return mFinalFunc;
     }
 
     public void setMFinalFunc(String mFinalFunc) {
@@ -419,17 +371,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public boolean isMFinalFuncExtra() {
-        return isMFinalFuncExtra;
-    }
-
     public void setMFinalFuncExtra(boolean isMFinalFuncExtra) {
         this.isMFinalFuncExtra = isMFinalFuncExtra;
         resetHash();
-    }
-
-    public ModifyType getMFinalFuncModify() {
-        return mFinalFuncModify;
     }
 
     public void setMFinalFuncModify(ModifyType mFinalFuncModify) {
@@ -437,17 +381,9 @@ public class PgAggregate extends AbstractPgFunction {
         resetHash();
     }
 
-    public String getMInitCond() {
-        return mInitCond;
-    }
-
     public void setMInitCond(String mInitCond) {
         this.mInitCond = mInitCond;
         resetHash();
-    }
-
-    public String getSortOp() {
-        return sortOp;
     }
 
     public void setSortOp(String sortOp) {
@@ -468,28 +404,28 @@ public class PgAggregate extends AbstractPgFunction {
 
     @Override
     protected AbstractPgFunction getFunctionCopy() {
-        PgAggregate copy = new PgAggregate(getBareName());
-        copy.setDirectCount(getDirectCount());
-        copy.setKind(getKind());
-        copy.setSFunc(getSFunc());
-        copy.setSType(getSType());
-        copy.setSSpace(getSSpace());
-        copy.setFinalFunc(getFinalFunc());
-        copy.setFinalFuncExtra(isFinalFuncExtra());
-        copy.setFinalFuncModify(getFinalFuncModify());
-        copy.setCombineFunc(getCombineFunc());
-        copy.setSerialFunc(getSerialFunc());
-        copy.setDeserialFunc(getDeserialFunc());
-        copy.setInitCond(getInitCond());
-        copy.setMSFunc(getMSFunc());
-        copy.setMInvFunc(getMInvFunc());
-        copy.setMSType(getMSType());
-        copy.setMSSpace(getMSSpace());
-        copy.setMFinalFunc(getMFinalFunc());
-        copy.setMFinalFuncExtra(isMFinalFuncExtra());
-        copy.setMFinalFuncModify(getMFinalFuncModify());
-        copy.setMInitCond(getMInitCond());
-        copy.setSortOp(getSortOp());
+        PgAggregate copy = new PgAggregate(name);
+        copy.setDirectCount(directCount);
+        copy.setKind(kind);
+        copy.setSFunc(sFunc);
+        copy.setSType(sType);
+        copy.setSSpace(sSpace);
+        copy.setFinalFunc(finalFunc);
+        copy.setFinalFuncExtra(isFinalFuncExtra);
+        copy.setFinalFuncModify(finalFuncModify);
+        copy.setCombineFunc(combineFunc);
+        copy.setSerialFunc(serialFunc);
+        copy.setDeserialFunc(deserialFunc);
+        copy.setInitCond(initCond);
+        copy.setMSFunc(mSFunc);
+        copy.setMInvFunc(mInvFunc);
+        copy.setMSType(mSType);
+        copy.setMSSpace(mSSpace);
+        copy.setMFinalFunc(mFinalFunc);
+        copy.setMFinalFuncExtra(isMFinalFuncExtra);
+        copy.setMFinalFuncModify(mFinalFuncModify);
+        copy.setMInitCond(mInitCond);
+        copy.setSortOp(sortOp);
         copy.setParallel(getParallel());
         copy.setReturns(getReturns());
         return copy;

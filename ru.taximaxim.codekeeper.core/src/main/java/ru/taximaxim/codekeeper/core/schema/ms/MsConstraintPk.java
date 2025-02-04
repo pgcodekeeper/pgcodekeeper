@@ -70,10 +70,6 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
         resetHash();
     }
 
-    public String getDataSpace() {
-        return dataSpace;
-    }
-
     @Override
     public Set<String> getColumns() {
         return Collections.unmodifiableSet(columnNames);
@@ -158,8 +154,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     @Override
     protected boolean compareUnalterable(MsConstraint obj) {
         if (obj instanceof MsConstraintPk con) {
-            return isPrimaryKey() == con.isPrimaryKey()
-                    && isClustered() == con.isClustered()
+            return isPrimaryKey == con.isPrimaryKey
+                    && isClustered == con.isClustered
                     && Objects.equals(dataSpace, con.dataSpace)
                     && Objects.equals(columns, con.columns)
                     && Objects.equals(options, con.options);
@@ -181,8 +177,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new MsConstraintPk(name, isPrimaryKey);
-        con.setClustered(isClustered());
-        con.setDataSpace(getDataSpace());
+        con.setClustered(isClustered);
+        con.setDataSpace(dataSpace);
         con.columnNames.addAll(columnNames);
         con.columns.addAll(columns);
         con.options.putAll(options);

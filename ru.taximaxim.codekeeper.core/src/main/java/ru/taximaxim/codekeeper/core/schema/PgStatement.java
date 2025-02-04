@@ -59,13 +59,13 @@ public abstract class PgStatement implements IStatement, IHashable {
     public static final String GO = "\nGO";
     protected final String name;
     protected String owner;
-    private String comment;
+    protected String comment;
     private final Set<PgPrivilege> privileges = new LinkedHashSet<>();
 
-    private PgStatement parent;
+    protected PgStatement parent;
     private final Set<GenericColumn> deps = new LinkedHashSet<>();
 
-    private final PgStatementMeta meta = new PgStatementMeta();
+    protected final PgStatementMeta meta = new PgStatementMeta();
 
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
@@ -110,35 +110,31 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     public PgObjLocation getLocation() {
-        return getMeta().getLocation();
+        return meta.getLocation();
     }
 
     public void setLocation(PgObjLocation location) {
-        getMeta().setLocation(location);
+        meta.setLocation(location);
     }
 
     public boolean isLib() {
-        return getMeta().isLib();
+        return meta.isLib();
     }
 
     public String getLibName() {
-        return getMeta().getLibName();
+        return meta.getLibName();
     }
 
     public void setLibName(String libName) {
-        getMeta().setLibName(libName);
+        meta.setLibName(libName);
     }
 
     public String getAuthor() {
-        return getMeta().getAuthor();
+        return meta.getAuthor();
     }
 
     public void setAuthor(String author) {
-        getMeta().setAuthor(author);
-    }
-
-    public PgStatementMeta getMeta() {
-        return meta;
+        meta.setAuthor(author);
     }
 
     public PgDiffArguments getDatabaseArguments() {
@@ -221,7 +217,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected void appendAlterOwner(PgStatement newObj, SQLScript script) {
-        if (!Objects.equals(getOwner(), newObj.getOwner())) {
+        if (!Objects.equals(owner, newObj.owner)) {
             newObj.alterOwnerSQL(script);
         }
     }
@@ -298,7 +294,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void alterPrivileges(PgStatement newObj, SQLScript script) {
         // first drop (revoke) missing grants
-        Set<PgPrivilege> newPrivileges = newObj.getPrivileges();
+        Set<PgPrivilege> newPrivileges = newObj.privileges;
         for (PgPrivilege privilege : privileges) {
             if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
                 script.addStatement(privilege.getDropSQL());
@@ -518,7 +514,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         if (DbObjType.DATABASE == type) {
             return db;
         }
-        PgStatement twinParent = getParent().getTwinRecursive(db);
+        PgStatement twinParent = parent.getTwinRecursive(db);
         if (twinParent == null) {
             return null;
         }
@@ -598,13 +594,13 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     private boolean parentNamesEquals(PgStatement st){
         PgStatement p = parent;
-        PgStatement p2 = st.getParent();
+        PgStatement p2 = st.parent;
         while (p != null && p2 != null) {
             if (!Objects.equals(p.getName(), p2.getName())) {
                 return false;
             }
-            p = p.getParent();
-            p2 = p2.getParent();
+            p = p.parent;
+            p2 = p2.parent;
         }
         return p == null && p2 == null;
     }
@@ -662,7 +658,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         PgStatement st = this;
         while (st != null) {
             st.hash = 0;
-            st = st.getParent();
+            st = st.parent;
         }
     }
 
@@ -675,7 +671,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         while (p != null) {
             String pName = p.getName();
             hasher.put(pName);
-            p = p.getParent();
+            p = p.parent;
         }
     }
 
@@ -686,12 +682,12 @@ public abstract class PgStatement implements IStatement, IHashable {
     @Override
     public String getQualifiedName() {
         UnaryOperator<String> quoter = Utils.getQuoter(getDbType());
-        StringBuilder sb = new StringBuilder(quoter.apply(getBareName()));
+        StringBuilder sb = new StringBuilder(quoter.apply(name));
 
         PgStatement par = this.parent;
         while (par != null && !(par instanceof AbstractDatabase)) {
-            sb.insert(0, '.').insert(0, quoter.apply(par.getBareName()));
-            par = par.getParent();
+            sb.insert(0, '.').insert(0, quoter.apply(par.name));
+            par = par.parent;
         }
 
         return sb.toString();
@@ -705,7 +701,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     protected void assertUnique(PgStatement found, PgStatement newSt) {
         if (found != null) {
-            PgStatement foundParent = found.getParent();
+            PgStatement foundParent = found.parent;
             throw foundParent instanceof ISearchPath
             ? new ObjectCreationException(newSt, foundParent)
                     : new ObjectCreationException(newSt);

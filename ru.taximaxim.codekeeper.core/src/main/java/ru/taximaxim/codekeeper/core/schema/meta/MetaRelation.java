@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class MetaRelation extends MetaStatement implements IRelation {
+public final class MetaRelation extends MetaStatement implements IRelation {
 
     private static final long serialVersionUID = -6057721257178245883L;
 

@@ -16,9 +16,9 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgDomain extends PgStatement implements ISearchPath {
+public final class PgDomain extends PgStatement implements ISearchPath {
 
     private String dataType;
     private String collation;
@@ -37,17 +37,9 @@ public class PgDomain extends PgStatement implements ISearchPath {
     private boolean notNull;
     private final List<AbstractConstraint> constraints = new ArrayList<>();
 
-    public String getDataType() {
-        return dataType;
-    }
-
     public void setDataType(String dataType) {
         this.dataType = dataType;
         resetHash();
-    }
-
-    public String getCollation() {
-        return collation;
     }
 
     public void setCollation(String collation) {
@@ -55,26 +47,14 @@ public class PgDomain extends PgStatement implements ISearchPath {
         resetHash();
     }
 
-    public String getDefaultValue() {
-        return defaultValue;
-    }
-
     public void setDefaultValue(String defaultValue) {
         this.defaultValue = defaultValue;
         resetHash();
     }
 
-    public boolean isNotNull() {
-        return notNull;
-    }
-
     public void setNotNull(boolean notNull) {
         this.notNull = notNull;
         resetHash();
-    }
-
-    public List<AbstractConstraint> getConstraints() {
-        return Collections.unmodifiableList(constraints);
     }
 
     public AbstractConstraint getConstraint(String name) {
@@ -142,26 +122,26 @@ public class PgDomain extends PgStatement implements ISearchPath {
         int startSize = script.getSize();
         PgDomain newDomain = (PgDomain) newCondition;
 
-        if (!Objects.equals(newDomain.getDataType(), getDataType()) ||
-                !Objects.equals(newDomain.getCollation(), getCollation())) {
+        if (!Objects.equals(newDomain.dataType, dataType) ||
+                !Objects.equals(newDomain.collation, collation)) {
             return ObjectState.RECREATE;
         }
 
-        if (!Objects.equals(newDomain.getDefaultValue(), getDefaultValue())) {
+        if (!Objects.equals(newDomain.defaultValue, defaultValue)) {
             StringBuilder sql = new StringBuilder();
             sql.append("ALTER DOMAIN ").append(getQualifiedName());
-            if (newDomain.getDefaultValue() == null) {
+            if (newDomain.defaultValue == null) {
                 sql.append("\n\tDROP DEFAULT");
             } else {
-                sql.append("\n\tSET DEFAULT ").append(newDomain.getDefaultValue());
+                sql.append("\n\tSET DEFAULT ").append(newDomain.defaultValue);
             }
             script.addStatement(sql);
         }
 
-        if (newDomain.isNotNull() != isNotNull()) {
+        if (newDomain.notNull != notNull) {
             StringBuilder sql = new StringBuilder();
             sql.append("ALTER DOMAIN ").append(getQualifiedName());
-            if (newDomain.isNotNull()) {
+            if (newDomain.notNull) {
                 sql.append("\n\tSET NOT NULL");
             } else {
                 sql.append("\n\tDROP NOT NULL");
@@ -173,7 +153,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
         alterPrivileges(newDomain, script);
         appendAlterComments(newDomain, script);
 
-        for (AbstractConstraint oldConstr : getConstraints()) {
+        for (AbstractConstraint oldConstr : constraints) {
             AbstractConstraint newConstr = newDomain.getConstraint(oldConstr.getName());
             if (newConstr == null) {
                 oldConstr.getDropSQL(script);
@@ -182,7 +162,7 @@ public class PgDomain extends PgStatement implements ISearchPath {
                 newConstr.getCreationSQL(script);
             }
         }
-        for (AbstractConstraint newConstr : newDomain.getConstraints()) {
+        for (AbstractConstraint newConstr : newDomain.constraints) {
             if (getConstraint(newConstr.getName()) == null) {
                 newConstr.getCreationSQL(script);
             }
@@ -205,12 +185,12 @@ public class PgDomain extends PgStatement implements ISearchPath {
 
     @Override
     public PgDomain shallowCopy() {
-        PgDomain domainDst = new PgDomain(getName());
+        PgDomain domainDst = new PgDomain(name);
         copyBaseFields(domainDst);
-        domainDst.setDataType(getDataType());
-        domainDst.setCollation(getCollation());
-        domainDst.setDefaultValue(getDefaultValue());
-        domainDst.setNotNull(isNotNull());
+        domainDst.setDataType(dataType);
+        domainDst.setCollation(collation);
+        domainDst.setDefaultValue(defaultValue);
+        domainDst.setNotNull(notNull);
         for (AbstractConstraint constr : constraints) {
             domainDst.addConstraint((AbstractConstraint) constr.deepCopy());
         }
@@ -224,10 +204,10 @@ public class PgDomain extends PgStatement implements ISearchPath {
         }
 
         if (obj instanceof PgDomain dom && super.compare(obj)) {
-            return Objects.equals(dataType, dom.getDataType())
-                    && Objects.equals(collation, dom.getCollation())
-                    && Objects.equals(defaultValue, dom.getDefaultValue())
-                    && notNull == dom.isNotNull()
+            return Objects.equals(dataType, dom.dataType)
+                    && Objects.equals(collation, dom.collation)
+                    && Objects.equals(defaultValue, dom.defaultValue)
+                    && notNull == dom.notNull
                     && PgDiffUtils.setlikeEquals(constraints, dom.constraints);
         }
 
@@ -245,6 +225,6 @@ public class PgDomain extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) this.getParent();
+        return (AbstractSchema) parent;
     }
 }
