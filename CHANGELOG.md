@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed object reading order for MS SQL.
+- Fixed parser rules for MS SQL.
 
 ### Removed
 

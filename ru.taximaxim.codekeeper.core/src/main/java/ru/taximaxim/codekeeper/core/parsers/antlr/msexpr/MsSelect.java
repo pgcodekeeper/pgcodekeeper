@@ -174,8 +174,10 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 vex.expressionList(expList);
             } else {
                 for (var groupItem : group.group_by_item()) {
-                    for (var exp : groupItem.expression()) {
-                        vex.analyze(exp);
+                    for (var item : groupItem.grouping_sets_item()) {
+                        for (var exp : item.expression()) {
+                            vex.analyze(exp);
+                        }
                     }
                 }
             }
