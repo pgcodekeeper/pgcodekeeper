@@ -13,10 +13,12 @@
 
 ### Исправлено
 
+### Удалено
+
+## [10.7.1] - 2025-02-05
+
 - Исправлен порядок чтения объектов для MS SQL.
 - Исправлены правила парсера для MS SQL.
-
-### Удалено
 
 ## [10.7.0] - 2025-02-04
 
@@ -2179,7 +2181,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...HEAD
+[10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1
 [10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
 [10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
