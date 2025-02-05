@@ -75,9 +75,9 @@ public class JdbcMsLoader extends JdbcLoaderBase {
 
             queryCheckMsVersion();
             new MsSchemasReader(this, d).read();
+            new MsTablesReader(this).read();
             new MsFPVTReader(this).read();
             new MsExtendedObjectsReader(this).read();
-            new MsTablesReader(this).read();
             new MsSequencesReader(this).read();
             new MsIndicesAndPKReader(this).read();
             new MsFKReader(this).read();
