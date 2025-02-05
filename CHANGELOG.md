@@ -13,10 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+### Removed
+
+## [10.7.1] - 2025-02-05
+
 - Fixed object reading order for MS SQL.
 - Fixed parser rules for MS SQL.
-
-### Removed
 
 ## [10.7.0] - 2025-02-04
 
@@ -2178,7 +2180,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...HEAD
+[10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1
 [10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
 [10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
