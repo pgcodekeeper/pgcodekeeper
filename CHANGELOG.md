@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed object reading order for MS SQL.
+
 ### Removed
 
 ## [10.7.0] - 2025-02-04
