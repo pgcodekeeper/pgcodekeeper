@@ -29,3 +29,6 @@ Reference: action = ALTER AGGREGATE, offset = 2908, line number = 120, charPosit
 Reference: Object = myavg(numeric) (AGGREGATE), action = CREATE, offset = 3063, line number = 124, charPositionInLine = 17
 Reference: Object = myavg (AGGREGATE), action = DROP, offset = 3377, line number = 135, charPositionInLine = 15
 Reference: Object = case_agg(double precision) (AGGREGATE), action = CREATE, offset = 3412, line number = 137, charPositionInLine = 17
+Reference: Object = aggregate_with_args1(text) (AGGREGATE), action = CREATE, offset = 3625, line number = 147, charPositionInLine = 17
+Reference: Object = aggregate_with_args2(TEXT) (AGGREGATE), action = CREATE, offset = 4107, line number = 158, charPositionInLine = 17
+Reference: Object = aggregate_with_args3(text) (AGGREGATE), action = CREATE, offset = 4564, line number = 175, charPositionInLine = 17

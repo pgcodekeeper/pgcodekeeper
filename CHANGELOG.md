@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed parser rule for aggregate functions in PostgreSQL.
+
 ### Removed
 
 ## [10.7.1] - 2025-02-05
