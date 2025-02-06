@@ -17,9 +17,11 @@ package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.OptionalInt;
@@ -98,6 +100,12 @@ public class DepcyResolver {
      * Хранит запущенные итерации по добавлению объектов, используется для предотвращения циклического прохода по графу
      */
     private final Set<PgStatement> createdObjects = new HashSet<>();
+
+    /**
+     * Stores the result of method appendAlterSQL. Key - Qualified name of
+     * {@link PgStatement}, value - {@link ObjectState}
+     */
+    private final Map<String, ObjectState> states = new HashMap<>();
 
     public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase) {
         this.oldDb = oldDatabase;
@@ -347,7 +355,8 @@ public class DepcyResolver {
     }
 
     private ObjectState getObjectState(PgStatement oldSt, PgStatement newSt) {
-        return oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType()));
+        return states.computeIfAbsent(oldSt.getQualifiedName(),
+                x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
     }
 
     /**
