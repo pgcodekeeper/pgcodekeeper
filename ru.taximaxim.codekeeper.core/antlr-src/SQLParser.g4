@@ -1079,7 +1079,7 @@ operator_option
 create_aggregate_statement
     : (OR REPLACE)? AGGREGATE name=schema_qualified_name function_args? LEFT_PAREN
     (BASETYPE EQUAL (base_type=data_type | ANY) COMMA)?
-    SFUNC EQUAL sfunc_name=schema_qualified_name COMMA
+    SFUNC EQUAL sfunc_name=schema_qualified_name aggregate_function_args? COMMA
     STYPE EQUAL type=data_type
     (COMMA aggregate_param)*
     RIGHT_PAREN
@@ -1087,24 +1087,28 @@ create_aggregate_statement
 
 aggregate_param
     : SSPACE EQUAL s_space=iconst
-    | FINALFUNC EQUAL final_func=schema_qualified_name
+    | FINALFUNC EQUAL final_func=schema_qualified_name aggregate_function_args?
     | FINALFUNC_EXTRA
     | FINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
-    | COMBINEFUNC EQUAL combine_func=schema_qualified_name
-    | SERIALFUNC EQUAL serial_func=schema_qualified_name
-    | DESERIALFUNC EQUAL deserial_func=schema_qualified_name
+    | COMBINEFUNC EQUAL combine_func=schema_qualified_name aggregate_function_args?
+    | SERIALFUNC EQUAL serial_func=schema_qualified_name aggregate_function_args?
+    | DESERIALFUNC EQUAL deserial_func=schema_qualified_name aggregate_function_args?
     | INITCOND EQUAL init_cond=vex
-    | MSFUNC EQUAL ms_func=schema_qualified_name
-    | MINVFUNC EQUAL minv_func=schema_qualified_name
+    | MSFUNC EQUAL ms_func=schema_qualified_name aggregate_function_args?
+    | MINVFUNC EQUAL minv_func=schema_qualified_name aggregate_function_args?
     | MSTYPE EQUAL ms_type=data_type
     | MSSPACE EQUAL ms_space=iconst
-    | MFINALFUNC EQUAL mfinal_func=schema_qualified_name
+    | MFINALFUNC EQUAL mfinal_func=schema_qualified_name aggregate_function_args?
     | MFINALFUNC_EXTRA
     | MFINALFUNC_MODIFY EQUAL (READ_ONLY | SHAREABLE | READ_WRITE)
     | MINITCOND EQUAL minit_cond=vex
     | SORTOP EQUAL all_op_ref
     | PARALLEL EQUAL (SAFE | RESTRICTED | UNSAFE)
     | HYPOTHETICAL
+    ;
+
+aggregate_function_args
+    : LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
     ;
 
 set_statement

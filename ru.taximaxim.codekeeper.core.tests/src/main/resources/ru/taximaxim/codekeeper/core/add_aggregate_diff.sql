@@ -159,3 +159,12 @@ CREATE AGGREGATE public.mode_seria(internal) (
 );
 
 ALTER AGGREGATE public.mode_seria(internal) OWNER TO shamsutdinov_lr;
+
+CREATE AGGREGATE public.aggregate_with_args3(TEXT) (
+	SFUNC = TEST_FUNCC,
+	STYPE = TEXT,
+	FINALFUNC = TEST_FUNCC,
+	MSFUNC = test_func,
+	MINVFUNC = test_func,
+	MSTYPE = text
+);
