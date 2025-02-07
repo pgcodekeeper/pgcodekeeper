@@ -69,11 +69,8 @@ public class PgDbProject {
         return Paths.get(project.getLocationURI());
     }
 
-    /**
-     * Удалить проект из workspace, не удаляя содержимое
-     */
-    public void deleteFromWorkspace() throws CoreException {
-        project.delete(false, true, null);
+    public void deleteProject() throws CoreException {
+        project.delete(true, true, null);
     }
 
     public void openProject() throws CoreException {
