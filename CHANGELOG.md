@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed parser rule for aggregate functions in PostgreSQL.
+- Fixed incomplete deletion of files when creation of a project failed.
 
 ### Removed
 

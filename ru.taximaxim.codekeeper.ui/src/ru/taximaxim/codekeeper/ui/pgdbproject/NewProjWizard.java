@@ -81,7 +81,7 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class NewProjWizard extends Wizard
+public final class NewProjWizard extends Wizard
 implements IExecutableExtension, INewWizard {
 
     private PageRepo pageRepo;
@@ -173,7 +173,7 @@ implements IExecutableExtension, INewWizard {
         } finally {
             if (!initSuccess && props != null) {
                 try {
-                    props.deleteFromWorkspace();
+                    props.deleteProject();
                 } catch (CoreException e) {
                     ExceptionNotifier.notifyDefault(Messages.NewProjWizard_cannot_delete_project, e);
                 }
