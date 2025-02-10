@@ -253,10 +253,10 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         String cols = colsForMovingData.stream().map(quoter).collect(Collectors.joining(", "));
         List<String> identityColsForMovingData = identityCols == null ? Collections.emptyList()
                 : identityCols.stream().filter(colsForMovingData::contains).toList();
-        writeInsert(script, newTable.getQualifiedName(), tblTmpQName, identityColsForMovingData, cols);
+        writeInsert(script, newTable, tblTmpQName, identityColsForMovingData, cols);
     }
 
-    protected abstract void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected abstract void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols);
 
     /**

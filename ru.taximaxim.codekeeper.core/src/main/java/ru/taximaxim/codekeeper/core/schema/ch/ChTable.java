@@ -213,10 +213,10 @@ public final class ChTable extends AbstractTable {
     }
 
     @Override
-    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols) {
         StringBuilder sbInsert = new StringBuilder();
-        sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
+        sbInsert.append("INSERT INTO ").append(newTable.getQualifiedName()).append('(').append(cols).append(")");
         sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
         script.addStatement(sbInsert);
     }

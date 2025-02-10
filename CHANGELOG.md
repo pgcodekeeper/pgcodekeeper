@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed parser rule for aggregate functions in PostgreSQL.
 - Fixed incomplete deletion of files when creation of a project failed.
+- Fixed a bug in generating code with data migration when adding an IDENTITY column.
 
 ### Removed
 

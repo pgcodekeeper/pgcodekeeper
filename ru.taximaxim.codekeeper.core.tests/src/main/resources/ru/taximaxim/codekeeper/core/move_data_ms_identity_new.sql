@@ -73,3 +73,18 @@ CREATE VIEW [dbo].[v] AS
     a.[c5]
 FROM [dbo].[tbl] a
 GO
+
+CREATE TABLE [dbo].[testtable](
+	[id] [bigint] NOT NULL IDENTITY (1, 452),
+	[c2] [bigint] NULL,
+	[c4] [bigint] NULL,
+	[c3] [text] COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].[testtable11](
+	[id] [bigint] NOT NULL,
+	[c4] [bigint] NULL,
+	[c3] [text] COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
