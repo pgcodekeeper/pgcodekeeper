@@ -32,11 +32,11 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public final class ChTable extends AbstractTable {
+public class ChTable extends AbstractTable {
 
-    private final Map<String, String> projections = new LinkedHashMap<>();
+    protected final Map<String, String> projections = new LinkedHashMap<>();
 
-    private ChEngine engine;
+    protected ChEngine engine;
 
     public ChTable(String name) {
         super(name);
@@ -63,16 +63,8 @@ public final class ChTable extends AbstractTable {
         sb.append("CREATE TABLE ");
         appendIfNotExists(sb);
         sb.append(getQualifiedName()).append("\n(");
-
-        for (AbstractColumn column : columns) {
-            sb.append("\n\t").append(column.getFullDefinition()).append(",");
-        }
-
-        for (Entry<String, String> proj : projections.entrySet()) {
-            sb.append("\n\tPROJECTION ").append(proj.getKey()).append(' ').append(proj.getValue()).append(',');
-        }
-
-        if (!columns.isEmpty() || !projections.isEmpty()) {
+        appendTableBody(sb);
+        if (isNotEmptyTable()) {
             sb.setLength(sb.length() - 1);
         }
         sb.append("\n)");
@@ -83,6 +75,20 @@ public final class ChTable extends AbstractTable {
             sb.append("\nCOMMENT ").append(getComment());
         }
         script.addStatement(sb);
+    }
+
+    protected void appendTableBody(StringBuilder sb) {
+        for (AbstractColumn column : columns) {
+            sb.append("\n\t").append(column.getFullDefinition()).append(',');
+        }
+
+        for (Entry<String, String> proj : projections.entrySet()) {
+            sb.append("\n\tPROJECTION ").append(proj.getKey()).append(' ').append(proj.getValue()).append(',');
+        }
+    }
+
+    protected boolean isNotEmptyTable() {
+        return !columns.isEmpty() || !projections.isEmpty();
     }
 
     @Override

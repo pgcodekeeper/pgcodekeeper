@@ -16,10 +16,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed parser rule for aggregate functions in PostgreSQL.
 - Fixed incomplete deletion of files when creation of a project failed.
 - Fixed a bug in generating code with data migration when adding an IDENTITY column.
+- Fixed migration script for tables from the Log engine family to ClickHouse.
 
 ### Removed
 
 ## [10.7.1] - 2025-02-05
+
+### Fixed
 
 - Fixed object reading order for MS SQL.
 - Fixed parser rules for MS SQL.
