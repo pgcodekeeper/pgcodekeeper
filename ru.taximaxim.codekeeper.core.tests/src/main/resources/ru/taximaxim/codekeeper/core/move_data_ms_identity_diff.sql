@@ -27,6 +27,55 @@ GO
 ALTER TABLE [dbo].[tbl_randomly_generated_part] DROP CONSTRAINT [DF__tbl__c6__32AB8735]
 GO
 
+EXEC sp_rename '[dbo].[testtable]', 'testtable_randomly_generated_part'
+GO
+
+EXEC sp_rename '[dbo].[testtable11]', 'testtable11_randomly_generated_part'
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[testtable](
+	[id] [bigint] NOT NULL IDENTITY (1,452),
+	[c2] [bigint] NULL,
+	[c4] [bigint] NULL,
+	[c3] [text] COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+SET IDENTITY_INSERT [dbo].[testtable] ON
+GO
+
+INSERT INTO [dbo].[testtable]([id], [c3])
+SELECT [id], [c3] FROM [dbo].[testtable_randomly_generated_part]
+GO
+
+SET IDENTITY_INSERT [dbo].[testtable] OFF
+GO
+
+DROP TABLE [dbo].[testtable_randomly_generated_part]
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[testtable11](
+	[id] [bigint] NOT NULL,
+	[c4] [bigint] NULL,
+	[c3] [text] COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+INSERT INTO [dbo].[testtable11]([id], [c3])
+SELECT [id], [c3] FROM [dbo].[testtable11_randomly_generated_part]
+GO
+
+DROP TABLE [dbo].[testtable11_randomly_generated_part]
+GO
+
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON

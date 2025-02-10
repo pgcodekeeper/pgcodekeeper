@@ -47,6 +47,17 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  */
 public abstract class AbstractPgTable extends AbstractTable {
 
+    private static final String RESTART_SEQUENCE_QUERY = """
+            DO LANGUAGE plpgsql $_$
+            DECLARE restart_var bigint = (SELECT COALESCE(
+                (SELECT nextval(pg_get_serial_sequence('%1$s', '%2$s'))),
+                (SELECT MAX(%2$s) + 1 FROM %3$s),
+                1));
+            BEGIN
+                EXECUTE $$ ALTER TABLE %3$s ALTER COLUMN %2$s RESTART WITH $$ || restart_var || ';' ;
+            END
+            $_$""";
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPgTable.class);
 
     protected boolean hasOids;
@@ -454,8 +465,9 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols) {
+        String tblQName = newTable.getQualifiedName();
         StringBuilder sbInsert = new StringBuilder();
         sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
         if (!identityColsForMovingData.isEmpty()) {
@@ -465,14 +477,8 @@ public abstract class AbstractPgTable extends AbstractTable {
         script.addStatement(sbInsert);
 
         for (String colName : identityColsForMovingData) {
-            String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN " + PgDiffUtils.getQuotedName(colName)
-            + " RESTART WITH ";
-            restartWith = PgDiffUtils.quoteStringDollar(restartWith) + " || restart_var || ';'";
-            String doBody = "\nDECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence("
-                    + PgDiffUtils.quoteString(tblTmpQName) + ", "
-                    + PgDiffUtils.quoteString(PgDiffUtils.getQuotedName(colName))
-                    + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
-            script.addStatement("DO LANGUAGE plpgsql " + PgDiffUtils.quoteStringDollar(doBody));
+            String quotedCol = PgDiffUtils.getQuotedName(colName);
+            script.addStatement(RESTART_SEQUENCE_QUERY.formatted(tblTmpQName, quotedCol, tblQName));
         }
     }
 

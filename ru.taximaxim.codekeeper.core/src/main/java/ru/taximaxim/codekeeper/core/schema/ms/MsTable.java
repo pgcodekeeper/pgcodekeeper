@@ -353,9 +353,11 @@ public final class MsTable extends AbstractTable implements ISimpleOptionContain
     }
 
     @Override
-    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols) {
-        if (!identityColsForMovingData.isEmpty()) {
+        String tblQName = newTable.getQualifiedName();
+        boolean newHasIdentity = newTable.getColumns().stream().anyMatch(c -> ((MsColumn) c).isIdentity());
+        if (newHasIdentity) {
             // There can only be one IDENTITY column per table in MSSQL.
             script.addStatement(getIdentInsertText(tblQName, true));
         }
@@ -366,10 +368,12 @@ public final class MsTable extends AbstractTable implements ISimpleOptionContain
         sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
         script.addStatement(sbInsert);
 
-        if (!identityColsForMovingData.isEmpty()) {
-            // There can only be one IDENTITY column per table in MSSQL.
+        if (newHasIdentity) {
+         // There can only be one IDENTITY column per table in MSSQL.
             script.addStatement(getIdentInsertText(tblQName, false));
+        }
 
+        if (!identityColsForMovingData.isEmpty() && newHasIdentity) {
             // DECLARE'd var is only visible within its batch
             // so we shouldn't need unique names for them here
             // use the largest numeric type to fit any possible identity value

@@ -60,17 +60,23 @@ OVERRIDING SYSTEM VALUE
 SELECT did, did_2, name22, event_time, description FROM public.tbl_randomly_generated_part;
 
 DO LANGUAGE plpgsql $_$
-DECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence('public.tbl_randomly_generated_part', 'did')));
+DECLARE restart_var bigint = (SELECT COALESCE(
+    (SELECT nextval(pg_get_serial_sequence('public.tbl_randomly_generated_part', 'did'))),
+    (SELECT MAX(did) + 1 FROM public.tbl),
+    1));
 BEGIN
-	EXECUTE $$ ALTER TABLE public.tbl ALTER COLUMN did RESTART WITH $$ || restart_var || ';' ;
-END;
+    EXECUTE $$ ALTER TABLE public.tbl ALTER COLUMN did RESTART WITH $$ || restart_var || ';' ;
+END
 $_$;
 
 DO LANGUAGE plpgsql $_$
-DECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence('public.tbl_randomly_generated_part', 'did_2')));
+DECLARE restart_var bigint = (SELECT COALESCE(
+    (SELECT nextval(pg_get_serial_sequence('public.tbl_randomly_generated_part', 'did_2'))),
+    (SELECT MAX(did_2) + 1 FROM public.tbl),
+    1));
 BEGIN
-	EXECUTE $$ ALTER TABLE public.tbl ALTER COLUMN did_2 RESTART WITH $$ || restart_var || ';' ;
-END;
+    EXECUTE $$ ALTER TABLE public.tbl ALTER COLUMN did_2 RESTART WITH $$ || restart_var || ';' ;
+END
 $_$;
 
 DROP TABLE public.tbl_randomly_generated_part;
