@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added preference for the number of parser threads to optimize CPU resource consumption.
+
 ### Changed
 
 ### Fixed

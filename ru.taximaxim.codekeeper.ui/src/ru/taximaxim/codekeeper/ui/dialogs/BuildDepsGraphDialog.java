@@ -35,9 +35,10 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.IntegerVerifyListener;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class BuildDepsGraphDialog extends Dialog {
+public final class BuildDepsGraphDialog extends Dialog {
 
     private final String objName;
     private boolean isProject;
@@ -83,15 +84,7 @@ public class BuildDepsGraphDialog extends Dialog {
         txtDepth = new Text(composite, SWT.BORDER);
         txtDepth.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDepth.setText("10"); //$NON-NLS-1$
-        txtDepth.addVerifyListener(e -> {
-            try {
-                if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
-                    e.doit = false;
-                }
-            } catch(NumberFormatException ex) {
-                e.doit = false;
-            }
-        });
+        txtDepth.addVerifyListener(new IntegerVerifyListener());
 
         //object types
         Composite container = new Composite(composite, SWT.NONE);

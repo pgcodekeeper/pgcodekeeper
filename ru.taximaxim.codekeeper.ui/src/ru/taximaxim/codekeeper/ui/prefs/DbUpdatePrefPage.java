@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public final class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
     public DbUpdatePrefPage() {
         super(GRID);
@@ -45,14 +45,14 @@ public class DbUpdatePrefPage extends FieldEditorPreferencePage implements IWork
     @Override
     protected void createFieldEditors() {
 
-        addField( new ComboFieldEditor(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT,
+        addField(new ComboFieldEditor(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT,
                 Messages.dbUpdatePrefPage_create_script_project_directory, new String[][] {
             {Messages.dbUpdatePrefPage_status_alway_create, MessageDialogWithToggle.ALWAYS},
             {Messages.dbUpdatePrefPage_status_never_create, MessageDialogWithToggle.NEVER},
             {Messages.dbUpdatePrefPage_status_ask_create, MessageDialogWithToggle.PROMPT}},
                 getFieldEditorParent()));
 
-        addField( new ComboFieldEditor(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE,
+        addField(new ComboFieldEditor(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE,
                 Messages.dbUpdatePrefPage_script_deleting_status, new String[][] {
             {Messages.dbUpdatePrefPage_status_always_delete, MessageDialogWithToggle.ALWAYS},
             {Messages.dbUpdatePrefPage_status_never_delete, MessageDialogWithToggle.NEVER},
