@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in generating code with data migration when adding an IDENTITY column.
 - Fixed migration script for tables from the Log engine family to ClickHouse.
 - Fixed an error when installing the plugin in Eclipse 2024-12.
+- Fixed `Print DROP before CREATE statement` option work.
 
 ### Removed
 
