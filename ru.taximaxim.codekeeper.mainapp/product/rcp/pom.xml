@@ -71,7 +71,7 @@
                             <id>ru.taximaxim.codekeeper.rcp.product</id>
                             <!-- -
                              <rootFolders>
-                                 <macosx>pgCodeKeeper.app</macosx>
+                                 <macosx>Pgcodekeeper.app</macosx>
                              </rootFolders>
                              <!- -->
                             <archiveFileName>pgCodeKeeper-${unqualifiedVersion}</archiveFileName>

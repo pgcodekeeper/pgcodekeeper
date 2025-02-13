@@ -20,13 +20,16 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 public class MessageDialogWithLink extends MessageDialog {
 
@@ -38,6 +41,31 @@ public class MessageDialogWithLink extends MessageDialog {
         super(parentShell, dialogTitle, null, dialogMessage, dialogImageType, 0, IDialogConstants.OK_LABEL);
         this.linkText = linkText;
         this.link = link;
+    }
+
+
+    @Override
+    protected Control createMessageArea(final Composite composite) {
+        Image image = getImage();
+        if (image != null) {
+            imageLabel = new Label(composite, SWT.NULL);
+            image.setBackground(imageLabel.getBackground());
+            imageLabel.setImage(image);
+            imageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
+        }
+
+        // Use Text control for message to allow copy
+        if (message != null) {
+            Text msg = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            msg.setText(message);
+
+            GridData data = new GridData(SWT.FILL, SWT.TOP, true, false);
+            data.widthHint = convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH);
+
+            msg.setLayoutData(data);
+        }
+
+        return composite;
     }
 
     @Override

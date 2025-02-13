@@ -595,11 +595,9 @@ public final class Messages extends NLS {
     public static String HeapSizeChecker_do_not_ask_again;
     public static String HeapSizeCheckerDialog_set_heap_size;
     public static String HeapSizeCheckerDialog_new_heap_size;
-    public static String HeapSizeCheckerDialog_heap_size_updated;
-    public static String HeapSizeCheckerDialog_restart_offer;
     public static String HeapSizeCheckerDialog_manual_heap_editing_title;
-    public static String HeapSizeCheckerDialog_manual_heap_editing_link;
-    public static String HeapSizeCheckerDialog_manual_heap_editing;
+    public static String Eclipse_restart_offer;
+    public static String EclipseIniWriter_manual_editing_link;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
@@ -1036,9 +1034,18 @@ public final class Messages extends NLS {
     public static String GeneralPrefPage_alert_if_heap_size_less_than_necessary;
 
     public static String GeneralPrefPage_time_to_clean_parser_cache;
+
     public static String GeneralPrefPage_clean_parser_cache;
 
     public static String GeneralPrefPage_format_object_code_automatically;
+
+    public static String GeneralPrefPage_number_of_loading_threads;
+
+    public static String GeneralPrefPage_number_of_loading_threads_updated;
+
+    public static String GeneralPrefPage_with;
+
+    public static String GeneralPrefPage_number_of_thread;
 
     public static String GeneralPrefPage_reuse_open_compare_editor;
 
@@ -1062,6 +1069,12 @@ public final class Messages extends NLS {
 
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
+
+    public static String EclipseIniWriter_change_manually;
+
+    public static String EclipseIniWriter_replace_parameter_msg;
+
+    public static String EclipseIniWriter_updated;
 
     public static String LabelPicker_choice_db;
 
