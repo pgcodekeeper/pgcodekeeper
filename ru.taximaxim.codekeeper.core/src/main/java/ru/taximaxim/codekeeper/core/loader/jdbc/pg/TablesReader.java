@@ -550,6 +550,17 @@ public class TablesReader extends JdbcReader {
     }
 
     private void addColumnsPart(QueryBuilder builder) {
+        QueryBuilder inheritsCteBuilder = new QueryBuilder();
+        inheritsCteBuilder
+            .column("i.inhrelid")
+            .column("attr.attname")
+            .from("pg_catalog.pg_inherits i")
+            .join("JOIN pg_catalog.pg_attribute attr ON attr.attrelid = i.inhparent")
+            .where("attr.attnotnull")
+            .where("attr.attnum > 0");
+
+        builder.with("inherits", inheritsCteBuilder);
+
         QueryBuilder subQueryBuilder = new QueryBuilder();
         subQueryBuilder
         .column("a.attrelid")
@@ -565,18 +576,12 @@ public class TablesReader extends JdbcReader {
         .column("pg_catalog.array_agg(pg_catalog.format_type(a.atttypid, a.atttypmod) ORDER BY a.attnum) AS col_type_name")
         // skips not null for column, if parents have not null
         .column("""
-                pg_catalog.array_agg(
-                      (CASE WHEN a.attnotnull THEN\s
-                        NOT EXISTS (
-                          SELECT 1 FROM pg_catalog.pg_inherits inh\s
-                          LEFT JOIN pg_catalog.pg_attribute attr ON attr.attrelid = inh.inhparent
-                          WHERE inh.inhrelid = a.attrelid\s
-                          AND attr.attnotnull
-                          AND attr.attname = a.attname)
-                        ELSE FALSE
-                        END
-                      ) ORDER BY a.attnum
-                    ) AS col_notnull""")
+                  pg_catalog.array_agg(
+                    (CASE WHEN NOT a.attnotnull THEN FALSE
+                          ELSE NOT EXISTS(SELECT 1 FROM inherits inh WHERE inh.inhrelid = a.attrelid AND inh.attname = a.attname)
+                     END
+                    ) ORDER BY a.attnum
+                  ) AS col_notnull""")
         .column("pg_catalog.array_agg(a.attstattarget ORDER BY a.attnum) AS col_statictics")
         .column("pg_catalog.array_agg(a.attislocal ORDER BY a.attnum) AS col_local")
         .column("pg_catalog.array_agg(a.attacl::text ORDER BY a.attnum) AS col_acl")
