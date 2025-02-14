@@ -213,6 +213,12 @@ public final class PgDatabase extends AbstractDatabase {
         super.concat(st);
     }
 
+    public void sortColumns() {
+        for (AbstractSchema schema : getSchemas()) {
+            schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
+        }
+    }
+
     @Override
     protected boolean isFirstLevelType(DbObjType type) {
         return type.in(DbObjType.SCHEMA, DbObjType.EXTENSION, DbObjType.FOREIGN_DATA_WRAPPER, DbObjType.EVENT_TRIGGER,

@@ -28,13 +28,13 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
-import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
@@ -185,14 +185,6 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     @Override
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         l.add(schemas.values());
-    }
-
-    public void sortColumns() {
-        if (getDbType() == DatabaseType.PG) {
-            for (AbstractSchema schema : schemas.values()) {
-                schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
-            }
-        }
     }
 
     @Override

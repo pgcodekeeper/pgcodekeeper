@@ -326,6 +326,10 @@ public abstract class AbstractPgTable extends AbstractTable {
      * then sorted alphabetically the inheritance columns
      */
     public void sortColumns() {
+        if (inherits.isEmpty()) {
+            return;
+        }
+
         Collections.sort(columns, (e1, e2) ->  {
             boolean first = ((PgColumn) e1).isInherit();
             boolean second = ((PgColumn) e2).isInherit();
