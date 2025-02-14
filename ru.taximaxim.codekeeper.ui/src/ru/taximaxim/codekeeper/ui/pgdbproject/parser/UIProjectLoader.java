@@ -64,7 +64,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class UIProjectLoader extends ProjectLoader {
+public final class UIProjectLoader extends ProjectLoader {
 
     private static final String SQL_EXTENSION = "sql"; // $NON-NLS-1$
 
@@ -172,8 +172,7 @@ public class UIProjectLoader extends ProjectLoader {
 
         for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.MS)) {
             if (WorkDirs.isInMsSchema(dirSub)) {
-                loadSubdir(baseDir.getFolder(new Path(dirSub)), db,
-                        msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
+                loadSubdir(baseDir.getFolder(new Path(dirSub)), db, this::checkIgnoreSchemaList);
                 continue;
             }
             loadSubdir(baseDir.getFolder(new Path(dirSub)), db);
@@ -193,8 +192,7 @@ public class UIProjectLoader extends ProjectLoader {
         if (!folder.exists()) {
             return;
         }
-        filterFile(folder.members(), monitor, db, f -> checkFilename == null ||
-                checkFilename.test(f.getName().substring(0, f.getName().length() - 4)));
+        filterFile(folder.members(), monitor, db, f -> checkFilename == null || checkFilename.test(f.getName()));
     }
 
     /**
