@@ -175,8 +175,7 @@ public class ProjectLoader extends DatabaseLoader {
         for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.MS)) {
             if (WorkDirs.isInMsSchema(dirSub)) {
                 // get schema name from file names and filter
-                loadSubdir(dir, dirSub, db,
-                        msFileName -> checkIgnoreSchemaList(msFileName.substring(0, msFileName.indexOf('.'))));
+                loadSubdir(dir, dirSub, db, this::checkIgnoreSchemaList);
                 continue;
             }
             loadSubdir(dir, dirSub, db);
@@ -228,7 +227,7 @@ public class ProjectLoader extends DatabaseLoader {
         if (!fileName.toLowerCase(Locale.ROOT).endsWith(".sql") || !Files.isRegularFile(f)) {
             return false;
         }
-        return checkFilename == null || checkFilename.test(fileName.substring(0, fileName.length()-4));
+        return checkFilename == null || checkFilename.test(fileName);
     }
 
     protected void replaceOverrides() {
@@ -257,7 +256,7 @@ public class ProjectLoader extends DatabaseLoader {
         }
     }
 
-    protected boolean checkIgnoreSchemaList(String schemaName) {
-        return ignoreSchemaList == null || ignoreSchemaList.getNameStatus(schemaName);
+    protected boolean checkIgnoreSchemaList(String resourceName) {
+        return ignoreSchemaList == null || ignoreSchemaList.getNameStatus(resourceName.split("\\.")[0]);
     }
 }
