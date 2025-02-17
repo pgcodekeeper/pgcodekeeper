@@ -1,7 +1,5 @@
 SET search_path = pg_catalog;
 
--- DEPCY: This FUNCTION function_contract depends on the VIEW: public.v1
-
 DROP FUNCTION public.function_contract(_id integer);
 
 DROP VIEW public.v1;
