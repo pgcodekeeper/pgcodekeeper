@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
@@ -79,7 +80,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
                 return ObjectState.RECREATE;
             }
 
-            isNeedDepcies = getDbType() == DatabaseType.MS;
+            isNeedDepcies = getDbType() == DatabaseType.MS || !deps.equals(newCondition.deps);
 
             StringBuilder sbSQL = new StringBuilder();
             newFunction.appendFunctionFullSQL(sbSQL, false);

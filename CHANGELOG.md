@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug when installing the plugin in Eclipse 2024-12.
 - Fixed `Print DROP before CREATE statement` option work.
 - Fixed a bug when building MS SQL project with incorrect file names.
+- Fixed code generation when changing a function with adding new dependencies.
 
 ### Removed
 

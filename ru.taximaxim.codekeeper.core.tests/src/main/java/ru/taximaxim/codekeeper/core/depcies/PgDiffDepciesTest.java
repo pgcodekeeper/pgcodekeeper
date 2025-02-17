@@ -281,6 +281,9 @@ class PgDiffDepciesTest {
             // user selected function with copying types (%TYPE) dependency
             "add_func_with_copying_type_usr_func_f2",
             "add_type_usr_t1",
+            // function is altered so that it has a new dependency that did not exist before,
+            // user selected the function
+            "change_func_dep_usr_f1",
     })
     void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, true);
