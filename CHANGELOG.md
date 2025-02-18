@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added preference for the number of parser threads to optimize CPU resource consumption.
-
 ### Changed
+
+### Fixed
+
+### Removed
+
+## [10.8.0] - 2025-02-18
+
+### Added
+
+- Added preference for the number of parser threads to optimize CPU resource consumption.
 
 ### Fixed
 
@@ -23,8 +31,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed `Print DROP before CREATE statement` option work.
 - Fixed a bug when building MS SQL project with incorrect file names.
 - Fixed code generation when changing a function with adding new dependencies.
-
-### Removed
 
 ## [10.7.1] - 2025-02-05
 
@@ -2193,7 +2199,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...HEAD
+[10.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...v10.8.0
 [10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1
 [10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
 [10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
