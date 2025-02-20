@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  * служит оберткой для объектов БД, представляет состояние объекта между старой
  * и новой БД
  */
-public class TreeElement {
+public final class TreeElement {
 
     public enum DiffSide {
         LEFT, RIGHT, BOTH;
@@ -88,9 +88,8 @@ public class TreeElement {
     }
 
     public void addChild(TreeElement child) {
-        if(child.parent != null) {
-            throw new IllegalStateException(
-                    "Cannot add a child that already has a parent!");
+        if (child.parent != null) {
+            throw new IllegalStateException("Cannot add a child that already has a parent!");
         }
 
         child.parent = this;
@@ -99,8 +98,8 @@ public class TreeElement {
     }
 
     public TreeElement getChild(String name, DbObjType type) {
-        for(TreeElement el : children) {
-            if((type == null || el.type == type) && el.name.equals(name)) {
+        for (TreeElement el : children) {
+            if ((type == null || el.type == type) && el.name.equals(name)) {
                 return el;
             }
         }
@@ -118,7 +117,7 @@ public class TreeElement {
 
     public int countDescendants() {
         int descendants = 0;
-        for(TreeElement sub : children) {
+        for (TreeElement sub : children) {
             descendants++;
             descendants += sub.countDescendants();
         }
@@ -152,7 +151,8 @@ public class TreeElement {
     }
 
     /**
-     * @return Statement from the corresponding DB, based on client's side. BOTH uses left.
+     * @return Statement from the corresponding DB, based on client's side. BOTH
+     *         uses left.
      */
     public PgStatement getPgStatementSide(AbstractDatabase left, AbstractDatabase right) {
         switch (side) {
@@ -186,7 +186,7 @@ public class TreeElement {
      */
     public TreeElement getRevertedCopy() {
         TreeElement copy = getRevertedElement();
-        for (TreeElement child : getChildren()) {
+        for (TreeElement child : children) {
             copy.addChild(child.getRevertedCopy());
         }
         return copy;
@@ -219,7 +219,7 @@ public class TreeElement {
     public TreeElement getCopy() {
         TreeElement copy = new TreeElement(name, type, side);
         copy.setSelected(selected);
-        for (TreeElement child : getChildren()) {
+        for (TreeElement child : children) {
             copy.addChild(child.getCopy());
         }
         return copy;
@@ -230,21 +230,22 @@ public class TreeElement {
      */
     public void setAllChecked() {
         setSelected(true);
-        for (TreeElement child : getChildren()) {
+        for (TreeElement child : children) {
             child.setAllChecked();
         }
     }
 
     /**
-     * @return признак наличия выбранных элементов в поддереве начиная с текущего узла
+     * @return признак наличия выбранных элементов в поддереве начиная с текущего
+     *         узла
      */
     public boolean isSubTreeSelected() {
-        for(TreeElement child : getChildren()) {
+        for (TreeElement child : children) {
             if (child.isSubTreeSelected()) {
                 return true;
             }
         }
-        return isSelected();
+        return selected;
     }
 
     public boolean isContainer() {
@@ -258,13 +259,7 @@ public class TreeElement {
     @Override
     public int hashCode() {
         if (hashcode == 0) {
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + ((name == null) ? 0 : name.hashCode());
-            result = prime * result + ((side == null) ? 0 : side.hashCode());
-            result = prime * result + ((type == null) ? 0 : type.hashCode());
-            result = prime * result + getContainerQName().hashCode();
-
+            int result = Objects.hash(name, side, type, getContainerQName());
             if (result == 0) {
                 ++result;
             }
@@ -280,43 +275,42 @@ public class TreeElement {
             return true;
         }
 
-        if (obj instanceof TreeElement other) {
-            return Objects.equals(name, other.getName())
-                    && Objects.equals(type, other.getType())
-                    && Objects.equals(side, other.getSide())
-                    && getContainerQName().equals(other.getContainerQName());
-        }
-
-        return false;
+        return obj instanceof TreeElement other
+                && Objects.equals(name, other.name)
+                && type == other.type
+                && side == other.side 
+                && getContainerQName().equals(other.getContainerQName());
     }
 
     public String getContainerQName() {
-        String qname = "";
+        var qname = "";
 
         TreeElement par = this.parent;
         while (par != null) {
-            if (par.getType() == DbObjType.DATABASE) {
+            if (par.type == DbObjType.DATABASE) {
                 break;
             }
-            qname = par.getName() + (qname.isEmpty() ? qname : '.' + qname);
-            par = par.getParent();
+            qname = par.name + (qname.isEmpty() ? qname : '.' + qname);
+            par = par.parent;
         }
 
         return qname;
     }
 
     /**
-     * Note: the name of the object itself is not quoted due to it including function parameters.
+     * Note: the name of the object itself is not quoted due to it including
+     * function parameters.
+     * 
      * @return this element's qualified name
      */
     public String getQualifiedName() {
         String qname = getContainerQName();
-        return qname.isEmpty() ? getName() : qname + '.' + getName();
+        return qname.isEmpty() ? name : qname + '.' + name;
     }
 
     @Override
     public String toString() {
-        return getName() == null ? "no name" : getName() + " " + side + " " + type;
+        return name == null ? "no name" : name + ' ' + side + ' ' + type;
     }
 
     /**
