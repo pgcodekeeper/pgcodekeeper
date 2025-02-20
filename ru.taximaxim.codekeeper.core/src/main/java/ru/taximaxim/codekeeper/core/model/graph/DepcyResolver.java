@@ -84,7 +84,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * Theoretically, a simple topological sort will be enough to derive an action list from such a graph.
  * Hopefully someday this kludgy mess will be replaced by a more advanced algorithm.
  */
-public class DepcyResolver {
+public final class DepcyResolver {
 
     private final AbstractDatabase oldDb;
     private final AbstractDatabase newDb;
@@ -106,6 +106,8 @@ public class DepcyResolver {
      * {@link PgStatement}, value - {@link ObjectState}
      */
     private final Map<String, ObjectState> states = new HashMap<>();
+
+    private final Map<String, Boolean> recreatedObjs = new HashMap<>();
 
     public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase) {
         this.oldDb = oldDatabase;
@@ -359,6 +361,10 @@ public class DepcyResolver {
                 x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
     }
 
+    private Boolean getRecreatedObj(AbstractTable oldTable, AbstractTable newTable) {
+        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(), x -> oldTable.isRecreated(newTable));
+    }
+
     /**
      * Используется для прохода по графу зависимостей для формирования
      * зависимостей (ALTER, DROP)
@@ -413,7 +419,7 @@ public class DepcyResolver {
                 AbstractTable oldTable = (AbstractTable) oldObj.getParent();
                 PgStatement newTable = oldObj.getParent().getTwin(newDb);
 
-                if (newTable == null || oldTable.isRecreated((AbstractTable) newTable)) {
+                if (newTable == null || getRecreatedObj(oldTable, (AbstractTable) newTable)) {
                     // случай, если дроп зависимости тянет колонку, которую мы не пишем
                     // потому что дропается таблица - дропаем таблицу
                     addDropStatements(oldTable);
@@ -473,7 +479,7 @@ public class DepcyResolver {
             if (newObj.getStatementType() == DbObjType.COLUMN) {
                 PgStatement oldTable = newObj.getParent().getTwin(oldDb);
                 AbstractTable newTable = (AbstractTable) newObj.getParent();
-                if (oldTable == null || ((AbstractTable) oldTable).isRecreated(newTable)) {
+                if (oldTable == null || getRecreatedObj((AbstractTable) oldTable, newTable)) {
                     // columns are integrated into CREATE TABLE
                     return false;
                 }
