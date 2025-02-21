@@ -991,21 +991,20 @@ public class DiffTableViewer extends Composite {
                     Path root = reader.getLocation();
                     Map<String, List<ElementMetaInfo>> metas = new HashMap<>();
                     elementInfoMap.forEach((k,v) -> {
-                        if (k.getSide() != DiffSide.RIGHT) {
+                        if (k.getSide() != DiffSide.RIGHT && v.getLibLocation() == null) {
                             Path fullPath = location.resolve(ModelExporter.getRelativeFilePath(
                                     k.getPgStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes
-                            String location = StreamSupport.stream(
+                            String path = StreamSupport.stream(
                                     root.relativize(fullPath).spliterator(), false)
                                     .map(Path::toString)
                                     .collect(Collectors.joining("/")); //$NON-NLS-1$
-
-                            List<ElementMetaInfo> meta = metas.get(location);
+                            List<ElementMetaInfo> meta = metas.get(path);
                             if (meta == null) {
                                 meta = new ArrayList<>();
-                                metas.put(location, meta);
+                                metas.put(path, meta);
                             }
                             meta.add(v);
                         }
@@ -1536,6 +1535,7 @@ public class DiffTableViewer extends Composite {
             }
 
             DbObjType type = el.getType();
+
             if (types.contains(type)) {
                 return true;
             }
