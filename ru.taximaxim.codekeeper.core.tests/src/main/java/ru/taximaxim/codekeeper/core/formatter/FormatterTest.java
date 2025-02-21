@@ -44,6 +44,23 @@ class FormatterTest {
         testFormatter(oldFile, newFile, config, DatabaseType.PG);
     }
 
+    /**
+     * Testing default parameters
+     */
+    @Test
+    void testBroken() throws IOException {
+        FormatConfiguration config = new FormatConfiguration();
+        config.setAddWhitespaceAfterOp(true);
+        config.setAddWhitespaceBeforeOp(true);
+        config.setIndentSize(2);
+        config.setIndentType(IndentType.WHITESPACE);
+        config.setRemoveTrailingWhitespace(true);
+
+        String newFile = "new_Broken";
+        String oldFile = "old_Broken";
+        testFormatter(oldFile, newFile, config, DatabaseType.PG);
+    }
+
     @Test
     void testRemoveTrailingWhitespace() throws IOException {
         FormatConfiguration config = new FormatConfiguration();

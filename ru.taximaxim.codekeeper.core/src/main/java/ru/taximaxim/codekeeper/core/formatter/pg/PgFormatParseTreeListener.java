@@ -186,8 +186,10 @@ public class PgFormatParseTreeListener extends FormatParseTreeListener {
     }
 
     private void formatFunctionBody(Function_bodyContext body) {
-        putIndent(body.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
-        putIndent(body.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        if (body.BEGIN() != null && body.END() != null) {
+            putIndent(body.BEGIN().getSymbol(), IndentDirection.BLOCK_LINE);
+            putIndent(body.END().getSymbol(), IndentDirection.BLOCK_LINE);
+        }
     }
 
     private void formatExceptionStatement(Exception_statementContext ctx) {
