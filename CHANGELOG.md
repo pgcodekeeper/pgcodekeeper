@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed an error when formatting an invalid function.
+
 ### Removed
 
 ## [10.8.0] - 2025-02-18
