@@ -41,7 +41,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class GitUserReader implements AutoCloseable {
+public final class GitUserReader implements AutoCloseable {
 
     public static boolean checkRepo(Path path) {
         FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());
@@ -79,7 +79,6 @@ public class GitUserReader implements AutoCloseable {
             if (head == null) {
                 return;
             }
-
             r.setRevFilter(RevFilter.NO_MERGES);
             r.markStart(r.lookupCommit(head));
             df.setRepository(repo);
@@ -88,19 +87,19 @@ public class GitUserReader implements AutoCloseable {
             while (it.hasNext() && !metas.isEmpty()) {
                 RevCommit commit = it.next();
                 String author = commit.getAuthorIdent().getName();
-                RevTree parent = commit.getParentCount() > 0 ? r.parseCommit(commit.getParent(0).getId()).getTree() : null;
-                List<DiffEntry> de = df.scan(parent, commit.getTree());
+                RevTree parent = commit.getParentCount() > 0 ?
+                        r.parseCommit(commit.getParent(0).getId()).getTree() : null;
 
+                List<DiffEntry> de = df.scan(parent, commit.getTree());
                 for (DiffEntry d : de) {
-                    String p = d.getNewPath();
-                    List<ElementMetaInfo> meta = metas.remove(p);
+                    List<ElementMetaInfo> meta = metas.remove(d.getNewPath());
                     if (meta != null) {
                         meta.forEach(e -> e.setGitUser(author));
                     }
                 }
             }
         } catch (IOException e) {
-            Log.log(Log.LOG_ERROR,  Messages.DiffTableViewer_error_reading_git_history, e);
+            Log.log(Log.LOG_ERROR, Messages.DiffTableViewer_error_reading_git_history, e);
         }
     }
 
@@ -121,7 +120,7 @@ public class GitUserReader implements AutoCloseable {
             status.getChanged().forEach(setter);
             status.getModified().forEach(setter);
             status.getUntracked().forEach(setter);
-            status.getUntrackedFolders().forEach(setter);
+            status.getUntracked().forEach(metas::remove);
         } catch (IOException e) {
             Log.log(Log.LOG_ERROR, Messages.GitUserReader_error_reading_local_changes, e);
         }
