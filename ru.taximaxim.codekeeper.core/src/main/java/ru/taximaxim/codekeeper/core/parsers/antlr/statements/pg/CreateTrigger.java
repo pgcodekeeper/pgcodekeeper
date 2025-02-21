@@ -74,7 +74,6 @@ public class CreateTrigger extends PgParserAbstract {
         trigger.setOnUpdate(ctx.update_true != null);
         trigger.setOnTruncate(ctx.truncate_true != null);
         trigger.setFunction(getFullCtxText(ctx.func_name));
-        trigger.setIsChild(false);
 
         if (ctx.CONSTRAINT() != null ) {
             trigger.setConstraint(true);

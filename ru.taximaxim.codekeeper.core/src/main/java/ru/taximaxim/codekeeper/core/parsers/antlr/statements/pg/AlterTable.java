@@ -17,17 +17,13 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Queue;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
-import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
@@ -52,7 +48,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -60,14 +55,12 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractRegularTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionGpTable;
-import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionTemplateContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraint;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 
@@ -76,16 +69,12 @@ public class AlterTable extends TableAbstract {
     private final Alter_table_statementContext ctx;
     private final String tablespace;
     private final CommonTokenStream stream;
-    private final Queue<AntlrTask<?>> antlrTasks;
-    private JdbcLoaderBase loader;
 
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace,
-            CommonTokenStream stream, Queue<AntlrTask<?>> antlrTasks) {
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
         super(db, stream);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.stream = stream;
-        this.antlrTasks = antlrTasks;
     }
 
     @Override
@@ -316,30 +305,9 @@ public class AlterTable extends TableAbstract {
         if (tablAction.trigger_name == null) {
             return;
         }
-        String triggerName = tablAction.trigger_name.getText();
-        if (tabl.getTrigger(triggerName) == null && tabl instanceof PartitionPgTable partitionPgTable) {
-            AntlrParser.submitAntlrTask(antlrTasks, () -> tablAction,
-                    tableAction -> {
-                        String parentName = partitionPgTable.getParentTable().split("[.]")[1];
-                        AbstractPgTable parentTable = (AbstractPgTable) ((PgSchema) tabl.getParent()).getTable(parentName);
-                        PgTrigger trigger = parseTriggerCreation(parentTable, tablAction);
-                        if (trigger != null) {
-                            trigger = (PgTrigger) trigger.shallowCopy();
-                            trigger.setIsChild(true);
-                            trigger.addDep(new GenericColumn(parentTable.getSchemaName(), parentTable.getName(), trigger.getName(), DbObjType.TRIGGER));
-                            tabl.addTrigger(trigger);
-                        }
-                    });
-        } else {
-            parseTriggerCreation(tabl, tablAction);
-        }
-    }
 
-    private PgTrigger parseTriggerCreation(AbstractPgTable tabl, Table_actionContext tablAction) {
-        PgTrigger trigger = null;
-        if (tabl != null) {
-            trigger = (PgTrigger) tabl.getTrigger(tablAction.trigger_name.getText());
-        }
+        PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
+                tablAction.trigger_name);
         if (trigger != null) {
             if (tablAction.DISABLE() != null) {
                 trigger.setEnabledState("DISABLE");
@@ -348,12 +316,9 @@ public class AlterTable extends TableAbstract {
                     trigger.setEnabledState("ENABLE REPLICA");
                 } else if (tablAction.ALWAYS() != null) {
                     trigger.setEnabledState("ENABLE ALWAYS");
-                } else {
-                    trigger.setEnabledState("ENABLE");
                 }
             }
         }
-        return trigger;
     }
 
     private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {

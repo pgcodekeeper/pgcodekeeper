@@ -209,7 +209,7 @@ implements SqlContextProcessor {
     private void alter(Schema_alterContext ctx, CommonTokenStream stream) {
         PgParserAbstract p;
         if (ctx.alter_table_statement() != null) {
-            p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream, antlrTasks);
+            p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream);
         } else if (ctx.alter_index_statement() != null) {
             p = new AlterIndex(ctx.alter_index_statement(), db);
         } else if (ctx.alter_sequence_statement() != null) {

@@ -865,7 +865,6 @@ class PgAntlrLoaderTest {
         view.setOwner("fordfrog");
 
         PgTrigger trigger = new PgTrigger("test_trigger");
-        trigger.setIsChild(false);
         trigger.setType(TgTypes.BEFORE);
         trigger.setOnUpdate(true);
         trigger.setForEachRow(false);

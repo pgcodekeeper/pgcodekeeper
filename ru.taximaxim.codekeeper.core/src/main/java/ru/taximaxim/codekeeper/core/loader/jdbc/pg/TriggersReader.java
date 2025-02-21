@@ -61,7 +61,6 @@ public class TriggersReader extends JdbcReader {
         String triggerName = res.getString("tgname");
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName);
-        t.setIsChild(!res.getString("tgparentid").equals("0"));
 
         int firingConditions = res.getInt("tgtype");
         if ((firingConditions & TRIGGER_TYPE_DELETE) != 0) {
@@ -103,9 +102,6 @@ public class TriggersReader extends JdbcReader {
         case "t":
         case "O":
             //default enable state
-            if (t.getIsChild()) {
-                t.setEnabledState("ENABLE");
-            }
             break;
         case "R":
             t.setEnabledState("ENABLE REPLICA");
@@ -216,7 +212,6 @@ public class TriggersReader extends JdbcReader {
         .column("res.tgconstraint::bigint")
         .column("res.tgdeferrable")
         .column("res.tginitdeferred")
-        .column("res.tgparentid")
         .column("relcon.relname as refrelname")
         .column("refnsp.nspname as refnspname")
         .column("", subselect, "AS cols")
@@ -239,8 +234,10 @@ public class TriggersReader extends JdbcReader {
         if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
             builder
             .column("res.tgparentid")
+            .column("res.tgenabled")
             .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = res.tgparentid")
             .where("(res.tgparentid = 0 OR res.tgenabled != u.tgenabled)");
+
         }
     }
 }

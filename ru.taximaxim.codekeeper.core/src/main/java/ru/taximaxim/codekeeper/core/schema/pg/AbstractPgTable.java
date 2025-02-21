@@ -314,6 +314,10 @@ public abstract class AbstractPgTable extends AbstractTable {
         return Collections.unmodifiableList(inherits);
     }
 
+    public boolean isHasInherits() {
+        return !inherits.isEmpty();
+    }
+
     public void setHasOids(final boolean hasOids) {
         this.hasOids = hasOids;
         resetHash();
