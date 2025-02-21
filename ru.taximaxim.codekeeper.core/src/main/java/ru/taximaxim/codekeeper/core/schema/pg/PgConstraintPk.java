@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -52,18 +52,10 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         resetHash();
     }
 
-    public boolean isDistinct() {
-        return isDistinct;
-    }
-
     @Override
     public void addInclude(String include) {
         includes.add(include);
         resetHash();
-    }
-
-    public Set<String> getIncludes() {
-        return Collections.unmodifiableSet(includes);
     }
 
     @Override
@@ -72,18 +64,10 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         resetHash();
     }
 
-    public Map<String, String> getParams() {
-        return Collections.unmodifiableMap(params);
-    }
-
     @Override
     public void setTablespace(String tablespace) {
         this.tablespace = tablespace;
         resetHash();
-    }
-
-    public String getTablespace() {
-        return tablespace;
     }
 
     @Override
@@ -119,11 +103,11 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     @Override
     public String getDefinition() {
         final StringBuilder sbSQL = new StringBuilder();
-        if (isPrimaryKey()) {
+        if (isPrimaryKey) {
             sbSQL.append("PRIMARY KEY ");
         } else {
             sbSQL.append("UNIQUE ");
-            if (isDistinct()) {
+            if (isDistinct) {
                 sbSQL.append("NULLS NOT DISTINCT ");
             }
         }
@@ -132,7 +116,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         return sbSQL.toString();
     }
 
-    public void appendIndexParam(StringBuilder sb) {
+    private void appendIndexParam(StringBuilder sb) {
         if (!includes.isEmpty()) {
             sb.append(" INCLUDE ");
             StatementUtils.appendCols(sb, includes, DatabaseType.PG);
@@ -151,7 +135,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
         if (isClustered()) {
             sbSQL.append("\n\n");
             appendAlterTable(sbSQL);
-            sbSQL.append(" CLUSTER ON ").append(getName()).append(";");
+            sbSQL.append(" CLUSTER ON ").append(name).append(";");
         }
     }
 
@@ -163,9 +147,9 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
             StringBuilder sb = new StringBuilder();
             if (newConstr.isClustered()) {
                 appendAlterTable(sb);
-                sb.append(" CLUSTER ON ").append(getName());
+                sb.append(" CLUSTER ON ").append(name);
                 script.addStatement(sb);
-            } else if (!((PgStatementContainer) newConstr.getParent()).isClustered()) {
+            } else if (!((PgStatementContainer) newConstr.parent).isClustered()) {
                 appendAlterTable(sb);
                 sb.append(" SET WITHOUT CLUSTER");
                 script.addStatement(sb);
@@ -191,12 +175,12 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     protected boolean compareUnalterable(PgConstraint newConstr) {
         var con = (PgConstraintPk) newConstr;
         return super.compareUnalterable(con)
-                && isPrimaryKey() == con.isPrimaryKey()
-                && isDistinct() == con.isDistinct()
+                && isPrimaryKey == con.isPrimaryKey
+                && isDistinct == con.isDistinct
                 && Objects.equals(columns, con.columns)
                 && Objects.equals(includes, con.includes)
                 && Objects.equals(params, con.params)
-                && Objects.equals(getTablespace(), con.getTablespace());
+                && Objects.equals(tablespace, con.tablespace);
     }
 
     @Override
@@ -214,7 +198,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new PgConstraintPk(name, isPrimaryKey);
-        con.setClustered(isClustered());
+        con.setClustered(isClustered);
         con.setDistinct(isDistinct);
         con.columns.addAll(columns);
         con.includes.addAll(includes);

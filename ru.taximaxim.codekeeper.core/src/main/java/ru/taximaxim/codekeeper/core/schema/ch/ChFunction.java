@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
@@ -34,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChFunction extends PgStatement implements IFunction {
+public final class ChFunction extends PgStatement implements IFunction {
 
     private String body;
     private final List<Argument> arguments = new ArrayList<>();
@@ -70,7 +69,7 @@ public class ChFunction extends PgStatement implements IFunction {
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
-        sb.append("CREATE FUNCTION ").append(ChDiffUtils.getQuotedName(getName())).append(" AS ");
+        sb.append("CREATE FUNCTION ").append(ChDiffUtils.getQuotedName(name)).append(" AS ");
         fillArgs(sb);
         sb.append(" -> ").append(body);
         script.addStatement(sb);
@@ -89,10 +88,9 @@ public class ChFunction extends PgStatement implements IFunction {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         var newFunction = (ChFunction) newCondition;
         if (!compareUnalterable(newFunction)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
         return ObjectState.NOTHING;
@@ -110,7 +108,7 @@ public class ChFunction extends PgStatement implements IFunction {
 
     @Override
     public ChDatabase getDatabase() {
-        return (ChDatabase) getParent();
+        return (ChDatabase) parent;
     }
 
     @Override
@@ -131,10 +129,10 @@ public class ChFunction extends PgStatement implements IFunction {
 
     @Override
     public PgStatement shallowCopy() {
-        ChFunction copy = new ChFunction(getName());
+        ChFunction copy = new ChFunction(name);
         copyBaseFields(copy);
         copy.arguments.addAll(arguments);
-        copy.setBody(getBody());
+        copy.setBody(body);
         return copy;
     }
 
@@ -146,10 +144,6 @@ public class ChFunction extends PgStatement implements IFunction {
     @Override
     public Map<String, String> getReturnsColumns() {
         return Collections.emptyMap();
-    }
-
-    public void addReturnsColumn(String name, String type) {
-        //unused
     }
 
     @Override

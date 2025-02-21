@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChConstraint extends AbstractConstraint {
+public final class ChConstraint extends AbstractConstraint {
 
     private final boolean isAssume;
     private String expr;
@@ -36,23 +35,15 @@ public class ChConstraint extends AbstractConstraint {
         this.isAssume = isAssume;
     }
 
-    public boolean isAssume() {
-        return isAssume;
-    }
-
     public void setExpr(String expr) {
         this.expr = expr;
         resetHash();
     }
 
-    public String getExpr() {
-        return expr;
-    }
-
     @Override
     public String getDefinition() {
         final StringBuilder sb = new StringBuilder();
-        sb.append(isAssume() ? "ASSUME " : "CHECK ").append(getExpr());
+        sb.append(isAssume ? "ASSUME " : "CHECK ").append(expr);
         return sb.toString();
     }
 
@@ -65,10 +56,9 @@ public class ChConstraint extends AbstractConstraint {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         var newConstr = (ChConstraint) newCondition;
         if (!compareUnalterable(newConstr)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
         return ObjectState.NOTHING;
@@ -82,13 +72,13 @@ public class ChConstraint extends AbstractConstraint {
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName()));
+        sb.append(ChDiffUtils.getQuotedName(name));
         script.addStatement(sb);
     }
 
     private boolean compareUnalterable(ChConstraint newConstr) {
-        return Objects.equals(isAssume, newConstr.isAssume())
-                && Objects.equals(expr, newConstr.getExpr());
+        return Objects.equals(isAssume, newConstr.isAssume)
+                && Objects.equals(expr, newConstr.expr);
     }
 
     @Override

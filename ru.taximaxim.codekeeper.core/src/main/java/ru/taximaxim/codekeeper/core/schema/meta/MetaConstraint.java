@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.schema.IConstraint;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
-public class MetaConstraint extends MetaStatement implements IConstraint {
+public final class MetaConstraint extends MetaStatement implements IConstraint {
 
     private static final long serialVersionUID = 7375924980206798486L;
 

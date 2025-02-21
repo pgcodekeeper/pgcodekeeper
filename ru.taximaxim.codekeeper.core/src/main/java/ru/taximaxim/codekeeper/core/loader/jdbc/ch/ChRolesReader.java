@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChRole;
 
-public class ChRolesReader extends AbstractStatementReader {
+public final class ChRolesReader extends AbstractStatementReader {
 
     private final ChDatabase db;
 
@@ -46,7 +46,7 @@ public class ChRolesReader extends AbstractStatementReader {
         if (storage != null) {
             role.setStorageType(storage);
         }
-        db.addRole(role);
+        db.addChild(role);
     }
 
     @Override

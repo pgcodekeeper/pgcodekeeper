@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -195,7 +195,6 @@ public class Differ implements IRunnableWithProgress {
                     !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
             newArgs.setGenerateExists(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXISTS));
             newArgs.setGenerateExistDoBlock(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK));
-            newArgs.setDropBeforeCreate(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
             newArgs.setCommentsToEnd(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.COMMENTS_TO_END));
 
             db.setArguments(newArgs);

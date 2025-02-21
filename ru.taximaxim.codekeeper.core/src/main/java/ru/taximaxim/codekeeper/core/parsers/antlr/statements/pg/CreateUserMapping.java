@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,7 @@ public class CreateUserMapping extends PgParserAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options != null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                fillOptionParams(option.character_string().getText(),
-                        option.col_label().getText(), false, usm::addOption);
+                fillOptionParams(option.sconst().getText(), option.col_label().getText(), false, usm::addOption);
             }
         }
         addSafe(db, usm, Arrays.asList(userMapping));

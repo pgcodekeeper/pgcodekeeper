@@ -61,17 +61,23 @@ OVERRIDING SYSTEM VALUE
 SELECT id, country_id, city_id, logdate FROM public.measurement_randomly_generated_part;
 
 DO LANGUAGE plpgsql $_$
-DECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence('public.measurement_randomly_generated_part', 'city_id')));
+DECLARE restart_var bigint = (SELECT COALESCE(
+    (SELECT nextval(pg_get_serial_sequence('public.measurement_randomly_generated_part', 'city_id'))),
+    (SELECT MAX(city_id) + 1 FROM public.measurement),
+    1));
 BEGIN
-	EXECUTE $$ ALTER TABLE public.measurement ALTER COLUMN city_id RESTART WITH $$ || restart_var || ';' ;
-END;
+    EXECUTE $$ ALTER TABLE public.measurement ALTER COLUMN city_id RESTART WITH $$ || restart_var || ';' ;
+END
 $_$;
 
 DO LANGUAGE plpgsql $_$
-DECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence('public.measurement_randomly_generated_part', 'country_id')));
+DECLARE restart_var bigint = (SELECT COALESCE(
+    (SELECT nextval(pg_get_serial_sequence('public.measurement_randomly_generated_part', 'country_id'))),
+    (SELECT MAX(country_id) + 1 FROM public.measurement),
+    1));
 BEGIN
-	EXECUTE $$ ALTER TABLE public.measurement ALTER COLUMN country_id RESTART WITH $$ || restart_var || ';' ;
-END;
+    EXECUTE $$ ALTER TABLE public.measurement ALTER COLUMN country_id RESTART WITH $$ || restart_var || ';' ;
+END
 $_$;
 
 DROP TABLE public.measurement_3_randomly_generated_part;

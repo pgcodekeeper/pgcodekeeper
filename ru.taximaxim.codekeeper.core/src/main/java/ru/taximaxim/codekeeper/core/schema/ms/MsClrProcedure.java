@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 
-public class MsClrProcedure extends AbstractMsClrFunction {
+public final class MsClrProcedure extends AbstractMsClrFunction {
 
     public MsClrProcedure(String name, String assembly, String assemblyClass,
             String assemblyMethod) {
@@ -53,9 +53,9 @@ public class MsClrProcedure extends AbstractMsClrFunction {
         }
 
         sbSQL.append("AS\nEXTERNAL NAME ");
-        sbSQL.append(MsDiffUtils.quoteName(getAssembly())).append('.');
-        sbSQL.append(MsDiffUtils.quoteName(getAssemblyClass())).append('.');
-        sbSQL.append(MsDiffUtils.quoteName(getAssemblyMethod()));
+        sbSQL.append(MsDiffUtils.quoteName(assembly)).append('.');
+        sbSQL.append(MsDiffUtils.quoteName(assemblyClass)).append('.');
+        sbSQL.append(MsDiffUtils.quoteName(assemblyMethod));
     }
 
     @Override
@@ -97,7 +97,6 @@ public class MsClrProcedure extends AbstractMsClrFunction {
 
     @Override
     protected MsClrProcedure getFunctionCopy() {
-        return new MsClrProcedure(getName(), getAssembly(),
-                getAssemblyClass(), getAssemblyMethod());
+        return new MsClrProcedure(name, assembly, assemblyClass, assemblyMethod);
     }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,9 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -32,7 +30,8 @@ import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsIndex extends AbstractIndex {
+public final class MsIndex extends AbstractIndex {
+
     private boolean isColumnstore;
     private List<String> orderCols = new ArrayList<>();
 
@@ -40,17 +39,9 @@ public class MsIndex extends AbstractIndex {
         super(name);
     }
 
-    public boolean isColumnstore() {
-        return isColumnstore;
-    }
-
     public void setColumnstore(boolean isColumnstore) {
         this.isColumnstore = isColumnstore;
         resetHash();
-    }
-
-    public List<String> getOrderCols() {
-        return Collections.unmodifiableList(orderCols);
     }
 
     public void addOrderCol(String orderCol) {
@@ -66,22 +57,22 @@ public class MsIndex extends AbstractIndex {
     private void getCreationSQL(SQLScript script, boolean dropExisting) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ");
-        if (isUnique()) {
+        if (unique) {
             sbSQL.append("UNIQUE ");
         }
         appendClustered(sbSQL);
 
-        if (isColumnstore()) {
+        if (isColumnstore) {
             sbSQL.append("COLUMNSTORE ");
         }
         sbSQL.append(getDefinition(false, dropExisting));
-        if (getTablespace() != null) {
-            sbSQL.append("\nON ").append(getTablespace());
+        if (tablespace != null) {
+            sbSQL.append("\nON ").append(tablespace);
         }
         script.addStatement(sbSQL);
     }
 
-    public String getDefinition(boolean isTypeIndex, boolean dropExisting) {
+    String getDefinition(boolean isTypeIndex, boolean dropExisting) {
         var sb = new StringBuilder();
         sb.append("INDEX ");
 
@@ -93,7 +84,7 @@ public class MsIndex extends AbstractIndex {
                 sb.append(')');
             }
         } else {
-            sb.append(MsDiffUtils.quoteName(getName()));
+            sb.append(MsDiffUtils.quoteName(name));
             sb.append(' ');
             appendClustered(sb);
             if (options.keySet().stream().anyMatch("BUCKET_COUNT"::equalsIgnoreCase)) {
@@ -105,7 +96,7 @@ public class MsIndex extends AbstractIndex {
         }
 
         if (!includes.isEmpty()) {
-            sb.append(isColumnstore() ? " " : " INCLUDE ");
+            sb.append(isColumnstore ? " " : " INCLUDE ");
             StatementUtils.appendCols(sb, includes, getDbType());
         }
         if (!orderCols.isEmpty()) {
@@ -145,21 +136,19 @@ public class MsIndex extends AbstractIndex {
     }
 
     private void appendClustered(StringBuilder sb) {
-        if (!isClustered()) {
+        if (!isClustered) {
             sb.append("NON");
         }
         sb.append("CLUSTERED ");
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         if (!compare(newCondition)) {
-            isNeedDepcies.set(true);
-
             MsIndex newIndex = (MsIndex) newCondition;
-            if (!isClustered() || newIndex.isClustered()) {
+            if (!isClustered || newIndex.isClustered) {
                 newIndex.getCreationSQL(script, true);
-                return ObjectState.ALTER;
+                return ObjectState.ALTER_WITH_DEP;
             }
 
             return ObjectState.RECREATE;
@@ -175,9 +164,9 @@ public class MsIndex extends AbstractIndex {
 
     @Override
     protected StringBuilder appendFullName(StringBuilder sb) {
-        sb.append(MsDiffUtils.quoteName(getName()))
+        sb.append(MsDiffUtils.quoteName(name))
         .append(" ON ")
-        .append(getParent().getQualifiedName());
+        .append(parent.getQualifiedName());
         return sb;
     }
 
@@ -185,7 +174,7 @@ public class MsIndex extends AbstractIndex {
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsIndex ind && super.compare(obj)) {
             return isColumnstore == ind.isColumnstore
-                    && Objects.equals(orderCols, ind.getOrderCols());
+                    && Objects.equals(orderCols, ind.orderCols);
         }
         return false;
     }
@@ -199,7 +188,7 @@ public class MsIndex extends AbstractIndex {
 
     @Override
     protected AbstractIndex getIndexCopy() {
-        MsIndex ind = new MsIndex(getName());
+        MsIndex ind = new MsIndex(name);
         ind.setColumnstore(isColumnstore);
         ind.orderCols.addAll(orderCols);
         return ind;

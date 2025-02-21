@@ -2725,9 +2725,16 @@ set_special
     | SET IDENTITY_INSERT qualified_name on_off
     | SET TEXTSIZE DECIMAL
     | SET LANGUAGE (id | constant_LOCAL_ID)
-    | SET STATISTICS (IO | XML | PROFILE | TIME) on_off
+    | SET STATISTICS set_statistics_value (COMMA set_statistics_value)* on_off
     | SET object_expression
     | SET ROWCOUNT decimal_or_local_id
+    ;
+
+set_statistics_value
+    : IO
+    | XML
+    | PROFILE
+    | TIME
     ;
 
 constant_LOCAL_ID
@@ -2884,8 +2891,14 @@ group_by_clause
 
 group_by_item
     : expression
-    | GROUPING SETS LR_BRACKET (expression | LR_BRACKET RR_BRACKET) (COMMA (expression | LR_BRACKET RR_BRACKET))* RR_BRACKET
+    | GROUPING SETS LR_BRACKET grouping_sets_item (COMMA grouping_sets_item)* RR_BRACKET
     | LR_BRACKET RR_BRACKET
+    ;
+
+grouping_sets_item
+    : LR_BRACKET RR_BRACKET
+    | expression
+    | LR_BRACKET expression (COMMA expression)+ RR_BRACKET
     ;
 
 match_specification
@@ -2948,7 +2961,7 @@ top_clause
     ;
 
 top_count
-    : (REAL | FLOAT) PERCENT
+    : (REAL | FLOAT | DECIMAL) PERCENT
     | DECIMAL
     | LR_BRACKET expression RR_BRACKET
     | LR_BRACKET expression RR_BRACKET PERCENT

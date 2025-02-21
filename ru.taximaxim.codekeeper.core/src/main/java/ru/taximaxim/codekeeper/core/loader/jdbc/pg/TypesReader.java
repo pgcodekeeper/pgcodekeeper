@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,6 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEnumType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRangeType;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
 public final class TypesReader extends JdbcReader {
 
@@ -58,11 +57,7 @@ public final class TypesReader extends JdbcReader {
     protected void processResult(ResultSet result, AbstractSchema schema) throws SQLException {
         PgStatement typeOrDomain = getTypeDomain(result, schema);
         if (typeOrDomain != null) {
-            if (typeOrDomain.getStatementType() == DbObjType.DOMAIN) {
-                ((PgSchema) schema).addDomain((PgDomain) typeOrDomain);
-            } else {
-                schema.addType((AbstractType) typeOrDomain);
-            }
+            schema.addChild(typeOrDomain);
         }
     }
 
@@ -147,13 +142,13 @@ public final class TypesReader extends JdbcReader {
     private AbstractType getType(ResultSet res, String schemaName, String typtype) throws SQLException {
         String name = res.getString("typname");
         loader.setCurrentObject(new GenericColumn(schemaName, name, DbObjType.TYPE));
-        switch (typtype) {
-        case "b": return getBaseType(res, name, schemaName);
-        case "c": return getCompositeType(res, name);
-        case "e": return getEnumType(res, name);
-        case "r": return getRangeType(res, name, schemaName);
-        default: return null;
-        }
+        return switch (typtype) {
+            case "b" -> getBaseType(res, name, schemaName);
+            case "c" -> getCompositeType(res, name);
+            case "e" -> getEnumType(res, name);
+            case "r" -> getRangeType(res, name, schemaName);
+            default -> null;
+        };
     }
 
     private PgBaseType getBaseType(ResultSet res, String name, String schemaName) throws SQLException {

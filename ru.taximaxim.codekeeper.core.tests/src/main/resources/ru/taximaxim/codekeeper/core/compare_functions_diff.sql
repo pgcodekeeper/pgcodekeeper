@@ -120,7 +120,7 @@ CREATE OR REPLACE FUNCTION public.f33(integer) RETURNS void
 CREATE OR REPLACE FUNCTION public.f34(integer) RETURNS void
     LANGUAGE sql
     SET debug_deadlocks TO true
-    SET "TimeZone" TO '-1'
+    SET "TimeZone" TO - 1
     SET "ROLE" FROM CURRENT
     AS $$ $$;
 

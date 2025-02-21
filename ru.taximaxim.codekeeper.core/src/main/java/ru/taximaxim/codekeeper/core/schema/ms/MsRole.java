@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,9 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -30,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsRole extends PgStatement {
+public final class MsRole extends PgStatement {
 
     private final Set<String> members = new LinkedHashSet<>();
 
@@ -45,14 +43,14 @@ public class MsRole extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(name));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
@@ -74,7 +72,7 @@ public class MsRole extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsRole newRole = (MsRole) newCondition;
 
@@ -99,9 +97,9 @@ public class MsRole extends PgStatement {
         return getObjectState(script, startSize);
     }
 
-    public void appendAlterRole(String member, SQLScript script, boolean needAddMember) {
+    private void appendAlterRole(String member, SQLScript script, boolean needAddMember) {
         StringBuilder sql = new StringBuilder();
-        sql.append("ALTER ROLE ").append(MsDiffUtils.quoteName(getName()));
+        sql.append("ALTER ROLE ").append(MsDiffUtils.quoteName(name));
         sql.append(needAddMember ? " ADD " : " DROP ").append("MEMBER ").append(MsDiffUtils.quoteName(member));
         script.addStatement(sql);
     }
@@ -111,10 +109,6 @@ public class MsRole extends PgStatement {
         resetHash();
     }
 
-    public Set<String> getMembers() {
-        return Collections.unmodifiableSet(members);
-    }
-
     @Override
     public void computeHash(Hasher hasher) {
         hasher.put(members);
@@ -122,7 +116,7 @@ public class MsRole extends PgStatement {
 
     @Override
     public MsRole shallowCopy() {
-        MsRole roleDst = new MsRole(getName());
+        MsRole roleDst = new MsRole(name);
         copyBaseFields(roleDst);
         roleDst.members.addAll(members);
         return roleDst;

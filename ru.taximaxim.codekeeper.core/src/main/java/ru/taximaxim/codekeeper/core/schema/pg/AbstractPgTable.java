@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -47,6 +46,17 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  * @author galiev_mr
  */
 public abstract class AbstractPgTable extends AbstractTable {
+
+    private static final String RESTART_SEQUENCE_QUERY = """
+            DO LANGUAGE plpgsql $_$
+            DECLARE restart_var bigint = (SELECT COALESCE(
+                (SELECT nextval(pg_get_serial_sequence('%1$s', '%2$s'))),
+                (SELECT MAX(%2$s) + 1 FROM %3$s),
+                1));
+            BEGIN
+                EXECUTE $$ ALTER TABLE %3$s ALTER COLUMN %2$s RESTART WITH $$ || restart_var || ';' ;
+            END
+            $_$""";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPgTable.class);
 
@@ -165,7 +175,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         });
     }
 
-    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption, boolean newLine) {
+    protected PgSequence writeSequences(PgColumn column, StringBuilder sbOption) {
         PgSequence sequence = column.getSequence();
         sbOption.append(getAlterTable(false))
         .append(ALTER_COLUMN)
@@ -180,12 +190,11 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
         if (isRecreated(newTable)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -208,7 +217,7 @@ public abstract class AbstractPgTable extends AbstractTable {
 
         // check greenplum options
         for (String gpOption : GP_OPTION_LIST) {
-            if (!Objects.equals(getOption(gpOption), newTable.getOption(gpOption))) {
+            if (!Objects.equals(options.get(gpOption), newTable.getOption(gpOption))) {
                 return true;
             }
         }
@@ -261,30 +270,30 @@ public abstract class AbstractPgTable extends AbstractTable {
      * @param sb - StringBuilder for statements
      */
     protected void compareTableOptions(AbstractPgTable newTable, SQLScript script) {
-        if (hasOids != newTable.getHasOids()) {
+        if (hasOids != newTable.hasOids) {
             StringBuilder sql = new StringBuilder();
             sql.append(getAlterTable(true))
             .append(" SET ")
-            .append(newTable.getHasOids() ? "WITH" : "WITHOUT")
+            .append(newTable.hasOids ? "WITH" : "WITHOUT")
             .append(" OIDS");
             script.addStatement(sql);
         }
     }
 
     protected void compareInherits(AbstractPgTable newTable, SQLScript script) {
-        List<Inherits> newInherits = newTable.getInherits();
+        List<Inherits> newInherits = newTable.inherits;
 
         if (newTable instanceof PartitionPgTable) {
             return;
         }
 
         inherits.stream()
-                .filter(e -> !newInherits.contains(e))
-                .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tNO INHERIT ")));
+        .filter(e -> !newInherits.contains(e))
+        .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tNO INHERIT ")));
 
         newInherits.stream()
-                .filter(e -> !inherits.contains(e))
-                .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tINHERIT ")));
+        .filter(e -> !inherits.contains(e))
+        .forEach(e -> script.addStatement(getInheritsActions(e, "\n\tINHERIT ")));
     }
 
     private String getInheritsActions(Inherits inh, String state) {
@@ -305,10 +314,6 @@ public abstract class AbstractPgTable extends AbstractTable {
         return Collections.unmodifiableList(inherits);
     }
 
-    public boolean getHasOids() {
-        return hasOids;
-    }
-
     public void setHasOids(final boolean hasOids) {
         this.hasOids = hasOids;
         resetHash();
@@ -321,6 +326,10 @@ public abstract class AbstractPgTable extends AbstractTable {
      * then sorted alphabetically the inheritance columns
      */
     public void sortColumns() {
+        if (inherits.isEmpty()) {
+            return;
+        }
+
         Collections.sort(columns, (e1, e2) ->  {
             boolean first = ((PgColumn) e1).isInherit();
             boolean second = ((PgColumn) e2).isInherit();
@@ -359,10 +368,10 @@ public abstract class AbstractPgTable extends AbstractTable {
             StringBuilder sbSeq = new StringBuilder();
             if (getDatabaseArguments().isGenerateExistDoBlock()) {
                 StringBuilder tmpSb = new StringBuilder();
-                writeSequences(column, tmpSb, false);
+                writeSequences(column, tmpSb);
                 PgDiffUtils.appendSqlWrappedInDo(sbSeq, tmpSb, Consts.DUPLICATE_RELATION);
             } else {
-                writeSequences(column, sbSeq, true);
+                writeSequences(column, sbSeq);
                 sbSeq.setLength(sbSeq.length() - 1);
             }
             script.addStatement(sbSeq);
@@ -438,7 +447,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (this == obj) {
             return true;
         } else if (obj instanceof AbstractPgTable table && super.compare(obj)) {
-            return hasOids == table.getHasOids()
+            return hasOids == table.hasOids
                     && inherits.equals(table.inherits);
         }
         return false;
@@ -455,13 +464,14 @@ public abstract class AbstractPgTable extends AbstractTable {
     public AbstractTable shallowCopy() {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
-        copy.setHasOids(getHasOids());
+        copy.setHasOids(hasOids);
         return copy;
     }
 
     @Override
-    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols) {
+        String tblQName = newTable.getQualifiedName();
         StringBuilder sbInsert = new StringBuilder();
         sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
         if (!identityColsForMovingData.isEmpty()) {
@@ -471,24 +481,18 @@ public abstract class AbstractPgTable extends AbstractTable {
         script.addStatement(sbInsert);
 
         for (String colName : identityColsForMovingData) {
-            String restartWith = " ALTER TABLE " + tblQName + " ALTER COLUMN " + PgDiffUtils.getQuotedName(colName)
-                    + " RESTART WITH ";
-            restartWith = PgDiffUtils.quoteStringDollar(restartWith) + " || restart_var || ';'";
-            String doBody = "\nDECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence("
-                    + PgDiffUtils.quoteString(tblTmpQName) + ", "
-                    + PgDiffUtils.quoteString(PgDiffUtils.getQuotedName(colName))
-                    + ")));\nBEGIN\n\tEXECUTE " + restartWith + " ;\nEND;\n";
-            script.addStatement("DO LANGUAGE plpgsql " + PgDiffUtils.quoteStringDollar(doBody));
+            String quotedCol = PgDiffUtils.getQuotedName(colName);
+            script.addStatement(RESTART_SEQUENCE_QUERY.formatted(tblTmpQName, quotedCol, tblQName));
         }
     }
 
     @Override
     public List<String> getColsForMovingData(AbstractTable newTable) {
         return newTable.getColumns().stream()
-            .filter(c -> containsColumn(c.getName()))
-            .map(PgColumn.class::cast)
-            .filter(pgCol -> !pgCol.isGenerated())
-            .map(AbstractColumn::getName)
-            .toList();
+                .filter(c -> containsColumn(c.getName()))
+                .map(PgColumn.class::cast)
+                .filter(pgCol -> !pgCol.isGenerated())
+                .map(AbstractColumn::getName)
+                .toList();
     }
 }

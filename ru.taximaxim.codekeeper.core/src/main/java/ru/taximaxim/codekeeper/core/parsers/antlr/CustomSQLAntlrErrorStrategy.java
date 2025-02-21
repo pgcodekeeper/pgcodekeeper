@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,11 +42,11 @@ class CustomSQLAntlrErrorStrategy extends CustomAntlrErrorStrategy {
         switch (token) {
         case SQLLexer.OP_CHARS:
             return OPERATOR;
-        case SQLLexer.DOLLAR_NUMBER, SQLLexer.Identifier, SQLLexer.QuotedIdentifier:
+        case SQLLexer.DOLLAR_NUMBER, SQLLexer.Identifier, SQLLexer.QuotedIdentifier, SQLLexer.UnicodeQuotedIdentifier:
             return IDENTIFIER;
-        case SQLLexer.Character_String_Literal, SQLLexer.BeginDollarStringConstant:
+        case SQLLexer.StringConstant, SQLLexer.BeginDollarStringConstant, SQLLexer.UnicodeEscapeStringConstant:
             return STRING;
-        case SQLLexer.NUMBER_LITERAL, SQLLexer.REAL_NUMBER:
+        case SQLLexer.Integer, SQLLexer.Numeric:
             return NUMBER;
         default:
             return vocabulary.getDisplayName(token);

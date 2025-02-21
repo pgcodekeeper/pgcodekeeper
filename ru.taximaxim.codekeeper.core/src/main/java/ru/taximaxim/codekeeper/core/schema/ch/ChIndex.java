@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -27,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChIndex extends AbstractIndex {
+public final class ChIndex extends AbstractIndex {
 
     private String expr;
     private String type;
@@ -42,17 +41,9 @@ public class ChIndex extends AbstractIndex {
         resetHash();
     }
 
-    public String getExpr() {
-        return expr;
-    }
-
     public void setType(String type) {
         this.type = type;
         resetHash();
-    }
-
-    public String getType() {
-        return type;
     }
 
     public void setGranVal(int granVal) {
@@ -60,13 +51,9 @@ public class ChIndex extends AbstractIndex {
         resetHash();
     }
 
-    public int getGranVal() {
-        return granVal;
-    }
-
     public String getDefinition() {
         final StringBuilder sb = new StringBuilder();
-        sb.append("INDEX ").append(getName()).append(' ').append(expr)
+        sb.append("INDEX ").append(name).append(' ').append(expr)
         .append(" TYPE ").append(type);
         if (granVal != 1) {
             sb.append(" GRANULARITY ").append(granVal);
@@ -76,14 +63,13 @@ public class ChIndex extends AbstractIndex {
 
     @Override
     public void getCreationSQL(SQLScript script) {
-        script.addStatement(getAlterTable(false, false) + " ADD " + getDefinition());
+        script.addStatement(getAlterTable() + " ADD " + getDefinition());
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         var newIndex = (ChIndex) newCondition;
         if (!compareUnalterable(newIndex)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
         return ObjectState.NOTHING;
@@ -92,22 +78,22 @@ public class ChIndex extends AbstractIndex {
     @Override
     public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
-        sb.append(getAlterTable(false, false)).append("\n\tDROP INDEX ");
+        sb.append(getAlterTable()).append("\n\tDROP INDEX ");
         if (optionExists) {
             sb.append(IF_EXISTS);
         }
-        sb.append(ChDiffUtils.getQuotedName(getName()));
+        sb.append(ChDiffUtils.getQuotedName(name));
         script.addStatement(sb);
     }
 
-    private String getAlterTable(boolean nextLine, boolean only) {
-        return ((AbstractTable) getParent()).getAlterTable(only);
+    private String getAlterTable() {
+        return ((AbstractTable) parent).getAlterTable(false);
     }
 
     private boolean compareUnalterable(ChIndex newIndex) {
-        return Objects.equals(expr, newIndex.getExpr())
-                && Objects.equals(type, newIndex.getType())
-                && granVal == newIndex.getGranVal();
+        return Objects.equals(expr, newIndex.expr)
+                && Objects.equals(type, newIndex.type)
+                && granVal == newIndex.granVal;
     }
 
     @Override

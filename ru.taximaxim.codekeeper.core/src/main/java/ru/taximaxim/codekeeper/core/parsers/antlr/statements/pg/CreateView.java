@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
-
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -35,6 +34,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_pa
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parametersContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Table_spaceContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
+import ru.taximaxim.codekeeper.core.schema.pg.MaterializedPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 
@@ -67,20 +68,25 @@ public class CreateView extends PgParserAbstract {
         Create_view_statementContext ctx = context;
         List<ParserRuleContext> ids = getIdentifiers(ctx.name);
         ParserRuleContext name = QNameParser.getFirstNameCtx(ids);
-        PgView view = new PgView(name.getText());
+        AbstractPgView view = new PgView(name.getText());
         if (ctx.MATERIALIZED() != null) {
-            view.setIsWithData(ctx.NO() == null);
+            var matV = new MaterializedPgView(name.getText());
+            matV.setIsWithData(ctx.NO() == null);
             Table_spaceContext space = ctx.table_space();
             if (space != null) {
-                view.setTablespace(space.identifier().getText());
+                matV.setTablespace(space.identifier().getText());
             } else if (tablespace != null) {
-                view.setTablespace(tablespace);
+                matV.setTablespace(tablespace);
             }
             if (ctx.USING() != null) {
-                view.setMethod(ctx.identifier().getText());
+                matV.setMethod(ctx.identifier().getText());
             } else if (accessMethod != null) {
-                view.setMethod(accessMethod);
+                matV.setMethod(accessMethod);
             }
+            if (ctx.distributed_clause() != null) {
+                matV.setDistribution(parseDistribution(ctx.distributed_clause()));
+            }
+            view = matV;
         } else if (ctx.RECURSIVE() != null) {
             String sql = MessageFormat.format(RECURSIVE_PATTERN,
                     getFullCtxText(name), getFullCtxText(ctx.column_names.identifier()), getFullCtxText(ctx.v_query));
@@ -98,9 +104,6 @@ public class CreateView extends PgParserAbstract {
                 view.addColumnName(column.getText());
             }
         }
-
-        view.setDistribution(parseDistribution(ctx.distributed_clause()));
-
         Storage_parametersContext storage = ctx.storage_parameters();
         if (storage != null){
             List <Storage_parameter_optionContext> options = storage.storage_parameter_option();
@@ -111,7 +114,7 @@ public class CreateView extends PgParserAbstract {
             }
         }
         if (ctx.with_check_option() != null){
-            view.addOption(PgView.CHECK_OPTION,
+            view.addOption(AbstractPgView.CHECK_OPTION,
                     ctx.with_check_option().LOCAL() != null ? "local" : "cascaded");
         }
 

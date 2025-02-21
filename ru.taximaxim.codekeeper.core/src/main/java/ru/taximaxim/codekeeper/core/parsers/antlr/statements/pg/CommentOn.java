@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,9 +27,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comment_member_objectContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Comment_on_statementContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SconstContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -40,7 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
-import ru.taximaxim.codekeeper.core.schema.pg.PgView;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
 
 public class CommentOn extends PgParserAbstract {
 
@@ -53,7 +53,7 @@ public class CommentOn extends PgParserAbstract {
 
     @Override
     public void parseObject() {
-        Character_stringContext str = ctx.character_string();
+        SconstContext str = ctx.sconst();
         String comment = str == null ? null : str.getText();
         Comment_member_objectContext obj = ctx.comment_member_object();
 
@@ -90,7 +90,7 @@ public class CommentOn extends PgParserAbstract {
             String tableName = tableCtx.getText();
             AbstractPgTable table = (AbstractPgTable) schema.getTable(tableName);
             if (table == null) {
-                PgView view = (PgView) schema.getView(tableName);
+                AbstractPgView view = (AbstractPgView) schema.getView(tableName);
                 if (view == null) {
                     PgCompositeType t = ((PgCompositeType) getSafe(PgSchema::getType, schema, tableCtx));
                     addObjReference(tableIds, DbObjType.TYPE, null);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_event_trigger_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Event_trigger_filter_variablesContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
@@ -44,7 +43,7 @@ public class CreateEventTrigger extends PgParserAbstract {
         if (ctx.WHEN() != null) {
             for (Event_trigger_filter_variablesContext etFiltersCtx : ctx.event_trigger_filter_variables()) {
                 if (TAG.equals(etFiltersCtx.identifier().getText().toLowerCase(Locale.ROOT))) {
-                    for (Character_stringContext charCtx : etFiltersCtx.filter_values) {
+                    for (var charCtx : etFiltersCtx.filter_values) {
                         eventTrigger.addTag(charCtx.getText());
                     }
                 }

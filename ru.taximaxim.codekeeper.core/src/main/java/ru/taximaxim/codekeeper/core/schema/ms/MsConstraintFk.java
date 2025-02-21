@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,17 +86,9 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
         resetHash();
     }
 
-    public String getDelAction() {
-        return delAction;
-    }
-
     public void setUpdAction(String updAction) {
         this.updAction = updAction;
         resetHash();
-    }
-
-    public String getUpdAction() {
-        return updAction;
     }
 
     public void setNotForRepl(boolean isNotForRepl) {
@@ -104,17 +96,13 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
         resetHash();
     }
 
-    public boolean isNotForRepl() {
-        return isNotForRepl;
-    }
-
     @Override
     public String getDefinition() {
         var sbSQL = new StringBuilder();
         sbSQL.append("FOREIGN KEY ");
         StatementUtils.appendCols(sbSQL, columns, getDbType());
-        sbSQL.append(" REFERENCES ").append(MsDiffUtils.quoteName(getForeignSchema())).append('.')
-        .append(MsDiffUtils.quoteName(getForeignTable()));
+        sbSQL.append(" REFERENCES ").append(MsDiffUtils.quoteName(foreignSchema)).append('.')
+        .append(MsDiffUtils.quoteName(foreignTable));
         if (!refs.isEmpty()) {
             sbSQL.append(' ');
             StatementUtils.appendCols(sbSQL, refs, getDbType());
@@ -136,12 +124,12 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
     protected boolean compareUnalterable(MsConstraint obj) {
         if (obj instanceof MsConstraintFk con) {
             return Objects.equals(columns, con.columns)
-                    && Objects.equals(getForeignSchema(), con.getForeignSchema())
-                    && Objects.equals(getForeignTable(), con.getForeignTable())
+                    && Objects.equals(foreignSchema, con.foreignSchema)
+                    && Objects.equals(foreignTable, con.foreignTable)
                     && Objects.equals(refs, con.refs)
-                    && Objects.equals(getDelAction(), con.getDelAction())
-                    && Objects.equals(getUpdAction(), con.getUpdAction())
-                    && isNotForRepl() == con.isNotForRepl();
+                    && Objects.equals(delAction, con.delAction)
+                    && Objects.equals(updAction, con.updAction)
+                    && isNotForRepl == con.isNotForRepl;
         }
 
         return false;
@@ -171,8 +159,8 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
     protected AbstractConstraint getConstraintCopy() {
         var con = new MsConstraintFk(name);
         con.columns.addAll(columns);
-        con.setForeignSchema(getForeignSchema());
-        con.setForeignTable(getForeignTable());
+        con.setForeignSchema(foreignSchema);
+        con.setForeignTable(foreignTable);
         con.refs.addAll(refs);
         con.setDelAction(delAction);
         con.setUpdAction(updAction);

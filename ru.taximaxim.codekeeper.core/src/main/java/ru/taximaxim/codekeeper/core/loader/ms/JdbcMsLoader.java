@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,9 +75,9 @@ public class JdbcMsLoader extends JdbcLoaderBase {
 
             queryCheckMsVersion();
             new MsSchemasReader(this, d).read();
+            new MsTablesReader(this).read();
             new MsFPVTReader(this).read();
             new MsExtendedObjectsReader(this).read();
-            new MsTablesReader(this).read();
             new MsSequencesReader(this).read();
             new MsIndicesAndPKReader(this).read();
             new MsFKReader(this).read();

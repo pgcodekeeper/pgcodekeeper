@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -32,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgStatistics extends AbstractStatistics {
+public final class PgStatistics extends AbstractStatistics {
 
     private int statistics = -1;
     private List<String> kinds = new ArrayList<>();
@@ -69,11 +68,10 @@ public class PgStatistics extends AbstractStatistics {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgStatistics newStat = (PgStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -156,7 +154,7 @@ public class PgStatistics extends AbstractStatistics {
 
     @Override
     protected PgStatistics getStatisticsCopy() {
-        PgStatistics stat = new PgStatistics(getName());
+        PgStatistics stat = new PgStatistics(name);
         stat.kinds.addAll(kinds);
         stat.expressions.addAll(expressions);
         stat.setStatistics(statistics);

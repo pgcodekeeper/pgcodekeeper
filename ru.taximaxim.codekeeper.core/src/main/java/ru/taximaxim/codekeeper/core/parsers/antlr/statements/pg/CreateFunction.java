@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_actions_commonContext;
@@ -44,12 +43,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_d
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Identifier_nontypeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SconstContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Session_local_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Set_statement_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Transform_for_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.With_storage_parameterContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Zone_valueContext;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
@@ -218,8 +219,8 @@ public final class CreateFunction extends PgParserAbstract {
 
         if (setOpts.SESSION() != null) {
             String val;
-            if (setOpts.Character_String_Literal() != null) {
-                val = setOpts.Character_String_Literal().getText();
+            if (setOpts.sconst() != null) {
+                val = setOpts.sconst().getText();
             } else if (setOpts.session_param != null) {
                 val = PgDiffUtils.quoteString(setOpts.session_param.getText());
             } else {
@@ -229,16 +230,16 @@ public final class CreateFunction extends PgParserAbstract {
             return;
         }
 
-        if (setOpts.TIME() != null) {
-            String val;
-            if (setOpts.Character_String_Literal() != null) {
-                val = setOpts.Character_String_Literal().getText();
-            } else if (setOpts.signed_numerical_literal() != null) {
-                val = PgDiffUtils.quoteString(setOpts.signed_numerical_literal().getText());
-            } else {
+        Zone_valueContext timezone = setOpts.zone_value();
+        if (timezone != null) {
+            if (timezone.DEFAULT() != null) {
                 return;
             }
-            function.addConfiguration("\"TimeZone\"", val);
+
+            String value = getFullCtxText(timezone);
+            if (!"LOCAL".equalsIgnoreCase(value)) {
+                function.addConfiguration("\"TimeZone\"", value);
+            }
             return;
         }
 
@@ -272,7 +273,7 @@ public final class CreateFunction extends PgParserAbstract {
     }
 
     private void analyzeFunctionDefinition(AbstractPgFunction function, String language,
-            Character_stringContext definition, List<Pair<String, GenericColumn>> funcArgs) {
+            SconstContext definition, List<Pair<String, GenericColumn>> funcArgs) {
         Pair<String, Token> pair = unquoteQuotedString(definition);
         String def = pair.getFirst();
         Token start = pair.getSecond();

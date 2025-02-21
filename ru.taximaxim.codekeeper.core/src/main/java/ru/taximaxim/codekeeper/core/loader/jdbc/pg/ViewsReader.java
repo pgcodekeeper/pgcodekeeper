@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,8 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
+import ru.taximaxim.codekeeper.core.schema.pg.MaterializedPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -49,18 +51,28 @@ public class ViewsReader extends JdbcReader {
         String viewName = res.getString("relname");
         loader.setCurrentObject(new GenericColumn(schemaName, viewName, DbObjType.VIEW));
 
-        PgView v = new PgView(viewName);
+        AbstractPgView v;
 
         // materialized view
         if ("m".equals(res.getString("kind"))) {
-            v.setIsWithData(res.getBoolean("relispopulated"));
+            var matV = new MaterializedPgView(viewName);
+            matV.setIsWithData(res.getBoolean("relispopulated"));
             String tableSpace = res.getString("table_space");
             if (tableSpace != null && !tableSpace.isEmpty()) {
-                v.setTablespace(tableSpace);
+                matV.setTablespace(tableSpace);
             }
             if (SupportedPgVersion.VERSION_12.isLE(loader.getVersion())) {
-                v.setMethod(res.getString("access_method"));
+                matV.setMethod(res.getString("access_method"));
             }
+            if (loader.isGreenplumDb()) {
+                String distribution = res.getString("distribution");
+                if (distribution != null && !distribution.isBlank()) {
+                    matV.setDistribution(distribution);
+                }
+            }
+            v = matV;
+        } else {
+            v = new PgView(viewName);
         }
 
         String definition = res.getString("definition");
@@ -94,7 +106,7 @@ public class ViewsReader extends JdbcReader {
                 String colName = colNames[i];
                 String colDefault = colDefaults[i];
                 if (colDefault != null) {
-                    v.addColumnDefaultValue(colName, colDefault);
+                    ((PgView)v).addColumnDefaultValue(colName, colDefault);
                     loader.submitAntlrTask(colDefault, p -> p.vex_eof().vex().get(0),
                             ctx -> dataBase.addAnalysisLauncher(
                                     new VexAnalysisLauncher(v, ctx, loader.getCurrentLocation())));
@@ -122,12 +134,6 @@ public class ViewsReader extends JdbcReader {
             ParserAbstract.fillOptionParams(options, v::addOption, false, false, false);
         }
 
-        if (loader.isGreenplumDb()) {
-            String distribution = res.getString("distribution");
-            if (distribution != null && !distribution.isBlank()) {
-                v.setDistribution(distribution);
-            }
-        }
         schema.addView(v);
     }
 

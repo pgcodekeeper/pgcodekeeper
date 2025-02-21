@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -38,7 +37,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 /**
  * Postgres schema code generation.
  */
-public class PgSchema extends AbstractSchema {
+public final class PgSchema extends AbstractSchema {
 
     private final Map<String, PgDomain> domains = new LinkedHashMap<>();
     private final Map<String, PgFtsParser> parsers = new LinkedHashMap<>();
@@ -67,7 +66,7 @@ public class PgSchema extends AbstractSchema {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         appendAlterOwner(newCondition, script);
         alterPrivileges(newCondition, script);
@@ -108,67 +107,39 @@ public class PgSchema extends AbstractSchema {
         return statistics.get(name);
     }
 
-    public Collection<PgFtsParser> getFtsParsers() {
-        return Collections.unmodifiableCollection(parsers.values());
-    }
-
-    public Collection<PgFtsTemplate> getFtsTemplates() {
-        return Collections.unmodifiableCollection(templates.values());
-    }
-
-    public Collection<PgFtsDictionary> getFtsDictionaries() {
-        return Collections.unmodifiableCollection(dictionaries.values());
-    }
-
-    public Collection<PgFtsConfiguration> getFtsConfigurations() {
-        return Collections.unmodifiableCollection(configurations.values());
-    }
-
     public Collection<IOperator> getOperators() {
         return Collections.unmodifiableCollection(operators.values());
     }
 
-    public Collection<PgCollation> getCollations() {
-        return Collections.unmodifiableCollection(collations.values());
-    }
-
-    public Collection<PgDomain> getDomains() {
-        return Collections.unmodifiableCollection(domains.values());
-    }
-
-    public Collection<PgStatistics> getStatistics() {
-        return Collections.unmodifiableCollection(statistics.values());
-    }
-
-    public void addCollation(final PgCollation collation) {
+    private void addCollation(final PgCollation collation) {
         addUnique(collations, collation);
     }
 
-    public void addDomain(PgDomain dom) {
+    private void addDomain(PgDomain dom) {
         addUnique(domains, dom);
     }
 
-    public void addFtsParser(final PgFtsParser parser) {
+    private void addFtsParser(final PgFtsParser parser) {
         addUnique(parsers, parser);
     }
 
-    public void addFtsTemplate(final PgFtsTemplate template) {
+    private void addFtsTemplate(final PgFtsTemplate template) {
         addUnique(templates, template);
     }
 
-    public void addFtsDictionary(final PgFtsDictionary dictionary) {
+    private void addFtsDictionary(final PgFtsDictionary dictionary) {
         addUnique(dictionaries, dictionary);
     }
 
-    public void addFtsConfiguration(final PgFtsConfiguration configuration) {
+    private void addFtsConfiguration(final PgFtsConfiguration configuration) {
         addUnique(configurations, configuration);
     }
 
-    public void addOperator(final PgOperator oper) {
+    private void addOperator(final PgOperator oper) {
         addUnique(operators, oper);
     }
 
-    public void addStatistics(final PgStatistics rule) {
+    private void addStatistics(final PgStatistics rule) {
         addUnique(statistics, rule);
     }
 
@@ -188,15 +159,15 @@ public class PgSchema extends AbstractSchema {
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         return switch (type) {
-        case DOMAIN -> getDomain(name);
-        case FTS_PARSER -> getFtsParser(name);
-        case FTS_TEMPLATE -> getFtsTemplate(name);
-        case FTS_DICTIONARY -> getFtsDictionary(name);
-        case FTS_CONFIGURATION -> getFtsConfiguration(name);
-        case OPERATOR -> getOperator(name);
-        case COLLATION -> getCollation(name);
-        case STATISTICS -> getStatistics(name);
-        default -> super.getChild(name, type);
+            case DOMAIN -> domains.get(name);
+            case FTS_PARSER -> parsers.get(name);
+            case FTS_TEMPLATE -> templates.get(name);
+            case FTS_DICTIONARY -> dictionaries.get(name);
+            case FTS_CONFIGURATION -> configurations.get(name);
+            case OPERATOR -> operators.get(name);
+            case COLLATION -> collations.get(name);
+            case STATISTICS -> statistics.get(name);
+            default -> super.getChild(name, type);
         };
     }
 

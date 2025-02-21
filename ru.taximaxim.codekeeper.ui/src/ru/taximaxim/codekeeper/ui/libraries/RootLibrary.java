@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,13 +32,15 @@ public class RootLibrary extends AbstractLibrary {
      * name value - {@link RootLibrary}
      */
     private static final Map<String, RootLibrary> ROOT_LIBS = new ConcurrentHashMap<>();
+    private final String projectName;
 
-    public static RootLibrary getRootLib(String project) {
-        return ROOT_LIBS.computeIfAbsent(project, k -> new RootLibrary());
+    private RootLibrary(String projectName) {
+        super(null, null, Messages.LibraryContainer_root);
+        this.projectName = projectName;
     }
 
-    private RootLibrary() {
-        super(null, null, Messages.LibraryContainer_root);
+    public String getProject() {
+        return projectName;
     }
 
     @Override
@@ -54,5 +56,23 @@ public class RootLibrary extends AbstractLibrary {
     @Override
     public String getDescription() {
         return Messages.LibraryContainer_root;
+    }
+
+    public static RootLibrary getRootLib(String project) {
+        return ROOT_LIBS.computeIfAbsent(project, k -> new RootLibrary(project));
+    }
+
+    public static boolean hasRootLib(String project) {
+        return ROOT_LIBS.containsKey(project);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 }

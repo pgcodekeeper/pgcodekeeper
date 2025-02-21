@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -42,7 +40,7 @@ public final class ChRole extends PgStatement {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
         appendIfNotExists(sbSQL);
-        sbSQL.append(ChDiffUtils.getQuotedName(getName()));
+        sbSQL.append(ChDiffUtils.getQuotedName(name));
         if (!DEF_STORAGE.equals(storageType)) {
             sbSQL.append("\n\tIN ").append(storageType);
         }
@@ -51,7 +49,7 @@ public final class ChRole extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChRole newRole = (ChRole) newCondition;
 
@@ -91,7 +89,7 @@ public final class ChRole extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -101,7 +99,7 @@ public final class ChRole extends PgStatement {
 
     @Override
     public PgStatement shallowCopy() {
-        ChRole copy = new ChRole(getName());
+        ChRole copy = new ChRole(name);
         copyBaseFields(copy);
         copy.setStorageType(storageType);
         return copy;

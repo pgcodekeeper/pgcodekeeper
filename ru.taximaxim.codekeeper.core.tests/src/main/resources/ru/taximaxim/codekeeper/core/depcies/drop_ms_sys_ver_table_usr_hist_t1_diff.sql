@@ -1,0 +1,14 @@
+ALTER TABLE [dbo].[t1] SET (SYSTEM_VERSIONING = OFF)
+GO
+
+-- DEPCY: This CONSTRAINT PK__Departme__718447F8BF74033C depends on the TABLE: [dbo].[hist_t1]
+
+ALTER TABLE [dbo].[t1]
+	DROP CONSTRAINT [PK__Departme__718447F8BF74033C]
+GO
+
+DROP TABLE [dbo].[t1]
+GO
+
+DROP TABLE [dbo].[hist_t1]
+GO

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
@@ -36,7 +35,6 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
-import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
@@ -44,7 +42,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  */
 public abstract class AbstractDatabase extends PgStatement implements IDatabase {
 
-    private PgDiffArguments arguments;
+    protected PgDiffArguments arguments;
 
     private SupportedPgVersion version;
 
@@ -189,21 +187,13 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         l.add(schemas.values());
     }
 
-    public void sortColumns() {
-        if (getDbType() == DatabaseType.PG) {
-            for (AbstractSchema schema : schemas.values()) {
-                schema.getTables().forEach(t -> ((AbstractPgTable) t).sortColumns());
-            }
-        }
-    }
-
     @Override
     public void getCreationSQL(SQLScript script) {
         // no action
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         return ObjectState.NOTHING;
     }
 
@@ -240,8 +230,8 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
             analysisLaunchers.add(l);
         });
 
-        overrides.addAll(lib.getOverrides());
-        lib.getObjReferences().entrySet().forEach(e -> objReferences.putIfAbsent(e.getKey(), e.getValue()));
+        overrides.addAll(lib.overrides);
+        lib.objReferences.entrySet().forEach(e -> objReferences.putIfAbsent(e.getKey(), e.getValue()));
     }
 
     protected void addOverride(PgOverride override) {
@@ -250,14 +240,14 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
 
     protected void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
-        PgStatement parent = st.getParent();
+        PgStatement parent = st.parent;
         String parentName = parent.getName();
         IStatementContainer cont;
 
         if (isFirstLevelType(type)) {
             cont = this;
         } else if (st.isSubElement()) {
-            cont = getSchema(parent.getParent().getName()).getStatementContainer(parentName);
+            cont = getSchema(parent.parent.getName()).getStatementContainer(parentName);
         } else {
             cont = getSchema(parentName);
         }

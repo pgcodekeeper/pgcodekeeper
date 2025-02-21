@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -67,21 +68,20 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class AntlrParser {
+public final class AntlrParser {
 
-    private static final String POOL_SIZE = "ru.taximaxim.codekeeper.parser.poolsize";
+    private static final int POOL_SIZE = Integer.max(1,
+            Integer.getInteger(Consts.POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1));
 
-    private static final ExecutorService ANTLR_POOL;
+    private static final ExecutorService ANTLR_POOL =
+            Executors.newFixedThreadPool(POOL_SIZE, new DaemonThreadFactory());
 
     private static volatile long pgParserLastStart;
     private static volatile long msParserLastStart;
     private static volatile long chParserLastStart;
 
-    static {
-        int count = Integer.getInteger(
-                POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1);
-        ANTLR_POOL = Executors.newFixedThreadPool(
-                Integer.max(1, count), new DaemonThreadFactory());
+    public static int getPoolSize() {
+        return POOL_SIZE;
     }
 
     /**

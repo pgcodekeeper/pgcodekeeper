@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,7 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.IntegerVerifyListener;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -260,15 +261,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
         txtDbPort = new Text(tabAreaDb, SWT.BORDER);
         txtDbPort.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false));
-        txtDbPort.addVerifyListener(e -> {
-            try {
-                if (!e.text.isEmpty() && Integer.valueOf(e.text) < 0) {
-                    e.doit = false;
-                }
-            } catch(NumberFormatException ex) {
-                e.doit = false;
-            }
-        });
+        txtDbPort.addVerifyListener(new IntegerVerifyListener());
         txtDbPort.addModifyListener(modifyListener);
 
         new Label(tabAreaDb, SWT.NONE).setText(Messages.dB_name);

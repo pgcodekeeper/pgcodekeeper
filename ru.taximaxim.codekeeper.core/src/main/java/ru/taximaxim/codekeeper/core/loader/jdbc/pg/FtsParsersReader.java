@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsParser;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
-public class FtsParsersReader extends JdbcReader {
+public final class FtsParsersReader extends JdbcReader {
 
     public FtsParsersReader(JdbcLoaderBase loader) {
         super(loader);
@@ -47,7 +46,7 @@ public class FtsParsersReader extends JdbcReader {
 
         loader.setComment(parser, res);
         loader.setAuthor(parser, res);
-        ((PgSchema) schema).addFtsParser(parser);
+        schema.addChild(parser);
     }
 
     @Override

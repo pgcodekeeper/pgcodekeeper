@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.editors;
 
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Objects;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -27,9 +23,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.navigator.ILinkHelper;
 
-import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.FileLibrary;
-import ru.taximaxim.codekeeper.ui.libraries.RootLibrary;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 
 public class CodekeeperLinkHelper implements ILinkHelper {
@@ -41,39 +36,14 @@ public class CodekeeperLinkHelper implements ILinkHelper {
             return new StructuredSelection(in.getProject());
         }
 
-        return getSelection(anInput);
-    }
-
-    private StructuredSelection getSelection(IEditorInput anInput) {
         if (anInput instanceof SQLEditorInput input && input.isReadOnly()) {
-            var inputPath = input.getPath();
-            var root = RootLibrary.getRootLib(input.getProject());
-            var children = root.getChildren().stream().filter(e -> inputPath.toString().contains(e.getName())).toList();
-
-            var selection = getNestedLib(children, input.getPath());
+            var selection = LibraryStorage.getLibrary(input.getPath().toString());
             if (selection != null) {
                 return new StructuredSelection(selection);
             }
         }
 
         return StructuredSelection.EMPTY;
-    }
-
-    private AbstractLibrary getNestedLib(List<AbstractLibrary> children, Path inputPath) {
-        for (var child : children) {
-            if (child instanceof FileLibrary) {
-                if (Objects.equals(child.getPath(), inputPath)) {
-                    return child;
-                }
-            } else {
-                var lib = getNestedLib(child.getChildren(), inputPath);
-                if (null != lib) {
-                    return lib;
-                }
-            }
-        }
-
-        return null;
     }
 
     @Override

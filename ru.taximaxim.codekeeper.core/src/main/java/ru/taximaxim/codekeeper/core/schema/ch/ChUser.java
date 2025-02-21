@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,10 +17,8 @@ package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -62,7 +60,7 @@ public class ChUser extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (ChDatabase) getParent();
+        return (ChDatabase) parent;
     }
 
     @Override
@@ -70,7 +68,7 @@ public class ChUser extends PgStatement {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE USER ");
         appendIfNotExists(sbSQL);
-        sbSQL.append(ChDiffUtils.getQuotedName(getName()));
+        sbSQL.append(ChDiffUtils.getQuotedName(name));
         if (!hosts.isEmpty()) {
             sbSQL.append(DELIM).append("HOST ").append(String.join(", ", hosts));
         }
@@ -110,7 +108,7 @@ public class ChUser extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChUser newUser = (ChUser) newCondition;
 
@@ -119,9 +117,9 @@ public class ChUser extends PgStatement {
         if (!Objects.equals(defRoles, newUser.defRoles) || !Objects.equals(exceptRoles, newUser.exceptRoles)) {
             appendRoles(newUser.defRoles, newUser.exceptRoles, DEFAULT, "ALL", false, sbSql);
         }
-        if (!Objects.equals(getDefaultDatabase(), newUser.getDefaultDatabase())) {
+        if (!Objects.equals(defDb, newUser.defDb)) {
             sbSql.append(DELIM).append("DEFAULT DATABASE ");
-            sbSql.append(newUser.getDefaultDatabase() == null ? "NONE" : newUser.getDefaultDatabase());
+            sbSql.append(newUser.defDb == null ? "NONE" : newUser.defDb);
         }
         if (!Objects.equals(grantees, newUser.grantees) || !Objects.equals(exGrantees, newUser.exGrantees)) {
             appendRoles(newUser.grantees, newUser.exGrantees, "GRANTEES ", "ANY", false, sbSql);
@@ -131,11 +129,11 @@ public class ChUser extends PgStatement {
             script.addStatement(new StringBuilder("ALTER USER ").append(getQualifiedName()).append(sbSql));
         }
 
-        if (!Objects.equals(storageType, newUser.getStorageType())) {
+        if (!Objects.equals(storageType, newUser.storageType)) {
             StringBuilder sql = new StringBuilder();
             sql.append("MOVE ROLE ")
             .append(getQualifiedName()).append(" TO ")
-            .append(newUser.getStorageType());
+            .append(newUser.storageType);
             script.addStatement(sql);
         }
         alterPrivileges(newCondition, script);
@@ -176,7 +174,7 @@ public class ChUser extends PgStatement {
 
     @Override
     public PgStatement shallowCopy() {
-        ChUser userDst = new ChUser(getName());
+        ChUser userDst = new ChUser(name);
         copyBaseFields(userDst);
         userDst.hosts.addAll(hosts);
         userDst.setStorageType(storageType);
@@ -199,17 +197,9 @@ public class ChUser extends PgStatement {
         hasher.put(defDb);
     }
 
-    public String getDefaultDatabase() {
-        return defDb;
-    }
-
     public void setDefaultDatabase(String defaultDatabase) {
         this.defDb = defaultDatabase;
         resetHash();
-    }
-
-    public List<String> getDefRoles() {
-        return Collections.unmodifiableList(defRoles);
     }
 
     public void addDefRole(String defRole) {
@@ -217,17 +207,9 @@ public class ChUser extends PgStatement {
         resetHash();
     }
 
-    public List<String> getExceptRoles() {
-        return Collections.unmodifiableList(exceptRoles);
-    }
-
     public void addExceptRole(String exceptRole) {
         exceptRoles.add(exceptRole);
         resetHash();
-    }
-
-    public List<String> getGrantees() {
-        return Collections.unmodifiableList(grantees);
     }
 
     public void addGrantee(String grantee) {
@@ -235,26 +217,18 @@ public class ChUser extends PgStatement {
         resetHash();
     }
 
-    public List<String> getExGrantees() {
-        return Collections.unmodifiableList(exGrantees);
-    }
-
     public void addExGrantee(String exGrantee) {
         exGrantees.add(exGrantee);
         resetHash();
     }
 
-    public List<String> getHosts() {
-        return Collections.unmodifiableList(hosts);
+    public boolean hasHosts() {
+        return hosts.isEmpty();
     }
 
     public void addHost(String host) {
         hosts.add(host);
         resetHash();
-    }
-
-    public String getStorageType() {
-        return storageType;
     }
 
     public void setStorageType(String storageType) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
@@ -232,7 +231,7 @@ class PgAntlrLoaderTest {
 
         PgExtension ext = new PgExtension("postgis");
         ext.setSchema("postgis");
-        ((PgDatabase) d).addExtension(ext);
+        d.addChild(ext);
         ext.setComment("'PostGIS geometry, geography, and raster spatial types and functions'");
 
         schema = d.getSchema(Consts.PUBLIC);
@@ -861,7 +860,7 @@ class PgAntlrLoaderTest {
         schema.addView(view);
 
         view.setComment("'test view'");
-        view.addColumnComment("id", "'view id col'");
+        view.addColumnComment(d.getArguments(), "id", "'view id col'");
 
         view.setOwner("fordfrog");
 

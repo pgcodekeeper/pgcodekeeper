@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -29,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
+public final class PgUserMapping extends PgStatement implements PgForeignOptionContainer {
 
     private final String user;
     private final String server;
@@ -39,10 +38,6 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
         super(user + " SERVER " + server);
         this.user = user;
         this.server = server;
-    }
-
-    public String getUser() {
-        return user;
     }
 
     public String getServer() {
@@ -83,16 +78,16 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
             return true;
         }
         if (obj instanceof PgUserMapping usm && super.compare(obj)) {
-            return Objects.equals(user, usm.getUser())
-                    && Objects.equals(server, usm.getServer())
-                    && Objects.equals(options, usm.getOptions());
+            return Objects.equals(user, usm.user)
+                    && Objects.equals(server, usm.server)
+                    && Objects.equals(options, usm.options);
         }
         return false;
     }
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -101,7 +96,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
         sb.append("CREATE USER MAPPING ");
         appendIfNotExists(sb);
         sb.append("FOR ").append(getQualifiedName());
-        if (!getOptions().isEmpty()) {
+        if (!options.isEmpty()) {
             sb.append(' ');
         }
         appendOptions(sb);
@@ -109,13 +104,12 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgUserMapping newUsm = (PgUserMapping) newCondition;
 
-        if (!Objects.equals(newUsm.getUser(), getUser()) ||
-                !Objects.equals(newUsm.getServer(), getServer())) {
-            isNeedDepcies.set(true);
+        if (!Objects.equals(newUsm.user, user) ||
+                !Objects.equals(newUsm.server, server)) {
             return ObjectState.RECREATE;
         }
 
@@ -136,7 +130,7 @@ public class PgUserMapping extends PgStatement implements PgForeignOptionContain
 
     @Override
     public PgStatement shallowCopy() {
-        PgUserMapping copyUsm = new PgUserMapping(getUser(), getServer());
+        PgUserMapping copyUsm = new PgUserMapping(user, server);
         copyBaseFields(copyUsm);
         copyUsm.options.putAll(options);
         return copyUsm;

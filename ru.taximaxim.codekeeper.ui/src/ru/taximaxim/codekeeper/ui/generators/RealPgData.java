@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class RealPgData extends PgData<Double> {
 
     @Override
     protected Double generateRandom(Random ran) {
-        return (end - start + 1) * ran.nextDouble() + start;
+        return (end - start) * ran.nextDouble() + start;
     }
 
     @Override

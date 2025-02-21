@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.Consts;
@@ -37,6 +38,8 @@ import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class UiLibraryLoader {
+
+    private static final Pattern ZIP_HASH_END = Pattern.compile("\\.zip_[0-9a-f]{10}$");
 
     private static final Comparator<Path> DIR_COMPARATOR = (p1, p2) -> {
         boolean bool = Files.isDirectory(p1);
@@ -63,6 +66,7 @@ public class UiLibraryLoader {
 
     public RootLibrary load(List<PgLibrary> libs) throws IOException {
         RootLibrary root = RootLibrary.getRootLib(project);
+        LibraryStorage.clean(root);
         root.clearChildren();
 
         for (PgLibrary lib : libs) {
@@ -111,14 +115,28 @@ public class UiLibraryLoader {
         }
 
         if (Files.isDirectory(path)) {
-            readDir(new DirectoryLibrary(parent, path), path);
+            if (isHidden(parent, path)) {
+                readDir(parent, path);
+            } else {
+                readDir(new DirectoryLibrary(parent, path), path);
+            }
         } else if (FileUtils.isZipFile(path)) {
-            ZipLibrary zip = new ZipLibrary(parent, path, project, dbType);
+            ZipLibrary zip;
+            if (parent instanceof RootLibrary) {
+                zip = new ZipLibrary(parent, path, project, dbType);
+                parent = zip;
+            } else {
+                zip = new ZipLibrary(null, path, project, dbType);
+            }
             zip.load();
-            readPath(zip, zip.getPath());
+            readPath(parent, zip.getPath());
         } else {
             new FileLibrary(parent, path, project, dbType);
         }
+    }
+
+    private boolean isHidden(AbstractLibrary parent, Path path) {
+        return parent instanceof CacheableLibrary && ZIP_HASH_END.matcher(path.toString()).find();
     }
 
     private void readDir(AbstractLibrary parent, Path path) throws IOException {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,8 +174,10 @@ public class MsSelect extends MsAbstractExprWithNmspc<Select_statementContext> {
                 vex.expressionList(expList);
             } else {
                 for (var groupItem : group.group_by_item()) {
-                    for (var exp : groupItem.expression()) {
-                        vex.analyze(exp);
+                    for (var item : groupItem.grouping_sets_item()) {
+                        for (var exp : item.expression()) {
+                            vex.analyze(exp);
+                        }
                     }
                 }
             }

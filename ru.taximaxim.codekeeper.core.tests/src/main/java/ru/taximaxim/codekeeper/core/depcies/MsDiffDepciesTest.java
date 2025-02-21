@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ class MsDiffDepciesTest {
             // changed: t1, stat1, stat2
             // user: t1
             "change_ms_table_with_stat_usr",
+            "drop_ms_sys_ver_table_usr_hist_t1",
     })
     void testDepcy(String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, false);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,13 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_table_stmtContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_element_exprContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChTable;
+import ru.taximaxim.codekeeper.core.schema.ch.ChTableLog;
 
-public class CreateChTable extends ChParserAbstract {
+public final class CreateChTable extends ChParserAbstract {
 
     private Create_table_stmtContext ctx;
 
@@ -39,7 +41,17 @@ public class CreateChTable extends ChParserAbstract {
     public void parseObject() {
         List<ParserRuleContext> ids = getIdentifiers(ctx.qualified_name());
         String name = QNameParser.getFirstName(ids);
-        ChTable table = new ChTable(name);
+        ChTable table;
+        IdentifierContext engType = null;
+        var engineClCtx = ctx.table_body_expr().engine_clause();
+        if (engineClCtx != null) {
+            engType = engineClCtx.engine_expr().identifier();
+        }
+        if (engType != null && engType.getText().endsWith("Log")) {
+            table = new ChTableLog(name);
+        } else {
+            table = new ChTable(name);
+        }
         parseObject(table);
         addSafe(getSchemaSafe(ids), table, ids);
     }

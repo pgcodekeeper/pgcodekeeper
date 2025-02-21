@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,11 @@ package ru.taximaxim.codekeeper.core.schema;
  * Object state which we get in appendAlterSQL() method
  */
 public enum ObjectState {
+    CREATE,
     RECREATE,
     ALTER,
+    DROP,
+    ALTER_WITH_DEP,
     NOTHING;
 
     public boolean in(ObjectState... states) {

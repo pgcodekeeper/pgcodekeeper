@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
@@ -36,6 +37,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_opt
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_optionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_restContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Index_whereContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.On_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Table_constraint_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
@@ -49,6 +51,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
+import ru.taximaxim.codekeeper.core.schema.ms.GeneratedType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
@@ -115,7 +118,27 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
         for (Index_optionContext option : options) {
             String key = option.key.getText();
             String value = getFullCtxText(option.index_option_value());
-            stmt.addOption(key, value);
+            if (Objects.equals("SYSTEM_VERSIONING", key) && stmt instanceof MsTable table) {
+                table.setSysVersioning(value);
+                addHistTableDep(option.index_option_value().on_option(), stmt);
+            } else {
+                stmt.addOption(key, value);
+            }
+        }
+    }
+
+    protected void addHistTableDep(On_optionContext onOpt, IOptionContainer stmt) {
+        if (onOpt == null || isRefMode()) {
+            return;
+        }
+
+        for (var sysVer : onOpt.system_versioning_opt()) {
+            var historyTable = sysVer.history_table_name;
+            if (null != historyTable) {
+                var histSchemaName = historyTable.schema.getText();
+                var histTableName = historyTable.name.getText();
+                ((PgStatement) stmt).addDep(new GenericColumn(histSchemaName, histTableName, DbObjType.TABLE));
+            }
         }
     }
 
@@ -223,6 +246,9 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
             col.setSparse(true);
         } else if (option.COLLATE() != null) {
             col.setCollation(getFullCtxText(option.collate));
+        } else if (option.GENERATED() != null) {
+            col.setGenerated(getGenerated(option));
+            col.setHidden(option.HIDDEN_KEYWORD() != null);
         } else if (option.PERSISTED() != null) {
             col.setPersisted(true);
         } else if (option.ROWGUIDCOL() != null) {
@@ -269,6 +295,23 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
             }
             stmt.addChild(index);
         }
+    }
+
+    private GeneratedType getGenerated(Column_optionContext option) {
+        boolean isStart = option.START() != null;
+        if (option.ROW() != null) {
+            return isStart ? GeneratedType.ROW_START : GeneratedType.ROW_END;
+        }
+
+        if (option.TRANSACTION_ID() != null) {
+            return isStart ? GeneratedType.TRAN_START : GeneratedType.TRAN_END;
+        }
+
+        if (option.SEQUENCE_NUMBER() != null) {
+            return isStart ? GeneratedType.SEQ_START : GeneratedType.SEQ_END;
+        }
+
+        throw new IllegalStateException("Unsupported GENERATED ALWAYS column type: " + getFullCtxText(option));
     }
 
     protected void fillColumns(ISimpleColumnContainer stmt, List<Column_with_orderContext> cols, String schema,

@@ -9,12 +9,60 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.8.0] - 2025-02-18
+
+### Added
+
+- Added preference for the number of parser threads to optimize CPU resource consumption.
+
+### Fixed
+
+- Fixed parser rule for aggregate functions in PostgreSQL.
+- Fixed incomplete deletion of files when creation of a project failed.
+- Fixed a bug in generating code with data migration when adding an IDENTITY column.
+- Fixed migration script for tables from the Log engine family to ClickHouse.
+- Fixed a bug when installing the plugin in Eclipse 2024-12.
+- Fixed `Print DROP before CREATE statement` option work.
+- Fixed a bug when building MS SQL project with incorrect file names.
+- Fixed code generation when changing a function with adding new dependencies.
+
+## [10.7.1] - 2025-02-05
+
+### Fixed
+
+- Fixed object reading order for MS SQL.
+- Fixed parser rules for MS SQL.
+
+## [10.7.0] - 2025-02-04
+
+### Added
+
+- Added support for Unicode escape sequences in identifiers and strings for PostgreSQL.
+- Added the ability to copy all error messages in standalone pgCodeKeeper packages.
+
+### Fixed
+
+- Fixed a bug in generating a migration script for partitioned tables with indexes.
+- Fixed parser rule for partitioned tables in Greenplum.
+
+## [10.6.0] - 2025-01-21
+
+### Added
+
+- Added support for MS SQL 2022.
 - Added links to library objects.
 
 ### Changed
 
 - The mechanism for generating the migration script has been rewritten, allowing for more fine-grained control over the order of operations. In the process, the order of some operations was corrected.
 - Disabled formatting option for read-only files.
+- Updated license year.
 
 ### Fixed
 
@@ -22,8 +70,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug in generating code for a DOMAIN object with constraints.
 - Fixed UI freeze when testing connection with database.
 - Fixed code generation for CREATE OR REPLACE PROCEDURE command.
-
-### Removed
 
 ## [10.5.0] - 2024-12-10
 
@@ -2153,7 +2199,11 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...HEAD
+[10.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...v10.8.0
+[10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1
+[10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
+[10.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.5.0...v10.6.0
 [10.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.4.0...v10.5.0
 [10.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.1...v10.4.0
 [10.3.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.3.0...v10.3.1

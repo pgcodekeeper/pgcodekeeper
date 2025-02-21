@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 /**
  * Stores Postgres procedure information.
  */
-public class PgProcedure extends AbstractPgFunction {
+public final class PgProcedure extends AbstractPgFunction {
 
     private String returns;
 
@@ -67,6 +67,6 @@ public class PgProcedure extends AbstractPgFunction {
 
     @Override
     protected AbstractPgFunction getFunctionCopy() {
-        return new PgProcedure(getBareName());
+        return new PgProcedure(name);
     }
 }

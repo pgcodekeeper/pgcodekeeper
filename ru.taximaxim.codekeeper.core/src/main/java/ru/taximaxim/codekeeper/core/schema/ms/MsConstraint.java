@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
  * limitations under the License.
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -37,53 +35,51 @@ public abstract class MsConstraint extends AbstractConstraint {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL);
-        if (isNotValid()) {
+        if (isNotValid) {
             sbSQL.append(" WITH NOCHECK");
         }
         sbSQL.append("\n\tADD ");
         if (!name.isEmpty()) {
-            sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(getName())).append(' ');
+            sbSQL.append("CONSTRAINT ").append(MsDiffUtils.quoteName(name)).append(' ');
         }
         sbSQL.append(getDefinition());
         script.addStatement(sbSQL);
 
         // 1) if is not valid, after adding it is disabled by default
         // 2) can't be valid if disabled
-        if (isNotValid()) {
+        if (isNotValid) {
             StringBuilder sb = new StringBuilder();
             appendAlterTable(sb);
             sb.append(' ');
-            if (isDisabled()) {
+            if (isDisabled) {
                 sb.append("NO");
             }
-            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(getName()));
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(name));
             script.addStatement(sb);
         }
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsConstraint newConstr = (MsConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-        compareOptions(newConstr, script);
 
-        if (isNotValid() != newConstr.isNotValid() || isDisabled() != newConstr.isDisabled()) {
+        if (isNotValid != newConstr.isNotValid || isDisabled != newConstr.isDisabled) {
             StringBuilder sb = new StringBuilder();
             appendAlterTable(sb);
             sb.append(" WITH ");
-            if (newConstr.isNotValid()) {
+            if (newConstr.isNotValid) {
                 sb.append("NO");
             }
             sb.append("CHECK ");
-            if (newConstr.isDisabled()) {
+            if (newConstr.isDisabled) {
                 sb.append("NO");
             }
-            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.getName()));
+            sb.append("CHECK CONSTRAINT ").append(MsDiffUtils.quoteName(newConstr.name));
             script.addStatement(sb);
         }
 
@@ -94,35 +90,22 @@ public abstract class MsConstraint extends AbstractConstraint {
 
     @Override
     public void getDropSQL(SQLScript script, boolean optionExists) {
-        appendSpecialDropSQL(script);
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL);
         sbSQL.append("\n\tDROP CONSTRAINT ");
         if (optionExists) {
             sbSQL.append(IF_EXISTS);
         }
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(name));
         script.addStatement(sbSQL);
-    }
-
-    protected void compareOptions(MsConstraint newConstr, SQLScript script) {
-        // subclasses will override if needed
-    }
-
-    protected void appendSpecialDropSQL(SQLScript script) {
-        // subclasses will override if needed
     }
 
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsConstraint con && super.compare(obj)) {
-            return isDisabled == con.isDisabled();
+            return isDisabled == con.isDisabled;
         }
         return false;
-    }
-
-    public boolean isDisabled() {
-        return isDisabled;
     }
 
     public void setDisabled(boolean isDisabled) {
@@ -139,7 +122,7 @@ public abstract class MsConstraint extends AbstractConstraint {
     @Override
     public AbstractConstraint shallowCopy() {
         MsConstraint con = (MsConstraint) super.shallowCopy();
-        con.setDisabled(isDisabled());
+        con.setDisabled(isDisabled);
         return con;
     }
 

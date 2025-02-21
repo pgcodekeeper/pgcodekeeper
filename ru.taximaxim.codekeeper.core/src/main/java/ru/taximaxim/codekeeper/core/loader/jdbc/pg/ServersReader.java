@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgServer;
 
-public class ServersReader extends AbstractStatementReader {
+public final class ServersReader extends AbstractStatementReader {
 
     private final PgDatabase db;
 
@@ -63,7 +63,7 @@ public class ServersReader extends AbstractStatementReader {
         loader.setOwner(srv, res.getLong("srvowner"));
         loader.setPrivileges(srv, res.getString("srvacl"), null);
         loader.setAuthor(srv, res);
-        db.addServer(srv);
+        db.addChild(srv);
     }
 
     @Override

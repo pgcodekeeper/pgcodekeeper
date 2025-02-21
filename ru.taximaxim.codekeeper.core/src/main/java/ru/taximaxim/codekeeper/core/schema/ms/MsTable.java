@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -42,11 +41,8 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 /**
  * Base MS SQL table class
- *
- * @since 5.3.1.
- * @author galiev_mr
  */
-public class MsTable extends AbstractTable implements ISimpleOptionContainer {
+public final class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
     private static final String MEMORY_OPTIMIZED = "MEMORY_OPTIMIZED";
 
@@ -61,6 +57,10 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     private String textImage;
     private String fileStream;
     private String tablespace;
+    private String sysVersioning;
+
+    private AbstractColumn periodStartCol;
+    private AbstractColumn periodEndCol;
 
     private final Map<String, MsStatistics> statistics = new HashMap<>();
 
@@ -75,7 +75,6 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         appendColumns(sbSQL);
         appendOptions(sbSQL);
         script.addStatement(sbSQL);
-
         appendAlterOptions(script);
         appendOwnerSQL(script);
         appendPrivileges(script);
@@ -83,16 +82,14 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsTable newTable = (MsTable) newCondition;
 
         if (isRecreated(newTable)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
-        compareOptions(newTable, script);
         appendAlterOwner(newTable, script);
         compareTableOptions(newTable, script);
         alterPrivileges(newTable, script);
@@ -100,23 +97,25 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return getObjectState(script, startSize);
     }
 
-    protected void appendAlterOptions(SQLScript script) {
+    private void appendAlterOptions(SQLScript script) {
         if (isTracked != null) {
             script.addStatement(enableTracking(), SQLActionType.END);
         }
+        if (sysVersioning != null) {
+            script.addStatement(enableSysVersioning(), SQLActionType.END);
+        }
     }
 
-    protected void appendName(StringBuilder sbSQL) {
+    private void appendName(StringBuilder sbSQL) {
         sbSQL.append("SET QUOTED_IDENTIFIER ON").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("CREATE TABLE ").append(getQualifiedName());
     }
 
-    protected void appendColumns(StringBuilder sbSQL) {
+    private void appendColumns(StringBuilder sbSQL) {
         sbSQL.append("(\n");
 
-        int start = sbSQL.length();
         for (AbstractColumn column : columns) {
             sbSQL.append("\t");
             sbSQL.append(column.getFullDefinition());
@@ -134,13 +133,18 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
                 sbSQL.append(",\n");
             }
         }
+        sbSQL.setLength(sbSQL.length() - 2);
+        appendPeriodSystem(sbSQL);
+        sbSQL.append('\n').append(')');
+    }
 
-        if (start != sbSQL.length()) {
-            sbSQL.setLength(sbSQL.length() - 2);
-            sbSQL.append('\n');
+    private void appendPeriodSystem(StringBuilder sb) {
+        if (periodStartCol != null && periodEndCol != null) {
+            sb.append(",\n\tPERIOD FOR SYSTEM_TIME (");
+            sb.append(MsDiffUtils.quoteName(periodStartCol.getName())).append(", ");
+            sb.append(MsDiffUtils.quoteName(periodEndCol.getName()));
+            sb.append(")");
         }
-
-        sbSQL.append(')');
     }
 
     public List<AbstractConstraint> getPkeys() {
@@ -159,19 +163,19 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         }
     }
 
-    protected void appendOptions(StringBuilder sbSQL) {
+    private void appendOptions(StringBuilder sbSQL) {
         int startLength = sbSQL.length();
         if (tablespace != null) {
             // tablespace already quoted
             sbSQL.append(" ON ").append(tablespace).append(' ');
         }
 
-        if (getTextImage() != null) {
-            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(getTextImage())).append(' ');
+        if (textImage != null) {
+            sbSQL.append("TEXTIMAGE_ON ").append(MsDiffUtils.quoteName(textImage)).append(' ');
         }
 
-        if (getFileStream() != null) {
-            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(getFileStream())).append(' ');
+        if (fileStream != null) {
+            sbSQL.append("FILESTREAM_ON ").append(MsDiffUtils.quoteName(fileStream)).append(' ');
         }
 
         if (sbSQL.length() > startLength) {
@@ -192,55 +196,72 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
 
         if (sb.length() > 0){
             sb.setLength(sb.length() - 2);
-            sbSQL.append("\nWITH (").append(sb).append(")");
+            sbSQL.append("\nWITH (").append(sb).append(')');
         }
     }
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
         if (newTable instanceof MsTable smt) {
-            return !Objects.equals(smt.getTablespace(), getTablespace())
-                    || isAnsiNulls() != smt.isAnsiNulls()
+            return !Objects.equals(smt.tablespace, tablespace)
+                    || ansiNulls != smt.ansiNulls
                     || !PgDiffUtils.setlikeEquals(smt.getPkeys(), getPkeys())
-                    || !Objects.equals(smt.getOptions(), getOptions())
-                    || !Objects.equals(smt.getFileStream(), getFileStream())
-                    || (smt.getTextImage() != null && getTextImage() != null
-                    && !Objects.equals(smt.getTextImage(), getTextImage()));
+                    || !Objects.equals(smt.options, options)
+                    || !Objects.equals(smt.fileStream, fileStream)
+                    || !Objects.equals(smt.periodStartCol, periodStartCol)
+                    || !Objects.equals(smt.periodEndCol, periodEndCol)
+                    || (smt.textImage != null && textImage != null
+                            && !Objects.equals(smt.textImage, textImage));
         }
 
         return true;
     }
 
-    private void compareTableOptions(MsTable table, SQLScript script) {
-        if (Objects.equals(isTracked, table.isTracked())) {
-            if (pkChanged(table) && isTracked != null) {
-                disableEnableTracking(SQLActionType.MID, script, table);
+    public void compareTableOptions(MsTable newTable, SQLScript script) {
+        compareTracked(newTable, script);
+        compareSysVersioning(newTable, script);
+    }
+
+    private void compareSysVersioning(MsTable newTable, SQLScript script) {
+        if (Objects.equals(sysVersioning, newTable.sysVersioning)) {
+            if (sysVersioning != null && pkChanged(newTable)) {
+                script.addStatement(disableSysVersioning(), SQLActionType.BEGIN);
+                script.addStatement(newTable.enableSysVersioning(), SQLActionType.END);
             }
             return;
         }
 
-        if (table.isTracked() == null) {
-            script.addStatement(disableTracking(), SQLActionType.END);
+        if (sysVersioning != null) {
+            script.addStatement(disableSysVersioning(), SQLActionType.MID);
+        }
+
+        if (newTable.sysVersioning != null) {
+            script.addStatement(newTable.enableSysVersioning(), SQLActionType.MID);
+        }
+    }
+
+    private void compareTracked(MsTable newTable, SQLScript script) {
+        if (Objects.equals(isTracked, newTable.isTracked)) {
+            if (isTracked != null && pkChanged(newTable)) {
+                script.addStatement(disableTracking(), SQLActionType.BEGIN);
+                script.addStatement(newTable.enableTracking(), SQLActionType.END);
+            }
             return;
         }
 
-        if (isTracked == null) {
-            script.addStatement(table.enableTracking(), SQLActionType.END);
-            return;
+        if (isTracked != null) {
+            script.addStatement(disableTracking(), SQLActionType.MID);
         }
 
-        disableEnableTracking(SQLActionType.END, script, table);
+        if (newTable.isTracked != null) {
+            script.addStatement(newTable.enableTracking(), SQLActionType.MID);
+        }
     }
 
     private boolean pkChanged(MsTable table) {
         var oldPk = getConstraints().stream().filter(MsConstraintPk.class::isInstance).findAny().orElse(null);
         var newPk = table.getConstraints().stream().filter(MsConstraintPk.class::isInstance).findAny().orElse(null);
         return oldPk != null && newPk != null && !Objects.equals(oldPk, newPk);
-    }
-
-    private void disableEnableTracking(SQLActionType actionType, SQLScript script, MsTable table) {
-        script.addStatement(disableTracking(), actionType);
-        script.addStatement(table.enableTracking(), SQLActionType.END);
     }
 
     private String disableTracking() {
@@ -253,22 +274,34 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
                 .append(isTracked() ? "ON" : "OFF").append(')').toString();
     }
 
+    private String disableSysVersioning() {
+        return getAlterTable(false) + " SET (SYSTEM_VERSIONING = OFF)";
+    }
+
+    private String enableSysVersioning() {
+        return getAlterTable(false) + " SET (SYSTEM_VERSIONING = " + sysVersioning + ')';
+    }
+
     @Override
     public String getAlterTable(boolean only) {
         return ALTER_TABLE + getQualifiedName();
     }
 
-    public String getFileStream() {
-        return fileStream;
+    @Override
+    public void getDropSQL(SQLScript script, boolean generateExists) {
+        if (isTracked() && getConstraints().stream().anyMatch(MsConstraintPk.class::isInstance)) {
+            script.addStatement(disableTracking(), SQLActionType.BEGIN);
+        }
+        if (sysVersioning != null) {
+            script.addStatement(disableSysVersioning(), SQLActionType.BEGIN);
+        }
+
+        super.getDropSQL(script, generateExists);
     }
 
     public void setFileStream(String fileStream) {
         this.fileStream = fileStream;
         resetHash();
-    }
-
-    public String getTextImage() {
-        return textImage;
     }
 
     public void setTextImage(String textImage) {
@@ -281,13 +314,10 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         resetHash();
     }
 
-    public boolean isAnsiNulls() {
-        return ansiNulls;
+    public boolean isTracked() {
+        return isTracked != null && isTracked;
     }
 
-    public Boolean isTracked() {
-        return isTracked;
-    }
 
     public void setTracked(final Boolean isTracked) {
         this.isTracked = isTracked;
@@ -303,14 +333,31 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         resetHash();
     }
 
+    public void setPeriodStartCol(AbstractColumn periodStartCol) {
+        this.periodStartCol = periodStartCol;
+        resetHash();
+    }
+
+    public void setPeriodEndCol(AbstractColumn periodEndCol) {
+        this.periodEndCol = periodEndCol;
+        resetHash();
+    }
+
     public boolean isMemoryOptimized() {
-        return "ON".equalsIgnoreCase(getOptions().get(MEMORY_OPTIMIZED));
+        return "ON".equalsIgnoreCase(options.get(MEMORY_OPTIMIZED));
+    }
+
+    public void setSysVersioning(String sysVersioning) {
+        this.sysVersioning = sysVersioning;
+        resetHash();
     }
 
     @Override
-    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols) {
-        if (!identityColsForMovingData.isEmpty()) {
+        String tblQName = newTable.getQualifiedName();
+        boolean newHasIdentity = newTable.getColumns().stream().anyMatch(c -> ((MsColumn) c).isIdentity());
+        if (newHasIdentity) {
             // There can only be one IDENTITY column per table in MSSQL.
             script.addStatement(getIdentInsertText(tblQName, true));
         }
@@ -321,10 +368,12 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
         script.addStatement(sbInsert);
 
-        if (!identityColsForMovingData.isEmpty()) {
-            // There can only be one IDENTITY column per table in MSSQL.
+        if (newHasIdentity) {
+         // There can only be one IDENTITY column per table in MSSQL.
             script.addStatement(getIdentInsertText(tblQName, false));
+        }
 
+        if (!identityColsForMovingData.isEmpty() && newHasIdentity) {
             // DECLARE'd var is only visible within its batch
             // so we shouldn't need unique names for them here
             // use the largest numeric type to fit any possible identity value
@@ -347,53 +396,53 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         return newTbl.getColumns().stream()
             .filter(c -> containsColumn(c.getName()))
             .map(MsColumn.class::cast)
-            .filter(msCol -> msCol.getExpression() == null)
+            .filter(msCol -> msCol.getExpression() == null && msCol.getGenerated() == null)
             .map(AbstractColumn::getName).toList();
-    }
-
-    @Override
-    public void getDropSQL(SQLScript script, boolean generateExists) {
-        if (isTracked != null && isTracked && getConstraints().stream().anyMatch(MsConstraintPk.class::isInstance)) {
-            script.addStatement(disableTracking(), SQLActionType.BEGIN);
-        }
-        super.getDropSQL(script, generateExists);
     }
 
     @Override
     public boolean compare(PgStatement obj) {
         if (this == obj) {
             return true;
-        } else if (obj instanceof MsTable table && super.compare(obj)) {
-            return ansiNulls == table.isAnsiNulls()
-                    && Objects.equals(textImage, table.getTextImage())
-                    && Objects.equals(fileStream, table.getFileStream())
-                    && Objects.equals(isTracked, table.isTracked)
-                    && Objects.equals(tablespace, table.getTablespace())
-                    && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
         }
 
-        return false;
+        return obj instanceof MsTable table && super.compare(obj)
+                && ansiNulls == table.ansiNulls
+                && Objects.equals(textImage, table.textImage)
+                && Objects.equals(fileStream, table.fileStream)
+                && Objects.equals(isTracked, table.isTracked)
+                && Objects.equals(tablespace, table.tablespace)
+                && Objects.equals(periodStartCol, table.periodStartCol)
+                && Objects.equals(periodEndCol, table.periodEndCol)
+                && Objects.equals(sysVersioning, table.sysVersioning)
+                && PgDiffUtils.setlikeEquals(getPkeys(), table.getPkeys());
     }
 
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(getTextImage());
-        hasher.put(getFileStream());
-        hasher.put(isAnsiNulls());
-        hasher.put(isTracked());
-        hasher.put(getTablespace());
+        hasher.put(textImage);
+        hasher.put(fileStream);
+        hasher.put(ansiNulls);
+        hasher.put(isTracked);
+        hasher.put(tablespace);
+        hasher.put(periodStartCol);
+        hasher.put(periodEndCol);
+        hasher.put(sysVersioning);
         hasher.putUnordered(getPkeys());
     }
 
     @Override
     protected MsTable getTableCopy() {
         MsTable table = new MsTable(name);
-        table.setFileStream(getFileStream());
-        table.setTextImage(getTextImage());
-        table.setAnsiNulls(isAnsiNulls());
-        table.setTracked(isTracked());
-        table.setTablespace(getTablespace());
+        table.setFileStream(fileStream);
+        table.setTextImage(textImage);
+        table.setAnsiNulls(ansiNulls);
+        table.setTracked(isTracked);
+        table.setTablespace(tablespace);
+        table.setPeriodStartCol(periodStartCol);
+        table.setPeriodEndCol(periodEndCol);
+        table.setSysVersioning(sysVersioning);
 
         if (pkeys != null) {
             table.pkeys = new ArrayList<>();
@@ -430,7 +479,7 @@ public class MsTable extends AbstractTable implements ISimpleOptionContainer {
         l.add(statistics.values());
     }
 
-    public void addStatistics(final MsStatistics stat) {
+    private void addStatistics(final MsStatistics stat) {
         addUnique(statistics, stat);
     }
 

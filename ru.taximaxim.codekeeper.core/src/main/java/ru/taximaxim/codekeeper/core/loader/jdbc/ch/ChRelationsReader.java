@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDictionary;
 import ru.taximaxim.codekeeper.core.schema.ch.ChTable;
+import ru.taximaxim.codekeeper.core.schema.ch.ChTableLog;
 import ru.taximaxim.codekeeper.core.schema.ch.ChView;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -56,7 +57,7 @@ public final class ChRelationsReader extends JdbcReader {
         } else if (engineName.contains("view")) {
             child = getView(schema, name, definition);
         } else {
-            child = getTable(schema, name, definition);
+            child = getTable(schema, name, definition, engineName);
         }
 
         schema.addChild(child);
@@ -83,9 +84,14 @@ public final class ChRelationsReader extends JdbcReader {
         return view;
     }
 
-    private PgStatement getTable(AbstractSchema schema, String name, String definition) {
+    private PgStatement getTable(AbstractSchema schema, String name, String definition, String engineName) {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.TABLE));
-        ChTable table = new ChTable(name);
+        ChTable table;
+        if (engineName.endsWith("log")) {
+            table = new ChTableLog(name);
+        } else {
+            table = new ChTable(name);
+        }
         loader.submitChAntlrTask(definition,
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_table_stmt(),
                 ctx -> new CreateChTable(ctx, (ChDatabase) schema.getDatabase()).parseObject(table));

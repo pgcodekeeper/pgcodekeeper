@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
-import ru.taximaxim.codekeeper.core.schema.pg.PgView;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
 
 public class AlterMatView extends PgParserAbstract {
 
@@ -45,7 +45,7 @@ public class AlterMatView extends PgParserAbstract {
             List<ParserRuleContext> ids = getIdentifiers(ctx.schema_qualified_name());
             addObjReference(ids, DbObjType.VIEW, action);
 
-            PgView view = (PgView) getSafe(AbstractSchema::getView,
+            AbstractPgView view = (AbstractPgView) getSafe(AbstractSchema::getView,
                     getSchemaSafe(ids), QNameParser.getFirstNameCtx(ids));
 
             var alterAction = ctx.alter_materialized_view_action();
@@ -54,7 +54,7 @@ public class AlterMatView extends PgParserAbstract {
                     var indexNameCtx = act.index_name;
                     if (indexNameCtx != null) {
                         ParserRuleContext indexName = QNameParser.getFirstNameCtx(getIdentifiers(indexNameCtx));
-                        AbstractIndex index = getSafe(PgView::getIndex, view, indexName);
+                        AbstractIndex index = getSafe(AbstractPgView::getIndex, view, indexName);
                         doSafe(AbstractIndex::setClustered, index, true);
                     }
                 }

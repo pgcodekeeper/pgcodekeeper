@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -30,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsAssembly extends PgStatement {
+public final class MsAssembly extends PgStatement {
 
     private static final int PREVIEW_LENGTH = 256*4;
 
@@ -49,7 +47,7 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -106,28 +104,27 @@ public class MsAssembly extends PgStatement {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsAssembly newAss = (MsAssembly) newCondition;
 
         // https://docs.microsoft.com/ru-ru/sql/t-sql/statements/alter-assembly-transact-sql?view=sql-server-2016
         // TODO add/drop binary as file name. What is filename?
-        if (!Objects.equals(newAss.getBinaries(), getBinaries())) {
-            isNeedDepcies.set(true);
+        if (!Objects.equals(newAss.binaries, binaries)) {
             return ObjectState.RECREATE;
         }
 
         appendAlterOwner(newAss, script);
 
-        if (newAss.isVisible() != isVisible()) {
+        if (newAss.isVisible != isVisible) {
             StringBuilder sql = new StringBuilder();
-            sql.append(getAlterAssebly()).append(" WITH VISIBILITY = ").append(newAss.isVisible() ? "ON" : "OFF");
+            sql.append(getAlterAssebly()).append(" WITH VISIBILITY = ").append(newAss.isVisible ? "ON" : "OFF");
             script.addStatement(sql);
         }
 
-        if (!Objects.equals(newAss.getPermission(), getPermission())) {
+        if (!Objects.equals(newAss.permission, permission)) {
             StringBuilder sb = new StringBuilder();
-            sb.append(getAlterAssebly()).append(" WITH PERMISSION_SET = ").append(newAss.getPermission());
+            sb.append(getAlterAssebly()).append(" WITH PERMISSION_SET = ").append(newAss.permission);
             script.addStatement(sb);
         }
 
@@ -147,11 +144,11 @@ public class MsAssembly extends PgStatement {
 
     @Override
     public MsAssembly shallowCopy() {
-        MsAssembly assDst = new MsAssembly(getName());
+        MsAssembly assDst = new MsAssembly(name);
         copyBaseFields(assDst);
-        assDst.setPermission(getPermission());
+        assDst.setPermission(permission);
         assDst.binaries.addAll(binaries);
-        assDst.setVisible(isVisible());
+        assDst.setVisible(isVisible);
         return assDst;
     }
 
@@ -162,16 +159,12 @@ public class MsAssembly extends PgStatement {
         }
 
         if (obj instanceof MsAssembly as && super.compare(obj)) {
-            return Objects.equals(isVisible, as.isVisible())
-                    && Objects.equals(permission, as.getPermission())
+            return Objects.equals(isVisible, as.isVisible)
+                    && Objects.equals(permission, as.permission)
                     && binaries.equals(as.binaries);
         }
 
         return false;
-    }
-
-    public String getPermission() {
-        return permission;
     }
 
     public void setPermission(final String permission) {
@@ -179,17 +172,9 @@ public class MsAssembly extends PgStatement {
         resetHash();
     }
 
-    public List<String> getBinaries() {
-        return Collections.unmodifiableList(binaries);
-    }
-
     public void addBinary(final String binary) {
         binaries.add(binary);
         resetHash();
-    }
-
-    public boolean isVisible() {
-        return isVisible;
     }
 
     public void setVisible(final boolean isVisible) {

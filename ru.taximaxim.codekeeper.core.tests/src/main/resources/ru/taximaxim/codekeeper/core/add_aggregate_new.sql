@@ -463,3 +463,19 @@ CREATE AGGREGATE public.mode_seria(internal) (
 
 ALTER AGGREGATE public.mode_seria(internal) OWNER TO shamsutdinov_lr;
 
+CREATE AGGREGATE public.aggregate_with_args3(TEXT) (
+    SFUNC = TEST_FUNCC (
+        TEXT,
+        CASE
+            WHEN LENGTH(NAME) > 6 THEN 'long'
+            ELSE 'short'
+        END
+    ),
+    STYPE = TEXT,
+    FINALFUNC = TEST_FUNCC(EXISTS (SELECT * FROM public.test), "test" IS NOT DOCUMENT),
+    FINALFUNC_MODIFY = READ_ONLY,
+	MSFUNC = test_func(5 ^ 5),
+    MINVFUNC = test_func(5 AT TIME ZONE 2),
+    MSTYPE = text,
+    MFINALFUNC_MODIFY = READ_ONLY
+);

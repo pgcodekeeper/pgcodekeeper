@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,13 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Select_stm
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.core.schema.pg.PgView;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
 
 public class ViewAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private FullAnalyze fullAnalyze;
 
-    public ViewAnalysisLauncher(PgView stmt, Select_stmtContext ctx, String location) {
+    public ViewAnalysisLauncher(AbstractPgView stmt, Select_stmtContext ctx, String location) {
         super(stmt, ctx, location);
     }
 

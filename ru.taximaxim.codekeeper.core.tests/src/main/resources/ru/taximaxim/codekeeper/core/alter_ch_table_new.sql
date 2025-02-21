@@ -67,3 +67,18 @@ ALTER TABLE default.t2_2 ADD INDEX ind3 col1 > col2 TYPE bloom_filter GRANULARIT
 --------------------------------------------------------------------------------
 
 ALTER TABLE default.t2_2 ADD INDEX ind4 col1 > 0 TYPE bloom_filter GRANULARITY 1;
+
+CREATE TABLE default.test
+(
+    `col1` Int32 NOT NULL,
+    CONSTRAINT c_name2 CHECK col1 < 10
+)
+ENGINE = Log;
+
+CREATE TABLE default.test2
+(
+    `col1` Int32 NOT NULL,
+    CONSTRAINT c_name CHECK col1 > 0,
+    CONSTRAINT c_name2 CHECK col1 < 10
+)
+ENGINE = Log;

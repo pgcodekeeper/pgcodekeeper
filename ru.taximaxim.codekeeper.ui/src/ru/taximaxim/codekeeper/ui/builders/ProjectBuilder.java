@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator;
@@ -61,6 +62,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                 if (!parser.deserialize(proj.getName())) {
                     parser.getFullDBFromPgDbProject(proj, monitor);
                 }
+                LibraryUtils.create(proj);
                 break;
             default:
                 throw new IllegalStateException("Unknown build type!"); //$NON-NLS-1$

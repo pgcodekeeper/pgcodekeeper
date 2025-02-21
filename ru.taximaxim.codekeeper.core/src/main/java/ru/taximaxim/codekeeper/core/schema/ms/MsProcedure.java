@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 
-public class MsProcedure extends AbstractMsFunction {
+public final class MsProcedure extends AbstractMsFunction {
 
     public MsProcedure(String name) {
         super(name);
@@ -46,6 +46,6 @@ public class MsProcedure extends AbstractMsFunction {
 
     @Override
     protected AbstractMsFunction getFunctionCopy() {
-        return new MsProcedure(getName());
+        return new MsProcedure(name);
     }
 }

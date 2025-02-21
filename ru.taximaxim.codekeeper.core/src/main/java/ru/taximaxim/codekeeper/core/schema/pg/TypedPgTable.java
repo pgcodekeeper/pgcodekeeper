@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * @author galiev_mr
  *
  */
-public class TypedPgTable extends AbstractRegularTable {
+public final class TypedPgTable extends AbstractRegularTable {
 
     private final String ofType;
 
@@ -65,7 +65,7 @@ public class TypedPgTable extends AbstractRegularTable {
     @Override
     protected void compareTableTypes(AbstractPgTable newTable, SQLScript script) {
         if (newTable instanceof TypedPgTable typedTable) {
-            String newType = typedTable.getOfType();
+            String newType = typedTable.ofType;
             if (!Objects.equals(ofType, newType)) {
                 script.addStatement(getAlterTable(false) + " OF " + newType);
             }
@@ -86,13 +86,13 @@ public class TypedPgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new TypedPgTable(name, getOfType());
+        return new TypedPgTable(name, ofType);
     }
 
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof TypedPgTable table && super.compare(obj)) {
-            return Objects.equals(ofType, table.getOfType());
+            return Objects.equals(ofType, table.ofType);
         }
 
         return false;
@@ -106,6 +106,6 @@ public class TypedPgTable extends AbstractRegularTable {
 
     @Override
     protected void convertTable(SQLScript script) {
-        script.addStatement(getAlterTable(false) + " OF " + getOfType());
+        script.addStatement(getAlterTable(false) + " OF " + ofType);
     }
 }

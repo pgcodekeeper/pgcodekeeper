@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -595,7 +595,11 @@ class PgDiffTest {
             // Test scenario where type of procedure argument is changed
             "modify_procedure_args_type",
             // Test scenario where mode of procedure argument is changed
-            "modify_procedure_args_mode"
+            "modify_procedure_args_mode",
+            // Test scenario where object has unicode encoded identifier
+            "compare_pg_unicode_identifiers",
+            // Test scenario when one child partition index is dropped
+            "drop_pg_child_partition_index"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

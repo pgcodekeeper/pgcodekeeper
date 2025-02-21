@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgCollation extends PgStatement implements ISearchPath {
+public final class PgCollation extends PgStatement implements ISearchPath {
 
     public PgCollation(String name) {
         super(name);
@@ -45,11 +44,7 @@ public class PgCollation extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
-    }
-
-    public boolean isDeterministic() {
-        return deterministic;
+        return (AbstractSchema) parent;
     }
 
     public void setDeterministic(boolean deterministic) {
@@ -57,17 +52,9 @@ public class PgCollation extends PgStatement implements ISearchPath {
         resetHash();
     }
 
-    public String getLcCollate() {
-        return lcCollate;
-    }
-
     public void setLcCollate(final String lcCollate) {
         this.lcCollate = lcCollate;
         resetHash();
-    }
-
-    public String getLcCtype() {
-        return lcCtype;
     }
 
     public void setLcCtype(final String lcCtype) {
@@ -75,17 +62,9 @@ public class PgCollation extends PgStatement implements ISearchPath {
         resetHash();
     }
 
-    public String getProvider() {
-        return provider;
-    }
-
     public void setProvider(final String provider) {
         this.provider = provider;
         resetHash();
-    }
-
-    public String getRules() {
-        return rules;
     }
 
     public void setRules(final String rules) {
@@ -100,20 +79,20 @@ public class PgCollation extends PgStatement implements ISearchPath {
         appendIfNotExists(sbSQL);
         sbSQL.append(getQualifiedName());
         sbSQL.append(" (");
-        if (Objects.equals(getLcCollate(), getLcCtype())) {
-            sbSQL.append("LOCALE = ").append(getLcCollate());
+        if (Objects.equals(lcCollate, lcCtype)) {
+            sbSQL.append("LOCALE = ").append(lcCollate);
         } else {
-            sbSQL.append("LC_COLLATE = ").append(getLcCollate());
-            sbSQL.append(", LC_CTYPE = ").append(getLcCtype());
+            sbSQL.append("LC_COLLATE = ").append(lcCollate);
+            sbSQL.append(", LC_CTYPE = ").append(lcCtype);
         }
-        if (getProvider() != null) {
-            sbSQL.append(", PROVIDER = ").append(getProvider());
+        if (provider != null) {
+            sbSQL.append(", PROVIDER = ").append(provider);
         }
-        if (!isDeterministic()) {
+        if (!deterministic) {
             sbSQL.append(", DETERMINISTIC = FALSE");
         }
-        if (getRules() != null) {
-            sbSQL.append(", RULES = ").append(getRules());
+        if (rules != null) {
+            sbSQL.append(", RULES = ").append(rules);
         }
 
         sbSQL.append(")");
@@ -124,12 +103,11 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgCollation newCollation = (PgCollation) newCondition;
 
         if (!compareUnalterable(newCollation)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -152,11 +130,11 @@ public class PgCollation extends PgStatement implements ISearchPath {
     }
 
     private boolean compareUnalterable(PgCollation coll) {
-        return deterministic == coll.isDeterministic()
-                && Objects.equals(lcCollate, coll.getLcCollate())
-                && Objects.equals(lcCtype, coll.getLcCtype())
-                && Objects.equals(provider, coll.getProvider())
-                && Objects.equals(rules, coll.getRules());
+        return deterministic == coll.deterministic
+                && Objects.equals(lcCollate, coll.lcCollate)
+                && Objects.equals(lcCtype, coll.lcCtype)
+                && Objects.equals(provider, coll.provider)
+                && Objects.equals(rules, coll.rules);
     }
 
     @Override
@@ -170,13 +148,13 @@ public class PgCollation extends PgStatement implements ISearchPath {
 
     @Override
     public PgStatement shallowCopy() {
-        PgCollation collationDst = new PgCollation(getName());
+        PgCollation collationDst = new PgCollation(name);
         copyBaseFields(collationDst);
-        collationDst.setLcCollate(getLcCollate());
-        collationDst.setLcCtype(getLcCtype());
-        collationDst.setProvider(getProvider());
-        collationDst.setDeterministic(isDeterministic());
-        collationDst.setRules(getRules());
+        collationDst.setLcCollate(lcCollate);
+        collationDst.setLcCtype(lcCtype);
+        collationDst.setProvider(provider);
+        collationDst.setDeterministic(deterministic);
+        collationDst.setRules(rules);
         return collationDst;
     }
 }

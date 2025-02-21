@@ -217,6 +217,15 @@
             </enabledWhen>
         </handler>
     </extension>
+    <extension point="org.eclipse.ui.statusHandlers"> 
+        <statusHandler
+            class="ru.taximaxim.codekeeper.ui.handlers.ErrorStatusHandler"
+            id="ru.taximaxim.codekeeper.ui.errorHandler"/>
+        <statusHandlerProductBinding
+            handlerId="ru.taximaxim.codekeeper.ui.errorHandler"
+            productId="ru.taximaxim.codekeeper.mainapp.product">
+        </statusHandlerProductBinding>
+    </extension> 
     <extension point="org.eclipse.ui.menus">
         <menuContribution locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=additions">
             <command commandId="org.eclipse.ui.newWizard">

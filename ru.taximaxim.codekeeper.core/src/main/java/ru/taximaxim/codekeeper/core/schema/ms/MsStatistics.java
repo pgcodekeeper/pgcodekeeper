@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
@@ -47,10 +45,10 @@ public final class MsStatistics extends AbstractStatistics {
     @Override
     public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder("CREATE STATISTICS ");
-        sb.append(MsDiffUtils.quoteName(getName())).append(" ON ").append(getParent().getQualifiedName());
+        sb.append(MsDiffUtils.quoteName(name)).append(" ON ").append(parent.getQualifiedName());
         if (!cols.isEmpty()) {
             sb.append(' ');
-            StatementUtils.appendCols(sb, getCols(), getDbType());
+            StatementUtils.appendCols(sb, cols, getDbType());
         }
         if (filter != null) {
             sb.append("\nWHERE ").append(filter);
@@ -82,17 +80,17 @@ public final class MsStatistics extends AbstractStatistics {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         var newStat = (MsStatistics) newCondition;
         if (!compareUnalterable(newStat)) {
             return ObjectState.RECREATE;
         }
-        if (!Objects.equals(newStat.getOptions(), options)) {
+        if (!Objects.equals(newStat.options, options)) {
             StringBuilder sql = new StringBuilder();
             sql.append("UPDATE STATISTICS ")
-            .append(getParent().getQualifiedName()).append(" (").append(getName()).append(")");
-            appendOptions(sql, newStat.getOptions());
+            .append(parent.getQualifiedName()).append(" (").append(name).append(")");
+            appendOptions(sql, newStat.options);
             script.addStatement(sql);
         }
 
@@ -146,11 +144,7 @@ public final class MsStatistics extends AbstractStatistics {
 
     @Override
     public ISchema getContainingSchema() {
-        return (AbstractSchema) getParent().getParent();
-    }
-
-    public String getFilter() {
-        return filter;
+        return (AbstractSchema) parent.getParent();
     }
 
     public void setFilter(String filter) {
@@ -158,17 +152,9 @@ public final class MsStatistics extends AbstractStatistics {
         resetHash();
     }
 
-    public List<String> getCols() {
-        return Collections.unmodifiableList(cols);
-    }
-
     public void addCol(String col) {
         cols.add(col);
         resetHash();
-    }
-
-    public Map<String, String> getOptions() {
-        return Collections.unmodifiableMap(options);
     }
 
     public void putOption(String key, String value) {

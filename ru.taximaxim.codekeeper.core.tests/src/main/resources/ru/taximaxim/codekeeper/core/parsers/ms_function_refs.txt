@@ -17,3 +17,5 @@ Reference: Object = Func1 (FUNCTION), action = DROP, offset = 1707, line number 
 Reference: Object = Func2 (FUNCTION), action = DROP, offset = 1715, line number = 85, charPositionInLine = 22
 Reference: Object = dbo (SCHEMA), action = null, offset = 1797, line number = 89, charPositionInLine = 16
 Reference: Object = dbo.FooBar3 (FUNCTION), action = CREATE, offset = 1801, line number = 89, charPositionInLine = 20
+Reference: Object = dbo (SCHEMA), action = null, offset = 1935, line number = 101, charPositionInLine = 17
+Reference: Object = dbo.test_nbsp (PROCEDURE), action = CREATE, offset = 1941, line number = 101, charPositionInLine = 23

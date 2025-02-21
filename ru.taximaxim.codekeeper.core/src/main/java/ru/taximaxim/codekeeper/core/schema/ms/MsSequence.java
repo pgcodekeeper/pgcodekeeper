@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsSequence extends AbstractSequence {
+public final class MsSequence extends AbstractSequence {
 
     private boolean isCached;
 
@@ -41,7 +40,7 @@ public class MsSequence extends AbstractSequence {
         sbSQL.append("CREATE SEQUENCE ");
         sbSQL.append(getQualifiedName());
 
-        sbSQL.append("\n\tAS ").append(getDataType());
+        sbSQL.append("\n\tAS ").append(dataType);
 
         fillSequenceBody(sbSQL);
         script.addStatement(sbSQL);
@@ -52,41 +51,40 @@ public class MsSequence extends AbstractSequence {
 
     @Override
     public void fillSequenceBody(StringBuilder sbSQL) {
-        if (getStartWith() != null) {
+        if (startWith != null) {
             sbSQL.append("\n\tSTART WITH ");
-            sbSQL.append(getStartWith());
+            sbSQL.append(startWith);
         }
 
-        if (getIncrement() != null) {
+        if (increment != null) {
             sbSQL.append("\n\tINCREMENT BY ");
-            sbSQL.append(getIncrement());
+            sbSQL.append(increment);
         }
 
         sbSQL.append("\n\tMAXVALUE ");
-        sbSQL.append(getMaxValue());
+        sbSQL.append(maxValue);
 
         sbSQL.append("\n\tMINVALUE ");
-        sbSQL.append(getMinValue());
+        sbSQL.append(minValue);
 
-        if (isCached()) {
+        if (isCached) {
             sbSQL.append("\n\tCACHE ");
-            if (getCache() != null) {
-                sbSQL.append(getCache());
+            if (cache != null) {
+                sbSQL.append(cache);
             }
         }
 
-        if (isCycle()) {
+        if (cycle) {
             sbSQL.append("\n\tCYCLE");
         }
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsSequence newSequence = (MsSequence) newCondition;
 
-        if (!newSequence.getDataType().equals(getDataType())) {
-            isNeedDepcies.set(true);
+        if (!newSequence.dataType.equals(dataType)) {
             return ObjectState.RECREATE;
         }
 
@@ -101,8 +99,8 @@ public class MsSequence extends AbstractSequence {
     }
 
     private boolean compareSequenceBody(MsSequence newSequence, StringBuilder sbSQL) {
-        final String oldIncrement = getIncrement();
-        final String newIncrement = newSequence.getIncrement();
+        final String oldIncrement = increment;
+        final String newIncrement = newSequence.increment;
 
         if (newIncrement != null
                 && !newIncrement.equals(oldIncrement)) {
@@ -110,8 +108,8 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newIncrement);
         }
 
-        final String oldMinValue = getMinValue();
-        final String newMinValue = newSequence.getMinValue();
+        final String oldMinValue = minValue;
+        final String newMinValue = newSequence.minValue;
 
         if (newMinValue == null && oldMinValue != null) {
             sbSQL.append("\n\tNO MINVALUE");
@@ -121,8 +119,8 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newMinValue);
         }
 
-        final String oldMaxValue = getMaxValue();
-        final String newMaxValue = newSequence.getMaxValue();
+        final String oldMaxValue = maxValue;
+        final String newMaxValue = newSequence.maxValue;
 
         if (newMaxValue == null && oldMaxValue != null) {
             sbSQL.append("\n\tNO MAXVALUE");
@@ -132,28 +130,28 @@ public class MsSequence extends AbstractSequence {
             sbSQL.append(newMaxValue);
         }
 
-        final String oldStart = getStartWith();
-        final String newStart = newSequence.getStartWith();
+        final String oldStart = startWith;
+        final String newStart = newSequence.startWith;
 
         if (newStart != null && !newStart.equals(oldStart)) {
             sbSQL.append("\n\tRESTART WITH ");
             sbSQL.append(newStart);
         }
 
-        final String oldCache = getCache();
-        final String newCache = newSequence.getCache();
+        final String oldCache = cache;
+        final String newCache = newSequence.cache;
 
-        if (newSequence.isCached() && !Objects.equals(newCache, oldCache)) {
+        if (newSequence.isCached && !Objects.equals(newCache, oldCache)) {
             sbSQL.append("\n\tCACHE ");
             if (newCache != null) {
                 sbSQL.append(newCache);
             }
-        } else if (!newSequence.isCached()) {
+        } else if (!newSequence.isCached) {
             sbSQL.append("\n\tNO CACHE");
         }
 
-        final boolean oldCycle = isCycle();
-        final boolean newCycle = newSequence.isCycle();
+        final boolean oldCycle = cycle;
+        final boolean newCycle = newSequence.cycle;
 
         if (oldCycle && !newCycle) {
             sbSQL.append("\n\tNO CYCLE");
@@ -192,10 +190,6 @@ public class MsSequence extends AbstractSequence {
         resetHash();
     }
 
-    public boolean isCached() {
-        return isCached;
-    }
-
     public void setCached(boolean isCached) {
         this.isCached = isCached;
         resetHash();
@@ -204,7 +198,7 @@ public class MsSequence extends AbstractSequence {
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsSequence seq && super.compare(obj)) {
-            return isCached == seq.isCached();
+            return isCached == seq.isCached;
         }
 
         return false;
@@ -218,8 +212,8 @@ public class MsSequence extends AbstractSequence {
 
     @Override
     protected AbstractSequence getSequenceCopy() {
-        MsSequence sequence = new MsSequence(getName());
-        sequence.setCached(isCached());
+        MsSequence sequence = new MsSequence(name);
+        sequence.setCached(isCached);
         return sequence;
     }
 

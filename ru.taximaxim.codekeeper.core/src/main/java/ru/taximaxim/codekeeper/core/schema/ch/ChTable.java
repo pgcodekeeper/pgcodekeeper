@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ch;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -36,9 +34,9 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public class ChTable extends AbstractTable {
 
-    private final Map<String, String> projections = new LinkedHashMap<>();
+    protected final Map<String, String> projections = new LinkedHashMap<>();
 
-    private ChEngine engine;
+    protected ChEngine engine;
 
     public ChTable(String name) {
         super(name);
@@ -49,17 +47,9 @@ public class ChTable extends AbstractTable {
         resetHash();
     }
 
-    public Map<String, String> getProjections() {
-        return Collections.unmodifiableMap(projections);
-    }
-
     public void setEngine(ChEngine engine) {
         this.engine = engine;
         resetHash();
-    }
-
-    public ChEngine getEngine() {
-        return engine;
     }
 
     public void setPkExpr(String pkExpr) {
@@ -73,16 +63,8 @@ public class ChTable extends AbstractTable {
         sb.append("CREATE TABLE ");
         appendIfNotExists(sb);
         sb.append(getQualifiedName()).append("\n(");
-
-        for (AbstractColumn column : columns) {
-            sb.append("\n\t").append(column.getFullDefinition()).append(",");
-        }
-
-        for (Entry<String, String> proj : projections.entrySet()) {
-            sb.append("\n\tPROJECTION ").append(proj.getKey()).append(' ').append(proj.getValue()).append(',');
-        }
-
-        if (!columns.isEmpty() || !projections.isEmpty()) {
+        appendTableBody(sb);
+        if (isNotEmptyTable()) {
             sb.setLength(sb.length() - 1);
         }
         sb.append("\n)");
@@ -95,18 +77,31 @@ public class ChTable extends AbstractTable {
         script.addStatement(sb);
     }
 
+    protected void appendTableBody(StringBuilder sb) {
+        for (AbstractColumn column : columns) {
+            sb.append("\n\t").append(column.getFullDefinition()).append(',');
+        }
+
+        for (Entry<String, String> proj : projections.entrySet()) {
+            sb.append("\n\tPROJECTION ").append(proj.getKey()).append(' ').append(proj.getValue()).append(',');
+        }
+    }
+
+    protected boolean isNotEmptyTable() {
+        return !columns.isEmpty() || !projections.isEmpty();
+    }
+
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChTable newTable = (ChTable) newCondition;
 
         if (isRecreated(newTable)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
-        compareProjections(newTable.getProjections(), script);
-        engine.appendAlterSQL(newTable.getEngine(), getAlterTable(false), script);
+        compareProjections(newTable.projections, script);
+        engine.appendAlterSQL(newTable.engine, getAlterTable(false), script);
         compareComment(newTable.getComment(), script);
         return getObjectState(script, startSize);
     }
@@ -173,9 +168,9 @@ public class ChTable extends AbstractTable {
 
     @Override
     protected boolean isNeedRecreate(AbstractTable newTable) {
-        var newEngine = ((ChTable) newTable).getEngine();
+        var newEngine = ((ChTable) newTable).engine;
         return !engine.compareUnalterable(newEngine)
-                && !engine.isModifybleSampleBy(newEngine.getSampleBy());
+                && !engine.isModifybleSampleBy(newEngine);
     }
 
     @Override
@@ -197,14 +192,14 @@ public class ChTable extends AbstractTable {
         }
         return obj instanceof ChTable table && super.compare(table)
                 && Objects.equals(projections, table.projections)
-                && Objects.equals(engine, table.getEngine());
+                && Objects.equals(engine, table.engine);
     }
 
     @Override
     protected AbstractTable getTableCopy() {
         var table = new ChTable(name);
         table.projections.putAll(projections);
-        table.setEngine(getEngine());
+        table.setEngine(engine);
         return table;
     }
 
@@ -224,10 +219,10 @@ public class ChTable extends AbstractTable {
     }
 
     @Override
-    protected void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols) {
         StringBuilder sbInsert = new StringBuilder();
-        sbInsert.append("INSERT INTO ").append(tblQName).append('(').append(cols).append(")");
+        sbInsert.append("INSERT INTO ").append(newTable.getQualifiedName()).append('(').append(cols).append(")");
         sbInsert.append("\nSELECT ").append(cols).append(" FROM ").append(tblTmpQName);
         script.addStatement(sbInsert);
     }
@@ -235,8 +230,8 @@ public class ChTable extends AbstractTable {
     @Override
     protected List<String> getColsForMovingData(AbstractTable newTable) {
         return newTable.getColumns().stream()
-            .filter(c -> containsColumn(c.getName()))
-            .map(AbstractColumn::getName)
-            .toList();
+                .filter(c -> containsColumn(c.getName()))
+                .map(AbstractColumn::getName)
+                .toList();
     }
 }

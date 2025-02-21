@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,8 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -47,17 +45,9 @@ public final class ChColumn extends AbstractColumn {
         resetHash();
     }
 
-    public String getDefaultType() {
-        return defaultType;
-    }
-
     public void setTtl(String ttl) {
         this.ttl = ttl;
         resetHash();
-    }
-
-    public String getTtl() {
-        return ttl;
     }
 
     public void addCodec(String codec) {
@@ -65,17 +55,9 @@ public final class ChColumn extends AbstractColumn {
         resetHash();
     }
 
-    public List<String> getCodecs() {
-        return Collections.unmodifiableList(codecs);
-    }
-
     public void setAutoIncremental(boolean isAutoIncremental) {
         this.isAutoIncremental = isAutoIncremental;
         resetHash();
-    }
-
-    public boolean isAutoIncremental() {
-        return isAutoIncremental;
     }
 
     public void setOption(String option) {
@@ -83,18 +65,14 @@ public final class ChColumn extends AbstractColumn {
         resetHash();
     }
 
-    public String getOption() {
-        return option;
-    }
-
     @Override
     public String getFullDefinition() {
         var sb = new StringBuilder();
         sb.append(ChDiffUtils.quoteName(name));
 
-        if (getType() != null) {
-            sb.append(' ').append(getType());
-            if (!getNullValue()) {
+        if (type != null) {
+            sb.append(' ').append(type);
+            if (!nullValue) {
                 sb.append(" NOT NULL");
             }
         }
@@ -109,18 +87,18 @@ public final class ChColumn extends AbstractColumn {
         appendIfNotExists(sb);
         sb.append(ChDiffUtils.quoteName(name));
 
-        if (getType() != null) {
-            sb.append(' ').append(getType());
+        if (type != null) {
+            sb.append(' ').append(type);
         }
         appendColumnOptions(sb);
         script.addStatement(sb);
     }
 
-    public void appendColumnOptions(StringBuilder sb) {
+    private void appendColumnOptions(StringBuilder sb) {
         if (defaultType != null) {
             sb.append(' ').append(defaultType);
-            if (getDefaultValue() != null) {
-                sb.append(' ').append(getDefaultValue());
+            if (defaultValue != null) {
+                sb.append(' ').append(defaultValue);
             }
         }
 
@@ -129,8 +107,8 @@ public final class ChColumn extends AbstractColumn {
             return;
         }
 
-        if (getComment() != null) {
-            sb.append(" COMMENT ").append(getComment());
+        if (comment != null) {
+            sb.append(" COMMENT ").append(comment);
         }
 
         if (!codecs.isEmpty()) {
@@ -148,15 +126,15 @@ public final class ChColumn extends AbstractColumn {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         ChColumn newColumn = (ChColumn) newCondition;
 
-        compareTypes(newColumn.getType(), script);
+        compareTypes(newColumn.type, script);
         compareDefaults(newColumn, script);
-        compareCodecs(newColumn.getCodecs(), script);
-        compareTtl(newColumn.getTtl(), newColumn.getType(), script);
-        compareComment(newColumn.getComment(), script);
+        compareCodecs(newColumn.codecs, script);
+        compareTtl(newColumn.ttl, newColumn.type, script);
+        compareComment(newColumn.comment, script);
         return getObjectState(script, startSize);
     }
 
@@ -172,7 +150,7 @@ public final class ChColumn extends AbstractColumn {
     }
 
     private void compareTypes(String newType, SQLScript script) {
-        if (getType().equals(newType)) {
+        if (type.equals(newType)) {
             return;
         }
         StringBuilder sb = new StringBuilder();
@@ -182,14 +160,14 @@ public final class ChColumn extends AbstractColumn {
     }
 
     private void compareDefaults(ChColumn newColumn, SQLScript script) {
-        if (Objects.equals(defaultType, newColumn.getDefaultType())
-                && Objects.equals(getDefaultValue(), newColumn.getDefaultValue())) {
+        if (Objects.equals(defaultType, newColumn.defaultType)
+                && Objects.equals(defaultValue, newColumn.defaultValue)) {
             return;
         }
         StringBuilder sb = new StringBuilder();
         appendAlterColumn(sb);
-        if (newColumn.getDefaultType() != null) {
-            sb.append(' ').append(newColumn.getDefaultType()).append(' ').append(newColumn.getDefaultValue());
+        if (newColumn.defaultType != null) {
+            sb.append(' ').append(newColumn.defaultType).append(' ').append(newColumn.defaultValue);
             script.addStatement(sb);
         } else if ("EPHEMERAL".equals(defaultType)) {
             // because we can't drop EPHEMERAL default type
@@ -287,10 +265,10 @@ public final class ChColumn extends AbstractColumn {
         }
 
         return obj instanceof ChColumn column && super.compare(column)
-                && Objects.equals(defaultType, column.getDefaultType())
-                && Objects.equals(option, column.getOption())
-                && Objects.equals(ttl, column.getTtl())
-                && Objects.equals(codecs, column.getCodecs());
+                && Objects.equals(defaultType, column.defaultType)
+                && Objects.equals(option, column.option)
+                && Objects.equals(ttl, column.ttl)
+                && Objects.equals(codecs, column.codecs);
     }
 
     @Override

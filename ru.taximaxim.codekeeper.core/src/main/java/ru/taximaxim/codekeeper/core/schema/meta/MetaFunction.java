@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.IFunction;
 import ru.taximaxim.codekeeper.core.schema.ISchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 
-public class MetaFunction extends MetaStatement implements IFunction {
+public final class MetaFunction extends MetaStatement implements IFunction {
 
     private static final long serialVersionUID = 9086580570309984176L;
 
@@ -94,10 +94,6 @@ public class MetaFunction extends MetaStatement implements IFunction {
 
     public void setSetof(final boolean setof) {
         this.setof = setof;
-    }
-
-    public List<Argument> getOrderBy() {
-        return orderBy == null ? Collections.emptyList() : Collections.unmodifiableList(orderBy);
     }
 
     public void addOrderBy(final Argument type) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,17 +56,9 @@ public final class PgRangeType extends AbstractType {
         resetHash();
     }
 
-    public String getSubtypeOpClass() {
-        return subtypeOpClass;
-    }
-
     public void setSubtypeOpClass(String subtypeOpClass) {
         this.subtypeOpClass = subtypeOpClass;
         resetHash();
-    }
-
-    public String getCollation() {
-        return collation;
     }
 
     public void setCollation(String collation) {
@@ -74,26 +66,14 @@ public final class PgRangeType extends AbstractType {
         resetHash();
     }
 
-    public String getCanonical() {
-        return canonical;
-    }
-
     public void setCanonical(String canonical) {
         this.canonical = canonical;
         resetHash();
     }
 
-    public String getSubtypeDiff() {
-        return subtypeDiff;
-    }
-
     public void setSubtypeDiff(String subtypeDiff) {
         this.subtypeDiff = subtypeDiff;
         resetHash();
-    }
-
-    public String getMultirange() {
-        return multirange;
     }
 
     public void setMultirange(String multirange) {
@@ -103,13 +83,13 @@ public final class PgRangeType extends AbstractType {
 
     @Override
     protected AbstractType getTypeCopy() {
-        PgRangeType copy = new PgRangeType(getName());
-        copy.setSubtype(getSubtype());
-        copy.setSubtypeOpClass(getSubtypeOpClass());
-        copy.setCollation(getCollation());
-        copy.setCanonical(getCanonical());
-        copy.setSubtypeDiff(getSubtypeDiff());
-        copy.setMultirange(getMultirange());
+        PgRangeType copy = new PgRangeType(name);
+        copy.setSubtype(subtype);
+        copy.setSubtypeOpClass(subtypeOpClass);
+        copy.setCollation(collation);
+        copy.setCanonical(canonical);
+        copy.setSubtypeDiff(subtypeDiff);
+        copy.setMultirange(multirange);
         return copy;
     }
 
@@ -134,11 +114,11 @@ public final class PgRangeType extends AbstractType {
     @Override
     protected boolean compareUnalterable(AbstractType newType) {
         PgRangeType type = (PgRangeType) newType;
-        return Objects.equals(subtype, type.getSubtype())
-                && Objects.equals(subtypeOpClass, type.getSubtypeOpClass())
-                && Objects.equals(collation, type.getCollation())
-                && Objects.equals(canonical, type.getCanonical())
-                && Objects.equals(subtypeDiff, type.getSubtypeDiff())
-                && Objects.equals(multirange, type.getMultirange());
+        return Objects.equals(subtype, type.subtype)
+                && Objects.equals(subtypeOpClass, type.subtypeOpClass)
+                && Objects.equals(collation, type.collation)
+                && Objects.equals(canonical, type.canonical)
+                && Objects.equals(subtypeDiff, type.subtypeDiff)
+                && Objects.equals(multirange, type.multirange);
     }
 }

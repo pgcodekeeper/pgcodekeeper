@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,12 +31,12 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_actions_commonContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_defContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_createContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SconstContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
@@ -48,7 +48,7 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 public class VerificationFunction implements IVerification {
     private final Schema_createContext createCtx;
     private final Create_function_statementContext ctx;
-    private final Character_stringContext definitionCtx;
+    private final SconstContext definitionCtx;
     private final VerificationProperties rules;
     private final List<Object> errors;
     private final String fileName;
@@ -189,7 +189,7 @@ public class VerificationFunction implements IVerification {
         errors.add(err);
     }
 
-    private Character_stringContext getFunctionDefinition() {
+    private SconstContext getFunctionDefinition() {
         Function_defContext funcDef = null;
         for (Function_actions_commonContext action : ctx.function_actions_common()) {
             if (action.LANGUAGE() != null) {

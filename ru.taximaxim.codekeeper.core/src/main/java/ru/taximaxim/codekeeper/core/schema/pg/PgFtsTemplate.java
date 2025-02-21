@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgFtsTemplate extends PgStatement implements ISearchPath {
+public final class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     private String initFunction;
     private String lexizeFunction;
@@ -42,7 +41,7 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent();
+        return (AbstractSchema) parent;
     }
 
     @Override
@@ -61,10 +60,9 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         if (!compareUnalterable((PgFtsTemplate) newCondition)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
         appendAlterComments(newCondition, script);
@@ -74,10 +72,10 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
 
     @Override
     public PgFtsTemplate shallowCopy() {
-        PgFtsTemplate templateDst = new PgFtsTemplate(getName());
+        PgFtsTemplate templateDst = new PgFtsTemplate(name);
         copyBaseFields(templateDst);
-        templateDst.setInitFunction(getInitFunction());
-        templateDst.setLexizeFunction(getLexizeFunction());
+        templateDst.setInitFunction(initFunction);
+        templateDst.setLexizeFunction(lexizeFunction);
         return templateDst;
     }
 
@@ -105,17 +103,9 @@ public class PgFtsTemplate extends PgStatement implements ISearchPath {
         hasher.put(lexizeFunction);
     }
 
-    public String getInitFunction() {
-        return initFunction;
-    }
-
     public void setInitFunction(final String initFunction) {
         this.initFunction = initFunction;
         resetHash();
-    }
-
-    public String getLexizeFunction() {
-        return lexizeFunction;
     }
 
     public void setLexizeFunction(final String lexizeFunction) {

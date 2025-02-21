@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,6 +145,7 @@ public abstract class DbSource {
         args.setAutoFormatObjectCode(prefs.getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
         args.setFormatConfiguration(Formatter.getFormatterConfig());
         args.setCommentsToEnd(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.COMMENTS_TO_END));
+        args.setDropBeforeCreate(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
         args.setTimeZone(timeZone);
         args.setKeepNewlines(!forceUnixNewlines);
         args.setDbType(dbType);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class MsColumn extends AbstractColumn {
+public final class MsColumn extends AbstractColumn {
 
     private static final String SPARSE = "SPARSE";
     private static final String ROWGUIDCOL = "ROWGUIDCOL";
@@ -39,11 +39,13 @@ public class MsColumn extends AbstractColumn {
     private boolean isPersisted;
     private boolean isNotForRep;
     private boolean isIdentity;
+    private boolean isHidden;
     private String seed;
     private String increment;
     private String defaultName;
     private String expession;
     private String maskingFunction;
+    private GeneratedType generated;
 
     public MsColumn(String name) {
         super(name);
@@ -54,50 +56,54 @@ public class MsColumn extends AbstractColumn {
         final StringBuilder sbDefinition = new StringBuilder();
         sbDefinition.append(MsDiffUtils.quoteName(name));
         sbDefinition.append(' ');
-        if (getExpression() != null) {
-            sbDefinition.append("AS ").append(getExpression());
+        if (expession != null) {
+            sbDefinition.append("AS ").append(expession);
         } else {
-            sbDefinition.append(getType());
+            sbDefinition.append(type);
         }
 
-        if (getCollation() != null) {
-            sbDefinition.append(COLLATE).append(getCollation());
+        if (collation != null) {
+            sbDefinition.append(COLLATE).append(collation);
         }
 
-        if (isSparse()) {
+        if (isSparse) {
             sbDefinition.append(" SPARSE");
         }
 
-        if (isRowGuidCol()) {
+        if (isRowGuidCol) {
             sbDefinition.append(" ROWGUIDCOL");
         }
 
-        if (isPersisted()) {
+        if (isPersisted) {
             sbDefinition.append(" PERSISTED");
         }
 
-        if (getMaskingFunction() != null) {
-            sbDefinition.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
+        if (maskingFunction != null) {
+            sbDefinition.append(" MASKED WITH (FUNCTION = ").append(maskingFunction).append(")");
         }
 
-        if (getExpression() == null) {
-            sbDefinition.append(getNullValue() ? NULL : NOT_NULL);
+        if (generated != null) {
+            appendGenerated(sbDefinition);
         }
 
-        if (isIdentity()) {
-            sbDefinition.append(" IDENTITY (").append(getSeed()).append(',').append(getIncrement()).append(")");
-            if (isNotForRep()) {
+        if (expession == null) {
+            sbDefinition.append(nullValue ? NULL : NOT_NULL);
+        }
+
+        if (isIdentity) {
+            sbDefinition.append(" IDENTITY (").append(seed).append(',').append(increment).append(")");
+            if (isNotForRep) {
                 sbDefinition.append(" NOT FOR REPLICATION");
             }
         }
 
-        if (getDefaultValue() != null) {
-            if (getDefaultName() != null) {
+        if (defaultValue != null) {
+            if (defaultName != null) {
                 sbDefinition.append(" CONSTRAINT ");
-                sbDefinition.append(MsDiffUtils.quoteName(getDefaultName()));
+                sbDefinition.append(MsDiffUtils.quoteName(defaultName));
             }
             sbDefinition.append(" DEFAULT ");
-            sbDefinition.append(getDefaultValue());
+            sbDefinition.append(defaultValue);
         }
 
         return sbDefinition.toString();
@@ -106,59 +112,61 @@ public class MsColumn extends AbstractColumn {
     @Override
     public void getCreationSQL(SQLScript script) {
         StringBuilder sql = new StringBuilder();
-
         sql.append(getAlterTable(false));
         sql.append("\n\tADD ").append(MsDiffUtils.quoteName(name)).append(' ');
-        if (getExpression() != null) {
-            sql.append("AS ").append(getExpression());
+        if (expession != null) {
+            sql.append("AS ").append(expession);
         } else {
-            sql.append(getType());
+            sql.append(type);
         }
 
-        if (getCollation() != null) {
-            sql.append(COLLATE).append(getCollation());
+        if (collation != null) {
+            sql.append(COLLATE).append(collation);
         }
 
-        if (isIdentity()) {
-            sql.append(" IDENTITY (").append(getSeed()).append(',').append(getIncrement()).append(")");
-            if (isNotForRep()) {
+        if (isIdentity) {
+            sql.append(" IDENTITY (").append(seed).append(',').append(increment).append(")");
+            if (isNotForRep) {
                 sql.append(" NOT FOR REPLICATION");
             }
         }
 
-        if (getMaskingFunction() != null) {
-            sql.append(" MASKED WITH (FUNCTION = ").append(getMaskingFunction()).append(")");
+        if (maskingFunction != null) {
+            sql.append(" MASKED WITH (FUNCTION = ").append(maskingFunction).append(")");
         }
 
-        boolean isJoinNotNull = getExpression() == null && getDefaultValue() == null && !getNullValue();
+        if (generated != null) {
+            appendGenerated(sql);
+        }
 
+        boolean isJoinNotNull = expession == null && defaultValue == null && !nullValue;
         if (isJoinNotNull) {
             sql.append(NOT_NULL);
         }
 
         script.addStatement(sql);
 
-        compareDefaults(null, null, getDefaultName(), getDefaultValue(), script);
+        compareDefaults(null, null, defaultName, defaultValue, script);
 
-        if (!isJoinNotNull && getExpression() == null && !getNullValue()) {
-            if (getDefaultValue() != null) {
-                script.addStatement(getUpdateSql());
+        if (!isJoinNotNull && expession == null && !nullValue) {
+            if (defaultValue != null) {
+                addUpdateStatement(script);
             }
 
             StringBuilder sqlAlter = new StringBuilder();
-            sqlAlter.append(getAlterColumn(false, getName())).append(' ').append(getType());
+            sqlAlter.append(getAlterColumn(name)).append(' ').append(type);
 
-            if (getCollation() != null) {
-                sqlAlter.append(COLLATE).append(getCollation());
+            if (collation != null) {
+                sqlAlter.append(COLLATE).append(collation);
             }
 
             sqlAlter.append(NOT_NULL);
             script.addStatement(sqlAlter);
         }
 
-        compareOption(false, isSparse(), SPARSE, script);
-        compareOption(false, isRowGuidCol(), ROWGUIDCOL, script);
-        compareOption(false, isPersisted(), PERSISTED, script);
+        compareOption(false, isSparse, SPARSE, script);
+        compareOption(false, isRowGuidCol, ROWGUIDCOL, script);
+        compareOption(false, isPersisted, PERSISTED, script);
 
         appendPrivileges(script);
     }
@@ -181,7 +189,7 @@ public class MsColumn extends AbstractColumn {
             isNeedDepcies.set(true);
         }
         StringBuilder sb = new StringBuilder();
-        sb.append(getAlterColumn(false, name));
+        sb.append(getAlterColumn(name));
         sb.append(newOption ? " ADD " : " DROP ");
         sb.append(optionName);
 
@@ -190,45 +198,52 @@ public class MsColumn extends AbstractColumn {
         script.addStatement(sb.toString(), orderType);
     }
 
+    private void appendGenerated(StringBuilder sb) {
+        sb.append(" GENERATED ALWAYS AS ").append(generated.getValue());
+        if (isHidden) {
+            sb.append(" HIDDEN");
+        }
+    }
+
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         MsColumn newColumn = (MsColumn) newCondition;
 
         // recreate column to change identity or computed value
-        if (!Objects.equals(newColumn.getSeed(), getSeed())
-                || !Objects.equals(newColumn.getIncrement(), getIncrement())
-                || !Objects.equals(newColumn.getExpression(), getExpression())) {
-            isNeedDepcies.set(true);
+        if (!Objects.equals(newColumn.seed, seed)
+                || !Objects.equals(newColumn.increment, increment)
+                || !Objects.equals(newColumn.expession, expession)
+                || newColumn.generated != generated
+                || !Objects.equals(newColumn.isHidden, isHidden)) {
             return ObjectState.RECREATE;
         }
 
-        boolean isNeedDropDefault = !Objects.equals(getType(), newColumn.getType())
-                && (!Objects.equals(getDefaultValue(), newColumn.getDefaultValue())
-                        || !Objects.equals(getDefaultName(), newColumn.getDefaultName()));
+        boolean isNeedDropDefault = !Objects.equals(type, newColumn.type)
+                && (!Objects.equals(defaultValue, newColumn.defaultValue)
+                        || !Objects.equals(defaultName, newColumn.defaultName));
 
         if (isNeedDropDefault) {
-            compareDefaults(getDefaultName(), getDefaultValue(), null, null, script);
+            compareDefaults(defaultName, defaultValue, null, null, script);
         }
-
+        AtomicBoolean isNeedDepcies = new AtomicBoolean();
         compareTypes(newColumn, isNeedDepcies, script);
 
-        String oldDefaultName = isNeedDropDefault ? null : getDefaultName();
-        String oldDefault = isNeedDropDefault ? null : getDefaultValue();
-        compareDefaults(oldDefaultName, oldDefault, newColumn.getDefaultName(),
-                newColumn.getDefaultValue(), script);
+        String oldDefaultName = isNeedDropDefault ? null : defaultName;
+        String oldDefault = isNeedDropDefault ? null : defaultValue;
+        compareDefaults(oldDefaultName, oldDefault, newColumn.defaultName,
+                newColumn.defaultValue, script);
 
         compareNullValues(newColumn, isNeedDepcies, script);
         compareMaskingFunctions(newColumn, script);
 
-        compareOption(isNotForRep(), newColumn.isNotForRep(), "NOT FOR REPLICATION", script);
-        compareOption(isSparse(), newColumn.isSparse(), SPARSE, isNeedDepcies, script);
-        compareOption(isRowGuidCol(), newColumn.isRowGuidCol(), ROWGUIDCOL, script);
-        compareOption(isPersisted(), newColumn.isPersisted(), PERSISTED, isNeedDepcies, script);
+        compareOption(isNotForRep, newColumn.isNotForRep, "NOT FOR REPLICATION", script);
+        compareOption(isSparse, newColumn.isSparse, SPARSE, isNeedDepcies, script);
+        compareOption(isRowGuidCol, newColumn.isRowGuidCol, ROWGUIDCOL, script);
+        compareOption(isPersisted, newColumn.isPersisted, PERSISTED, isNeedDepcies, script);
 
         alterPrivileges(newColumn, script);
-
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies.get(), script, startSize);
     }
 
     private void compareDefaults(String oldDefaultName, String oldDefault,
@@ -255,50 +270,48 @@ public class MsColumn extends AbstractColumn {
     }
 
     private void compareTypes(MsColumn newColumn, AtomicBoolean isNeedDepcies, SQLScript script) {
-        String newCollation = newColumn.getCollation();
-        if (!Objects.equals(getType(), newColumn.getType())
-                || !Objects.equals(newCollation, getCollation())) {
-            isNeedDepcies.set(true);
-            StringBuilder sb = new StringBuilder();
-            sb.append(getAlterColumn(false, newColumn.getName()))
-            .append(' ').append(newColumn.getType());
-
-            if (newCollation != null) {
-                sb.append(COLLATE).append(newCollation);
-            }
-
-            if (getNullValue() == newColumn.getNullValue()) {
-                sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
-            }
-            script.addStatement(sb);
+        String newCollation = newColumn.collation;
+        if (Objects.equals(type, newColumn.type) && Objects.equals(newCollation, collation)) {
+            return;
         }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterColumn(newColumn.name)).append(' ').append(newColumn.type);
+        if (newCollation != null) {
+            sb.append(COLLATE).append(newCollation);
+        }
+        if (nullValue == newColumn.nullValue) {
+            sb.append(newColumn.nullValue ? NULL : NOT_NULL);
+        }
+        script.addStatement(sb);
+        isNeedDepcies.set(true);
     }
 
     private void compareNullValues(MsColumn newColumn, AtomicBoolean isNeedDepcies, SQLScript script) {
-        if (newColumn.getNullValue() != getNullValue()) {
-            if (newColumn.getDefaultValue() != null && getNullValue() && !newColumn.getNullValue()) {
-                script.addStatement(getUpdateSql());
-            }
-            StringBuilder sb = new StringBuilder();
-            sb.append(getAlterColumn(false, newColumn.getName()))
-            .append(' ').append(newColumn.getType());
-
-            if (newColumn.getCollation() != null) {
-                sb.append(COLLATE).append(newColumn.getCollation());
-            }
-
-            sb.append(newColumn.getNullValue() ? NULL : NOT_NULL);
-            script.addStatement(sb);
-            isNeedDepcies.set(true);
+        if (newColumn.nullValue == nullValue) {
+            return;
         }
+
+        if (newColumn.defaultValue != null && nullValue && !newColumn.nullValue) {
+            addUpdateStatement(script);
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(getAlterColumn(newColumn.name)).append(' ').append(newColumn.type);
+        if (newColumn.collation != null) {
+            sb.append(COLLATE).append(newColumn.collation);
+        }
+        sb.append(newColumn.nullValue ? NULL : NOT_NULL);
+        script.addStatement(sb);
+        isNeedDepcies.set(true);
     }
 
     private void compareMaskingFunctions(MsColumn newColumn, SQLScript script) {
-        if (!Objects.equals(newColumn.getMaskingFunction(), getMaskingFunction())) {
+        if (!Objects.equals(newColumn.maskingFunction, maskingFunction)) {
             StringBuilder sb = new StringBuilder();
-            sb.append(getAlterColumn(false, newColumn.getName()));
-            if (newColumn.getMaskingFunction() != null) {
-                sb.append(" ADD MASKED WITH (FUNCTION = ").append(newColumn.getMaskingFunction()).append(")");
+            sb.append(getAlterColumn(newColumn.name));
+            if (newColumn.maskingFunction != null) {
+                sb.append(" ADD MASKED WITH (FUNCTION = ").append(newColumn.maskingFunction).append(")");
             } else {
                 sb.append(" DROP MASKED");
             }
@@ -306,24 +319,24 @@ public class MsColumn extends AbstractColumn {
         }
     }
 
-    private String getUpdateSql() {
+    private void addUpdateStatement(SQLScript script) {
         StringBuilder sb = new StringBuilder();
-        sb.append("UPDATE ").append(getParent().getQualifiedName())
+        sb.append("UPDATE ").append(parent.getQualifiedName())
         .append("\n\tSET ").append(MsDiffUtils.quoteName(name))
         .append(" = DEFAULT WHERE ")
         .append(MsDiffUtils.quoteName(name)).append(" IS").append(NULL);
-        return sb.toString();
+        script.addStatement(sb);
     }
 
-    private String getAlterColumn(boolean only, String column) {
-        return ((AbstractTable) this.getParent()).getAlterTable(only) + ALTER_COLUMN + MsDiffUtils.quoteName(column);
+    private String getAlterColumn(String column) {
+        return ((AbstractTable) parent).getAlterTable(false) + ALTER_COLUMN + MsDiffUtils.quoteName(column);
     }
 
     @Override
     public void getDropSQL(SQLScript script, boolean optionExists) {
         final StringBuilder sb = new StringBuilder();
         // we need to drop default
-        compareDefaults(getDefaultName(), getDefaultValue(), null, null, script);
+        compareDefaults(defaultName, defaultValue, null, null, script);
         sb.append(getAlterTable(false)).append("\n\tDROP COLUMN ");
         if (optionExists) {
             sb.append(IF_EXISTS);
@@ -332,17 +345,9 @@ public class MsColumn extends AbstractColumn {
         script.addStatement(sb);
     }
 
-    public boolean isSparse() {
-        return isSparse;
-    }
-
     public void setSparse(final boolean isSparse) {
         this.isSparse = isSparse;
         resetHash();
-    }
-
-    public boolean isRowGuidCol() {
-        return isRowGuidCol;
     }
 
     public void setRowGuidCol(final boolean isRowGuidCol) {
@@ -350,17 +355,9 @@ public class MsColumn extends AbstractColumn {
         resetHash();
     }
 
-    public boolean isPersisted() {
-        return isPersisted;
-    }
-
     public void setPersisted(final boolean isPersisted) {
         this.isPersisted = isPersisted;
         resetHash();
-    }
-
-    public boolean isNotForRep() {
-        return isNotForRep;
     }
 
     public void setNotForRep(final boolean isNotForRep) {
@@ -386,21 +383,9 @@ public class MsColumn extends AbstractColumn {
         resetHash();
     }
 
-    public String getMaskingFunction() {
-        return maskingFunction;
-    }
-
     public void setMaskingFunction(final String maskingFunction) {
         this.maskingFunction = maskingFunction;
         resetHash();
-    }
-
-    public String getSeed() {
-        return seed;
-    }
-
-    public String getIncrement() {
-        return increment;
     }
 
     public boolean isIdentity() {
@@ -414,19 +399,35 @@ public class MsColumn extends AbstractColumn {
         resetHash();
     }
 
+    public GeneratedType getGenerated() {
+        return generated;
+    }
+
+    public void setGenerated(GeneratedType generated) {
+        this.generated = generated;
+        resetHash();
+    }
+
+    public void setHidden(boolean isHidden) {
+        this.isHidden = isHidden;
+        resetHash();
+    }
+
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof MsColumn col && super.compare(obj)) {
-            return isSparse == col.isSparse()
-                    && isRowGuidCol ==  col.isRowGuidCol()
-                    && isPersisted == col.isPersisted()
-                    && isNotForRep == col.isNotForRep()
-                    && isIdentity == col.isIdentity()
-                    && Objects.equals(seed, col.getSeed())
-                    && Objects.equals(increment, col.getIncrement())
-                    && Objects.equals(defaultName, col.getDefaultName())
-                    && Objects.equals(expession, col.getExpression())
-                    && Objects.equals(maskingFunction, col.getMaskingFunction());
+            return isSparse == col.isSparse
+                    && isRowGuidCol == col.isRowGuidCol
+                    && isPersisted == col.isPersisted
+                    && isNotForRep == col.isNotForRep
+                    && isIdentity == col.isIdentity
+                    && isHidden == col.isHidden
+                    && Objects.equals(seed, col.seed)
+                    && Objects.equals(increment, col.increment)
+                    && Objects.equals(defaultName, col.defaultName)
+                    && Objects.equals(expession, col.expession)
+                    && Objects.equals(maskingFunction, col.maskingFunction)
+                    && generated == col.generated;
         }
 
         return false;
@@ -440,26 +441,30 @@ public class MsColumn extends AbstractColumn {
         hasher.put(isPersisted);
         hasher.put(isNotForRep);
         hasher.put(isIdentity);
+        hasher.put(isHidden);
         hasher.put(seed);
         hasher.put(increment);
         hasher.put(defaultName);
         hasher.put(expession);
         hasher.put(maskingFunction);
+        hasher.put(generated);
     }
 
     @Override
     protected AbstractColumn getColumnCopy() {
-        MsColumn copy = new MsColumn(getName());
-        copy.setSparse(isSparse());
-        copy.setRowGuidCol(isRowGuidCol());
-        copy.setPersisted(isPersisted());
-        copy.setNotForRep(isNotForRep());
-        copy.isIdentity = isIdentity();
-        copy.seed = getSeed();
-        copy.increment = getIncrement();
-        copy.setDefaultName(getDefaultName());
-        copy.setExpression(getExpression());
-        copy.setMaskingFunction(getMaskingFunction());
+        MsColumn copy = new MsColumn(name);
+        copy.setSparse(isSparse);
+        copy.setRowGuidCol(isRowGuidCol);
+        copy.setPersisted(isPersisted);
+        copy.setNotForRep(isNotForRep);
+        copy.isIdentity = isIdentity;
+        copy.isHidden = isHidden;
+        copy.seed = seed;
+        copy.increment = increment;
+        copy.setDefaultName(defaultName);
+        copy.setExpression(expession);
+        copy.setMaskingFunction(maskingFunction);
+        copy.setGenerated(generated);
         return copy;
     }
 

@@ -1051,7 +1051,7 @@ fragment FullWidthLetter options {
     ;
 
 BOM: '\ufeff';
-SPACE:              [ \t\r\n]+    -> skip;
+SPACE:              [ \t\r\n\u00A0]+    -> skip;
 ZERO_LENGHT_SPACE: '\u200B'..'\u200F' -> skip;
 
 BAD

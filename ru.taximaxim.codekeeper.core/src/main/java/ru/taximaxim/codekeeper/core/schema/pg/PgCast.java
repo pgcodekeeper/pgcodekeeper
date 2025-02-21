@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -26,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgCast extends PgStatement implements ICast {
+public final class PgCast extends PgStatement implements ICast {
 
     public enum CastMethod {
         FUNCTION, BINARY, INOUT
@@ -61,17 +60,9 @@ public class PgCast extends PgStatement implements ICast {
         resetHash();
     }
 
-    public CastMethod getMethod() {
-        return method;
-    }
-
     public void setMethod(CastMethod method) {
         this.method = method;
         resetHash();
-    }
-
-    public String getFunction() {
-        return function;
     }
 
     public void setFunction(String function) {
@@ -91,7 +82,7 @@ public class PgCast extends PgStatement implements ICast {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     @Override
@@ -133,12 +124,11 @@ public class PgCast extends PgStatement implements ICast {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgCast newCast = (PgCast) newCondition;
 
         if (!compareUnalterable(newCast)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
         appendAlterComments(newCast, script);
@@ -173,11 +163,11 @@ public class PgCast extends PgStatement implements ICast {
 
     @Override
     public PgCast shallowCopy() {
-        PgCast copy = new PgCast(getSource(), getTarget());
+        PgCast copy = new PgCast(source, target);
         copyBaseFields(copy);
-        copy.setContext(getContext());
-        copy.setMethod(getMethod());
-        copy.setFunction(getFunction());
+        copy.setContext(context);
+        copy.setMethod(method);
+        copy.setFunction(function);
         return copy;
     }
 }

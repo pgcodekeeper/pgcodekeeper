@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
-import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
-public class OperatorsReader extends JdbcReader {
+public final class OperatorsReader extends JdbcReader {
 
     public OperatorsReader(JdbcLoaderBase loader) {
         super(loader);
@@ -102,7 +101,7 @@ public class OperatorsReader extends JdbcReader {
         }
 
         loader.setAuthor(oper, res);
-        ((PgSchema) schema).addOperator(oper);
+        schema.addChild(oper);
     }
 
     private String getProcessedName(PgOperator oper, String schemaName, String funcName) {

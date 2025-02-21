@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,8 +19,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -31,8 +29,8 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 
 public abstract class PgConstraint extends AbstractConstraint {
 
-    private boolean deferrable;
-    private boolean initially;
+    protected boolean deferrable;
+    protected boolean initially;
 
     protected PgConstraint(String name) {
         super(name);
@@ -43,17 +41,9 @@ public abstract class PgConstraint extends AbstractConstraint {
         resetHash();
     }
 
-    public boolean isDeferrable() {
-        return deferrable;
-    }
-
     public void setInitially(boolean initially) {
         this.initially = initially;
         resetHash();
-    }
-
-    public boolean isInitially() {
-        return initially;
     }
 
     protected abstract String getErrorCode();
@@ -63,30 +53,30 @@ public abstract class PgConstraint extends AbstractConstraint {
         final StringBuilder sbSQL = new StringBuilder();
         appendAlterTable(sbSQL);
         sbSQL.append("\n\tADD");
-        if (!getName().isEmpty()) {
-            sbSQL.append(" CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
+        if (!name.isEmpty()) {
+            sbSQL.append(" CONSTRAINT ").append(PgDiffUtils.getQuotedName(name));
         }
         sbSQL.append(' ');
         sbSQL.append(getDefinition());
-        if (isDeferrable()) {
+        if (deferrable) {
             sbSQL.append(" DEFERRABLE");
         }
-        if (isInitially()) {
+        if (initially) {
             sbSQL.append(" INITIALLY DEFERRED");
         }
 
         boolean generateNotValid = isGenerateNotValid();
 
-        if (isNotValid() || generateNotValid) {
+        if (isNotValid || generateNotValid) {
             sbSQL.append(" NOT VALID");
         }
         sbSQL.append(';');
 
-        if (generateNotValid && !isNotValid()) {
+        if (generateNotValid && !isNotValid) {
             sbSQL.append("\n\n");
             appendAlterTable(sbSQL);
             sbSQL.append(" VALIDATE CONSTRAINT ")
-            .append(PgDiffUtils.getQuotedName(getName()))
+            .append(PgDiffUtils.getQuotedName(name))
             .append(';');
         }
 
@@ -107,7 +97,6 @@ public abstract class PgConstraint extends AbstractConstraint {
         if (!getDatabaseArguments().isConstraintNotValid()) {
             return false;
         }
-        var parent = getParent();
         if (parent instanceof PartitionPgTable) {
             return false;
         }
@@ -126,24 +115,23 @@ public abstract class PgConstraint extends AbstractConstraint {
         if (optionExists) {
             sbSQL.append(IF_EXISTS);
         }
-        sbSQL.append(PgDiffUtils.getQuotedName(getName()));
+        sbSQL.append(PgDiffUtils.getQuotedName(name));
         script.addStatement(sbSQL);
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgConstraint newConstr = (PgConstraint) newCondition;
 
         if (!compareUnalterable(newConstr)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
-        if (isNotValid() && !newConstr.isNotValid()) {
+        if (isNotValid && !newConstr.isNotValid) {
             StringBuilder sbSQL = new StringBuilder();
             appendAlterTable(sbSQL);
-            sbSQL.append("\n\tVALIDATE CONSTRAINT ").append(PgDiffUtils.getQuotedName(getName()));
+            sbSQL.append("\n\tVALIDATE CONSTRAINT ").append(PgDiffUtils.getQuotedName(name));
             script.addStatement(sbSQL);
         }
 
@@ -164,11 +152,11 @@ public abstract class PgConstraint extends AbstractConstraint {
     protected void appendCommentSql(SQLScript script) {
         StringBuilder sb = new StringBuilder();
         sb.append("COMMENT ON CONSTRAINT ");
-        sb.append(PgDiffUtils.getQuotedName(getName())).append(" ON ");
-        if (getParent().getStatementType() == DbObjType.DOMAIN) {
+        sb.append(PgDiffUtils.getQuotedName(name)).append(" ON ");
+        if (parent.getStatementType() == DbObjType.DOMAIN) {
             sb.append("DOMAIN ");
         }
-        sb.append(getParent().getQualifiedName()).append(" IS ").append(checkComments() ? getComment() : "NULL");
+        sb.append(parent.getQualifiedName()).append(" IS ").append(checkComments() ? comment : "NULL");
         script.addStatement(sb.toString(), getCommentsOrder());
     }
 
@@ -193,6 +181,6 @@ public abstract class PgConstraint extends AbstractConstraint {
     }
 
     protected boolean compareCommonFields(PgConstraint con) {
-        return isDeferrable() == con.isDeferrable() && isInitially() == con.isInitially();
+        return deferrable == con.deferrable && initially == con.initially;
     }
 }

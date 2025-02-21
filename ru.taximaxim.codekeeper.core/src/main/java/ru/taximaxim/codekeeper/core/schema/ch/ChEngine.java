@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,47 +62,27 @@ public final class ChEngine implements Serializable, IHashable {
         this.partitionBy = partitionBy;
     }
 
-    public String getPartitionBy() {
-        return partitionBy;
-    }
-
     public void setPrimaryKey(String primaryKey) {
         this.primaryKey = primaryKey;
-    }
-
-    public String getPrimaryKey() {
-        return primaryKey;
     }
 
     public void setOrderBy(String orderBy) {
         this.orderBy = orderBy;
     }
 
-    public String getOrderBy() {
-        return orderBy;
-    }
-
     public void setSampleBy(String sampleBy) {
         this.sampleBy = sampleBy;
-    }
-
-    public String getSampleBy() {
-        return sampleBy;
     }
 
     public void setTtl(String ttl) {
         this.ttl = ttl;
     }
 
-    public String getTtl() {
-        return ttl;
-    }
-
     public void addOption(String option, String value) {
         options.put(option, value);
     }
 
-    public void appendCreationSQL(StringBuilder sb) {
+    void appendCreationSQL(StringBuilder sb) {
         sb.append("\nENGINE = ").append(name);
         if (body != null) {
             sb.append(" (").append(body).append(')');
@@ -132,7 +112,7 @@ public final class ChEngine implements Serializable, IHashable {
         }
     }
 
-    public void appendAlterSQL(ChEngine newEngine, String prefix, SQLScript script) {
+    void appendAlterSQL(ChEngine newEngine, String prefix, SQLScript script) {
         compareSampleBy(newEngine.sampleBy, prefix, script);
         compareTtl(newEngine.ttl, prefix, script);
         compareOptions(newEngine.options, prefix, script);
@@ -230,8 +210,9 @@ public final class ChEngine implements Serializable, IHashable {
         return options.containsKey(key);
     }
 
-    public boolean isModifybleSampleBy(String newSampleBy) {
-        return !Objects.equals(sampleBy, newSampleBy) && (newSampleBy == null || sampleBy == null);
+    boolean isModifybleSampleBy(ChEngine newEngine) {
+        String newSampleBy = newEngine.sampleBy;
+        return (newSampleBy == null || sampleBy == null) && !Objects.equals(sampleBy, newSampleBy);
     }
 
     @Override
@@ -260,16 +241,16 @@ public final class ChEngine implements Serializable, IHashable {
         }
 
         return obj instanceof final ChEngine engine && compareUnalterable(engine)
-                && Objects.equals(sampleBy, engine.getSampleBy())
-                && Objects.equals(ttl, engine.getTtl())
+                && Objects.equals(sampleBy, engine.sampleBy)
+                && Objects.equals(ttl, engine.ttl)
                 && Objects.equals(options, engine.options);
     }
 
-    public boolean compareUnalterable(ChEngine newEngine) {
-        return Objects.equals(name, newEngine.getName())
-                && Objects.equals(primaryKey, newEngine.getPrimaryKey())
-                && Objects.equals(orderBy, newEngine.getOrderBy())
+    boolean compareUnalterable(ChEngine newEngine) {
+        return Objects.equals(name, newEngine.name)
+                && Objects.equals(primaryKey, newEngine.primaryKey)
+                && Objects.equals(orderBy, newEngine.orderBy)
                 && Objects.equals(body, newEngine.body)
-                && Objects.equals(partitionBy, newEngine.getPartitionBy());
+                && Objects.equals(partitionBy, newEngine.partitionBy);
     }
 }

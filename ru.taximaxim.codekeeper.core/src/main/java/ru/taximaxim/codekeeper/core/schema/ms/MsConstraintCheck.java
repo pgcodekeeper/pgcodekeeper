@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,35 +35,27 @@ public final class MsConstraintCheck extends MsConstraint {
         resetHash();
     }
 
-    public boolean isNotForRepl() {
-        return isNotForRepl;
-    }
-
     public void setExpression(String expression) {
         this.expression = expression;
         resetHash();
-    }
-
-    public String getExpression() {
-        return expression;
     }
 
     @Override
     public String getDefinition() {
         var sbSQL = new StringBuilder();
         sbSQL.append("CHECK  ");
-        if (isNotForRepl()) {
+        if (isNotForRepl) {
             sbSQL.append("NOT FOR REPLICATION ");
         }
-        sbSQL.append('(').append(getExpression()).append(')');
+        sbSQL.append('(').append(expression).append(')');
         return sbSQL.toString();
     }
 
     @Override
     protected boolean compareUnalterable(MsConstraint newConstr) {
         if (newConstr instanceof MsConstraintCheck con) {
-            return isNotForRepl() == con.isNotForRepl()
-                    && Objects.equals(getExpression(), con.getExpression());
+            return isNotForRepl == con.isNotForRepl
+                    && Objects.equals(expression, con.expression);
         }
         return false;
     }
@@ -86,8 +78,8 @@ public final class MsConstraintCheck extends MsConstraint {
     @Override
     protected AbstractConstraint getConstraintCopy() {
         var con = new MsConstraintCheck(name);
-        con.setNotForRepl(isNotForRepl());
-        con.setExpression(getExpression());
+        con.setNotForRepl(isNotForRepl);
+        con.setExpression(expression);
         return con;
     }
 }

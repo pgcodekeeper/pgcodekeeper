@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,20 +16,17 @@
 
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PartitionGpTable extends AbstractRegularTable {
+public final class PartitionGpTable extends AbstractRegularTable {
 
     private String partitionGpBounds;
     private String normalizedPartitionGpBounds;
@@ -72,22 +69,6 @@ public class PartitionGpTable extends AbstractRegularTable {
         return super.isNeedRecreate(newTable) || !this.getClass().equals(newTable.getClass());
     }
 
-    public String getPartitionGpBounds() {
-        return partitionGpBounds;
-    }
-
-    public Collection<PartitionTemplateContainer> getTemplates() {
-        return Collections.unmodifiableCollection(templates.values());
-    }
-
-    /**
-     * @return query string with whitespace normalized.
-     * @see AntlrUtils#normalizeWhitespaceUnquoted
-     */
-    public String getNormalizedPartitionGpBounds() {
-        return normalizedPartitionGpBounds;
-    }
-
     @Override
     protected void convertTable(SQLScript script) {
         // available in 7 version
@@ -113,7 +94,7 @@ public class PartitionGpTable extends AbstractRegularTable {
     @Override
     public boolean compare(PgStatement obj) {
         if (obj instanceof PartitionGpTable table && super.compare(obj)) {
-            return Objects.equals(normalizedPartitionGpBounds, table.getNormalizedPartitionGpBounds())
+            return Objects.equals(normalizedPartitionGpBounds, table.normalizedPartitionGpBounds)
                     && Objects.equals(templates, table.templates);
         }
         return false;
@@ -123,11 +104,11 @@ public class PartitionGpTable extends AbstractRegularTable {
     protected void compareTableOptions(AbstractPgTable newTable, SQLScript script) {
         super.compareTableOptions(newTable, script);
 
-        PartitionGpTable newPartGptable = (PartitionGpTable) newTable;
-        if (!Objects.equals(normalizedPartitionGpBounds, newPartGptable.getNormalizedPartitionGpBounds())) {
+        PartitionGpTable newPartGpTable = (PartitionGpTable) newTable;
+        if (!Objects.equals(normalizedPartitionGpBounds, newPartGpTable.normalizedPartitionGpBounds)) {
             script.addStatement("\n --The PARTTITION clause have differences. Add ALTER statement manually");
         }
-        compareTemplates(newPartGptable, script);
+        compareTemplates(newPartGpTable, script);
     }
 
     private void compareTemplates(PartitionGpTable newTable, SQLScript script) {

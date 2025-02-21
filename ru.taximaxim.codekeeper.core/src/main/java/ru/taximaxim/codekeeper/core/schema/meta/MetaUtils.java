@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public final class MetaUtils {
         return tree;
     }
 
-    public static MetaStatement createMetaFromStatement(PgStatement st) {
+    private static MetaStatement createMetaFromStatement(PgStatement st) {
         DbObjType type = st.getStatementType();
         PgObjLocation loc = getLocation(st, type);
         MetaStatement meta;

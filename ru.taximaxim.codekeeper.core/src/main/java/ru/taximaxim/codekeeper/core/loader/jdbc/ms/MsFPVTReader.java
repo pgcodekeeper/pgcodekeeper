@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -135,7 +135,7 @@ public class MsFPVTReader extends JdbcReader {
         .column("t.is_disabled")
         .from("sys.objects res WITH (NOLOCK)")
         .join("JOIN sys.sql_modules sm WITH (NOLOCK) ON sm.object_id=res.object_id")
-        .join("LEFT JOIN sys.triggers t WITH(NOLOCK) ON t.object_id=res.object_id")
+        .join("LEFT JOIN sys.triggers t WITH (NOLOCK) ON t.object_id=res.object_id")
         .where("res.type IN (N'TR', N'V', N'IF', N'FN', N'TF', N'P')")
         .where("definition IS NOT NULL");
     }

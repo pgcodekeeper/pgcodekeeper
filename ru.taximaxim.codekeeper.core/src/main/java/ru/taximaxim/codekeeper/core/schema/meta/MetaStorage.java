@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 
-public class MetaStorage implements Serializable {
+public final class MetaStorage implements Serializable {
 
     private static final long serialVersionUID = 8194906497159326596L;
 

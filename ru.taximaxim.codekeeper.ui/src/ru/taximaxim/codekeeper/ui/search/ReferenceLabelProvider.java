@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
+import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
 
 public class ReferenceLabelProvider extends LabelProvider implements IStyledLabelProvider {
 
@@ -49,29 +50,36 @@ public class ReferenceLabelProvider extends LabelProvider implements IStyledLabe
             return Activator.getRegisteredImage(ProjectIcon.SEARCH_LINE);
         }
 
+        if (element instanceof AbstractLibrary lib) {
+            return lib.getImage();
+        }
+
         return workbenchProvider.getImage(element);
     }
 
     @Override
     public StyledString getStyledText(Object element) {
-        if (!(element instanceof PgObjLocation)) {
-            return workbenchProvider.getStyledText(element);
+        if (element instanceof AbstractLibrary lib) {
+            return new StyledString(lib.getName());
         }
 
-        PgObjLocation loc = (PgObjLocation) element;
-        StyledString text = new StyledString();
-        String lineNumber = MessageFormat.format(LINE_NUMBER, loc.getLineNumber());
-        text.append(lineNumber, StyledString.QUALIFIER_STYLER);
-        text.append(loc.getSql());
+        if (element instanceof PgObjLocation loc) {
+            StyledString text = new StyledString();
+            String lineNumber = MessageFormat.format(LINE_NUMBER, loc.getLineNumber());
+            text.append(lineNumber, StyledString.QUALIFIER_STYLER);
+            text.append(loc.getSql());
 
-        int offset = loc.getCharPositionInLine() + lineNumber.length();
-        int length = loc.getObjLength();
-        if (offset < 0 || offset + length > text.length()) {
-            return new StyledString();
+            int offset = loc.getCharPositionInLine() + lineNumber.length();
+            int length = loc.getObjLength();
+            if (offset < 0 || offset + length > text.length()) {
+                return new StyledString();
+            }
+
+            text.setStyle(offset, length, HIGHLIGHT_STYLE);
+            return text;
         }
 
-        text.setStyle(offset, length, HIGHLIGHT_STYLE);
-        return text;
+        return workbenchProvider.getStyledText(element);
     }
 
     @Override

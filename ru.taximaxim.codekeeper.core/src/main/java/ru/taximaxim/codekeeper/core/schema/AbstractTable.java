@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
     public static Stream<PgStatement> columnAdder(PgStatement st) {
         Stream<PgStatement> newStream = Stream.of(st);
         if (st.getStatementType() == DbObjType.TABLE) {
-            newStream = Stream.concat(newStream, ((AbstractTable)st).getColumns().stream());
+            newStream = Stream.concat(newStream, ((AbstractTable)st).columns.stream());
         }
 
         return newStream;
@@ -84,7 +84,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
      */
     public AbstractColumn getColumn(final String name) {
         for (AbstractColumn column : columns) {
-            if (column.getName().equals(name)) {
+            if (column.name.equals(name)) {
                 return column;
             }
         }
@@ -126,7 +126,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
             return false;
         }
 
-        return StatementUtils.isColumnsOrderChanged(newTable.getColumns(), columns);
+        return StatementUtils.isColumnsOrderChanged(newTable.columns, columns);
     }
 
     protected void appendColumnsPriliges(SQLScript script) {
@@ -253,10 +253,10 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         String cols = colsForMovingData.stream().map(quoter).collect(Collectors.joining(", "));
         List<String> identityColsForMovingData = identityCols == null ? Collections.emptyList()
                 : identityCols.stream().filter(colsForMovingData::contains).toList();
-        writeInsert(script, newTable.getQualifiedName(), tblTmpQName, identityColsForMovingData, cols);
+        writeInsert(script, newTable, tblTmpQName, identityColsForMovingData, cols);
     }
 
-    protected abstract void writeInsert(SQLScript script, String tblQName, String tblTmpQName,
+    protected abstract void writeInsert(SQLScript script, AbstractTable newTable, String tblTmpQName,
             List<String> identityColsForMovingData, String cols);
 
     /**

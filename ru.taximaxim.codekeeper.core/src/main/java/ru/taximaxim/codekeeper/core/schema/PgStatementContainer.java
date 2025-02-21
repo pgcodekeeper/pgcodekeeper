@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,7 +89,7 @@ implements IRelation, IStatementContainer, ISearchPath {
 
     public final boolean isClustered() {
         for (AbstractIndex ind : getIndexes()) {
-            if (ind.isClustered()) {
+            if (ind.isClustered) {
                 return true;
             }
         }

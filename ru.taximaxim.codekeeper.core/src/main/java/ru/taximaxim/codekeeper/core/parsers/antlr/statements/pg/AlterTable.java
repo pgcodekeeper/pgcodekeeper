@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_partition_gpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_table_statementContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Column_actionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Foreign_optionContext;
@@ -232,7 +231,7 @@ public class AlterTable extends TableAbstract {
 
         // SET SUBPARTITION TEMPLATE clause
         var partitionAction = alterPartition.partition_gp_action();
-        var subpartitions = partitionAction.template_spec().subpartition_element();
+        var subpartitions = partitionAction.template_spec().part_element();
         for (var subpartElem : subpartitions) {
             template.setSubElems(getFullCtxText(subpartElem),
                     AntlrUtils.normalizeWhitespaceUnquoted(subpartElem, stream));
@@ -247,7 +246,7 @@ public class AlterTable extends TableAbstract {
         // column statistics
         Set_statisticsContext statistics = colAction.set_statistics();
         if (statistics != null) {
-            col.setStatistics(Integer.valueOf(statistics.signed_number_literal().getText()));
+            col.setStatistics(Integer.valueOf(statistics.signediconst().getText()));
         }
 
         // column not null constraint
@@ -277,7 +276,7 @@ public class AlterTable extends TableAbstract {
         Define_foreign_optionsContext fOptions = colAction.define_foreign_options();
         if (fOptions != null) {
             for (Foreign_optionContext option : fOptions.foreign_option()) {
-                Character_stringContext opt = option.character_string();
+                var opt = option.sconst();
                 String value = opt == null ? null : opt.getText();
                 fillOptionParams(value, option.col_label().getText(), false, col::addForeignOption);
             }

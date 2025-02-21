@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.ms;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,9 +27,9 @@ import ru.taximaxim.codekeeper.core.schema.Argument;
 public abstract class AbstractMsClrFunction extends AbstractFunction {
 
     protected final List<String> options = new ArrayList<>();
-    private final String assembly;
-    private final String assemblyClass;
-    private final String assemblyMethod;
+    protected final String assembly;
+    protected final String assemblyClass;
+    protected final String assemblyMethod;
 
     protected AbstractMsClrFunction(String name, String assembly, String assemblyClass,
             String assemblyMethod) {
@@ -43,33 +42,17 @@ public abstract class AbstractMsClrFunction extends AbstractFunction {
     protected abstract String getDeclaration(Argument arg,
             boolean includeDefaultValue, boolean includeArgName);
 
-    public List<String> getOptions() {
-        return Collections.unmodifiableList(options);
-    }
-
     public void addOption(final String option) {
         options.add(option);
         resetHash();
     }
 
-    public String getAssembly() {
-        return assembly;
-    }
-
-    public String getAssemblyClass() {
-        return assemblyClass;
-    }
-
-    public String getAssemblyMethod() {
-        return assemblyMethod;
-    }
-
     @Override
     protected boolean compareUnalterable(AbstractFunction function) {
         if (function instanceof AbstractMsClrFunction func && super.compareUnalterable(function)) {
-            return Objects.equals(assembly, func.getAssembly())
-                    && Objects.equals(assemblyClass, func.getAssemblyClass())
-                    && Objects.equals(assemblyMethod, func.getAssemblyMethod())
+            return Objects.equals(assembly, func.assembly)
+                    && Objects.equals(assemblyClass, func.assemblyClass)
+                    && Objects.equals(assemblyMethod, func.assemblyMethod)
                     && options.equals(func.options);
         }
 

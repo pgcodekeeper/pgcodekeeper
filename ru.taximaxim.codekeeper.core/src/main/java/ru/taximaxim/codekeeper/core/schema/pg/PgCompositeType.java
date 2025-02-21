@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -72,14 +71,14 @@ public final class PgCompositeType extends AbstractType {
 
     @Override
     protected boolean compareUnalterable(AbstractType newType) {
-        return !StatementUtils.isColumnsOrderChanged(((PgCompositeType) newType).getAttrs(), attrs);
+        return !StatementUtils.isColumnsOrderChanged(((PgCompositeType) newType).attrs, attrs);
     }
 
     @Override
     protected void compareType(AbstractType newType, AtomicBoolean isNeedDepcies, SQLScript script) {
         PgCompositeType newCompositeType = (PgCompositeType) newType;
         StringBuilder attrSb = new StringBuilder();
-        for (AbstractColumn attr : newCompositeType.getAttrs()) {
+        for (AbstractColumn attr : newCompositeType.attrs) {
             AbstractColumn oldAttr = getAttr(attr.getName());
             if (oldAttr == null) {
                 appendAlterAttribute(attrSb, "ADD", " ", attr);
@@ -89,7 +88,7 @@ public final class PgCompositeType extends AbstractType {
             }
         }
 
-        for (AbstractColumn attr : getAttrs()) {
+        for (AbstractColumn attr : attrs) {
             if (newCompositeType.getAttr(attr.getName()) == null) {
                 appendAlterAttribute(attrSb, "DROP", ",", attr);
             }
@@ -111,7 +110,7 @@ public final class PgCompositeType extends AbstractType {
 
     private void appendAlterChildrenComments(PgStatement newObj, SQLScript script) {
         PgCompositeType newType = (PgCompositeType) newObj;
-        for (AbstractColumn newAttr : newType.getAttrs()) {
+        for (AbstractColumn newAttr : newType.attrs) {
             AbstractColumn oldAttr = getAttr(newAttr.getName());
             if (oldAttr != null) {
                 oldAttr.appendAlterComments(newAttr, script);
@@ -136,10 +135,6 @@ public final class PgCompositeType extends AbstractType {
         }
     }
 
-    public List<AbstractColumn> getAttrs() {
-        return Collections.unmodifiableList(attrs);
-    }
-
     public AbstractColumn getAttr(String name) {
         for (AbstractColumn att : attrs) {
             if (att.getName().equals(name)) {
@@ -157,7 +152,7 @@ public final class PgCompositeType extends AbstractType {
 
     @Override
     protected AbstractType getTypeCopy() {
-        PgCompositeType copy = new PgCompositeType(getName());
+        PgCompositeType copy = new PgCompositeType(name);
         for (AbstractColumn attr : attrs) {
             copy.addAttr((AbstractColumn) attr.deepCopy());
         }

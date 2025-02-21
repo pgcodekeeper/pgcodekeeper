@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,10 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.text.MessageFormat;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -31,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgFtsConfiguration extends PgStatement implements ISearchPath {
+public final class PgFtsConfiguration extends PgStatement implements ISearchPath {
 
     private static final String ALTER_CONFIGURATION = "ALTER TEXT SEARCH CONFIGURATION ";
     private static final String WITH = "\n\tWITH ";
@@ -52,7 +50,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema)getParent();
+        return (AbstractSchema) parent;
     }
 
     @Override
@@ -76,12 +74,11 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         PgFtsConfiguration newConf = (PgFtsConfiguration) newCondition;
 
         if (!newConf.getParser().equals(parser)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
 
@@ -93,7 +90,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
         return getObjectState(script, startSize);
     }
 
-    public void compareOptions(PgFtsConfiguration newConf, SQLScript script) {
+    private void compareOptions(PgFtsConfiguration newConf, SQLScript script) {
         Map <String, String> oldMap = dictionariesMap;
         Map <String, String> newMap = newConf.dictionariesMap;
 
@@ -117,7 +114,6 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
         });
     }
 
-
     private String getAlterConfiguration(String action, String fragment) {
         return getAlterConfiguration(action, fragment, null);
     }
@@ -136,7 +132,7 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
 
     @Override
     public PgFtsConfiguration shallowCopy() {
-        PgFtsConfiguration confDst = new PgFtsConfiguration(getName());
+        PgFtsConfiguration confDst = new PgFtsConfiguration(name);
         copyBaseFields(confDst);
         confDst.setParser(getParser());
         confDst.dictionariesMap.putAll(dictionariesMap);
@@ -175,9 +171,5 @@ public class PgFtsConfiguration extends PgStatement implements ISearchPath {
     public void addDictionary(String fragment, List<String> dictionaries) {
         dictionariesMap.put(fragment, String.join(", ", dictionaries));
         resetHash();
-    }
-
-    public Map<String, String> getDictionariesMap() {
-        return Collections.unmodifiableMap(dictionariesMap);
     }
 }

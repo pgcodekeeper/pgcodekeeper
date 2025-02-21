@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -77,19 +77,19 @@ implements SourceStatement {
     @Override
     public void computeHash(Hasher hasher) {
         super.computeHash(hasher);
-        hasher.put(getFirstPart());
-        hasher.put(getSecondPart());
-        hasher.put(isQuotedIdentified());
-        hasher.put(isAnsiNulls());
+        hasher.put(firstPart);
+        hasher.put(secondPart);
+        hasher.put(quotedIdentified);
+        hasher.put(ansiNulls);
     }
 
     @Override
     protected boolean compareUnalterable(AbstractFunction func) {
         if (func instanceof AbstractMsFunction newFunction && super.compareUnalterable(func)) {
-            return isAnsiNulls() == newFunction.isAnsiNulls()
-                    && isQuotedIdentified() == newFunction.isQuotedIdentified()
-                    && Objects.equals(getFirstPart(), newFunction.getFirstPart())
-                    && Objects.equals(getSecondPart(), newFunction.getSecondPart());
+            return ansiNulls == newFunction.ansiNulls
+                    && quotedIdentified == newFunction.quotedIdentified
+                    && Objects.equals(firstPart, newFunction.firstPart)
+                    && Objects.equals(secondPart, newFunction.secondPart);
         }
 
         return false;
@@ -98,10 +98,10 @@ implements SourceStatement {
     @Override
     public AbstractFunction shallowCopy() {
         AbstractMsFunction functionDst = (AbstractMsFunction) super.shallowCopy();
-        functionDst.setAnsiNulls(isAnsiNulls());
-        functionDst.setQuotedIdentified(isQuotedIdentified());
-        functionDst.setFirstPart(getFirstPart());
-        functionDst.setSecondPart(getSecondPart());
+        functionDst.setAnsiNulls(ansiNulls);
+        functionDst.setQuotedIdentified(quotedIdentified);
+        functionDst.setFirstPart(firstPart);
+        functionDst.setSecondPart(secondPart);
         return functionDst;
     }
 

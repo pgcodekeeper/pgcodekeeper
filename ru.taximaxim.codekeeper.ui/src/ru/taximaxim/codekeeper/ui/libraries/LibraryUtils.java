@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,6 +40,15 @@ public class LibraryUtils {
         return new UiLibraryLoader(proj.getName(), OpenProjectUtils.getDatabaseType(proj), xml.readLoadNestedFlag(),
                 xmlPath)
                 .load(libs);
+    }
+
+    public static RootLibrary getRoot(IProject project) throws IOException {
+        String projectName = project.getName();
+        if (RootLibrary.hasRootLib(projectName)) {
+            return RootLibrary.getRootLib(projectName);
+        }
+
+        return create(project);
     }
 
     private LibraryUtils() {

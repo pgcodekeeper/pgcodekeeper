@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,11 +69,8 @@ public class PgDbProject {
         return Paths.get(project.getLocationURI());
     }
 
-    /**
-     * Удалить проект из workspace, не удаляя содержимое
-     */
-    public void deleteFromWorkspace() throws CoreException {
-        project.delete(false, true, null);
+    public void deleteProject() throws CoreException {
+        project.delete(true, true, null);
     }
 
     public void openProject() throws CoreException {

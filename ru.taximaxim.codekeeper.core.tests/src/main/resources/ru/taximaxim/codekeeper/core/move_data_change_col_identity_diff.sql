@@ -64,10 +64,13 @@ OVERRIDING SYSTEM VALUE
 SELECT id, c2, c3 FROM public.testtable2_randomly_generated_part;
 
 DO LANGUAGE plpgsql $_$
-DECLARE restart_var bigint = (SELECT nextval(pg_get_serial_sequence('public.testtable2_randomly_generated_part', 'id')));
+DECLARE restart_var bigint = (SELECT COALESCE(
+    (SELECT nextval(pg_get_serial_sequence('public.testtable2_randomly_generated_part', 'id'))),
+    (SELECT MAX(id) + 1 FROM public.testtable2),
+    1));
 BEGIN
-	EXECUTE $$ ALTER TABLE public.testtable2 ALTER COLUMN id RESTART WITH $$ || restart_var || ';' ;
-END;
+    EXECUTE $$ ALTER TABLE public.testtable2 ALTER COLUMN id RESTART WITH $$ || restart_var || ';' ;
+END
 $_$;
 
 DROP TABLE public.testtable2_randomly_generated_part;

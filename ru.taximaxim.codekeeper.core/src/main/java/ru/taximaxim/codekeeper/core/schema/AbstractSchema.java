@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public AbstractDatabase getDatabase() {
-        return (AbstractDatabase) getParent();
+        return (AbstractDatabase) parent;
     }
 
     /**
@@ -84,8 +84,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public Stream<IRelation> getRelations() {
-        return Stream.concat(Stream.concat(getTables().stream(), getViews().stream()),
-                getSequences().stream());
+        return Stream.concat(Stream.concat(tables.values().stream(), views.values().stream()),
+                sequences.values().stream());
     }
 
     @Override
@@ -114,16 +114,17 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         case FUNCTION:
         case PROCEDURE:
         case AGGREGATE:
-            AbstractFunction func = getFunction(name);
+            final String signature = name;
+            AbstractFunction func = functions.get(signature);
             return func != null && func.getStatementType() == type ? func : null;
         case SEQUENCE:
-            return getSequence(name);
+            return sequences.get(name);
         case TYPE:
-            return getType(name);
+            return types.get(name);
         case TABLE:
-            return getTable(name);
+            return tables.get(name);
         case VIEW:
-            return getView(name);
+            return views.get(name);
         default:
             return null;
         }
@@ -221,12 +222,12 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return child-containing element with matching name (either TABLE or VIEW)
      */
     public PgStatementContainer getStatementContainer(String name) {
-        PgStatementContainer container = getTable(name);
-        return container == null ? getView(name) : container;
+        PgStatementContainer container = tables.get(name);
+        return container == null ? views.get(name) : container;
     }
 
     public Stream<PgStatementContainer> getStatementContainers() {
-        return Stream.concat(getTables().stream(), getViews().stream());
+        return Stream.concat(tables.values().stream(), views.values().stream());
     }
 
     public AbstractIndex getIndexByName(String indexName) {
@@ -247,15 +248,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return types.get(name);
     }
 
-    /**
-     * Getter for {@link #types}. The list cannot be modified.
-     *
-     * @return {@link #types}
-     */
-    public Collection<AbstractType> getTypes() {
-        return Collections.unmodifiableCollection(types.values());
-    }
-
     public void addFunction(final AbstractFunction function) {
         addUnique(functions, function);
     }
@@ -274,9 +266,9 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     public void addType(final AbstractType type) {
         // replace shell type by real type
-        AbstractType oldType = types.get(type.getName());
+        AbstractType oldType = types.get(type.name);
         if (oldType instanceof PgShellType && !(type instanceof PgShellType)) {
-            types.remove(type.getName());
+            types.remove(type.name);
             oldType.setParent(null);
         }
         addUnique(types, type);

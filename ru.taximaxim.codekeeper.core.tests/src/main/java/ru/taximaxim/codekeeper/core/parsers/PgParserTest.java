@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,8 @@ class PgParserTest {
             "user_mapping",
             "view",
             "window",
-            "with"
+            "with",
+            "pg_unicode_escaping"
     })
     void parse(final String fileNameTemplate) throws IOException {
         parse(fileNameTemplate, 0);

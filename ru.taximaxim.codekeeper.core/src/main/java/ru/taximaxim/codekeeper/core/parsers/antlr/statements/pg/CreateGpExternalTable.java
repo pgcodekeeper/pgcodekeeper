@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_table_external_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Define_foreign_optionsContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.External_table_executeContext;
@@ -68,7 +67,7 @@ public final class CreateGpExternalTable extends TableAbstract {
 
         External_table_locationContext locationCtx = ctx.external_table_location();
         if (locationCtx != null) {
-            for (Character_stringContext urLocation : locationCtx.character_string()) {
+            for (var urLocation : locationCtx.sconst()) {
                 table.addUrLocation(getFullCtxText(urLocation));
             }
             if (locationCtx.MASTER() != null) {
@@ -118,10 +117,10 @@ public final class CreateGpExternalTable extends TableAbstract {
                     sb.setLength(sb.length() - 1);
                     sb.append(" ");
                 } else if (option.FORMATTER() != null) {
-                    sb.append("formatter=").append(getFullCtxText(option.character_string())).append(" ");
+                    sb.append("formatter=").append(getFullCtxText(option.sconst())).append(" ");
                 } else {
                     sb.append(option.getChild(0).getText().toLowerCase(Locale.ROOT)).append(" ");
-                    sb.append(getFullCtxText(option.character_string())).append(" ");
+                    sb.append(getFullCtxText(option.sconst())).append(" ");
                 }
             }
             sb.setLength(sb.length() - 1);
@@ -131,13 +130,13 @@ public final class CreateGpExternalTable extends TableAbstract {
         Define_foreign_optionsContext options = ctx.define_foreign_options();
         if (options != null) {
             for (Foreign_optionContext option : options.foreign_option()) {
-                fillOptionParams(option.character_string().getText(), option.col_label().getText(), false,
+                fillOptionParams(option.sconst().getText(), option.col_label().getText(), false,
                         table::addOption);
             }
         }
 
         if (ctx.ENCODING() != null) {
-            table.setEncoding(getFullCtxText(ctx.character_string()));
+            table.setEncoding(getFullCtxText(ctx.sconst()));
         }
 
         External_table_logContext logCtx = ctx.external_table_log();
@@ -147,7 +146,7 @@ public final class CreateGpExternalTable extends TableAbstract {
                 table.addOption("error_log_persistent", "'true'");
             }
 
-            table.setRejectLimit(Integer.parseInt(logCtx.NUMBER_LITERAL().getText()));
+            table.setRejectLimit(Integer.parseInt(logCtx.iconst().getText()));
             table.setRowReject(logCtx.PERCENT() == null);
         }
 

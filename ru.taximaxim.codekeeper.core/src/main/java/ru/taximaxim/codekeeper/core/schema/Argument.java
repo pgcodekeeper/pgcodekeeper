@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -89,9 +89,9 @@ public class Argument implements Serializable, IHashable {
             }
         }
 
-        sbString.append(getDataType());
+        sbString.append(dataType);
 
-        String def = getDefaultExpression();
+        String def = defaultExpression;
 
         if (includeDefaultValue && def != null && !def.isEmpty()) {
             sbString.append(" = ");
@@ -108,11 +108,11 @@ public class Argument implements Serializable, IHashable {
         }
 
         if (obj instanceof Argument arg) {
-            return Objects.equals(dataType, arg.getDataType())
-                    && Objects.equals(defaultExpression, arg.getDefaultExpression())
-                    && mode == arg.getMode()
-                    && isReadOnly == arg.isReadOnly()
-                    && Objects.equals(name, arg.getName());
+            return Objects.equals(dataType, arg.dataType)
+                    && Objects.equals(defaultExpression, arg.defaultExpression)
+                    && mode == arg.mode
+                    && isReadOnly == arg.isReadOnly
+                    && Objects.equals(name, arg.name);
         }
 
         return false;

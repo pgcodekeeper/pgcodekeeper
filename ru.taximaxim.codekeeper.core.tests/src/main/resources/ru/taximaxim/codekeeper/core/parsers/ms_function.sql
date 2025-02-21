@@ -96,3 +96,16 @@ Begin
   return 123;
 END
 GO
+
+-- Non-breaking spaces
+CREATE PROCEDURE [dbo].[test_nbsp]
+AS
+BEGIN
+	SELECT 1
+  from (values
+  		(1),
+  		(2)
+  ) v(a)
+
+END
+GO

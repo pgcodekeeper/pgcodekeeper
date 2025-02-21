@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collation_optionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_collation_statementContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
@@ -64,7 +63,7 @@ public class CreateCollation extends PgParserAbstract {
         if (body.DEFAULT() != null) {
             return "default";
         }
-        Character_stringContext val = body.character_string();
+        var val = body.sconst();
         if (val != null) {
             return val.getText();
         }

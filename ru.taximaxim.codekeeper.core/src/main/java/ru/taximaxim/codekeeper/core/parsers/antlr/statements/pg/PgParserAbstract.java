@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,6 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.All_opContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Boolean_valueContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Cast_nameContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Character_stringContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Column_operator_classContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Distributed_clauseContext;
@@ -47,6 +46,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Operator_n
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Predefined_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
+import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.SconstContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mapping_nameContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -161,28 +161,23 @@ public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
     }
 
     protected boolean parseBoolean(Boolean_valueContext boolCtx) {
-        String bool = boolCtx.character_string() != null
-                ? unquoteQuotedString(boolCtx.character_string()).getFirst() : boolCtx.getText();
+        String bool = boolCtx.sconst() != null
+                ? unquoteQuotedString(boolCtx.sconst()).getFirst()
+                : boolCtx.getText();
         bool = bool.toLowerCase(Locale.ROOT);
-        switch (bool) {
-        case "1":
-        case "true":
-        case "on":
-        case "yes":
-            return true;
-        case "0":
-        case "false":
-        case "off":
-        case "no":
-            return false;
-        default:
-            // TODO throw instead?
-            return false;
-        }
+        return switch (bool) {
+            case "1", "true", "on", "yes" -> true;
+            case "0", "false", "off", "no" -> false;
+            default -> /* TODO throw instead? */ false;
+        };
     }
 
-    public static Pair<String, Token> unquoteQuotedString(Character_stringContext ctx) {
-        TerminalNode string = ctx.Character_String_Literal();
+    public static Pair<String, Token> unquoteQuotedString(SconstContext ctx) {
+        TerminalNode string = ctx.StringConstant();
+        if (string == null) {
+            string = ctx.UnicodeEscapeStringConstant();
+        }
+
         if (string != null) {
             String text = string.getText();
             int start = text.indexOf('\'') + 1;

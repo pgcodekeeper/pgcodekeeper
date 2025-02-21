@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ public class AlterOther extends PgParserAbstract {
 
         var statCtx = ctx.set_statistics();
         if (statCtx != null && statCtx.DEFAULT() == null) {
-            doSafe(PgStatistics::setStatistics, stat, Integer.parseInt(statCtx.signed_number_literal().getText()));
+            doSafe(PgStatistics::setStatistics, stat, Integer.parseInt(statCtx.signediconst().getText()));
         }
     }
 

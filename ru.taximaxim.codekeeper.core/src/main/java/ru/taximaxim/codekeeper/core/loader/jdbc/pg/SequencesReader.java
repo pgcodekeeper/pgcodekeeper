@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 
-public class SequencesReader extends JdbcReader {
+public final class SequencesReader extends JdbcReader {
 
     private static final Logger LOG = LoggerFactory.getLogger(SequencesReader.class);
 
@@ -75,8 +75,7 @@ public class SequencesReader extends JdbcReader {
         }
 
         if (refTable != null && identityType == null) {
-            s.setOwnedBy(new GenericColumn(schema.getName(), refTable,
-                    res.getString("ref_col_name"), DbObjType.COLUMN));
+            s.setOwnedBy(new GenericColumn(schema.getName(), refTable, refColumn, DbObjType.COLUMN));
         }
 
         if (identityType == null) {
@@ -97,7 +96,8 @@ public class SequencesReader extends JdbcReader {
             s.setDataType(dataType);
         }
 
-        if ("d".equals(identityType) || "a".equals(identityType)) {
+        var isDefault = "d".equals(identityType);
+        if (isDefault || "a".equals(identityType)) {
             AbstractTable table = schema.getTable(refTable);
             if (table == null) {
                 LOG.error("Not found table {} for sequence {}", table, s);
@@ -111,7 +111,7 @@ public class SequencesReader extends JdbcReader {
             }
             column.setSequence(s);
             s.setParent(schema);
-            column.setIdentityType("d".equals(identityType) ? "BY DEFAULT" : "ALWAYS") ;
+            column.setIdentityType(isDefault ? "BY DEFAULT" : "ALWAYS");
         } else {
             loader.setAuthor(s, res);
             schema.addSequence(s);

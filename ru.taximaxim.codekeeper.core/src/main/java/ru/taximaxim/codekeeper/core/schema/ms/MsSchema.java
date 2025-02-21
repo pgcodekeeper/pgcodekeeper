@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -27,7 +25,7 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
 /**
  * MS SQL schema code generation.
  */
-public class MsSchema extends AbstractSchema {
+public final class MsSchema extends AbstractSchema {
 
     public MsSchema(String name) {
         super(name);
@@ -37,7 +35,7 @@ public class MsSchema extends AbstractSchema {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
-        sbSQL.append(MsDiffUtils.quoteName(getName()));
+        sbSQL.append(MsDiffUtils.quoteName(name));
         if (owner != null) {
             sbSQL.append("\nAUTHORIZATION ").append(MsDiffUtils.quoteName(owner));
         }
@@ -46,7 +44,7 @@ public class MsSchema extends AbstractSchema {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         appendAlterOwner(newCondition, script);
         alterPrivileges(newCondition, script);
@@ -55,7 +53,7 @@ public class MsSchema extends AbstractSchema {
 
     @Override
     protected AbstractSchema getSchemaCopy() {
-        return new MsSchema(getName());
+        return new MsSchema(name);
     }
 
     @Override

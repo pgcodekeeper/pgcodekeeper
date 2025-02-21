@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
     protected static final String NULL = " NULL";
     protected static final String NOT_NULL = " NOT NULL";
 
-    private String type;
-    private String collation;
-    private boolean nullValue = true;
-    private String defaultValue;
+    protected String type;
+    protected String collation;
+    protected boolean nullValue = true;
+    protected String defaultValue;
 
     @Override
     public DbObjType getStatementType() {
@@ -89,20 +89,20 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
 
     @Override
     public PgObjLocation getLocation() {
-        PgObjLocation location = getMeta().getLocation();
+        PgObjLocation location = meta.getLocation();
         if (location == null) {
-            location = getParent().getLocation();
+            location = parent.getLocation();
         }
         return location;
     }
 
     @Override
     public void setLocation(PgObjLocation location) {
-        getMeta().setLocation(location);
+        meta.setLocation(location);
     }
 
     protected String getAlterTable(boolean only) {
-        return ((AbstractTable) getParent()).getAlterTable(only);
+        return ((AbstractTable) parent).getAlterTable(only);
     }
 
     @Override
@@ -112,10 +112,10 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
         }
 
         if (obj instanceof AbstractColumn col && super.compare(obj)) {
-            return  Objects.equals(type, col.getType())
-                    && Objects.equals(collation, col.getCollation())
-                    && nullValue == col.getNullValue()
-                    && Objects.equals(defaultValue, col.getDefaultValue());
+            return  Objects.equals(type, col.type)
+                    && Objects.equals(collation, col.collation)
+                    && nullValue == col.nullValue
+                    && Objects.equals(defaultValue, col.defaultValue);
         }
 
         return false;
@@ -133,10 +133,10 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
     public AbstractColumn shallowCopy() {
         AbstractColumn colDst = getColumnCopy();
         copyBaseFields(colDst);
-        colDst.setType(getType());
-        colDst.setCollation(getCollation());
-        colDst.setNullValue(getNullValue());
-        colDst.setDefaultValue(getDefaultValue());
+        colDst.setType(type);
+        colDst.setCollation(collation);
+        colDst.setNullValue(nullValue);
+        colDst.setDefaultValue(defaultValue);
         return colDst;
     }
 
@@ -144,7 +144,7 @@ public abstract class AbstractColumn extends PgStatement implements ISearchPath 
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) getParent().getParent();
+        return (AbstractSchema) parent.parent;
     }
 
     @Override

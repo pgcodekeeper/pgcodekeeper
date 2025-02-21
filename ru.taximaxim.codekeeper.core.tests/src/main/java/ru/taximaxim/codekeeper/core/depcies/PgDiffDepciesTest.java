@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -281,6 +281,9 @@ class PgDiffDepciesTest {
             // user selected function with copying types (%TYPE) dependency
             "add_func_with_copying_type_usr_func_f2",
             "add_type_usr_t1",
+            // function is altered so that it has a new dependency that did not exist before,
+            // user selected the function
+            "change_func_dep_usr_f1",
     })
     void runDiffWithFunctionDependencies(final String userSelTemplate) throws IOException, InterruptedException {
         testDepcy(userSelTemplate, true);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -275,6 +275,8 @@ class MsDiffTest {
             // Tests scenario where MS COLUMN type is modified, column has constraint.
             // TODO Uncomment the code when dependency columns from constraint will be supported.
             // "modify_ms_column_type_with_constraint",
+            // Tests scenario where MS COLUMN GENERATED option changed.
+            "modify_ms_column_generated",
             // Tests scenario where MS COLUMN options is added.
             "add_ms_column_options",
             // Tests scenario where MS COLUMN options is dropped.
@@ -314,6 +316,12 @@ class MsDiffTest {
             "compare_ms_statistics",
             // Test scenario where MS STATISTICS dropped
             "drop_ms_statistics",
+            // Test scenario where sys ver table created
+            "add_ms_table_system_versioning",
+            // Test scenario where sys ver table is altered
+            "alter_ms_table_system_versioning",
+            // Test scenario where alter constraint in sys ver table
+            "alter_ms_constraint_pk_in_system_vers_table",
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);

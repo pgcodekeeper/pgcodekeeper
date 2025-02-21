@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright 2017-2024 TAXTELECOM, LLC
+ * Copyright 2017-2025 TAXTELECOM, LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,20 +46,19 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
     }
 
     @Override
-    public ObjectState appendAlterSQL(PgStatement newCondition, AtomicBoolean isNeedDepcies, SQLScript script) {
+    public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
         int startSize = script.getSize();
         AbstractType newType = (AbstractType) newCondition;
 
         if (isNeedRecreate(newType)) {
-            isNeedDepcies.set(true);
             return ObjectState.RECREATE;
         }
-
+        AtomicBoolean isNeedDepcies = new AtomicBoolean(false);
         compareType(newType, isNeedDepcies, script);
         appendAlterOwner(newType, script);
         alterPrivileges(newType, script);
         appendAlterComments(newType, script);
-        return getObjectState(script, startSize);
+        return getObjectState(isNeedDepcies.get(), script, startSize);
     }
 
     private final boolean isNeedRecreate(AbstractType newType) {
@@ -102,6 +101,6 @@ public abstract class AbstractType extends PgStatement implements ISearchPath {
 
     @Override
     public AbstractSchema getContainingSchema() {
-        return (AbstractSchema) this.getParent();
+        return (AbstractSchema) parent;
     }
 }
