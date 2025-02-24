@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -36,6 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -58,10 +60,14 @@ public abstract class AbstractPgTable extends AbstractTable {
             END
             $_$""";
 
+    private static final String CHANGE_TRIGGER_STATE =
+            "ALTER TABLE '%1$s' '%2$s' TRIGGER '%3$s'";
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPgTable.class);
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
+    private Map<String, String> triggerStates = new HashMap<String, String>();
 
     protected AbstractPgTable(String name) {
         super(name);
@@ -86,7 +92,15 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendPrivileges(script);
         appendColumnsPriliges(script);
         appendColumnsStatistics(script);
+        appendTriggerStates(script);
         appendComments(script);
+    }
+
+    private void appendTriggerStates(SQLScript script) {
+        for (var state : triggerStates.entrySet()) {
+            String changeTgState = CHANGE_TRIGGER_STATE.formatted(name, state.getValue(), state.getKey());
+            script.addStatement(changeTgState, SQLActionType.END);
+        }
     }
 
     @Override
@@ -314,8 +328,12 @@ public abstract class AbstractPgTable extends AbstractTable {
         return Collections.unmodifiableList(inherits);
     }
 
-    public boolean isHasInherits() {
+    public boolean hasInherits() {
         return !inherits.isEmpty();
+    }
+
+    public void putTriggerState(String triggerName, String state) {
+        triggerStates.put(triggerName, state);
     }
 
     public void setHasOids(final boolean hasOids) {

@@ -306,18 +306,32 @@ public class AlterTable extends TableAbstract {
             return;
         }
 
-        PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
-                tablAction.trigger_name);
-        if (trigger != null) {
-            if (tablAction.DISABLE() != null) {
-                trigger.setEnabledState("DISABLE");
-            } else if (tablAction.ENABLE() != null) {
-                if (tablAction.REPLICA() != null) {
-                    trigger.setEnabledState("ENABLE REPLICA");
-                } else if (tablAction.ALWAYS() != null) {
-                    trigger.setEnabledState("ENABLE ALWAYS");
-                }
+        String enabledState = null;
+        if (tablAction.DISABLE() != null) {
+            enabledState = "DISABLE";
+        } else if (tablAction.ENABLE() != null) {
+            if (tablAction.REPLICA() != null) {
+                enabledState ="ENABLE REPLICA";
+            } else if (tablAction.ALWAYS() != null) {
+                enabledState = "ENABLE ALWAYS";
+            } else {
+                enabledState = "ENABLE";
             }
+        }
+        if (enabledState == null) {
+            return;
+        }
+
+        String triggerName = tablAction.trigger_name.getText();
+        if (tabl.getTrigger(triggerName) == null) {
+            if (!tabl.hasInherits()) {
+                throw new IllegalArgumentException();
+            }
+            tabl.putTriggerState(triggerName, enabledState);
+        } else {
+            PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
+                tablAction.trigger_name);
+            trigger.setEnabledState(enabledState);
         }
     }
 
