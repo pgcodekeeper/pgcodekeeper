@@ -25,6 +25,7 @@ import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 
+import ru.taximaxim.codekeeper.core.formatter.ErrorPresenceListener;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatParseTreeListener;
 import ru.taximaxim.codekeeper.core.formatter.IndentDirection;
@@ -67,6 +68,8 @@ public class PgStatementFormatter extends StatementFormatter {
         }
         CommonTokenStream stream = new CommonTokenStream(lexer);
         SQLParser parser = new SQLParser(stream);
+        ErrorPresenceListener errorListener = new ErrorPresenceListener();
+        parser.addErrorListener(errorListener);
 
         ParserRuleContext ctx;
         if ("SQL".equalsIgnoreCase(language)) {
@@ -76,6 +79,11 @@ public class PgStatementFormatter extends StatementFormatter {
             AntlrUtils.removeIntoStatements(parser);
             ctx = parser.plpgsql_function();
         }
+
+        if (errorListener.isHasError()) {
+            return lexer.getAllTokens();
+        }
+
         runFormatListener(ctx, stream);
         return stream.getTokens();
     }
