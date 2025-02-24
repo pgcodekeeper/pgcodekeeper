@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to enable and disable parent triggers on child tables.
+
 ### Changed
 
 ### Fixed

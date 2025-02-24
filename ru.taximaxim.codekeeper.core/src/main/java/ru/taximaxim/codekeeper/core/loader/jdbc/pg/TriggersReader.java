@@ -233,11 +233,7 @@ public class TriggersReader extends JdbcReader {
 
         if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
             builder
-            .column("res.tgparentid")
-            .column("res.tgenabled")
-            .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = res.tgparentid")
-            .where("(res.tgparentid = 0 OR res.tgenabled != u.tgenabled)");
-
+            .where("res.tgparentid = 0");
         }
     }
 }

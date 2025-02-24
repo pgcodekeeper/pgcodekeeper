@@ -149,6 +149,30 @@ public class TablesReader extends JdbcReader {
             fillRegularTable(t, res);
         }
 
+        // CHILD TRIGGERS
+        String tgname = res.getString("tgname");
+        if (tgname != null) {
+            String tgEnabled = res.getString("tgenabled");
+            String state;
+            switch (tgEnabled) {
+            case "f", "D":
+                state = "DISABLE";
+                break;
+            case "t", "O":
+                state = "ENABLE";
+                break;
+            case "R":
+                state = "ENABLE REPLICA";
+                break;
+            case "A":
+                state = "ENABLE ALWAYS";
+                break;
+            default:
+                state = "ENABLE";
+            }
+            t.putTriggerState(tgname, state);
+        }
+
         schema.addTable(t);
     }
 
@@ -478,6 +502,7 @@ public class TablesReader extends JdbcReader {
         addDescriptionPart(builder, true);
         addColumnsPart(builder);
         addParentsPart(builder);
+        addTriggersPart(builder);
 
         builder
         .with("nspnames", "SELECT n.oid, n.nspname FROM pg_catalog.pg_namespace n")
@@ -652,5 +677,20 @@ public class TablesReader extends JdbcReader {
         builder.column("parents.inhrelnames");
         builder.column("parents.inhnspnames");
         builder.join("LEFT JOIN", parents, "parents ON parents.inhrelid = res.oid");
+    }
+
+    private void addTriggersPart(QueryBuilder builder) {
+        QueryBuilder triggers = new QueryBuilder()
+                .column("triggers.tgname")
+                .column("triggers.tgenabled")
+                .column("triggers.tgrelid")
+                .from("pg_catalog.pg_trigger triggers")
+                .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = triggers.tgparentid")
+                .where("triggers.tgenabled != u.tgenabled");
+
+        builder
+        .column("triggers.tgname")
+        .column("triggers.tgenabled")
+        .join("LEFT JOIN", triggers, "triggers ON triggers.tgrelid = res.oid");
     }
 }

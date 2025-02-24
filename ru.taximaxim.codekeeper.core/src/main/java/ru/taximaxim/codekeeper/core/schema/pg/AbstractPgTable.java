@@ -61,13 +61,13 @@ public abstract class AbstractPgTable extends AbstractTable {
             $_$""";
 
     private static final String CHANGE_TRIGGER_STATE =
-            "ALTER TABLE '%1$s' '%2$s' TRIGGER '%3$s'";
+            "ALTER TABLE %1$s %2$s TRIGGER %3$s";
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPgTable.class);
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
-    private Map<String, String> triggerStates = new HashMap<String, String>();
+    private Map<String, String> triggerStates = new HashMap<>();
 
     protected AbstractPgTable(String name) {
         super(name);
@@ -96,9 +96,15 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendComments(script);
     }
 
+    private void appendTriggerStates(AbstractPgTable newTable, SQLScript script) {
+        if (!triggerStates.equals(newTable.triggerStates)) {
+            newTable.appendTriggerStates(script);
+        }
+    }
+
     private void appendTriggerStates(SQLScript script) {
         for (var state : triggerStates.entrySet()) {
-            String changeTgState = CHANGE_TRIGGER_STATE.formatted(name, state.getValue(), state.getKey());
+            String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), state.getValue(), state.getKey());
             script.addStatement(changeTgState, SQLActionType.END);
         }
     }
@@ -218,6 +224,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendAlterOwner(newTable, script);
         compareTableOptions(newTable, script);
         alterPrivileges(newTable, script);
+        appendTriggerStates(newTable, script);
         appendAlterComments(newTable, script);
 
         return getObjectState(script, startSize);
@@ -470,7 +477,8 @@ public abstract class AbstractPgTable extends AbstractTable {
             return true;
         } else if (obj instanceof AbstractPgTable table && super.compare(obj)) {
             return hasOids == table.hasOids
-                    && inherits.equals(table.inherits);
+                    && inherits.equals(table.inherits)
+                    && triggerStates.equals(table.triggerStates);
         }
         return false;
     }
@@ -480,6 +488,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         super.computeHash(hasher);
         hasher.putOrdered(inherits);
         hasher.put(hasOids);
+        hasher.put(triggerStates);
     }
 
     @Override
@@ -487,6 +496,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
         copy.setHasOids(hasOids);
+        copy.triggerStates.putAll(triggerStates);;
         return copy;
     }
 
