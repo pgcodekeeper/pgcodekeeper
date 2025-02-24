@@ -599,7 +599,10 @@ class PgDiffTest {
             // Test scenario where object has unicode encoded identifier
             "compare_pg_unicode_identifiers",
             // Test scenario when one child partition index is dropped
-            "drop_pg_child_partition_index"
+            "drop_pg_child_partition_index",
+            // Test scenario when trigger is enabled on child partition table and disabled on parent
+            "modify_partition_table_trigger_enabled"
+
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.PG, PgDiffTest.class);

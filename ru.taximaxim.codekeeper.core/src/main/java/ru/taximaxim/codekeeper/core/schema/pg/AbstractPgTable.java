@@ -496,7 +496,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
         copy.setHasOids(hasOids);
-        copy.triggerStates.putAll(triggerStates);;
+        copy.triggerStates.putAll(triggerStates);
         return copy;
     }
 

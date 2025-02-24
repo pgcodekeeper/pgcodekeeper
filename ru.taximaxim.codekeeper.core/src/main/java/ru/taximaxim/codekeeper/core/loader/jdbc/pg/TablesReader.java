@@ -153,26 +153,9 @@ public class TablesReader extends JdbcReader {
         String tgname = res.getString("tgname");
         if (tgname != null) {
             String tgEnabled = res.getString("tgenabled");
-            String state;
-            switch (tgEnabled) {
-            case "f", "D":
-                state = "DISABLE";
-                break;
-            case "t", "O":
-                state = "ENABLE";
-                break;
-            case "R":
-                state = "ENABLE REPLICA";
-                break;
-            case "A":
-                state = "ENABLE ALWAYS";
-                break;
-            default:
-                state = "ENABLE";
-            }
+            String state = readTriggerState(tgEnabled);
             t.putTriggerState(tgname, state);
         }
-
         schema.addTable(t);
     }
 
