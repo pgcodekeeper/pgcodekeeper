@@ -48,6 +48,8 @@ public final class Messages extends NLS {
     public static String Table_TypeParameterChange;
     public static String Storage_WarningUnableToDetermineStorageType;
 
+    public static String VerificationTriggerCreation;
+
     public static String VerificationFunction_body_start;
 
     public static String VerificationFunction_function_length;

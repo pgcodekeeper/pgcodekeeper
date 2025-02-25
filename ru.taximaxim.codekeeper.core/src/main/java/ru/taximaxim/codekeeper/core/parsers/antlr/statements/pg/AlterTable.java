@@ -322,7 +322,7 @@ public final class AlterTable extends TableAbstract {
         String triggerName = tablAction.trigger_name.getText();
         if (tabl.getTrigger(triggerName) == null) {
             if (!tabl.hasInherits()) {
-                throw new IllegalArgumentException();
+                throw new IllegalArgumentException(Messages.VerificationTriggerCreation);
             }
             tabl.putTriggerState(triggerName, enabledState);
         } else {

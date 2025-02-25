@@ -61,26 +61,9 @@ public final class TriggersReader extends JdbcReader {
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
         String tgEnabled = res.getString("tgenabled");
-        String state;
-        switch (tgEnabled) {
-            case "f", "D":
-                state = "DISABLE";
-                break;
-            case "t", "O":
-                state = "ENABLE";
-                break;
-            case "R":
-                state = "ENABLE REPLICA";
-                break;
-            case "A":
-                state = "ENABLE ALWAYS";
-                break;
-            default:
-                state = "ENABLE";
-            }
 
         if (!res.getString("tgparentid").equals("0") && c instanceof AbstractPgTable table) {
-            table.putTriggerState(triggerName, state);
+            table.putTriggerState(triggerName, readEnabledState(tgEnabled, true));
             return;
         }
 
@@ -117,7 +100,7 @@ public final class TriggersReader extends JdbcReader {
         StringBuilder functionCall = new StringBuilder(funcName.length() + 2);
         functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.')
         .append(PgDiffUtils.getQuotedName(funcName)).append('(');
-        t.setEnabledState(state);
+        t.setEnabledState(readEnabledState(tgEnabled, false));
 
         byte[] args = res.getBytes("tgargs");
         if (args.length > 0) {
@@ -184,6 +167,27 @@ public final class TriggersReader extends JdbcReader {
         loader.setAuthor(t, res);
         loader.setComment(t, res);
         c.addTrigger(t);
+    }
+
+    private String readEnabledState(String tgEnabled, boolean isChild) {
+        String state = null;
+        switch (tgEnabled) {
+        case "f", "D":
+            state = "DISABLE";
+            break;
+        case "t", "O":
+            state = isChild ? "ENABLE" : null;
+            break;
+        case "R":
+            state = "ENABLE REPLICA";
+            break;
+        case "A":
+            state = "ENABLE ALWAYS";
+            break;
+        default:
+            state = "ENABLE";
+        }
+        return state;
     }
 
     @Override
