@@ -176,25 +176,4 @@ public abstract class JdbcReader extends AbstractStatementReader {
         // left join
         builder.join("LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=" + field);
     }
-
-    protected String readTriggerState(String stateChar) {
-        String state;
-        switch (stateChar) {
-        case "f", "D":
-            state = "DISABLE";
-            break;
-        case "t", "O":
-            state = "ENABLE";
-            break;
-        case "R":
-            state = "ENABLE REPLICA";
-            break;
-        case "A":
-            state = "ENABLE ALWAYS";
-            break;
-        default:
-            state = "ENABLE";
-        }
-        return state;
-    }
 }

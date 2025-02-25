@@ -29,10 +29,11 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.CreateTrigger;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 
-public class TriggersReader extends JdbcReader {
+public final class TriggersReader extends JdbcReader {
 
     // SONAR-OFF
     // pg_trigger.h
@@ -59,6 +60,30 @@ public class TriggersReader extends JdbcReader {
 
         String schemaName = schema.getName();
         String triggerName = res.getString("tgname");
+        String tgEnabled = res.getString("tgenabled");
+        String state;
+        switch (tgEnabled) {
+            case "f", "D":
+                state = "DISABLE";
+                break;
+            case "t", "O":
+                state = "ENABLE";
+                break;
+            case "R":
+                state = "ENABLE REPLICA";
+                break;
+            case "A":
+                state = "ENABLE ALWAYS";
+                break;
+            default:
+                state = "ENABLE";
+            }
+
+        if (!res.getString("tgparentid").equals("0") && c instanceof AbstractPgTable table) {
+            table.putTriggerState(triggerName, state);
+            return;
+        }
+
         loader.setCurrentObject(new GenericColumn(schemaName, tableName, triggerName, DbObjType.TRIGGER));
         PgTrigger t = new PgTrigger(triggerName);
 
@@ -92,9 +117,7 @@ public class TriggersReader extends JdbcReader {
         StringBuilder functionCall = new StringBuilder(funcName.length() + 2);
         functionCall.append(PgDiffUtils.getQuotedName(funcSchema)).append('.')
         .append(PgDiffUtils.getQuotedName(funcName)).append('(');
-
-        String tgEnabled = res.getString("tgenabled");
-        t.setEnabledState(readTriggerState(tgEnabled));
+        t.setEnabledState(state);
 
         byte[] args = res.getBytes("tgargs");
         if (args.length > 0) {
@@ -216,7 +239,10 @@ public class TriggersReader extends JdbcReader {
 
         if (SupportedPgVersion.VERSION_15.isLE(loader.getVersion())) {
             builder
-            .where("res.tgparentid = 0");
+            .column("res.tgparentid")
+            .column("res.tgenabled")
+            .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = res.tgparentid")
+            .where("res.tgparentid = 0 OR res.tgenabled != u.tgenabled");
         }
     }
 }

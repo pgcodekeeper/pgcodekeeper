@@ -24,13 +24,24 @@ FOR VALUES FROM ('2017-04-01 00:00:00') TO (MAXVALUE);
 ALTER TABLE public.order_book
 	ADD CONSTRAINT pk_order_book PRIMARY KEY (id_iss, dt, id_order);
 
-CREATE TRIGGER swt_pk_order_book
+CREATE TRIGGER swt_pk_order_book1
 	BEFORE INSERT OR UPDATE ON public.order_book
 	FOR EACH ROW
 	EXECUTE PROCEDURE public.swf_pk_order_book();
 
-ALTER TABLE public.order_book DISABLE TRIGGER swt_pk_order_book;
+CREATE TRIGGER swt_pk_order_book2
+	BEFORE INSERT OR UPDATE ON public.order_book
+	FOR EACH ROW
+	EXECUTE PROCEDURE public.swf_pk_order_book();
 
-ALTER TABLE public.order_book_p1703 ENABLE TRIGGER swt_pk_order_book;
+ALTER TABLE public.order_book DISABLE TRIGGER swt_pk_order_book1;
 
-ALTER TABLE public.order_book_p1704 ENABLE TRIGGER swt_pk_order_book;
+ALTER TABLE public.order_book DISABLE TRIGGER swt_pk_order_book2;
+
+ALTER TABLE public.order_book_p1703 ENABLE TRIGGER swt_pk_order_book1;
+
+ALTER TABLE public.order_book_p1703 ENABLE TRIGGER swt_pk_order_book2;
+
+ALTER TABLE public.order_book_p1704 ENABLE TRIGGER swt_pk_order_book1;
+
+ALTER TABLE public.order_book_pmax ENABLE TRIGGER swt_pk_order_book2;

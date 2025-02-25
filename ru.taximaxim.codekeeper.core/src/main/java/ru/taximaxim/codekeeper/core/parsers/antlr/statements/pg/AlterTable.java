@@ -64,7 +64,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 
-public class AlterTable extends TableAbstract {
+public final class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
     private final String tablespace;
@@ -306,7 +306,7 @@ public class AlterTable extends TableAbstract {
             return;
         }
 
-        String enabledState = null;
+        String enabledState = "";
         if (tablAction.DISABLE() != null) {
             enabledState = "DISABLE";
         } else if (tablAction.ENABLE() != null) {
@@ -317,9 +317,6 @@ public class AlterTable extends TableAbstract {
             } else {
                 enabledState = "ENABLE";
             }
-        }
-        if (enabledState == null) {
-            return;
         }
 
         String triggerName = tablAction.trigger_name.getText();
