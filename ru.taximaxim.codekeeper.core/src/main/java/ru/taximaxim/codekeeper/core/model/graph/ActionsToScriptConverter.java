@@ -56,7 +56,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ActionsToScriptConverter {
+public final class ActionsToScriptConverter {
 
     private static final String REFRESH_MODULE = "EXEC sys.sp_refreshsqlmodule {0}";
 
@@ -469,10 +469,8 @@ public class ActionsToScriptConverter {
      * move data from a temporary table to a new table).
      */
     private void addCommandsForRenameTbl(AbstractTable oldTbl) {
-        String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
         String qname = oldTbl.getQualifiedName();
-
-        String tmpTblName = getTempName(oldTbl, tmpSuffix);
+        String tmpTblName = getTempName(oldTbl);
 
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
         tblTmpNames.put(qname, tmpTblName);
@@ -487,7 +485,7 @@ public class ActionsToScriptConverter {
                 if (newPgCol != null && newPgCol.getSequence() != null) {
                     AbstractSequence seq = oldPgCol.getSequence();
                     if (seq != null) {
-                        script.addStatement(getRenameCommand(seq, getTempName(seq, tmpSuffix)));
+                        script.addStatement(getRenameCommand(seq, getTempName(seq)));
                     }
                     identityCols.add(oldPgCol.getName());
                 }
@@ -516,7 +514,8 @@ public class ActionsToScriptConverter {
         }
     }
 
-    private String getTempName(PgStatement st, String tmpSuffix) {
+    private String getTempName(PgStatement st) {
+        String tmpSuffix = '_' + UUID.randomUUID().toString().replace("-", "");
         String name = st.getName();
         if (name.length() > 30) {
             return name.substring(0, 30) + tmpSuffix;
