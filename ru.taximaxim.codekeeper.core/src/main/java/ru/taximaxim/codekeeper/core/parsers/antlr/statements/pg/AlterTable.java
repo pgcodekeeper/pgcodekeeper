@@ -63,6 +63,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
+import ru.taximaxim.codekeeper.core.schema.pg.PgTriggerState;
 
 public final class AlterTable extends TableAbstract {
 
@@ -306,16 +307,16 @@ public final class AlterTable extends TableAbstract {
             return;
         }
 
-        String enabledState = "";
+        PgTriggerState triggerState = null;
         if (tablAction.DISABLE() != null) {
-            enabledState = "DISABLE";
+            triggerState = PgTriggerState.DISABLE;
         } else if (tablAction.ENABLE() != null) {
             if (tablAction.REPLICA() != null) {
-                enabledState ="ENABLE REPLICA";
+                triggerState = PgTriggerState.ENABLE_REPLICA;
             } else if (tablAction.ALWAYS() != null) {
-                enabledState = "ENABLE ALWAYS";
+                triggerState = PgTriggerState.ENABLE_ALWAYS;
             } else {
-                enabledState = "ENABLE";
+                triggerState = PgTriggerState.ENABLE;
             }
         }
 
@@ -324,11 +325,11 @@ public final class AlterTable extends TableAbstract {
             if (!tabl.hasInherits()) {
                 throw new IllegalStateException(Messages.AlterTriggerError);
             }
-            tabl.putTriggerState(triggerName, enabledState);
+            tabl.putTriggerState(triggerName, triggerState);
         } else {
             PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
                 tablAction.trigger_name);
-            trigger.setEnabledState(enabledState);
+            trigger.setTriggerState(triggerState);
         }
     }
 
