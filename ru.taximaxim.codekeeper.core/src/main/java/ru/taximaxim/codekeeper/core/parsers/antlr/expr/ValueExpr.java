@@ -92,7 +92,7 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class ValueExpr extends AbstractExpr {
+public final class ValueExpr extends AbstractExpr {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValueExpr.class);
 
@@ -860,9 +860,11 @@ public class ValueExpr extends AbstractExpr {
                     continue;
                 }
 
-                if (sourceType.equals(arg.getDataType())) {
+                var type = arg.getDataType();
+                String argDataType = "\"any\"".equalsIgnoreCase(type) ? TypesSetManually.ANY : type;
+                if (sourceType.equals(argDataType)) {
                     ++exactMatches;
-                } else if (!typesMatch(sourceType, arg.getDataType())) {
+                } else if (!typesMatch(sourceType, argDataType)) {
                     signatureApplicable = false;
                     break;
                 }
@@ -890,6 +892,10 @@ public class ValueExpr extends AbstractExpr {
         // save each applicable operators with the number of exact type matches
         // between input args and operator parameters
         // function that has more exact matches (less casts) wins
+
+        left = convertType(left);
+        right = convertType(right);
+
         List<Pair<IOperator, Integer>> matches = new ArrayList<>();
         for (IOperator oper : availableOperators) {
             if (!oper.getBareName().equals(operatorName)) {
@@ -927,6 +933,22 @@ public class ValueExpr extends AbstractExpr {
                 (m1,m2) -> Integer.compare(m1.getSecond(), m2.getSecond()))
                 .getFirst();
 
+    }
+
+    private String convertType(String arg) {
+        if (arg == null) {
+            return null;
+        }
+        arg = arg.toLowerCase(Locale.ROOT);
+
+        arg = switch (arg) {
+            case TypesSetManually.SERIAL -> TypesSetManually.INTEGER;
+            case TypesSetManually.SMALLSERIAL -> TypesSetManually.SMALLINT;
+            case TypesSetManually.BIGSERIAL -> TypesSetManually.BIGINT;
+            default -> arg.startsWith(TypesSetManually.NUMERIC) ? TypesSetManually.NUMERIC : arg;
+        };
+
+        return arg;
     }
 
     private boolean typesMatch(String source, String target) {

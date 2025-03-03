@@ -28,6 +28,11 @@ public interface TypesSetManually {
     String BIT = "bit";
     String BOOLEAN = "boolean";
     String INTEGER = "integer";
+    String SMALLINT = "smallint";
+    String BIGINT = "bigint";
+    String SERIAL = "serial";
+    String SMALLSERIAL = "smallserial";
+    String BIGSERIAL = "bigserial";
     String NUMERIC = "numeric";
     String DOUBLE = "double precision";
     String BPCHAR = "bpchar";
