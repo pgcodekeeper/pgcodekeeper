@@ -38,7 +38,7 @@ import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
-public class LibraryLoader extends DatabaseLoader {
+public final class LibraryLoader extends DatabaseLoader {
 
     private final AbstractDatabase database;
     private final Path metaPath;
@@ -98,7 +98,9 @@ public class LibraryLoader extends DatabaseLoader {
         }
 
         PgDiffArguments args = arguments.copy();
-        args.setIgnorePrivileges(isIgnorePriv);
+        if (!args.isIgnorePrivileges()) {
+            args.setIgnorePrivileges(isIgnorePriv);
+        }
 
         switch (PgLibrarySource.getSource(path)) {
         case JDBC:
