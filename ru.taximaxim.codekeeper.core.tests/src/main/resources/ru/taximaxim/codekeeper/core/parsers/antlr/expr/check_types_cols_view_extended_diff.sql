@@ -49,3 +49,16 @@ Schema: public
      recurs_nums_1_100_fn___integerr - integer
      recurs_nums_1_100_fm___integerr - integer
      recurs_nums_1_100___integerr - integer
+
+  View: testview1
+    RelationColumns : 
+     summ1 - numeric
+     summ2 - integer
+     summ3 - smallint
+     summ4 - bigint
+
+  View: testview2
+    RelationColumns : 
+     t1 - text
+     t2 - text
+     format - text

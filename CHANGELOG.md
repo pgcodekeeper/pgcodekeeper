@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed an error when formatting an invalid function.
 - Fixed duplication of object names when generating code with data migration to PostgreSQL.
+- Fixed a bug in the expression parser in PostgreSQL.
 
 ### Removed
 
