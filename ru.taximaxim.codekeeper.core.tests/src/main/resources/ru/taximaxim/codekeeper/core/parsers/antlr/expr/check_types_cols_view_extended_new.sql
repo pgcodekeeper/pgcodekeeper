@@ -168,3 +168,24 @@ CREATE VIEW public.viewttt AS
            FROM public.nums_1_100
          LIMIT 1) AS recurs_nums_1_100___integerr
    FROM public.tablettt;
+
+CREATE TABLE public.numeric_testtable (
+  col0 serial,
+  col6 smallserial,
+  col7 bigserial,
+  col1 int,
+  col2 numeric(18,2),
+  col3 numeric(18,3),
+  col4 text);
+
+CREATE VIEW public.testview1 AS
+ SELECT (t1.col2 + t1.col3) as summ1,
+    (t1.col0 + t1.col0) as summ2,
+    (t1.col6 + t1.col6) as summ3,
+    (t1.col7 + t1.col7) as summ4
+   FROM public.numeric_testtable as t1;
+
+CREATE VIEW public.testview2 AS
+ SELECT concat_ws(', ', null, 12) AS t1,
+   concat('abcde', 2, NULL, 22) AS t2,
+   format('Hello %s, %1$s', 'World')
