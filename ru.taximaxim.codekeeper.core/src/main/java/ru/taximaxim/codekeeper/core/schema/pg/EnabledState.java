@@ -1,14 +1,14 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-public enum PgTriggerState {
+public enum EnabledState {
     ENABLE("ENABLE"),
     ENABLE_ALWAYS("ENABLE ALWAYS"),
     ENABLE_REPLICA("ENABLE REPLICA"),
     DISABLE("DISABLE");
 
-    public final String strValue;
+    public final String value;
 
-    private PgTriggerState(String value) {
-        this.strValue = value;
+    private EnabledState(String value) {
+        this.value = value;
     }
 }

@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
-import ru.taximaxim.codekeeper.core.schema.pg.PgTriggerState;
+import ru.taximaxim.codekeeper.core.schema.pg.EnabledState;
 
 public final class TriggersReader extends JdbcReader {
 
@@ -170,24 +170,15 @@ public final class TriggersReader extends JdbcReader {
         c.addTrigger(t);
     }
 
-    private PgTriggerState readEnabledState(String tgEnabled, boolean isChild) {
-        PgTriggerState state = null;
-        switch (tgEnabled) {
-        case "f", "D":
-            state = PgTriggerState.DISABLE;
-            break;
-        case "t", "O":
-            state = isChild ? PgTriggerState.ENABLE : null;
-            break;
-        case "R":
-            state = PgTriggerState.ENABLE_REPLICA;
-            break;
-        case "A":
-            state = PgTriggerState.ENABLE_ALWAYS;
-            break;
-        default:
-            state = PgTriggerState.ENABLE;
-        }
+    private EnabledState readEnabledState(String tgEnabled, boolean isChild) {
+        EnabledState state = null;
+        state = switch (tgEnabled) {
+        case "f", "D" -> EnabledState.DISABLE;
+        case "t", "O" -> isChild ? EnabledState.ENABLE : null;
+        case "R" -> EnabledState.ENABLE_REPLICA;
+        case "A" -> EnabledState.ENABLE_ALWAYS;
+        default -> EnabledState.ENABLE;
+        };
         return state;
     }
 

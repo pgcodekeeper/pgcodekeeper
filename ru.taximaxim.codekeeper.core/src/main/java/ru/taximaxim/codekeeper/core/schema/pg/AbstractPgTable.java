@@ -339,8 +339,8 @@ public abstract class AbstractPgTable extends AbstractTable {
         return !inherits.isEmpty();
     }
 
-    public void putTriggerState(String triggerName, PgTriggerState state) {
-        triggerStates.put(triggerName, state.strValue);
+    public void putTriggerState(String triggerName, EnabledState state) {
+        triggerStates.put(triggerName, state.value);
     }
 
     public void setHasOids(final boolean hasOids) {

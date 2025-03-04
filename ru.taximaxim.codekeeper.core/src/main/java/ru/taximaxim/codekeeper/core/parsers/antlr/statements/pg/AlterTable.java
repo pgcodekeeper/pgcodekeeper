@@ -63,7 +63,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
-import ru.taximaxim.codekeeper.core.schema.pg.PgTriggerState;
+import ru.taximaxim.codekeeper.core.schema.pg.EnabledState;
 
 public final class AlterTable extends TableAbstract {
 
@@ -303,24 +303,25 @@ public final class AlterTable extends TableAbstract {
     }
 
     private void createTrigger(AbstractPgTable tabl, Table_actionContext tablAction) {
-        if (tablAction.trigger_name == null) {
+        var triggerNameCtx = tablAction.trigger_name;
+        if (triggerNameCtx == null) {
             return;
         }
 
-        PgTriggerState triggerState = null;
+        EnabledState triggerState = null;
         if (tablAction.DISABLE() != null) {
-            triggerState = PgTriggerState.DISABLE;
+            triggerState = EnabledState.DISABLE;
         } else if (tablAction.ENABLE() != null) {
             if (tablAction.REPLICA() != null) {
-                triggerState = PgTriggerState.ENABLE_REPLICA;
+                triggerState = EnabledState.ENABLE_REPLICA;
             } else if (tablAction.ALWAYS() != null) {
-                triggerState = PgTriggerState.ENABLE_ALWAYS;
+                triggerState = EnabledState.ENABLE_ALWAYS;
             } else {
-                triggerState = PgTriggerState.ENABLE;
+                triggerState = EnabledState.ENABLE;
             }
         }
 
-        String triggerName = tablAction.trigger_name.getText();
+        String triggerName = triggerNameCtx.getText();
         if (tabl.getTrigger(triggerName) == null) {
             if (!tabl.hasInherits()) {
                 throw new IllegalStateException(Messages.AlterTriggerError);
@@ -328,7 +329,7 @@ public final class AlterTable extends TableAbstract {
             tabl.putTriggerState(triggerName, triggerState);
         } else {
             PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
-                tablAction.trigger_name);
+                    triggerNameCtx);
             trigger.setTriggerState(triggerState);
         }
     }
