@@ -62,8 +62,6 @@ Reference: Object = i1 (INDEX), action = ALTER, offset = 1383, line number = 26,
 Reference: Object = i1 (INDEX), action = ALTER, offset = 1422, line number = 27, charPositionInLine = 22
 Reference: Object = i1 (INDEX), action = ALTER, offset = 1451, line number = 28, charPositionInLine = 12
 Reference: Object = i1 (INDEX), action = ALTER, offset = 1508, line number = 29, charPositionInLine = 22
-Reference: Object = public (SCHEMA), action = null, offset = 1555, line number = 30, charPositionInLine = 12
-Reference: Object = public.i1 (INDEX), action = null, offset = 1562, line number = 30, charPositionInLine = 19
 Reference: Object = public (SCHEMA), action = null, offset = 1582, line number = 30, charPositionInLine = 39
 Reference: Object = public.i2 (INDEX), action = ALTER, offset = 1589, line number = 30, charPositionInLine = 46
 Reference: Object = i1 (INDEX), action = ALTER, offset = 1605, line number = 31, charPositionInLine = 12

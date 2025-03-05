@@ -237,6 +237,13 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
                 .findAny().orElse(null);
     }
 
+    public AbstractConstraint getConstraintByName(String constraintName) {
+        return getStatementContainers()
+                .flatMap(c -> c.getConstraints().stream())
+                .filter(s -> s.getName().equals(constraintName))
+                .findAny().orElse(null);
+    }
+
     /**
      * Finds type according to specified type {@code name}.
      *
