@@ -201,6 +201,10 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             if (DbObjType.VIEW == rel.getStatementType() && columns == null) {
                 analyzeViewColumns(rel);
                 columns = rel.getRelationColumns();
+
+                if (columns == null) {
+                    return null;
+                }
             }
 
             for (Pair<String, String> col : PgDiffUtils.sIter(columns)) {

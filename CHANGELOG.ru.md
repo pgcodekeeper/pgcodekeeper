@@ -13,7 +13,7 @@
 
 ### Исправлено
 
-- Исправлена ошибка парсинга ALTER INDEX ATTACH PARTITION в PostgreSQL.
+- Исправлены ошибки парсинга в PostgreSQL.
 
 ### Удалено
 
