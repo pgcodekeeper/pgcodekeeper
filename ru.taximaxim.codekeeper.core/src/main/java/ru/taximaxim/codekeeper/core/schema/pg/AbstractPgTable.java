@@ -18,10 +18,12 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -97,10 +99,23 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     private void appendTriggerStates(AbstractPgTable newTable, SQLScript script) {
+        var newTriggers = newTable.triggerStates;
         if (!triggerStates.equals(newTable.triggerStates)) {
-            newTable.appendTriggerStates(script);
+            Set<String> triggerNames = new HashSet<>(triggerStates.keySet());
+            triggerNames.addAll(newTriggers.keySet());
+            triggerNames.forEach(tr -> {
+                String changeTgState = "";
+                if (newTriggers.containsKey(tr)) {
+                    changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newTriggers.get(tr), tr);
+                } else {
+                    String newState = EnabledState.getOpposite(triggerStates.get(tr));
+                    changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newState, tr);
+                }
+                script.addStatement(changeTgState, SQLActionType.END);
+            });
         }
     }
+
 
     private void appendTriggerStates(SQLScript script) {
         for (var state : triggerStates.entrySet()) {
@@ -340,7 +355,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     public void putTriggerState(String triggerName, EnabledState state) {
-        triggerStates.put(triggerName, state.value);
+        triggerStates.put(triggerName, state.getValue());
     }
 
     public void setHasOids(final boolean hasOids) {

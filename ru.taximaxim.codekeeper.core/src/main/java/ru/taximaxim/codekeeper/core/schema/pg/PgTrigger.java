@@ -200,7 +200,7 @@ public final class PgTrigger extends AbstractTrigger {
         sql.append(ALTER_TABLE)
         .append(parent.getQualifiedName())
         .append(' ')
-        .append(enabledState.value)
+        .append(enabledState.getValue())
         .append(" TRIGGER ")
         .append(PgDiffUtils.getQuotedName(trigger.name));
         script.addStatement(sql);
@@ -300,7 +300,7 @@ public final class PgTrigger extends AbstractTrigger {
         }
         if (obj instanceof PgTrigger trigger && super.compare(obj)) {
             return compareUnalterable(trigger)
-                    && Objects.equals(triggerState, trigger.triggerState);
+                    && triggerState == trigger.triggerState;
         }
         return false;
     }
