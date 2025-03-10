@@ -28,6 +28,7 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.AbstractType;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
@@ -141,6 +142,17 @@ public final class PgSchema extends AbstractSchema {
 
     private void addStatistics(final PgStatistics rule) {
         addUnique(statistics, rule);
+    }
+
+    @Override
+    public void addType(final AbstractType type) {
+        // replace shell type by real type
+        AbstractType oldType = types.get(type.getName());
+        if (oldType instanceof PgShellType && !(type instanceof PgShellType)) {
+            types.remove(type.getName());
+            oldType.setParent(null);
+        }
+        super.addType(type);
     }
 
     @Override

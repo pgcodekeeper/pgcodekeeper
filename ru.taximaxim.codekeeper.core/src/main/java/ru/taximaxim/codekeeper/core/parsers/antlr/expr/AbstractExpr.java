@@ -330,6 +330,10 @@ public abstract class AbstractExpr {
         if (DbObjType.VIEW == relation.getStatementType() && columns == null) {
             analyzeViewColumns(relation);
             columns = relation.getRelationColumns();
+
+            if (columns == null) {
+                return Stream.empty();
+            }
         }
 
         Stream<Pair<String, String>> cols = columns
