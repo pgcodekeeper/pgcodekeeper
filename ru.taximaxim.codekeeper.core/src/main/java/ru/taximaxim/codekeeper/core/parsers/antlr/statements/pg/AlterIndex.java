@@ -27,8 +27,9 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
+import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 
-public class AlterIndex extends PgParserAbstract {
+public final class AlterIndex extends PgParserAbstract {
 
     private final Alter_index_statementContext ctx;
     private final String alterIdxAllAction;
@@ -58,16 +59,25 @@ public class AlterIndex extends PgParserAbstract {
         if (inherit != null) {
             // in this case inherit is real index name
             List<ParserRuleContext> idsInh = getIdentifiers(inherit);
-
-            PgIndex index = (PgIndex) getSafe(AbstractSchema::getIndexByName,
-                    getSchemaSafe(idsInh), QNameParser.getFirstNameCtx(idsInh));
+            PgSchema schema = getSchemaSafe(idsInh);
+            ParserRuleContext inhName = QNameParser.getFirstNameCtx(idsInh);
 
             String inhSchemaName = getSchemaNameSafe(ids);
             String inhTableName = QNameParser.getFirstName(ids);
-            doSafe((i,o) -> i.addInherit(inhSchemaName, inhTableName), index, null);
-            addDepSafe(index, ids, DbObjType.INDEX);
 
             addObjReference(idsInh, DbObjType.INDEX, ACTION_ALTER);
+            if (schema == null) {
+                return;
+            }
+
+            PgIndex index = (PgIndex) schema.getIndexByName(inhName.getText());
+            if (index == null) {
+                getSafe(AbstractSchema::getConstraintByName, schema, inhName);
+            } else {
+                doSafe((i,o) -> i.addInherit(inhSchemaName, inhTableName), index, null);
+                addDepSafe(index, ids, DbObjType.INDEX);
+            }
+
         } else {
             addObjReference(ids, DbObjType.INDEX, ACTION_ALTER);
         }

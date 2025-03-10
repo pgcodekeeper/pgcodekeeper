@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+### Fixed
+
+- Fixed an error when parsing ALTER INDEX ATTACH PARTITION in PostgreSQL.
+
+### Removed
+
+## [10.9.0] - 2025-03-04
+
+### Changed
+
 - A setting to ignore owners and privileges now works for libraries as well.
 
 ### Fixed
@@ -20,8 +30,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed an error when formatting an invalid function.
 - Fixed duplication of object names when generating code with data migration to PostgreSQL.
 - Fixed a bug in the expression parser in PostgreSQL.
-
-### Removed
 
 ## [10.8.0] - 2025-02-18
 
@@ -2207,7 +2215,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...HEAD
+[10.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...v10.9.0
 [10.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...v10.8.0
 [10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1
 [10.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.6.0...v10.7.0
