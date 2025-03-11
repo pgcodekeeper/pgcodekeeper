@@ -237,8 +237,7 @@ public final class TriggersReader extends JdbcReader {
             builder
             .column("res.tgparentid")
             .column("res.tgenabled")
-            .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = res.tgparentid")
-            .where("res.tgparentid = 0 OR res.tgenabled != u.tgenabled");
+            .join("LEFT JOIN pg_catalog.pg_trigger u ON u.oid = res.tgparentid");
         }
     }
 }

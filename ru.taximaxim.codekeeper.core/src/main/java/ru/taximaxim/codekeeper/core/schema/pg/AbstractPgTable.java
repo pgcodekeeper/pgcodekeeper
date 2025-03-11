@@ -103,16 +103,14 @@ public abstract class AbstractPgTable extends AbstractTable {
         if (!triggerStates.equals(newTable.triggerStates)) {
             Set<String> triggerNames = new HashSet<>(triggerStates.keySet());
             triggerNames.addAll(newTriggers.keySet());
-            triggerNames.forEach(tr -> {
-                String changeTgState = "";
-                if (newTriggers.containsKey(tr)) {
-                    changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newTriggers.get(tr), tr);
-                } else {
-                    String newState = EnabledState.getOpposite(triggerStates.get(tr));
-                    changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newState, tr);
-                }
-                script.addStatement(changeTgState, SQLActionType.END);
-            });
+            triggerNames.forEach(tr -> addTriggerToScript(tr, newTriggers, script));
+        }
+    }
+
+    private void addTriggerToScript(String tr, Map<String, String> newTriggers, SQLScript script) {
+        if (newTriggers.containsKey(tr)) {
+            String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newTriggers.get(tr), tr);
+            script.addStatement(changeTgState, SQLActionType.END);
         }
     }
 

@@ -601,7 +601,9 @@ class PgDiffTest {
             // Test scenario when one child partition index is dropped
             "drop_pg_child_partition_index",
             // Test scenario when trigger is enabled on child partition table and disabled on parent
-            "modify_partition_table_trigger_enabled"
+            "modify_partition_table_trigger_enabled",
+            // Test scenario when triggers are removed from parition table
+            "modify_partition_table_removed_triggers"
 
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
