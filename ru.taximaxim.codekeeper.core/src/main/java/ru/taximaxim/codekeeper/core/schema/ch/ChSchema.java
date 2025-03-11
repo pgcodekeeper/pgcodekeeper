@@ -20,11 +20,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
@@ -42,6 +44,11 @@ public final class ChSchema extends AbstractSchema {
     public void setEngine(String engine) {
         this.engine = engine;
         resetHash();
+    }
+
+    @Override
+    public Stream<IRelation> getRelations() {
+        return Stream.concat(super.getRelations(), dictionaries.values().stream());
     }
 
     private void addDictionary(final ChDictionary dictionary) {

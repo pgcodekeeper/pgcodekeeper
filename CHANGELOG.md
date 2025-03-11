@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed an error when parsing ALTER INDEX ATTACH PARTITION in PostgreSQL.
+- Fixed parser errors for PostgreSQL.
 
 ### Removed
 

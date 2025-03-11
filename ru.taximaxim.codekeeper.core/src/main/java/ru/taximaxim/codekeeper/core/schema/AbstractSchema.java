@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
 
 /**
  * Stores base schema information.
@@ -35,7 +34,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     private final Map<String, AbstractSequence> sequences = new LinkedHashMap<>();
     private final Map<String, AbstractTable> tables = new LinkedHashMap<>();
     private final Map<String, AbstractView> views = new LinkedHashMap<>();
-    private final Map<String, AbstractType> types = new LinkedHashMap<>();
+    protected final Map<String, AbstractType> types = new LinkedHashMap<>();
 
     @Override
     public DbObjType getStatementType() {
@@ -272,12 +271,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
     }
 
     public void addType(final AbstractType type) {
-        // replace shell type by real type
-        AbstractType oldType = types.get(type.name);
-        if (oldType instanceof PgShellType && !(type instanceof PgShellType)) {
-            types.remove(type.name);
-            oldType.setParent(null);
-        }
         addUnique(types, type);
     }
 
