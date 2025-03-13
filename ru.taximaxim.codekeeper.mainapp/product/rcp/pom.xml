@@ -18,7 +18,7 @@
     <repositories>
         <repository>
             <id>eclipse-p2-repo</id>
-            <url>https://download.eclipse.org/releases/latest/</url>
+            <url>https://download.eclipse.org/releases/2024-12/</url>
             <layout>p2</layout>
         </repository>
     </repositories>
