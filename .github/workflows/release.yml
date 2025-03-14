@@ -1,0 +1,103 @@
+name: Release Workflow
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: get jarsigner key
+        uses: 1arp/create-a-file-action@0.4.5
+        with:
+          path: /tmp/keystore
+          isAbsolutePath: false
+          file: key.txt
+          content: ${{ secrets.KEY_JKS_BASE_64 }}
+
+      - name: decode keystore
+        run: base64 --decode -i tmp/keystore/key.txt -o tmp/keystore/key.jks
+
+      - name: build
+        run: mvn verify -DskipTests -P deploy-github -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
+
+      - name: set version
+        run: echo "RELEASE_VERSION=$(echo ${GITHUB_REF#refs/*/} | cut -c 2-)" >> $GITHUB_ENV
+
+      - name: set prefix
+        run: echo "PREFIX=$(echo $"pgCodeKeeper-")" >> $GITHUB_ENV
+
+      - name: set linux build name
+        run: echo "LINUX_BUILD=${{ env.PREFIX}}${{ env.RELEASE_VERSION }}-linux.gtk.x86_64.tar.gz" >> $GITHUB_ENV
+
+      - name: set windows build name
+        run: echo "WINDOWS_BUILD=${{ env.PREFIX }}${{ env.RELEASE_VERSION }}-win32.win32.x86_64.zip" >> $GITHUB_ENV
+
+      - name: set cli build name
+        run: echo "CLI_BUILD=pgCodeKeeper-cli-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
+
+      - name: set updatesite name
+        run: echo "UPDATESITE=pgCodeKeeper-updatesite-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
+
+      - name: create GitHub release
+        id: create_release
+        uses: comnoco/create-release-action@v2.0.5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.RELEASE_VERSION }}
+          release_name: pgCodeKeeper ${{ env.RELEASE_VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: upload release linux build
+        uses: sekwah41/upload-release-assets@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.LINUX_BUILD }}
+          asset_name: ${{ env.LINUX_BUILD }}
+          asset_content_type: application/zip
+
+      - name: upload release windows build
+        uses: sekwah41/upload-release-assets@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.WINDOWS_BUILD }}
+          asset_name: ${{ env.WINDOWS_BUILD }}
+          asset_content_type: application/zip
+
+      - name: upload release cli build
+        uses: sekwah41/upload-release-assets@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/standalone/target/products/${{ env.CLI_BUILD }}
+          asset_name: ${{ env.CLI_BUILD }}
+          asset_content_type: application/zip
+
+      - name: upload release updatesite
+        uses: sekwah41/upload-release-assets@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/updatesite/target/${{ env.UPDATESITE }}
+          asset_name: ${{ env.UPDATESITE }}
+          asset_content_type: application/zip
