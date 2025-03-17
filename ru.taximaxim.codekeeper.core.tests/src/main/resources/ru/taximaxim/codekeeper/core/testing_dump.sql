@@ -346,6 +346,12 @@ CREATE TABLE worker.people (
 
 ALTER TABLE worker.people OWNER TO unit_test;
 
+CREATE TABLE worker.people_1 (
+idfio text
+);
+
+ALTER TABLE worker.people_1 OWNER TO unit_test;
+
 CREATE OR REPLACE FUNCTION country.get_city() RETURNS void
     LANGUAGE sql
     AS $$
@@ -353,6 +359,14 @@ CREATE OR REPLACE FUNCTION country.get_city() RETURNS void
 $$;
 
 ALTER FUNCTION country.get_city() OWNER TO unit_test;
+
+CREATE OR REPLACE FUNCTION public.people_worker_shedule() RETURNS void
+    LANGUAGE sql
+    AS $$
+    --function body
+$$;
+
+ALTER FUNCTION public.people_worker_shedule() OWNER TO unit_test;
 
 CREATE OR REPLACE FUNCTION worker.get_changes() RETURNS void
     LANGUAGE sql
@@ -398,4 +412,3 @@ CREATE TABLE ignore.testtable (
 );
 
 ALTER TABLE ignore.testtable OWNER TO unit_test;
-
