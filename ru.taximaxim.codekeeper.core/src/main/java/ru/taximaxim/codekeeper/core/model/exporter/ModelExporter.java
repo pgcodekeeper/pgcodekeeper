@@ -24,13 +24,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -130,11 +130,7 @@ public class ModelExporter {
         Map<Path, StringBuilder> dumps = new HashMap<>();
         newDb.getDescendants().sorted(ExportTableOrder.INSTANCE).forEach(st -> dumpStatement(st, dumps));
 
-        for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
-            dumpSQL(dump.getValue(), dump.getKey());
-        }
-
-        writeProjVersion(outDir.resolve(Consts.FILENAME_WORKING_DIR_MARKER));
+        writeDumps(dumps);
     }
 
     private void createOutDir() throws IOException {
@@ -199,12 +195,30 @@ public class ModelExporter {
         }
 
         Map<Path, StringBuilder> dumps = new HashMap<>();
-        list.stream()
-        .filter(st -> paths.contains(getRelativeFilePath(st)))
+        list.stream().filter(st -> paths.contains(getRelativeFilePath(st)))
         .sorted(ExportTableOrder.INSTANCE)
         .forEach(st -> dumpStatement(st, dumps));
 
-        for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
+        writeDumps(dumps);
+    }
+
+    public void exportProject() throws IOException {
+        createOutDir();
+
+        List<PgStatement> list = new ArrayList<>();
+        changeList.stream().filter(el -> el.getType() != DbObjType.DATABASE)
+        .forEach(el -> list.add(el.getPgStatement(newDb)));
+
+        Map<Path, StringBuilder> dumps = new HashMap<>();
+        list.stream()
+        .sorted(ExportTableOrder.INSTANCE)
+        .forEach(st -> dumpStatement(st, dumps));
+
+        writeDumps(dumps);
+    }
+
+    private void writeDumps(Map<Path, StringBuilder> dumps) throws IOException {
+        for (var dump : dumps.entrySet()) {
             dumpSQL(dump.getValue(), dump.getKey());
         }
 
@@ -286,9 +300,9 @@ public class ModelExporter {
 /**
  * Sets fixed order for table subelements export as historically defined by DiffTree.create().
  */
-class ExportTableOrder implements Comparator<PgStatement> {
+final class ExportTableOrder implements Comparator<PgStatement> {
 
-    public static final ExportTableOrder INSTANCE = new ExportTableOrder();
+    static final ExportTableOrder INSTANCE = new ExportTableOrder();
 
     @Override
     public int compare(PgStatement o1, PgStatement o2) {

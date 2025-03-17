@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.eclipse.core.runtime.SubMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -28,7 +29,11 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
+import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
+import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -63,6 +68,44 @@ class PgProjectLoaderTest {
                 } else {
                     Assertions.assertEquals(
                             dbDump.getSchema(dbSchema.getName()), dbSchema, "Schema from dump isn't equal schema from loader");
+                }
+            }
+        }
+    }
+
+    @Test
+    void testModelExporterWithIgnoredLists() throws IOException, InterruptedException {
+        try(TempDir tempDir = new TempDir("new-project")){
+            Path dir = tempDir.get();
+            PgDiffArguments args = new PgDiffArguments();
+
+            AbstractDatabase dbDump = TestUtils.loadTestDump(
+                    TestUtils.RESOURCE_DUMP, TestUtils.class, args);
+            TreeElement root = DiffTree.create(dbDump, null, null);
+            root.setAllChecked();
+
+            TestUtils.createIgnoreListFile(dir);
+            Path listFile = dir.resolve(".pgcodekeeperignore");
+
+            IgnoreList ignoreList = new IgnoreList();
+            IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
+            ignoreParser.parse(listFile);
+
+            List<TreeElement> selected = new TreeFlattener()
+                    .onlySelected()
+                    .useIgnoreList(ignoreList)
+                    .onlyTypes(args.getAllowedTypes())
+                    .flatten(root);
+
+            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8).exportProject();
+
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), args).load();
+            var objects = loader.getDescendants().toList();
+            var ignoredObj = "people";
+            for (var st : objects) {
+                var stName = st.getName();
+                if (stName.startsWith(ignoredObj)) {
+                    Assertions.fail("Ignored object loaded " + stName);
                 }
             }
         }

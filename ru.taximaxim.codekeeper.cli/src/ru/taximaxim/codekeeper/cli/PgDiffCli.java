@@ -26,9 +26,10 @@ import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
+import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
-public class PgDiffCli extends PgDiff {
+public final class PgDiffCli extends PgDiff {
 
     private final CliArgs arguments;
 
@@ -42,11 +43,7 @@ public class PgDiffCli extends PgDiff {
 
         AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries();
         AbstractDatabase newDatabase = loadNewDatabaseWithLibraries();
-        IgnoreList ignoreList = new IgnoreList();
-        IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
-        for (String listFilename : arguments.getIgnoreLists()) {
-            ignoreParser.parse(Paths.get(listFilename));
-        }
+        IgnoreList ignoreList = getIgnoreList();
         TreeElement root = DiffTree.create(oldDatabase, newDatabase, null);
         root.setAllChecked();
 
@@ -57,4 +54,23 @@ public class PgDiffCli extends PgDiff {
                 false).updatePartial();
     }
 
+    public void exportProject() throws IOException, InterruptedException, PgCodekeeperException {
+        AbstractDatabase newDb = loadNewDatabase();
+        TreeElement root = DiffTree.create(newDb, null, null);
+        root.setAllChecked();
+
+        IgnoreList ignoreList = getIgnoreList();
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
+        new ModelExporter(Paths.get(arguments.getOutputTarget()), newDb, null,
+                arguments.getDbType(), selected, arguments.getOutCharsetName()).exportProject();
+    }
+
+    private IgnoreList getIgnoreList() throws IOException {
+        IgnoreList ignoreList = new IgnoreList();
+        IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
+        for (String listFilename : arguments.getIgnoreLists()) {
+            ignoreParser.parse(Paths.get(listFilename));
+        }
+        return ignoreList;
+    }
 }

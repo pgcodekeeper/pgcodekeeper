@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- The ability to save a project using ignore lists has been added in the CLI version in `--parse` mode.
+
 ### Changed
 
 ### Fixed

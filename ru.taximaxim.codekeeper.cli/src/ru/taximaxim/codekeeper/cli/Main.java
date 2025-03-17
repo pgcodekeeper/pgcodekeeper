@@ -47,7 +47,6 @@ import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.TokenLoader;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
@@ -168,8 +167,7 @@ public final class Main {
             if (arguments.isProjUpdate()) {
                 diff.updateProject();
             } else {
-                new ModelExporter(Paths.get(arguments.getOutputTarget()), diff.loadNewDatabase(),
-                        arguments.getDbType(), arguments.getOutCharsetName()).exportFull();
+                diff.exportProject();
             }
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(Main::writeMessage);

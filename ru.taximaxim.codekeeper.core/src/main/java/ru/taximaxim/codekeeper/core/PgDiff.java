@@ -86,7 +86,7 @@ public class PgDiff {
     public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
         AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries();
         AbstractDatabase newDatabase = loadNewDatabaseWithLibraries();
-        IgnoreList ignoreList =  new IgnoreList();
+        IgnoreList ignoreList = new IgnoreList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
 
         for (String listFilename : arguments.getIgnoreLists()) {
