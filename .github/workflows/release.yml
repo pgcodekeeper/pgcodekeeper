@@ -31,7 +31,7 @@ jobs:
         run: base64 --decode -i tmp/keystore/key.txt -o tmp/keystore/key.jks
 
       - name: build
-        run: mvn verify -DskipTests -P deploy-github -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
+        run: mvn clean deploy -DskipTests -P deploy-github -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
 
       - name: set version
         run: echo "RELEASE_VERSION=$(echo ${GITHUB_REF#refs/*/} | cut -c 2-)" >> $GITHUB_ENV
