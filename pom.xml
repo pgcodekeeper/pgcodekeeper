@@ -53,11 +53,13 @@
         <maven.surefire.version>3.5.2</maven.surefire.version>
         <maven.enforcer.version>3.5.0</maven.enforcer.version>
         <maven.jarsigner.version>3.1.0</maven.jarsigner.version>
+
+        <keystore>/tmp/keystore.jks</keystore>
     </properties>
 
     <profiles>
         <profile>
-            <id>deploy-github</id>
+            <id>jenkins</id>
             <build>
                 <plugins>
                     <plugin>
@@ -83,13 +85,6 @@
                             </execution>
                         </executions>
                     </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>jenkins</id>
-            <build>
-                <plugins>
                     <plugin>
                         <groupId>org.jacoco</groupId>
                         <artifactId>jacoco-maven-plugin</artifactId>
