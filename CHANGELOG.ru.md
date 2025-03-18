@@ -9,15 +9,21 @@
 
 ### Добавлено
 
-- Добавлена возможность сохранения проекта с использованием списков игнорирования в режиме `--parse` в CLI версии.
-
 ### Изменено
 
 ### Исправлено
 
-- Исправлены ошибки парсинга в PostgreSQL.
-
 ### Удалено
+
+## [10.10.0]
+
+### Добавлено
+
+- Добавлена возможность сохранения проекта с использованием списков игнорирования в режиме `--parse` в CLI версии.
+
+### Исправлено
+
+- Исправлены ошибки парсинга в PostgreSQL.
 
 ## [10.9.0] - 2025-03-04
 
@@ -2216,7 +2222,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...HEAD
+[10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0
 [10.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...v10.9.0
 [10.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...v10.8.0
 [10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1
