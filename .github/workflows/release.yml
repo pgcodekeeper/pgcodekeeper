@@ -13,6 +13,13 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
+      - name: Checkout pgcodekeeper.github.io
+        uses: actions/checkout@v4
+        with:
+          repository: pgcodekeeper/pgcodekeeper.github.io
+          token: ${{ secrets.API_TOKEN_GITHUB }}
+          path: pgcodekeeper.github.io
+
       - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -101,3 +108,18 @@ jobs:
           asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/updatesite/target/${{ env.UPDATESITE }}
           asset_name: ${{ env.UPDATESITE }}
           asset_content_type: application/zip
+
+      - name: clean update folder
+        run: |
+          cd ${{ github.workspace }}/pgcodekeeper.github.io/update
+          find . ! -name index.html -delete
+
+      - name: copy updatesite
+        run: cp -R ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/updatesite/target/repository/ ${{ github.workspace }}/pgcodekeeper.github.io/update/
+
+      - name: git commands
+        run: |
+          cd ${{ github.workspace }}/pgcodekeeper.github.io/
+          git add update
+          git commit -m "Deploy ${{ env.RELEASE_VERSION }} into update site"
+          git push origin HEAD
