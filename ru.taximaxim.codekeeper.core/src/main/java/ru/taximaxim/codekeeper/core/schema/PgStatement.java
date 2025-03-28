@@ -292,8 +292,22 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected void alterPrivileges(PgStatement newObj, SQLScript script) {
-        // first drop (revoke) missing grants
         Set<PgPrivilege> newPrivileges = newObj.privileges;
+
+        // if new object has all privileges from old object and if it doesn't have
+        // new revokes, then we can just grant difference between new and old privileges
+        if (getDbType() == DatabaseType.PG && newPrivileges.containsAll(privileges)
+                && Objects.equals(owner, newObj.owner)) {
+            Set<PgPrivilege> diff = new LinkedHashSet<>(newPrivileges);
+            diff.removeAll(privileges);
+            boolean isGrantOnly = diff.stream().noneMatch(PgPrivilege::isRevoke);
+            if (isGrantOnly) {
+                PgPrivilege.appendPrivileges(diff, script);
+                return;
+            }
+        }
+
+        // first drop (revoke) missing grants
         for (PgPrivilege privilege : privileges) {
             if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
                 script.addStatement(privilege.getDropSQL());

@@ -27,9 +27,11 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class PgPrivilege implements IHashable {
+public final class PgPrivilege implements IHashable {
 
     private static final String WITH_GRANT_OPTION = " WITH GRANT OPTION";
+    private static final String GRANT = "GRANT";
+    private static final String REVOKE = "REVOKE";
 
     private final String state;
     private final String permission;
@@ -39,7 +41,7 @@ public class PgPrivilege implements IHashable {
     private final DatabaseType dbType;
 
     public boolean isRevoke() {
-        return "REVOKE".equalsIgnoreCase(state);
+        return REVOKE.equalsIgnoreCase(state);
     }
 
     public PgPrivilege(String state, String permission, String name, String role, boolean isGrantOption, DatabaseType dbType) {
@@ -73,7 +75,7 @@ public class PgPrivilege implements IHashable {
             return null;
         }
 
-        return new PgPrivilege("REVOKE", permission, name, role, isGrantOption, dbType).getCreationSQL();
+        return new PgPrivilege(REVOKE, permission, name, role, isGrantOption, dbType).getCreationSQL();
     }
 
     public static void appendPrivileges(Collection<PgPrivilege> privileges, SQLScript script) {
@@ -130,7 +132,7 @@ public class PgPrivilege implements IHashable {
 
         // FUNCTION/PROCEDURE/AGGREGATE/TYPE/DOMAIN by default has "GRANT ALL to PUBLIC".
         // That's why for them set "GRANT ALL to PUBLIC".
-        PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? "GRANT" : "REVOKE",
+        PgPrivilege priv = new PgPrivilege(isFunctionOrTypeOrDomain ? GRANT : REVOKE,
                 "ALL", name, "PUBLIC", false, DatabaseType.PG);
         script.addStatement(priv.getCreationSQL());
 
@@ -140,8 +142,8 @@ public class PgPrivilege implements IHashable {
         }
         owner = PgDiffUtils.getQuotedName(owner);
 
-        addDefPostgresPrivileges(script, "REVOKE", name, owner);
-        addDefPostgresPrivileges(script, "GRANT", name, owner);
+        addDefPostgresPrivileges(script, REVOKE, name, owner);
+        addDefPostgresPrivileges(script, GRANT, name, owner);
     }
 
     private static void addDefPostgresPrivileges(SQLScript script, String state, String name, String owner) {
