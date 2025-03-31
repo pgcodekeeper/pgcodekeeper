@@ -26,36 +26,36 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class TextPgDataTest {
-    TextPgData data;
-    PgDataType type;
+final class TextPgDataTest {
+    TextData data;
+    DataType type;
 
     private static final String RANDOM_TEXT_REGEX = "'.*'";
 
     private static Stream<Arguments> generateValueTestData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, "'start'"),
-          Arguments.of(PgDataGenerator.INCREMENT, null),
-          Arguments.of(PgDataGenerator.ANY, null)
-        );
+                Arguments.of(DataGenerator.CONSTANT, "'start'"),
+                Arguments.of(DataGenerator.INCREMENT, null),
+                Arguments.of(DataGenerator.ANY, null)
+                );
     }
 
     private static Stream<Arguments> getMaxValuesTestData() {
         return Stream.of(
-          Arguments.of(0, 0),
-          Arguments.of(4, 456976)
-        );
+                Arguments.of(0, 0),
+                Arguments.of(4, 456976)
+                );
     }
 
     @BeforeEach
     void setUp() {
-        type = PgDataType.TEXT;
-        data = new TextPgData(type);
+        type = DataType.TEXT;
+        data = new TextData(type);
     }
 
     @ParameterizedTest
     @MethodSource("generateValueTestData")
-    void testGenerateValue(PgDataGenerator generator, String expected) {
+    void testGenerateValue(DataGenerator generator, String expected) {
         data.setStart("start");
         data.setGenerator(generator);
 
@@ -66,7 +66,7 @@ class TextPgDataTest {
 
     @Test
     void testGenerateValueRandom() {
-        data.setGenerator(PgDataGenerator.RANDOM);
+        data.setGenerator(DataGenerator.RANDOM);
         data.setNotNull(true);
 
         String result = data.generateValue();

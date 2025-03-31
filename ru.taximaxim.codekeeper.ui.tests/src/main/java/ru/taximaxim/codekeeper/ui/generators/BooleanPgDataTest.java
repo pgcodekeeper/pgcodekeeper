@@ -22,9 +22,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
 import org.mockito.Spy;
 
-class BooleanPgDataTest {
+final class BooleanPgDataTest {
     @Spy
-    BooleanPgData data;
+    BooleanData data;
 
     @BeforeEach
     void setUp() {
@@ -34,7 +34,7 @@ class BooleanPgDataTest {
     @Test
     void testGenerateValueConstant() {
         data.setStart(true);
-        data.setGenerator(PgDataGenerator.CONSTANT);
+        data.setGenerator(DataGenerator.CONSTANT);
 
         boolean result = data.generateValue();
 
@@ -44,7 +44,7 @@ class BooleanPgDataTest {
     @Test
     void testGenerateValueIncrement() {
         data.setStart(true);
-        data.setGenerator(PgDataGenerator.INCREMENT);
+        data.setGenerator(DataGenerator.INCREMENT);
 
         assertEquals(true, data.currentInc);
         boolean result = data.generateValue();
@@ -55,7 +55,7 @@ class BooleanPgDataTest {
 
     @Test
     void testGenerateValueRandom() {
-        data.setGenerator(PgDataGenerator.RANDOM);
+        data.setGenerator(DataGenerator.RANDOM);
         data.setNotNull(true);
 
         data.generateValue();

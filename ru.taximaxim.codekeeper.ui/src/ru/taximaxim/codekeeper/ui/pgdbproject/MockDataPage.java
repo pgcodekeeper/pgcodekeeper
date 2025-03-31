@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -52,6 +53,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
@@ -60,13 +62,15 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.generators.IntegerPgData;
-import ru.taximaxim.codekeeper.ui.generators.PgData;
-import ru.taximaxim.codekeeper.ui.generators.PgDataGenerator;
-import ru.taximaxim.codekeeper.ui.generators.PgDataType;
+import ru.taximaxim.codekeeper.ui.generators.DataGenerator;
+import ru.taximaxim.codekeeper.ui.generators.DataType;
+import ru.taximaxim.codekeeper.ui.generators.DbData;
+import ru.taximaxim.codekeeper.ui.generators.IntegerData;
+import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 
@@ -75,22 +79,23 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
  *
  *  @since 3.11.5
  *  @author galiev_mr
- *  @see PgData
+ *  @see DbData
  */
-public class MockDataPage extends WizardPage {
+public final class MockDataPage extends WizardPage {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
-    private final List<PgData<?>> columns = new ArrayList<>();
+    private final List<DbData<?>> columns = new ArrayList<>();
     private int rowCount = 20;
     private String parsedTableName;
-    private String parsedSchemaName;
+    private DatabaseType dbType;
 
-    private final DataModifier startDataModifier = new DataModifier(PgData::setStartFromString);
-    private final DataModifier endDataModifier = new DataModifier(PgData::setEndFromString);
-    private final DataModifier stepDataModifier = new DataModifier(PgData::setStepFromString);
+    private final DataModifier startDataModifier = new DataModifier(DbData::setStartFromString);
+    private final DataModifier endDataModifier = new DataModifier(DbData::setEndFromString);
+    private final DataModifier stepDataModifier = new DataModifier(DbData::setStepFromString);
     private final DataModifier lengthDataModifier = new DataModifier((c,s) -> c.setLength(Integer.parseUnsignedInt(s)));
 
+    private DbData<?> viewerData;
     private Text txtTableName;
     private Button btnCast;
     private ComboViewer cmbType;
@@ -174,19 +179,22 @@ public class MockDataPage extends WizardPage {
         }
 
         if (err == null) {
-            for (PgData<?> c : columns) {
+            for (DbData<?> c : columns) {
                 try {
                     c.generateValue();
                 } catch (Exception e) {
                     err = MessageFormat.format(Messages.MockDataPage_generation_failed,
                             c.getName(), e.getLocalizedMessage());
                 }
+                finally {
+                    c.reset();
+                }
             }
         }
 
         if (err == null) {
-            for (PgData<?> c : columns) {
-                if (c.isUnique() && c.getGenerator() == PgDataGenerator.RANDOM
+            for (DbData<?> c : columns) {
+                if (c.isUnique() && c.getGenerator() == DataGenerator.RANDOM
                         && c.getMaxValues() < rowCount) {
                     err = Messages.MockDataPage_maximum_value
                             + ' ' + c.getName() + ": " + c.getMaxValues(); //$NON-NLS-1$
@@ -223,7 +231,7 @@ public class MockDataPage extends WizardPage {
     /**
      * Generates insert query from columns list
      *
-     * @see PgData #generateValue()
+     * @see DbData #generateValue()
      */
     private String generateInsert() {
         boolean isNeedCast = btnCast.getSelection();
@@ -241,7 +249,7 @@ public class MockDataPage extends WizardPage {
         sb.setLength(sb.length() - 2);
         sb.append(") VALUES\n  "); //$NON-NLS-1$
 
-        columns.forEach(PgData::reset);
+        columns.forEach(DbData::reset);
         for (int i = 0; i < rowCount; i++) {
             sb.append('(');
             columns.forEach(v -> {
@@ -265,14 +273,30 @@ public class MockDataPage extends WizardPage {
         container.setLayout(new GridLayout(6, false));
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        new Label(container, SWT.NONE).setText(Messages.database_type);
+        ComboViewer cmbDbType = new ComboViewer(container);
+        cmbDbType.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
+        cmbDbType.setContentProvider(ArrayContentProvider.getInstance());
+        cmbDbType.setLabelProvider(UIConsts.DATABASE_TYPE_PROVIDER);
+        cmbDbType.setInput(DatabaseType.values());
+        cmbDbType.setSelection(new StructuredSelection(dbType));
+        cmbDbType.addSelectionChangedListener(e -> {
+            StructuredSelection sel = (StructuredSelection) e.getSelection();
+            dbType = (DatabaseType) sel.getFirstElement();
+            fillTypes();
+            boolean isPg = dbType == DatabaseType.PG;
+            btnCast.setEnabled(isPg);
+            btnCast.setSelection(isPg && mainPrefs.getBoolean(PREF.EXPLICIT_TYPE_CAST));
+        });
+
+        final Composite columnInfo = createColumnInfo(container);
+        columnInfo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 5));
+
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_table_name);
 
         txtTableName = new Text(container, SWT.BORDER);
         txtTableName.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 4, 1));
-        txtTableName.setText(parsedTableName == null ? "t1" : (parsedSchemaName + '.' + parsedTableName)); //$NON-NLS-1$
-
-        final Composite columnInfo = createColumnInfo(container);
-        columnInfo.setLayoutData(new GridData(SWT.FILL, SWT.FILL, false, false, 1, 4));
+        txtTableName.setText(parsedTableName == null ? "t1" : parsedTableName); //$NON-NLS-1$
 
         new Label(container, SWT.NONE).setText(Messages.MockDataPage_row_count);
 
@@ -297,7 +321,7 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                PgData<?> c = new IntegerPgData(PgDataType.INTEGER);
+                DbData<?> c = new IntegerData(DataType.INTEGER);
                 c.setName("c" + (columns.size() + 1)); //$NON-NLS-1$
                 columns.add(c);
                 viewer.refresh();
@@ -316,7 +340,7 @@ public class MockDataPage extends WizardPage {
                 if (sel.length > 0 && columns.size() >  sel.length) {
                     int index = 0;
                     for (Object row : sel) {
-                        PgData<?> c = (PgData<?>) row;
+                        DbData<?> c = (DbData<?>) row;
                         index = columns.indexOf(c);
                         columns.remove(c);
                         if (index == columns.size()) {
@@ -339,7 +363,7 @@ public class MockDataPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
                 if (!sel.isEmpty() && columns.size() != 1) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
+                    DbData<?> c = (DbData<?>) sel.getFirstElement();
                     int index = columns.indexOf(c);
                     Collections.swap(columns, index, index - 1);
                     viewer.setSelection(new StructuredSelection(c));
@@ -357,7 +381,7 @@ public class MockDataPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
                 if (!sel.isEmpty() && columns.size() != 1) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
+                    DbData<?> c = (DbData<?>) sel.getFirstElement();
                     int index = columns.indexOf(c);
                     Collections.swap(columns, index, index + 1);
                     viewer.setSelection(new StructuredSelection(c));
@@ -374,10 +398,10 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                Iterator<PgData<?>> it = columns.iterator();
+                Iterator<DbData<?>> it = columns.iterator();
 
                 while (it.hasNext()) {
-                    PgData<?> el = it.next();
+                    DbData<?> el = it.next();
                     if (!el.isNotNull()) {
                         it.remove();
                     }
@@ -390,7 +414,7 @@ public class MockDataPage extends WizardPage {
 
         btnCast = new Button(container, SWT.CHECK);
         btnCast.setText(Messages.MockDataPage_explicit_type_cast);
-        btnCast.setSelection(mainPrefs.getBoolean(PREF.EXPLICIT_TYPE_CAST));
+        btnCast.setSelection(dbType == DatabaseType.PG && mainPrefs.getBoolean(PREF.EXPLICIT_TYPE_CAST));
         btnCast.addSelectionListener(new SelectionAdapter() {
 
             @Override
@@ -398,6 +422,7 @@ public class MockDataPage extends WizardPage {
                 mainPrefs.setValue(PREF.EXPLICIT_TYPE_CAST, btnCast.getSelection());
             }
         });
+        btnCast.setEnabled(dbType == DatabaseType.PG);
 
         viewer.addSelectionChangedListener(e -> {
             inViewerSelection = true;
@@ -405,14 +430,14 @@ public class MockDataPage extends WizardPage {
             boolean isSingle = sel.size() == 1;
             columnInfo.setEnabled(isSingle);
             if (isSingle) {
-                PgData<?> c = (PgData<?>) sel.getFirstElement();
-                showColumnInfo(c);
-                updateFields(c);
+                viewerData = (DbData<?>) sel.getFirstElement();
+                showColumnInfo(viewerData);
+                updateFields(viewerData);
                 if (columns.size() == 1) {
                     btnUp.setEnabled(false);
                     btnDown.setEnabled(false);
                 } else {
-                    int index = columns.indexOf(c);
+                    int index = columns.indexOf(viewerData);
                     btnUp.setEnabled(index != 0);
                     btnDown.setEnabled(index != columns.size() - 1);
                 }
@@ -455,7 +480,7 @@ public class MockDataPage extends WizardPage {
         txtColumnName.addModifyListener(e -> {
             IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
             if (!sel.isEmpty()) {
-                PgData<?> c = (PgData<?>) sel.getFirstElement();
+                DbData<?> c = (DbData<?>) sel.getFirstElement();
                 c.setName(txtColumnName.getText());
                 viewer.refresh();
             }
@@ -466,7 +491,7 @@ public class MockDataPage extends WizardPage {
         cmbType = new ComboViewer(composite);
         cmbType.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbType.setContentProvider(ArrayContentProvider.getInstance());
-        cmbType.setInput(PgDataType.values());
+        cmbType.setInput(DataType.getTypes(dbType));
         cmbType.addSelectionChangedListener(e -> {
             // not a user selection action
             if (inViewerSelection) {
@@ -474,15 +499,20 @@ public class MockDataPage extends WizardPage {
             }
             IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
             if (!sel.isEmpty()) {
-                PgData<?> c = (PgData<?>) sel.getFirstElement();
-                PgDataType type = (PgDataType) ((IStructuredSelection)e.getSelection()).getFirstElement();
-                PgData<?> cType = type.makeData(null);
-                cType.copyFrom(c);
-                columns.set(columns.indexOf(c), cType);
-                updateFields(cType);
-                viewer.refresh();
-                checkAllFields();
-                viewer.setSelection(new StructuredSelection(cType));
+                viewerData = (DbData<?>) sel.getFirstElement();
+                DataType type = (DataType) ((IStructuredSelection)e.getSelection()).getFirstElement();
+                if (type != null) {
+                    if (isMsBitType(type)) {
+                        type = DataType.BIT_MS;
+                    }
+                    DbData<?> cType = type.makeData(null);
+                    cType.copyFrom(viewerData);
+                    columns.set(columns.indexOf(viewerData), cType);
+                    updateFields(cType);
+                    viewer.refresh();
+                    checkAllFields();
+                    viewer.setSelection(new StructuredSelection(cType));
+                }
             }
         });
 
@@ -491,7 +521,7 @@ public class MockDataPage extends WizardPage {
         cmbGeneration = new ComboViewer(composite);
         cmbGeneration.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         cmbGeneration.setContentProvider(ArrayContentProvider.getInstance());
-        cmbGeneration.setInput(PgDataGenerator.values());
+        cmbGeneration.setInput(DataGenerator.values());
         cmbGeneration.addSelectionChangedListener(e -> {
             // not a user selection action
             if (inViewerSelection) {
@@ -499,8 +529,8 @@ public class MockDataPage extends WizardPage {
             }
             IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
             if (!sel.isEmpty()) {
-                PgData<?> c = (PgData<?>) sel.getFirstElement();
-                PgDataGenerator gen = (PgDataGenerator) ((IStructuredSelection) e.getSelection()).getFirstElement();
+                DbData<?> c = (DbData<?>) sel.getFirstElement();
+                DataGenerator gen = (DataGenerator) ((IStructuredSelection) e.getSelection()).getFirstElement();
                 c.setGenerator(gen);
                 updateFields(c);
                 checkAllFields();
@@ -517,7 +547,7 @@ public class MockDataPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
                 if (!sel.isEmpty()) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
+                    DbData<?> c = (DbData<?>) sel.getFirstElement();
                     c.setUnique(btnIsUnique.getSelection());
                 }
             }
@@ -532,7 +562,7 @@ public class MockDataPage extends WizardPage {
             public void widgetSelected(SelectionEvent e) {
                 IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
                 if (!sel.isEmpty()) {
-                    PgData<?> c = (PgData<?>) sel.getFirstElement();
+                    DbData<?> c = (DbData<?>) sel.getFirstElement();
                     c.setNotNull(btnIsNotNull.getSelection());
                 }
             }
@@ -571,9 +601,31 @@ public class MockDataPage extends WizardPage {
 
         txtAny = new Text(composite, SWT.BORDER);
         txtAny.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        txtAny.addModifyListener(new DataModifier(PgData::setAny));
+        txtAny.addModifyListener(new DataModifier(DbData::setAny));
 
         return composite;
+    }
+
+    private boolean isMsBitType(DataType type) {
+        return type == DataType.BIT && dbType == DatabaseType.MS;
+    }
+
+    private void fillTypes() {
+        cmbType.setInput(DataType.getTypes(dbType));
+        DataType type = viewerData.getType();
+        DataType selType = type != null ? getType(type) : DataType.OTHER;
+        cmbType.setSelection(new StructuredSelection(searchType(selType)));
+        cmbType.refresh();
+        updateFields(viewerData);
+    }
+
+    private DataType searchType(DataType type) {
+        var selType = getType(type);
+        return DataType.getTypes(dbType).contains(selType) ? selType : DataType.OTHER;
+    }
+
+    private DataType getType(DataType type) {
+        return type == DataType.BIT_MS ? DataType.BIT : type;
     }
 
     /**
@@ -581,9 +633,11 @@ public class MockDataPage extends WizardPage {
      *
      * @param c Selected column wrapper
      */
-    private void showColumnInfo(PgData<?> c) {
+    private void showColumnInfo(DbData<?> c) {
         txtColumnName.setText(c.getName());
-        cmbType.setSelection(new StructuredSelection(c.getType()));
+        var selectedType = c.getType();
+        cmbType.setSelection(new StructuredSelection(searchType(selectedType)));
+
         txtStart.setText(c.getStartAsString());
         txtEnd.setText(c.getEndAsString());
         txtStep.setText(c.getStepAsString());
@@ -610,23 +664,26 @@ public class MockDataPage extends WizardPage {
      *
      * @param c Selected column wrapper
      */
-    private void updateFields(PgData<?> c) {
-        PgDataType type = c.getType();
-        PgDataGenerator gen = c.getGenerator();
-        boolean hasLength = type == PgDataType.TEXT
-                || type == PgDataType.JSON
-                || type == PgDataType.BIT;
+    private void updateFields(DbData<?> c) {
+        DataType type = c.getType();
 
-        txtStart.setEnabled((type != PgDataType.BOOLEAN && !hasLength
-                || gen != PgDataGenerator.RANDOM) && gen != PgDataGenerator.ANY);
-        txtEnd.setEnabled(type != PgDataType.BOOLEAN
-                && gen == PgDataGenerator.RANDOM && !hasLength
-                && gen != PgDataGenerator.ANY);
-        txtStep.setEnabled(gen == PgDataGenerator.INCREMENT);
-        txtLength.setEnabled(gen == PgDataGenerator.RANDOM && hasLength);
-        txtAny.setEnabled(gen == PgDataGenerator.ANY);
-        btnIsUnique.setEnabled(gen == PgDataGenerator.RANDOM);
-        btnIsNotNull.setEnabled(gen == PgDataGenerator.RANDOM);
+        DataGenerator gen = c.getGenerator();
+        boolean hasLength = type == DataType.TEXT
+                || type == DataType.JSON
+                || type == DataType.BIT;
+
+        txtStart.setEnabled((type != DataType.BOOLEAN && !hasLength
+                && type != DataType.BIT_MS
+                || gen != DataGenerator.RANDOM) && gen != DataGenerator.ANY);
+        txtEnd.setEnabled(type != DataType.BOOLEAN
+                && gen == DataGenerator.RANDOM && !hasLength
+                && type != DataType.BIT_MS
+                && gen != DataGenerator.ANY);
+        txtStep.setEnabled(gen == DataGenerator.INCREMENT);
+        txtLength.setEnabled(gen == DataGenerator.RANDOM && hasLength && type != DataType.BIT_MS);
+        txtAny.setEnabled(gen == DataGenerator.ANY);
+        btnIsUnique.setEnabled(gen == DataGenerator.RANDOM);
+        btnIsNotNull.setEnabled(gen == DataGenerator.RANDOM);
 
         hideWidget(txtStart, lblStart);
         hideWidget(txtEnd, lblEnd);
@@ -652,7 +709,7 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public String getText(Object element) {
-                PgData<?> c = (PgData<?>) element;
+                DbData<?> c = (DbData<?>) element;
                 return c.getName();
             }
         });
@@ -665,7 +722,7 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public String getText(Object element) {
-                return ((PgData<?>) element).getAlias();
+                return ((DbData<?>) element).getAlias();
             }
         });
 
@@ -677,8 +734,8 @@ public class MockDataPage extends WizardPage {
 
             @Override
             public String getText(Object element) {
-                PgData<?> c = (PgData<?>) element;
-                PgDataGenerator gen = c.getGenerator();
+                DbData<?> c = (DbData<?>) element;
+                DataGenerator gen = c.getGenerator();
                 return gen.name();
             }
         });
@@ -700,23 +757,23 @@ public class MockDataPage extends WizardPage {
         if (source instanceof IFile file && UIProjectLoader.isInProject(file)) {
             AbstractTable table = null;
             try {
+                dbType = OpenProjectUtils.getDatabaseType(file.getProject());
                 table = (AbstractTable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }
             if (table != null) {
-                parsedTableName = table.getName();
-                parsedSchemaName = table.getSchemaName();
+                parsedTableName = table.getQualifiedName();
                 table.getColumns().forEach(this::parseColumns);
                 table.getConstraints().forEach(this::parseConstraints);
                 return;
             }
         }
         // in case no file or exception
-        PgData<?> c = new IntegerPgData(PgDataType.INTEGER);
+        dbType = source instanceof IProject proj ? OpenProjectUtils.getDatabaseType(proj) : DatabaseType.PG;
+        DbData<?> c = new IntegerData(DataType.INTEGER);
         c.setName("id"); //$NON-NLS-1$
         columns.add(c);
-
     }
 
     /**
@@ -739,10 +796,17 @@ public class MockDataPage extends WizardPage {
      */
     private void parseColumns(AbstractColumn column) {
         String type = column.getType();
-        PgData<?> c = PgDataType.dataForType(type == null  ? "other" : type); //$NON-NLS-1$
+        String typeName;
+        if (type != null) {
+            typeName = dbType == DatabaseType.MS ? MsDiffUtils.getUnQuotedName(type) : type;
+        } else {
+            typeName = "other"; //$NON-NLS-1$
+        }
+
+        DbData<?> c = DataType.dataForType(type, dbType);
         c.setNotNull(!column.getNullValue());
         c.setName(column.getName());
-        c.setAlias(type);
+        c.setAlias(typeName);
         columns.add(c);
     }
 
@@ -753,10 +817,10 @@ public class MockDataPage extends WizardPage {
 
     private class DataModifier implements ModifyListener {
 
-        private final BiConsumer<PgData<?>, String> setter;
+        private final BiConsumer<DbData<?>, String> setter;
         private String error;
 
-        public DataModifier(BiConsumer<PgData<?>, String> setter) {
+        public DataModifier(BiConsumer<DbData<?>, String> setter) {
             this.setter = setter;
         }
 
@@ -764,7 +828,7 @@ public class MockDataPage extends WizardPage {
         public void modifyText(ModifyEvent e) {
             IStructuredSelection sel = (IStructuredSelection) viewer.getSelection();
             if (!sel.isEmpty()) {
-                PgData<?> c = (PgData<?>) sel.getFirstElement();
+                DbData<?> c = (DbData<?>) sel.getFirstElement();
                 try {
                     String text = ((Text) e.widget).getText();
                     setter.accept(c, text);

@@ -25,24 +25,37 @@ import java.util.Random;
  * @since 3.11.5
  * @author galiev_mr
  */
-public class IntegerPgData extends PgData<BigInteger> {
+public final class IntegerData extends DbData<BigInteger> {
 
-    public IntegerPgData(PgDataType type) {
-        super(type, BigInteger.ZERO, BigInteger.valueOf(1000), BigInteger.ONE);
+    public IntegerData(DataType type) {
+        this(type, Integer.MAX_VALUE);
+    }
+
+    public IntegerData(DataType type, long end) {
+        this(type, null, end);
+    }
+
+    public IntegerData(DataType type, String alias, long end) {
+        this(type, alias, 0, end);
+    }
+
+    public IntegerData(DataType type, String alias, long start, long end) {
+        super(type, BigInteger.valueOf(start), BigInteger.valueOf(end), BigInteger.ONE);
+        this.alias = alias;
     }
 
     @Override
     public BigInteger generateValue() {
-        switch (generator){
-        case CONSTANT: return start;
-        case INCREMENT:
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
             BigInteger current = currentInc;
             currentInc = current.add(step);
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
@@ -62,7 +75,7 @@ public class IntegerPgData extends PgData<BigInteger> {
     }
 
     @Override
-    public BigInteger valueFromString(String s) {
+    protected BigInteger valueFromString(String s) {
         return new BigInteger(s);
     }
 }

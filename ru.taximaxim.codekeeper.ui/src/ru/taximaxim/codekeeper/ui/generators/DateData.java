@@ -30,10 +30,10 @@ import java.util.Random;
  * @since 4.1.3
  * @author galiev_mr
  */
-public class DatePgData extends PgData<LocalDate> {
+public final class DateData extends DbData<LocalDate> {
 
-    public DatePgData() {
-        super(PgDataType.DATE,
+    public DateData() {
+        super(DataType.DATE,
                 LocalDate.ofEpochDay(0),
                 LocalDate.of(2070, 1, 1),
                 LocalDate.ofEpochDay(1));
@@ -41,21 +41,21 @@ public class DatePgData extends PgData<LocalDate> {
 
     @Override
     public LocalDate generateValue() {
-        switch (generator) {
-        case CONSTANT: return start;
-        case INCREMENT:
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
             LocalDate current = currentInc;
             currentInc = current.plusDays(step.toEpochDay());
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
     public String generateAsString() {
-        if (generator == PgDataGenerator.ANY) {
+        if (generator == DataGenerator.ANY) {
             return any;
         }
         LocalDate value = generateValue();
@@ -77,7 +77,7 @@ public class DatePgData extends PgData<LocalDate> {
     }
 
     @Override
-    public LocalDate valueFromString(String s) {
+    protected LocalDate valueFromString(String s) {
         try {
             return LocalDate.parse(s);
         } catch (DateTimeParseException ex) {

@@ -20,32 +20,31 @@ import java.util.Random;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 
 /**
- * An implementation of a PostgreSql data generator for TEXT types.
+ * An implementation of a PostgreSql data generator for JSON type.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class TextPgData extends PgData<String> {
+public final class JsonData extends DbData<String> {
 
-    public TextPgData(PgDataType type) {
-        super(type, "text", null, null); //$NON-NLS-1$
+    public JsonData() {
+        super(DataType.JSON, "{\"a\": \"b\"}", null, null); //$NON-NLS-1$
     }
 
     @Override
     public String generateValue() {
-        switch (generator) {
-        case CONSTANT: return PgDiffUtils.quoteString(start);
-        case INCREMENT:
-            return null;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
-        }
+        return switch (generator) {
+        case CONSTANT -> PgDiffUtils.quoteString(start);
+        case INCREMENT -> null;
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
     protected String generateRandom(Random ran) {
-        return "'" + genSymbols(ran.nextInt(length) + 1, false, true) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+        return "'{\"" + genSymbols(ran.nextInt(length) + 1, true, true) + "\": \"" + //$NON-NLS-1$ //$NON-NLS-2$
+                genSymbols(ran.nextInt(length) + 1, false, true) + "\"}'"; //$NON-NLS-1$
     }
 
     @Override
@@ -54,7 +53,7 @@ public class TextPgData extends PgData<String> {
     }
 
     @Override
-    public String valueFromString(String s) {
+    protected String valueFromString(String s) {
         return s;
     }
 }

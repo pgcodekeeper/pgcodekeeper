@@ -17,35 +17,42 @@ package ru.taximaxim.codekeeper.ui.generators;
 
 import java.util.Random;
 
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
+
 /**
- * An implementation of a PostgreSql data generator for unimplemented types.
+ * An implementation of a PostgreSql data generator for TEXT types.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class CustomPgData extends PgData<String> {
+public final class TextData extends DbData<String> {
 
-    public CustomPgData() {
-        super(PgDataType.OTHER, "'data'", null, null); //$NON-NLS-1$
+    public TextData(DataType type) {
+        super(type, "text", null, null); //$NON-NLS-1$
     }
 
     @Override
     public String generateValue() {
-        return generator == PgDataGenerator.ANY ? start : null;
+        return switch (generator) {
+        case CONSTANT -> PgDiffUtils.quoteString(start);
+        case INCREMENT -> null;
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
     protected String generateRandom(Random ran) {
-        return null;
+        return "'" + genSymbols(ran.nextInt(length) + 1, false, true) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
     public int getMaxValues() {
-        return 1;
+        return length == 0 ? 0 : (int) Math.pow(26, length);
     }
 
     @Override
-    public String valueFromString(String s) {
+    protected String valueFromString(String s) {
         return s;
     }
 }

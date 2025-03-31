@@ -33,33 +33,33 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  * @since 4.2.2
  * @author galiev_mr
  */
-public class TimestampTZPgData extends PgData<ZonedDateTime> {
+public final class TimestampTZPgData extends DbData<ZonedDateTime> {
 
     public TimestampTZPgData() {
-        super(PgDataType.TIMESTAMPTZ,
+        super(DataType.TIMESTAMPTZ,
                 ZonedDateTime.parse("1970-01-01T00:00:00+01:00"), //$NON-NLS-1$
                 ZonedDateTime.parse("2070-01-01T00:00:00+01:00"), //$NON-NLS-1$
                 ZonedDateTime.parse("1970-01-01T00:00:01+00:00")); //$NON-NLS-1$
     }
     @Override
     public ZonedDateTime generateValue() {
-        switch (generator) {
-        case CONSTANT: return start;
-        case INCREMENT:
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
             ZonedDateTime current = currentInc;
             long milles = Duration.between(ZonedDateTime.ofInstant(Instant.ofEpochMilli(0),
                     ZoneOffset.UTC), step).toMillis();
             currentInc = current.plus(milles, ChronoUnit.MILLIS);
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
     public String generateAsString() {
-        if (generator == PgDataGenerator.ANY) {
+        if (generator == DataGenerator.ANY) {
             return any;
         }
         ZonedDateTime value = generateValue();
@@ -82,7 +82,7 @@ public class TimestampTZPgData extends PgData<ZonedDateTime> {
     }
 
     @Override
-    public ZonedDateTime valueFromString(String s) {
+    protected ZonedDateTime valueFromString(String s) {
         try {
             return ZonedDateTime.parse(s);
         } catch (DateTimeParseException ex) {

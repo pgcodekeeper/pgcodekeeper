@@ -18,41 +18,43 @@ package ru.taximaxim.codekeeper.ui.generators;
 import java.util.Random;
 
 /**
- * An implementation of a PostgreSql data generator for BIT type.
+ * An implementation of a PostgreSql data generator for REAL types.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class BitPgData extends PgData<String> {
+public final class RealData extends DbData<Double> {
 
-    public BitPgData() {
-        super(PgDataType.BIT, "B'01'", null, null); //$NON-NLS-1$
+    public RealData(DataType type) {
+        super(type, 0.0, 1000.0, 1.0);
     }
 
     @Override
-    public String generateValue() {
-        switch (generator) {
-        case CONSTANT: return start;
-        case INCREMENT:
-            return null;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+    public Double generateValue() {
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
+            Double current = currentInc;
+            currentInc += step;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
-    protected String generateRandom(Random ran) {
-        return "B'"+ genSymbols(length, true, false) + "'"; //$NON-NLS-1$ //$NON-NLS-2$
+    protected Double generateRandom(Random ran) {
+        return (end - start) * ran.nextDouble() + start;
     }
 
     @Override
     public int getMaxValues() {
-        return length == 0 ? 0 : (int) Math.pow(2, length);
+        return Integer.MAX_VALUE;
     }
 
     @Override
-    public String valueFromString(String s) {
-        return s;
+    protected Double valueFromString(String s) {
+        return Double.valueOf(s);
     }
 }
