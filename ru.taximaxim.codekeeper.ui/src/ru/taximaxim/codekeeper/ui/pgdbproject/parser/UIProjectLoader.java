@@ -489,8 +489,8 @@ public final class UIProjectLoader extends ProjectLoader {
      */
     private static boolean isMsSchemaFile(IPath path) {
         return path.segmentCount() == 3
-                && path.segment(0).equals(WorkDirs.MS_SECURITY)
-                && path.segment(1).equals(WorkDirs.MS_SCHEMAS)
+                && WorkDirs.MS_SECURITY.equals(path.segment(0))
+                && WorkDirs.MS_SCHEMAS.equals(path.segment(1))
                 && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
     }
 

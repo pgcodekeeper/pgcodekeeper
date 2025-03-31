@@ -18,43 +18,34 @@ package ru.taximaxim.codekeeper.ui.generators;
 import java.util.Random;
 
 /**
- * An implementation of a PostgreSql data generator for BOOLEAN type.
+ * An implementation of a PostgreSql data generator for unimplemented types.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class BooleanPgData extends PgData<Boolean> {
+public final class CustomData extends DbData<String> {
 
-    public BooleanPgData() {
-        super(PgDataType.BOOLEAN, true, null, null);
+    public CustomData() {
+        super(DataType.OTHER, "'data'", null, null); //$NON-NLS-1$
     }
 
     @Override
-    public Boolean generateValue() {
-        switch (generator){
-        case CONSTANT: return start;
-        case INCREMENT:
-            Boolean current = currentInc;
-            currentInc = !start;
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
-        }
+    public String generateValue() {
+        return generator == DataGenerator.ANY ? start : null;
     }
 
     @Override
-    protected Boolean generateRandom(Random ran) {
-        return ran.nextBoolean();
+    protected String generateRandom(Random ran) {
+        return null;
     }
 
     @Override
     public int getMaxValues() {
-        return 2;
+        return 1;
     }
 
     @Override
-    public Boolean valueFromString(String s) {
-        return Boolean.valueOf(s);
+    protected String valueFromString(String s) {
+        return s;
     }
 }

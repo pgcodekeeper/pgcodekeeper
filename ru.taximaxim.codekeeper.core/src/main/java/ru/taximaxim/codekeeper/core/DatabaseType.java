@@ -35,7 +35,6 @@ public enum DatabaseType {
         return dbTypeName;
     }
 
-
     public String getDefaultPort() {
         return defaultPort;
     }

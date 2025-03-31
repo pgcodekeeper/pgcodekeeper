@@ -18,44 +18,43 @@ package ru.taximaxim.codekeeper.ui.generators;
 import java.util.Random;
 
 /**
- * An implementation of a PostgreSql data generator for REAL types.
+ * An implementation of a PostgreSql data generator for BOOLEAN type.
  *
  * @since 3.11.5
  * @author galiev_mr
  */
-public class RealPgData extends PgData<Double> {
+public final class BooleanData extends DbData<Boolean> {
 
-    public RealPgData(PgDataType type) {
-        super(type, 0.0, 1000.0, 1.0);
+    public BooleanData() {
+        super(DataType.BOOLEAN, true, null, null);
     }
 
     @Override
-    public Double generateValue() {
-        switch (generator) {
-        case CONSTANT:
-            return start;
-        case INCREMENT:
-            Double current = currentInc;
-            currentInc += step;
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+    public Boolean generateValue() {
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
+            Boolean current = currentInc;
+            currentInc = !start;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
-    protected Double generateRandom(Random ran) {
-        return (end - start) * ran.nextDouble() + start;
+    protected Boolean generateRandom(Random ran) {
+        return ran.nextBoolean();
     }
 
     @Override
     public int getMaxValues() {
-        return Integer.MAX_VALUE;
+        return 2;
     }
 
     @Override
-    public Double valueFromString(String s) {
-        return Double.valueOf(s);
+    protected Boolean valueFromString(String s) {
+        return Boolean.valueOf(s);
     }
 }

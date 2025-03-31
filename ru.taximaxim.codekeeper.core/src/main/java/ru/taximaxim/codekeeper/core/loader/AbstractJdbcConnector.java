@@ -79,16 +79,12 @@ public abstract class AbstractJdbcConnector {
     }
 
     protected String getDriverName() {
-        switch (dbType) {
-        case PG:
-            return PG_DRIVER_NAME;
-        case MS:
-            return MS_DRIVER_NAME;
-        case CH:
-            return CH_DRIVER_NAME;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return switch (dbType) {
+        case PG -> PG_DRIVER_NAME;
+        case MS -> MS_DRIVER_NAME;
+        case CH -> CH_DRIVER_NAME;
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
     }
 
     public DatabaseType getType() {

@@ -26,24 +26,24 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class RealPgDataTest {
-    private RealPgData data;
+final class RealPgDataTest {
+    private RealData data;
 
     private static Stream<Arguments> generateValueTestData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, 0.0),
-          Arguments.of(PgDataGenerator.ANY, null)
-        );
+                Arguments.of(DataGenerator.CONSTANT, 0.0),
+                Arguments.of(DataGenerator.ANY, null)
+                );
     }
 
     @BeforeEach
     void setUp() {
-        data = new RealPgData(PgDataType.DOUBLE);
+        data = new RealData(DataType.DOUBLE);
     }
 
     @ParameterizedTest
     @MethodSource("generateValueTestData")
-    void testGenerateValue(PgDataGenerator generator, Double expected) {
+    void testGenerateValue(DataGenerator generator, Double expected) {
         data.setStart(0.0);
         data.setGenerator(generator);
         data.setNotNull(true);
@@ -57,7 +57,7 @@ class RealPgDataTest {
     void testGenerateValueIncrement() {
         data.setStart(0.0);
         data.setStep(1.0);
-        data.setGenerator(PgDataGenerator.INCREMENT);
+        data.setGenerator(DataGenerator.INCREMENT);
 
         Double firstResult = data.generateValue();
         Double secondResult = data.generateValue();
@@ -72,7 +72,7 @@ class RealPgDataTest {
         Double end = 6.2;
         data.setStart(start);
         data.setEnd(end);
-        data.setGenerator(PgDataGenerator.RANDOM);
+        data.setGenerator(DataGenerator.RANDOM);
         data.setNotNull(true);
 
         Double result = data.generateValue();

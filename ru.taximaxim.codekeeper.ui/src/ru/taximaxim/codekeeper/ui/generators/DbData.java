@@ -30,13 +30,13 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
  * @since 3.11.5
  * @author galiev_mr
  */
-public abstract class PgData<T> {
+public abstract class DbData<T> {
 
     protected static final String EXP_FORMAT = "{0}. Expected format: {1}"; //$NON-NLS-1$
 
-    private final PgDataType type;
+    private final DataType type;
     private String name;
-    private String alias;
+    protected String alias;
     protected String any = "any value"; //$NON-NLS-1$
     protected T start;
     protected T end;
@@ -45,7 +45,7 @@ public abstract class PgData<T> {
     protected T currentInc;
     private boolean isUnique;
     private boolean isNotNull;
-    protected PgDataGenerator generator;
+    protected DataGenerator generator;
 
     protected final Set<T> objects = new HashSet<>();
 
@@ -98,7 +98,7 @@ public abstract class PgData<T> {
         setStart(valueFromString(start));
     }
 
-    public PgDataType getType() {
+    public DataType getType() {
         return type;
     }
 
@@ -154,15 +154,15 @@ public abstract class PgData<T> {
         this.length = length;
     }
 
-    public PgDataGenerator getGenerator() {
+    public DataGenerator getGenerator() {
         return generator;
     }
 
-    public void setGenerator(PgDataGenerator generator) {
+    public void setGenerator(DataGenerator generator) {
         this.generator = generator;
     }
 
-    protected PgData(PgDataType type, T start, T end, T step) {
+    protected DbData(DataType type, T start, T end, T step) {
         this.type = type;
         this.start = start;
         this.end = end;
@@ -179,7 +179,7 @@ public abstract class PgData<T> {
     public abstract T generateValue();
 
     public String generateAsString() {
-        return generator == PgDataGenerator.ANY ? any : "" + generateValue(); //$NON-NLS-1$
+        return generator == DataGenerator.ANY ? any : "" + generateValue(); //$NON-NLS-1$
     }
 
     protected T generateRandom() {
@@ -234,13 +234,13 @@ public abstract class PgData<T> {
      *
      * @param data Donor of data
      */
-    public void copyFrom(PgData<?> data) {
+    public void copyFrom(DbData<?> data) {
         length = data.getLength();
         isUnique = data.isUnique();
         isNotNull = data.isNotNull();
         name = data.getName();
         any = data.getAny();
-        PgDataGenerator gen = data.getGenerator();
+        DataGenerator gen = data.getGenerator();
         generator = type.getGenerators().contains(gen) ? gen : type.getDefaultGenerator();
     }
 
@@ -256,5 +256,5 @@ public abstract class PgData<T> {
         return value == null ? "" : value.toString(); //$NON-NLS-1$
     }
 
-    public abstract T valueFromString(String s);
+    protected abstract T valueFromString(String s);
 }

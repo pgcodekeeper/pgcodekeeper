@@ -33,10 +33,10 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  * @since 4.2.2
  * @author galiev_mr
  */
-public class TimePgData extends PgData<LocalTime> {
+public final class TimeData extends DbData<LocalTime> {
 
-    public TimePgData() {
-        super(PgDataType.TIME,
+    public TimeData() {
+        super(DataType.TIME,
                 LocalTime.MIN,
                 LocalTime.of(23, 59, 59),
                 LocalTime.ofSecondOfDay(1));
@@ -44,21 +44,21 @@ public class TimePgData extends PgData<LocalTime> {
 
     @Override
     public LocalTime generateValue() {
-        switch (generator) {
-        case CONSTANT: return start;
-        case INCREMENT:
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
             LocalTime current = currentInc;
             currentInc = current.plusNanos(step.toNanoOfDay());
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
     public String generateAsString() {
-        if (generator == PgDataGenerator.ANY) {
+        if (generator == DataGenerator.ANY) {
             return any;
         }
         LocalTime value = generateValue();
@@ -80,7 +80,7 @@ public class TimePgData extends PgData<LocalTime> {
     }
 
     @Override
-    public LocalTime valueFromString(String s) {
+    protected LocalTime valueFromString(String s) {
         try {
             return LocalTime.parse(s);
         } catch (DateTimeParseException ex) {

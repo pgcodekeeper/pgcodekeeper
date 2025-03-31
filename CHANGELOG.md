@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to generate test table data for MS SQL and ClickHouse.
+
 ### Changed
 
 - Changed code generation when adding new privileges in PostgreSQL.

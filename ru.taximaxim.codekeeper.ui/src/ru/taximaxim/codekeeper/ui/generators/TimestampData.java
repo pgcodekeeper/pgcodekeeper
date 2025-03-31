@@ -32,29 +32,30 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
  * @since 3.11.5
  * @author galiev_mr
  */
-public class TimestampPgData extends PgData<Instant> {
+public final class TimestampData extends DbData<Instant> {
 
-    public TimestampPgData() {
-        super(PgDataType.TIMESTAMP, Instant.ofEpochMilli(0), Instant.parse("2070-01-01T00:00:00Z"), //$NON-NLS-1$
+    public TimestampData() {
+        super(DataType.TIMESTAMP, Instant.ofEpochMilli(0), Instant.parse("2070-01-01T00:00:00Z"), //$NON-NLS-1$
                 Instant.ofEpochMilli(1000));
     }
+
     @Override
     public Instant generateValue() {
-        switch (generator) {
-        case CONSTANT: return start;
-        case INCREMENT:
+        return switch (generator) {
+        case CONSTANT -> start;
+        case INCREMENT -> {
             Instant current = currentInc;
             currentInc = current.plusMillis(step.toEpochMilli());
-            return current;
-        case RANDOM: return generateRandom();
-        default:
-            return null;
+            yield current;
         }
+        case RANDOM -> generateRandom();
+        default -> null;
+        };
     }
 
     @Override
     public String generateAsString() {
-        if (generator == PgDataGenerator.ANY) {
+        if (generator == DataGenerator.ANY) {
             return any;
         }
         Instant value = generateValue();
@@ -75,7 +76,7 @@ public class TimestampPgData extends PgData<Instant> {
     }
 
     @Override
-    public Instant valueFromString(String s) {
+    protected Instant valueFromString(String s) {
         try {
             return Instant.parse(s);
         } catch (DateTimeParseException ex) {
