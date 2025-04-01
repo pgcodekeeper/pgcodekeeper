@@ -95,14 +95,12 @@ public final class MsView extends AbstractView implements SourceStatement {
 
     @Override
     public boolean compare(PgStatement obj) {
-        if (obj instanceof MsView view && super.compare(obj)) {
-            return Objects.equals(firstPart, view.firstPart)
-                    && Objects.equals(secondPart, view.secondPart)
-                    && quotedIdentified == view.quotedIdentified
-                    && ansiNulls == view.ansiNulls;
-        }
-
-        return false;
+        return obj instanceof MsView view
+                && super.compare(obj)
+                && Objects.equals(firstPart, view.firstPart)
+                && Objects.equals(secondPart, view.secondPart)
+                && quotedIdentified == view.quotedIdentified
+                && ansiNulls == view.ansiNulls;
     }
 
     @Override
@@ -136,7 +134,7 @@ public final class MsView extends AbstractView implements SourceStatement {
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         if (DbObjType.STATISTICS == type) {
-            return statistics.get(name);
+            return getChildByName(statistics, name);
         }
         return super.getChild(name, type);
     }

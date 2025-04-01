@@ -17,3 +17,12 @@ ON [dbo].[table1]    --my trigger
 AFTER UPDATE   
 AS RAISERROR ('Edited Notify!', 16, 10)
 GO
+
+create table [dbo].[T1] (c1 integer, c2 text)
+GO 
+
+CREATE TRIGGER reminder2  
+ON [dbo].[t1]
+AFTER INSERT, UPDATE, DELETE
+AS RAISERROR ('Notify Customer Relations', 16, 10);
+GO

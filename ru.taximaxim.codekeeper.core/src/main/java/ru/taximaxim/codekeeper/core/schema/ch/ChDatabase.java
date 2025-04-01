@@ -53,10 +53,10 @@ public final class ChDatabase extends AbstractDatabase {
     public PgStatement getChild(String name, DbObjType type) {
         return switch (type) {
             case SCHEMA -> getSchema(name);
-            case FUNCTION -> functions.get(name);
-            case POLICY -> policies.get(name);
-            case USER -> users.get(name);
-            case ROLE -> roles.get(name);
+            case FUNCTION -> getChildByName(functions, name);
+            case POLICY -> getChildByName(policies, name);
+            case USER -> getChildByName(users, name);
+            case ROLE -> getChildByName(roles, name);
             default -> null;
         };
     }

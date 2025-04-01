@@ -51,6 +51,12 @@ public final class ChSchema extends AbstractSchema {
         return Stream.concat(super.getRelations(), dictionaries.values().stream());
     }
 
+    @Override
+    public IRelation getRelation(String name) {
+        IRelation result = super.getRelation(name);
+        return result != null ? result : getDictionary(name);
+    }
+
     private void addDictionary(final ChDictionary dictionary) {
         addUnique(dictionaries, dictionary);
     }
@@ -64,9 +70,13 @@ public final class ChSchema extends AbstractSchema {
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         if (type == DbObjType.DICTIONARY) {
-            return dictionaries.get(name);
+            return getDictionary(name);
         }
         return super.getChild(name, type);
+    }
+
+    private ChDictionary getDictionary(String name) {
+        return getChildByName(dictionaries, name);
     }
 
     @Override
