@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug with the case of names of objects in MS SQL.
+
 ### Removed
 
 ## [10.11.0] - 2025-04-01

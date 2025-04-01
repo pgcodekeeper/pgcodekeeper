@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -84,6 +85,10 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean canDrop() {
         return true;
+    }
+
+    public boolean isSubElement() {
+        return false;
     }
 
     public boolean isOwned() {
@@ -689,13 +694,18 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected <T extends PgStatement> void addUnique(Map<String, T> map, T newSt) {
-        PgStatement found = map.putIfAbsent(newSt.getName(), newSt);
+        PgStatement found = map.putIfAbsent(getNameInCorrectCase(newSt.getName()), newSt);
         assertUnique(found, newSt);
         newSt.setParent(this);
         resetHash();
     }
 
-    public boolean isSubElement() {
-        return false;
+    protected <T extends PgStatement> T getChildByName(Map<String, T> map, String name) {
+        String lowerCaseName = getNameInCorrectCase(name);
+        return map.get(lowerCaseName);
+    }
+
+    private String getNameInCorrectCase(String name) {
+        return DatabaseType.MS == getDbType() ? name.toLowerCase(Locale.ROOT) : name;
     }
 }

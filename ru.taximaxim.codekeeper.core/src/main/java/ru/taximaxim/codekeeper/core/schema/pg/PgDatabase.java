@@ -71,12 +71,12 @@ public final class PgDatabase extends AbstractDatabase {
     public PgStatement getChild(String name, DbObjType type) {
         return switch (type) {
             case SCHEMA -> getSchema(name);
-            case EXTENSION -> extensions.get(name);
-            case EVENT_TRIGGER -> eventTriggers.get(name);
-            case FOREIGN_DATA_WRAPPER -> fdws.get(name);
-            case SERVER -> servers.get(name);
-            case USER_MAPPING -> userMappings.get(name);
-            case CAST -> casts.get(name);
+            case EXTENSION -> getExtension(name);
+            case EVENT_TRIGGER -> getEventTrigger(name);
+            case FOREIGN_DATA_WRAPPER -> getForeignDW(name);
+            case SERVER -> getServer(name);
+            case USER_MAPPING -> getChildByName(userMappings, name);
+            case CAST -> getCast(name);
             default -> null;
         };
     }
@@ -120,7 +120,7 @@ public final class PgDatabase extends AbstractDatabase {
      * @return found extension or null
      */
     public PgExtension getExtension(final String name) {
-        return extensions.get(name);
+        return getChildByName(extensions, name);
     }
 
     private void addExtension(final PgExtension extension) {
@@ -128,7 +128,7 @@ public final class PgDatabase extends AbstractDatabase {
     }
 
     public PgEventTrigger getEventTrigger(final String name) {
-        return eventTriggers.get(name);
+        return getChildByName(eventTriggers, name);
     }
 
     private void addEventTrigger(final PgEventTrigger et) {
@@ -144,7 +144,7 @@ public final class PgDatabase extends AbstractDatabase {
      * @return found foreign data wrapper or null
      */
     public PgForeignDataWrapper getForeignDW(final String name) {
-        return fdws.get(name);
+        return getChildByName(fdws, name);
     }
 
     private void addForeignDW(final PgForeignDataWrapper fDW) {
@@ -152,7 +152,7 @@ public final class PgDatabase extends AbstractDatabase {
     }
 
     public PgServer getServer(final String name) {
-        return servers.get(name);
+        return getChildByName(servers, name);
     }
 
     private void addServer(final PgServer server) {

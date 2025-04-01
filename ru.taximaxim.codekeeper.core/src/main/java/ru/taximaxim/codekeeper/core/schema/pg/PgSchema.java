@@ -77,35 +77,35 @@ public final class PgSchema extends AbstractSchema {
     }
 
     public PgDomain getDomain(String name) {
-        return domains.get(name);
+        return getChildByName(domains, name);
     }
 
     public PgCollation getCollation(final String name) {
-        return collations.get(name);
+        return getChildByName(collations, name);
     }
 
     public PgFtsParser getFtsParser(final String name) {
-        return parsers.get(name);
+        return getChildByName(parsers, name);
     }
 
     public PgFtsTemplate getFtsTemplate(final String name) {
-        return templates.get(name);
+        return getChildByName(templates, name);
     }
 
     public PgFtsDictionary getFtsDictionary(final String name) {
-        return dictionaries.get(name);
+        return getChildByName(dictionaries, name);
     }
 
     public PgFtsConfiguration getFtsConfiguration(final String name) {
-        return configurations.get(name);
+        return getChildByName(configurations, name);
     }
 
     public PgOperator getOperator(final String signature) {
-        return operators.get(signature);
+        return getChildByName(operators, signature);
     }
 
     public PgStatistics getStatistics(final String name) {
-        return statistics.get(name);
+        return getChildByName(statistics, name);
     }
 
     public Collection<IOperator> getOperators() {
@@ -147,7 +147,7 @@ public final class PgSchema extends AbstractSchema {
     @Override
     public void addType(final AbstractType type) {
         // replace shell type by real type
-        AbstractType oldType = types.get(type.getName());
+        AbstractType oldType = getType(type.getName());
         if (oldType instanceof PgShellType && !(type instanceof PgShellType)) {
             types.remove(type.getName());
             oldType.setParent(null);
@@ -171,14 +171,14 @@ public final class PgSchema extends AbstractSchema {
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         return switch (type) {
-            case DOMAIN -> domains.get(name);
-            case FTS_PARSER -> parsers.get(name);
-            case FTS_TEMPLATE -> templates.get(name);
-            case FTS_DICTIONARY -> dictionaries.get(name);
-            case FTS_CONFIGURATION -> configurations.get(name);
-            case OPERATOR -> operators.get(name);
-            case COLLATION -> collations.get(name);
-            case STATISTICS -> statistics.get(name);
+            case DOMAIN -> getDomain(name);
+            case FTS_PARSER -> getFtsParser(name);
+            case FTS_TEMPLATE -> getFtsTemplate(name);
+            case FTS_DICTIONARY -> getFtsDictionary(name);
+            case FTS_CONFIGURATION -> getFtsConfiguration(name);
+            case OPERATOR -> getOperator(name);
+            case COLLATION -> getCollation(name);
+            case STATISTICS -> getStatistics(name);
             default -> super.getChild(name, type);
         };
     }

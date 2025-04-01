@@ -47,20 +47,14 @@ implements IRelation, IStatementContainer, ISearchPath {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case INDEX:
-            return getIndex(name);
-        case TRIGGER:
-            return getTrigger(name);
-        case RULE:
-            return getRule(name);
-        case CONSTRAINT:
-            return getConstraint(name);
-        case POLICY:
-            return getPolicy(name);
-        default:
-            return null;
-        }
+        return switch (type) {
+        case INDEX -> getIndex(name);
+        case TRIGGER -> getTrigger(name);
+        case RULE -> getRule(name);
+        case CONSTRAINT -> getConstraint(name);
+        case POLICY -> getPolicy(name);
+        default -> null;
+        };
     }
 
     @Override
@@ -120,7 +114,7 @@ implements IRelation, IStatementContainer, ISearchPath {
      * @return found index or null if no such index has been found
      */
     public AbstractIndex getIndex(final String name) {
-        return indexes.get(name);
+        return getChildByName(indexes, name);
     }
 
     /**
@@ -131,7 +125,7 @@ implements IRelation, IStatementContainer, ISearchPath {
      * @return found trigger or null if no such trigger has been found
      */
     public AbstractTrigger getTrigger(final String name) {
-        return triggers.get(name);
+        return getChildByName(triggers, name);
     }
 
     /**
@@ -142,7 +136,7 @@ implements IRelation, IStatementContainer, ISearchPath {
      * @return found rule or null if no such rule has been found
      */
     public PgRule getRule(final String name) {
-        return rules.get(name);
+        return getChildByName(rules, name);
     }
 
     /**
@@ -153,7 +147,7 @@ implements IRelation, IStatementContainer, ISearchPath {
      * @return found policy or null if no such policy has been found
      */
     public AbstractPolicy getPolicy(String name) {
-        return policies.get(name);
+        return getChildByName(policies, name);
     }
 
     public abstract Collection<AbstractConstraint> getConstraints();
