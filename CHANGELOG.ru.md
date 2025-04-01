@@ -9,15 +9,21 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.11.0] - 2025-04-01
+
+### Добавлено
+
 - Добавлена возможность генерации тестовых данных таблицы для MS SQL и ClickHouse.
 
 ### Изменено
 
 - Изменена генерация кода при добавлении новых привилегий в PostgreSQL.
-
-### Исправлено
-
-### Удалено
 
 ## [10.10.0] - 2025-03-18
 
@@ -2226,7 +2232,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...HEAD
+[10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
 [10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0
 [10.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...v10.9.0
 [10.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...v10.8.0
