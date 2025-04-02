@@ -13,7 +13,7 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: Checkout pgcodekeeper.github.io
+      - name: checkout pgcodekeeper.github.io
         uses: actions/checkout@v4
         with:
           repository: pgcodekeeper/pgcodekeeper.github.io
@@ -37,8 +37,26 @@ jobs:
       - name: decode keystore
         run: base64 --decode -i tmp/keystore/key.txt -o tmp/keystore/key.jks
 
+      - name: create macos certificate
+        uses: 1arp/create-a-file-action@0.4.5
+        with:
+          path: /tmp/keystore
+          isAbsolutePath: false
+          file: certificate.txt
+          content: ${{ secrets.MAC_CERT_P12 }}
+
+      - name: create keychain and import certificate
+        run: |
+          base64 --decode -i ${{ github.workspace }}/tmp/keystore/certificate.txt -o certificate.p12
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P ${{ secrets.MAC_CERT_PASS }} -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          security find-identity build.keychain
+
       - name: build
-        run: mvn clean deploy -DskipTests -P deploy-github -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
+        run: mvn clean deploy -DskipTests -P code-sign -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
 
       - name: set version
         run: echo "RELEASE_VERSION=$(echo ${GITHUB_REF#refs/*/} | cut -c 2-)" >> $GITHUB_ENV
@@ -51,6 +69,12 @@ jobs:
 
       - name: set windows build name
         run: echo "WINDOWS_BUILD=${{ env.PREFIX }}${{ env.RELEASE_VERSION }}-win32.win32.x86_64.zip" >> $GITHUB_ENV
+
+      - name: set macos aarch64 build name
+        run: echo "MACOS_AARCH_BUILD=${{ env.PREFIX }}${{ env.RELEASE_VERSION }}-macosx.cocoa.aarch64.tar.gz" >> $GITHUB_ENV
+
+      - name: set macos x86 build name
+        run: echo "MACOS_X86_BUILD=${{ env.PREFIX }}${{ env.RELEASE_VERSION }}-macosx.cocoa.x86_64.tar.gz" >> $GITHUB_ENV
 
       - name: set cli build name
         run: echo "CLI_BUILD=pgCodeKeeper-cli-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
@@ -87,6 +111,26 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.WINDOWS_BUILD }}
           asset_name: ${{ env.WINDOWS_BUILD }}
+          asset_content_type: application/zip
+
+      - name: upload release macos aarch build
+        uses: sekwah41/upload-release-assets@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_AARCH_BUILD }}
+          asset_name: ${{ env.MACOS_AARCH_BUILD }}
+          asset_content_type: application/zip
+
+      - name: upload release macos x86 build
+        uses: sekwah41/upload-release-assets@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_X86_BUILD }}
+          asset_name: ${{ env.MACOS_X86_BUILD }}
           asset_content_type: application/zip
 
       - name: upload release cli build

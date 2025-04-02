@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added pgCodeKeeper build for Mac OS.
+
 ### Changed
 
 ### Fixed

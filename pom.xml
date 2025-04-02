@@ -56,7 +56,7 @@
 
     <profiles>
         <profile>
-            <id>deploy-github</id>
+            <id>code-sign</id>
             <build>
                 <plugins>
                     <plugin>
