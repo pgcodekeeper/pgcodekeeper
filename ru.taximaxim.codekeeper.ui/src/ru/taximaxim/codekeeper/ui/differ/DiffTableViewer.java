@@ -369,7 +369,7 @@ public class DiffTableViewer extends Composite {
 
             @Override
             public void modifyText(ModifyEvent e) {
-                String text = ((Text)e.getSource()).getText();
+                String text = ((Text) e.getSource()).getText().strip();
                 filterHistory(text);
                 viewerFilter.setFilter(text);
                 viewer.refresh();
