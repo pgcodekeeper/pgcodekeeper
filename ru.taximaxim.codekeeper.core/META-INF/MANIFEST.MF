@@ -19,6 +19,7 @@ Export-Package: ru.taximaxim.codekeeper.core,
  ru.taximaxim.codekeeper.core.schema.ms,
  ru.taximaxim.codekeeper.core.schema.pg,
  ru.taximaxim.codekeeper.core.script,
+ ru.taximaxim.codekeeper.core.settings,
  ru.taximaxim.codekeeper.core.sql,
  ru.taximaxim.codekeeper.core.utils,
  ru.taximaxim.codekeeper.core.xmlstore
