@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.After_opsContext;
@@ -69,7 +70,7 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
+public final class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Select.class);
 
@@ -230,14 +231,14 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             } else if (selectStmt != null) {
                 select.analyze(selectStmt);
             } else {
-                LOG.warn("No alternative in right part of SelectOps!");
+                LOG.warn(Messages.Select_log_not_alter_right_part);
             }
         } else if (primary != null) {
             ret = primary(primary);
         } else if (selectOps.leftParen() != null && selectOps.rightParen() != null && selectStmt != null) {
             ret = analyze(selectStmt);
         } else {
-            LOG.warn("No alternative in SelectOps!");
+            LOG.warn(Messages.Select_log_not_alter_selectops);
             ret = Collections.emptyList();
         }
         return ret;
@@ -293,7 +294,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                 }
             }
         } else {
-            LOG.warn("No alternative in select_primary!");
+            LOG.warn(Messages.Select_log_not_alter_select);
             ret = Collections.emptyList();
         }
         return ret;
@@ -448,7 +449,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
         Entry<String, GenericColumn> ref = findReference(schema, relation, null);
         if (ref == null) {
-            LOG.warn("Asterisk qualification not found: {}.{}", schema, relation);
+            LOG.warn(Messages.Select_log_aster_qual_not_found, schema, relation);
             return false;
         }
         GenericColumn relationGc = ref.getValue();
@@ -475,7 +476,7 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
             .forEach(cols::add);
             return true;
         }
-        LOG.warn("Complex not found: {}", relation);
+        LOG.warn(Messages.Select_log_complex_not_found, relation);
         return false;
     }
 
@@ -561,10 +562,10 @@ public class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                     lateralAllowed = oldLateral;
                 }
             } else {
-                LOG.warn("No alternative in from_primary!");
+                LOG.warn(Messages.Select_log_not_alter_prim);
             }
         } else {
-            LOG.warn("No alternative in from_item!");
+            LOG.warn(Messages.Select_log_not_alter_item);
         }
     }
 

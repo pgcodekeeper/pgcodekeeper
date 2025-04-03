@@ -22,6 +22,7 @@ import java.text.MessageFormat;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public abstract class AbstractStatementReader {
 
@@ -57,7 +58,7 @@ public abstract class AbstractStatementReader {
     }
 
     public final void read() throws SQLException, InterruptedException, XmlReaderException {
-        loader.setCurrentOperation(getClass().getSimpleName() + " query");
+        loader.setCurrentOperation(Messages.AbstractStatementReader_start + getClass().getSimpleName());
         QueryBuilder builder = makeQuery();
         if (builder == null) {
             return;

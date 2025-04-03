@@ -19,15 +19,22 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject.AddStatus;
 
 public class IgnoreSchemaList implements IIgnoreList {
+
+    private static final Logger LOG = LoggerFactory.getLogger(IgnoreSchemaList.class);
 
     private final List<IgnoredObject> rules = new ArrayList<>();
 
     // black list (show all, hide some) by default
     private boolean isShow = true;
 
+    @Override
     public boolean isShow() {
         return isShow;
     }
@@ -59,6 +66,7 @@ public class IgnoreSchemaList implements IIgnoreList {
                 case ADD, ADD_SUBTREE:
                     return true;
                 case SKIP, SKIP_SUBTREE:
+                    LOG.debug(Messages.IgnoreSchemaList_log_ignored_schema, schema);
                     return false;
                 }
             }

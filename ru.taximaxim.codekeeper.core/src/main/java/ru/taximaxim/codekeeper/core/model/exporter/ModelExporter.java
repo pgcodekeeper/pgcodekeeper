@@ -44,6 +44,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -65,7 +66,7 @@ public class ModelExporter {
     private static final Logger LOG = LoggerFactory.getLogger(ModelExporter.class);
 
     public static final String GROUP_DELIMITER =
-            "\n\n--------------------------------------------------------------------------------\n\n";
+            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
 
     /**
      * Objects of the export directory
@@ -134,15 +135,18 @@ public class ModelExporter {
     }
 
     private void createOutDir() throws IOException {
+        LOG.info(Messages.ModelExporter_log_create_dirs);
         if (Files.exists(outDir)) {
             if (!Files.isDirectory(outDir)) {
+                LOG.error(Messages.ModelExporter_log_create_dir_err_no_dir, outDir);
                 throw new NotDirectoryException(outDir.toString());
             }
 
             for (String subdirName : WorkDirs.getDirectoryNames(databaseType)) {
                 if (Files.exists(outDir.resolve(subdirName))) {
-                    throw new DirectoryException(
-                            MessageFormat.format("Output directory already contains {0} directory.", subdirName));
+                    String msg = Messages.ModelExporter_log_create_dir_err_contains_dir;
+                    LOG.error(msg, subdirName);
+                    throw new DirectoryException(MessageFormat.format(msg, subdirName));
                 }
             }
         } else {
@@ -152,11 +156,13 @@ public class ModelExporter {
 
     public void exportPartial() throws IOException, PgCodekeeperException {
         if (oldDb == null) {
-            throw new PgCodekeeperException("Old database should not be null for partial export.");
+            String msg = Messages.ModelExporter_log_old_database_not_null;
+            LOG.error(msg);
+            throw new PgCodekeeperException(msg);
         }
         if (Files.notExists(outDir) || !Files.isDirectory(outDir)) {
             throw new DirectoryException(MessageFormat.format(
-                    "Output directory does not exist: {0}",
+                    Messages.ModelExporter_log_output_dir_no_exist_err,
                     outDir.toAbsolutePath()));
         }
 
@@ -260,7 +266,7 @@ public class ModelExporter {
         Path toDelete = outDir.resolve(getRelativeFilePath(st));
 
         if (Files.deleteIfExists(toDelete)) {
-            LOG.info("Deleted file {} for object {} {}", toDelete, st.getStatementType(), st.getName());
+            LOG.info(Messages.ModelExporter_log_delete_file, toDelete, st.getStatementType(), st.getName());
         }
     }
 
@@ -286,7 +292,7 @@ public class ModelExporter {
         if (st.isSubElement()) {
             st = st.getParent();
         }
-        Path path = WorkDirs.getRelativeFolderPath(st, Paths.get(""));
+        Path path = WorkDirs.getRelativeFolderPath(st, Paths.get("")); //$NON-NLS-1$
 
         String fileName = getExportedFilenameSql(getExportedFilename(st));
         if (st.getDbType() == DatabaseType.MS && st instanceof ISearchPath sp) {

@@ -3,12 +3,9 @@
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
         <file>${user.home}/.pgcodekeeper-cli/logs/pgcodekeeper-cli.log</file>
         <append>true</append>
-        <!-- set immediateFlush to false for much higher logging throughput -->
         <immediateFlush>true</immediateFlush>
-        <!-- encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder 
-            by default -->
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%level] [%thread] [%logger{0}] - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%level] [%logger{0}] - %msg%n</pattern>
         </encoder>
     </appender>
 
