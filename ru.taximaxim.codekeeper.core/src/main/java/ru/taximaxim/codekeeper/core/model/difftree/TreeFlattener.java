@@ -21,11 +21,17 @@ import java.util.Collection;
 import java.util.Deque;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject.AddStatus;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
 public class TreeFlattener {
+
+    private static final Logger LOG = LoggerFactory.getLogger(TreeFlattener.class);
 
     private boolean onlySelected;
     private boolean onlyEdits;
@@ -76,6 +82,7 @@ public class TreeFlattener {
     public List<TreeElement> flatten(TreeElement root) {
         result.clear();
         addSubtreeRoots.clear();
+        LOG.info(Messages.TreeFlattener_log_filter_obj);
         recurse(root);
         return result;
     }
@@ -87,7 +94,13 @@ public class TreeFlattener {
         } else {
             status = ignoreList.getNameStatus(el, !addSubtreeRoots.isEmpty(), dbNames);
         }
+
+        if (status == AddStatus.SKIP) {
+            LOG.debug(Messages.TreeFlattener_log_ignore_obj, el.getName());
+        }
         if (status == AddStatus.SKIP_SUBTREE) {
+            LOG.debug(Messages.TreeFlattener_log_ignore_obj, el.getName());
+            writeChildrenInLog(el);
             return;
         }
 
@@ -107,6 +120,15 @@ public class TreeFlattener {
                 (!onlyEdits || el.getSide() != DiffSide.BOTH ||
                 !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
             result.add(el);
+        }
+    }
+
+    private void writeChildrenInLog(TreeElement el) {
+        for (TreeElement sub : el.getChildren()) {
+            LOG.debug(Messages.TreeFlattener_log_ignore_children, sub.getName());
+            if (!sub.getChildren().isEmpty()) {
+                writeChildrenInLog(sub);
+            }
         }
     }
 }

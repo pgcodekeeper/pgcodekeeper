@@ -58,7 +58,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class JdbcPgLoader extends JdbcLoaderBase {
+public final class JdbcPgLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcPgLoader.class);
     private String timezone;
@@ -73,8 +73,8 @@ public class JdbcPgLoader extends JdbcLoaderBase {
     public PgDatabase load() throws IOException, InterruptedException {
         PgDatabase d = (PgDatabase) createDb(getArgs());
 
-        LOG.info("Reading db using JDBC.");
-        setCurrentOperation("connection setup");
+        LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
+        setCurrentOperation(Messages.JdbcChLoader_log_connection_db);
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement()) {
             this.connection = connection;
@@ -91,6 +91,8 @@ public class JdbcPgLoader extends JdbcLoaderBase {
             queryRoles();
             queryCheckExtension();
             setupMonitorWork();
+
+            LOG.info(Messages.JdbcLoader_log_read_db_objects);
             new SchemasReader(this, d).read();
 
             // NOTE: order of readers has been changed to move the heaviest ANTLR tasks to the beginning
@@ -139,7 +141,7 @@ public class JdbcPgLoader extends JdbcLoaderBase {
             d.sortColumns();
 
             d.setVersion(SupportedPgVersion.valueOf(getVersion()));
-            LOG.info("Database object has been successfully queried from JDBC");
+            LOG.info(Messages.JdbcLoader_log_succes_queried);
         } catch (InterruptedException ex) {
             throw ex;
         } catch (Exception e) {

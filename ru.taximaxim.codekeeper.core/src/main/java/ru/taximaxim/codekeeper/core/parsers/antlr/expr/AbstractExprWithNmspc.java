@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alias_clauseContext;
@@ -151,7 +152,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
                             break;
                         }
                     } else {
-                        LOG.warn("Ambiguous reference: {}", name);
+                        LOG.warn(Messages.AbstractExprWithNmspc_log_ambiguos_ref, name);
                     }
                 }
             }
@@ -302,7 +303,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
     public boolean addRawTableReference(GenericColumn qualifiedTable) {
         boolean exists = !unaliasedNamespace.add(qualifiedTable);
         if (exists) {
-            LOG.warn("Duplicate unaliased table: {} {}", qualifiedTable.schema, qualifiedTable.table);
+            LOG.warn(Messages.AbstractExprWithNmspc_log_dupl_unaliased_table, qualifiedTable.schema, qualifiedTable.table);
         }
         return !exists;
     }
@@ -311,7 +312,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         Set<String> columns = columnAliases.computeIfAbsent(alias, k -> new HashSet<>());
         boolean exists = !columns.add(column);
         if (exists) {
-            LOG.warn("Duplicate column alias: {} {}", alias, column);
+            LOG.warn(Messages.AbstractExprWithNmspc_log_dupl_col_alias, alias, column);
         }
         return !exists;
     }
@@ -383,12 +384,12 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
             } else if ((merge = data.merge_stmt_for_psql()) != null) {
                 pairs = new Merge(this).analyze(merge);
             } else {
-                LOG.warn("No alternative in Cte!");
+                LOG.warn(Messages.AbstractExprWithNmspc_log_not_alternative);
                 continue;
             }
 
             if (addCteSignature(withQuery, pairs)) {
-                LOG.warn("Duplicate CTE {}", withName);
+                LOG.warn(Messages.AbstractExprWithNmspc_log_dupl_cte, withName);
             }
         }
     }
@@ -401,7 +402,7 @@ public abstract class AbstractExprWithNmspc<T extends ParserRuleContext> extends
         List<IdentifierContext> paramNamesIdentifers = withQuery.column_name;
         for (int i = 0; i < paramNamesIdentifers.size(); ++i) {
             if (i >= resultTypes.size()) {
-                LOG.warn("Cte contains fewer columns than specified: {}", withName);
+                LOG.warn(Messages.AbstractExprWithNmspc_log_cte_contains_cols, withName);
                 break;
             }
             resultTypes.get(i).setFirst(paramNamesIdentifers.get(i).getText());
