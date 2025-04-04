@@ -22,6 +22,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 public class JdbcPrivilegeTest {
 
@@ -67,5 +69,23 @@ public class JdbcPrivilegeTest {
         String acl = "{}";
         List<JdbcPrivilege> privs = JdbcPrivilege.parse(acl, order, null);
         assertEquals(0, privs.size());
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "{\"user_45\"=UC/user_45\"}, user_45, user_45",
+        "{COLUMN=UC/COLUMN\"}, \"COLUMN\", \"COLUMN\"",
+    })
+    void testParseQuotedGrantee(String acl, String owner, String expected) {
+        String order = "CU";
+        List<JdbcPrivilege> privs = JdbcPrivilege.parse(acl, order, owner);
+
+        JdbcPrivilege priv = privs.get(0);
+        assertEquals("ALL", priv.getGrantString(""));
+        assertEquals(expected, priv.getGrantee());
+
+        assertTrue(priv.isDefault());
+        assertFalse(priv.isGrantAllToPublic());
+        assertFalse(priv.isGO());
     }
 }

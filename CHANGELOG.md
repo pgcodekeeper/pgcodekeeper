@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug with the case of names of objects in MS SQL.
+- Fixed the error of incorrect reading of privileges with user names from the database.
 
 ### Removed
 

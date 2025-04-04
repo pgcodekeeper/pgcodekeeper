@@ -135,20 +135,18 @@ final class JdbcPrivilege {
             String grantee = "";
             if (acl.qgrantor != null) {
                 if (acl.qname != null) {
-                    grantee = acl.qname.getText();
+                    grantee = PgDiffUtils.getQuotedName(acl.qname.getText());
                 }
-                grantor = acl.qgrantor.getText();
+                grantor = PgDiffUtils.getQuotedName(acl.qgrantor.getText());
             } else {
                 if (acl.name != null) {
-                    grantee = acl.name.getText();
+                    grantee = PgDiffUtils.getQuotedName(acl.name.getText());
                 }
-                grantor = acl.grantor.getText();
+                grantor = PgDiffUtils.getQuotedName(acl.grantor.getText());
             }
-
             String grantsString = acl.priv.getText();
 
             Consumer<JdbcPrivilege> adder = grantee.equals(owner) ? p -> privileges.add(0, p) : privileges::add;
-            grantee = PgDiffUtils.getQuotedName(grantee);
 
             if (grantee.isEmpty()) {
                 grantee = "PUBLIC";
