@@ -33,7 +33,7 @@ public class CliSettings implements ISettings {
 
     @Override
     public boolean isAddTransaction() {
-        return args.isConcurrentlyMode();
+        return args.isAddTransaction();
     }
 
     @Override
