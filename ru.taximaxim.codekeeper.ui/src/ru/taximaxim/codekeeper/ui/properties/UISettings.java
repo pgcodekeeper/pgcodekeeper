@@ -17,7 +17,6 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.SourceFormat;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
@@ -87,7 +86,7 @@ public class UISettings implements ISettings {
     }
 
     @Override
-    public boolean isPrintUsing() {
+    public boolean isUsingTypeCastOff() {
         return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF);
     }
 
@@ -207,81 +206,6 @@ public class UISettings implements ISettings {
 
     @Override
     public void setIgnorePrivileges(boolean isIgnorePriv) {
-    }
-
-    @Override
-    public boolean isLibSafeMode() {
-        return false;
-    }
-
-    @Override
-    public boolean isIgnoreErrors() {
-        return false;
-    }
-
-    @Override
-    public String getNewSrc() {
-        return null;
-    }
-
-    @Override
-    public String getOldSrc() {
-        return null;
-    }
-
-    @Override
-    public String getIgnoreSchemaList() {
-        return null;
-    }
-
-    @Override
-    public SourceFormat getNewSrcFormat() {
-        return null;
-    }
-
-    @Override
-    public SourceFormat getOldSrcFormat() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getIgnoreLists() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getTargetLibXmls() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getTargetLibs() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getTargetLibsWithoutPriv() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getSourceLibXmls() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getSourceLibs() {
-        return null;
-    }
-
-    @Override
-    public Collection<String> getSourceLibsWithoutPriv() {
-        return null;
-    }
-
-    @Override
-    public boolean isUsingTypeCastOff() {
-        return false;
     }
 
     @Override

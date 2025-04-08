@@ -113,7 +113,7 @@ public final class Main {
             PgDiff diff = new PgDiff(new CliSettings(arguments));
             String text;
             try {
-                text = diff.createDiff();
+                text = diff.createDiff(arguments);
             } catch (PgCodekeeperException ex) {
                 diff.getErrors().forEach(Main::writeMessage);
                 return false;
@@ -182,7 +182,7 @@ public final class Main {
         PgDiff diff = new PgDiff(new CliSettings(arguments));
         AbstractDatabase db;
         try {
-            db = diff.loadNewDatabaseWithLibraries();
+            db = diff.loadNewDatabaseWithLibraries(arguments);
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(Main::writeMessage);
             return false;
@@ -211,7 +211,7 @@ public final class Main {
         PgDiff diff = new PgDiff(settings);
         AbstractDatabase d;
         try {
-            d = diff.loadNewDatabaseWithLibraries();
+            d = diff.loadNewDatabaseWithLibraries(arguments);
         } catch (PgCodekeeperException ex) {
             diff.getErrors().forEach(Main::writeMessage);
             return false;

@@ -3,7 +3,6 @@ package ru.taximaxim.codekeeper.core.settings;
 import java.util.Collection;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.SourceFormat;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -21,7 +20,7 @@ public interface ISettings {
 
     boolean isGenerateExistDoBlock();
 
-    boolean isPrintUsing();
+    boolean isUsingTypeCastOff();
 
     boolean isKeepNewlines();
 
@@ -47,45 +46,15 @@ public interface ISettings {
 
     boolean isSimplifyView();
 
-    boolean isLibSafeMode();
-
-    boolean isIgnoreErrors();
-
     boolean isDisableCheckFunctionBodies();
-
-    boolean isUsingTypeCastOff();
 
     String getInCharsetName();
 
     String getTimeZone();
 
-    String getNewSrc();
-
-    String getOldSrc();
-
-    String getIgnoreSchemaList();
-
     FormatConfiguration getFormatConfiguration();
 
-    SourceFormat getNewSrcFormat();
-
-    SourceFormat getOldSrcFormat();
-
     Collection<DbObjType> getAllowedTypes();
-
-    Collection<String> getIgnoreLists();
-
-    Collection<String> getTargetLibXmls();
-
-    Collection<String> getTargetLibs();
-
-    Collection<String> getTargetLibsWithoutPriv();
-
-    Collection<String> getSourceLibXmls();
-
-    Collection<String> getSourceLibs();
-
-    Collection<String> getSourceLibsWithoutPriv();
 
     Collection<String> getPreFilePath();
 

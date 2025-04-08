@@ -84,37 +84,38 @@ public class PgDiff {
     /**
      * Creates diff on the two database schemas.
      */
-    public String createDiff() throws InterruptedException, IOException, PgCodekeeperException {
-        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries();
-        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries();
+    public String createDiff(PgDiffArguments arguments)
+            throws InterruptedException, IOException, PgCodekeeperException {
+        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries(arguments);
+        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries(arguments);
         IgnoreList ignoreList = new IgnoreList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
 
-        for (String listFilename : settings.getIgnoreLists()) {
+        for (String listFilename : arguments.getIgnoreLists()) {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
         return diff(oldDatabase, newDatabase, ignoreList);
     }
 
-    private void analyzeDatabase(AbstractDatabase db)
+    private void analyzeDatabase(AbstractDatabase db, PgDiffArguments arguments)
             throws InterruptedException, IOException, PgCodekeeperException {
         FullAnalyze.fullAnalyze(db, errors);
-        assertErrors();
+        assertErrors(arguments);
     }
 
-    private void loadOverrides(AbstractDatabase db, SourceFormat format, String source)
+    private void loadOverrides(AbstractDatabase db, SourceFormat format, String source, PgDiffArguments arguments)
             throws InterruptedException, IOException, PgCodekeeperException {
         if (SourceFormat.PARSED != format) {
             return;
         }
 
         new ProjectLoader(source, settings, errors).loadOverrides(db);
-        assertErrors();
+        assertErrors(arguments);
     }
 
     private void loadLibraries(AbstractDatabase db, Collection<String> libXmls,
-            Collection<String> libs, Collection<String> libsWithoutPriv)
+            Collection<String> libs, Collection<String> libsWithoutPriv, PgDiffArguments arguments)
                     throws InterruptedException, IOException, PgCodekeeperException {
         LibraryLoader ll = new LibraryLoader(db, META_PATH, errors);
 
@@ -124,63 +125,64 @@ public class PgDiff {
 
         ll.loadLibraries(settings, false, libs);
         ll.loadLibraries(settings, true, libsWithoutPriv);
-        assertErrors();
+        assertErrors(arguments);
     }
 
-    public AbstractDatabase loadNewDatabaseWithLibraries()
+    public AbstractDatabase loadNewDatabaseWithLibraries(PgDiffArguments arguments)
             throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase newDatabase = loadNewDatabase();
+        AbstractDatabase newDatabase = loadNewDatabase(arguments);
 
-        loadLibraries(newDatabase, settings.getTargetLibXmls(),
-                settings.getTargetLibs(), settings.getTargetLibsWithoutPriv());
+        loadLibraries(newDatabase, arguments.getTargetLibXmls(), arguments.getTargetLibs(),
+                arguments.getTargetLibsWithoutPriv(), arguments);
 
         List<PgOverride> overrides = newDatabase.getOverrides();
-        if (settings.isLibSafeMode() && !overrides.isEmpty()) {
+        if (arguments.isLibSafeMode() && !overrides.isEmpty()) {
             throw new LibraryObjectDuplicationException(overrides);
         }
 
         // read additional privileges from special folder
-        loadOverrides(newDatabase, settings.getNewSrcFormat(), settings.getNewSrc());
+        loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
 
-        analyzeDatabase(newDatabase);
+        analyzeDatabase(newDatabase, arguments);
 
         return newDatabase;
     }
 
-    public AbstractDatabase loadOldDatabaseWithLibraries()
+    public AbstractDatabase loadOldDatabaseWithLibraries(PgDiffArguments arguments)
             throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase oldDatabase = loadOldDatabase();
+        AbstractDatabase oldDatabase = loadOldDatabase(arguments);
 
-        loadLibraries(oldDatabase, settings.getSourceLibXmls(),
-                settings.getSourceLibs(), settings.getSourceLibsWithoutPriv());
+        loadLibraries(oldDatabase, arguments.getSourceLibXmls(), arguments.getSourceLibs(),
+                arguments.getSourceLibsWithoutPriv(), arguments);
 
         List<PgOverride> overrides = oldDatabase.getOverrides();
-        if (settings.isLibSafeMode() && !overrides.isEmpty()) {
+        if (arguments.isLibSafeMode() && !overrides.isEmpty()) {
             throw new LibraryObjectDuplicationException(overrides);
         }
 
         // read additional privileges from special folder
-        loadOverrides(oldDatabase, settings.getOldSrcFormat(), settings.getOldSrc());
+        loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
 
-        analyzeDatabase(oldDatabase);
+        analyzeDatabase(oldDatabase, arguments);
 
         return oldDatabase;
     }
 
-    public AbstractDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase db = loadDatabaseSchema(settings.getNewSrcFormat(), settings.getNewSrc());
-        assertErrors();
+    public AbstractDatabase loadNewDatabase(PgDiffArguments arguments) throws IOException, InterruptedException, PgCodekeeperException {
+        AbstractDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc(), arguments);
+        assertErrors(arguments);
         return db;
     }
 
-    public AbstractDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase db = loadDatabaseSchema(settings.getOldSrcFormat(), settings.getOldSrc());
-        assertErrors();
+    public AbstractDatabase loadOldDatabase(PgDiffArguments arguments)
+            throws IOException, InterruptedException, PgCodekeeperException {
+        AbstractDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc(), arguments);
+        assertErrors(arguments);
         return db;
     }
 
-    private void assertErrors() throws PgCodekeeperException {
-        if (!errors.isEmpty() && !settings.isIgnoreErrors()) {
+    private void assertErrors(PgDiffArguments arguments) throws PgCodekeeperException {
+        if (!errors.isEmpty() && !arguments.isIgnoreErrors()) {
             throw new PgCodekeeperException("Error while load database");
         }
     }
@@ -194,12 +196,12 @@ public class PgDiff {
      *
      * @return the loaded database
      */
-    private AbstractDatabase loadDatabaseSchema(SourceFormat format, String srcPath)
+    private AbstractDatabase loadDatabaseSchema(SourceFormat format, String srcPath, PgDiffArguments arguments)
             throws InterruptedException, IOException {
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
-        if (settings.getIgnoreSchemaList() != null) {
-            ignoreParser.parse(Paths.get(settings.getIgnoreSchemaList()));
+        if (arguments.getIgnoreSchemaList() != null) {
+            ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
         }
         DatabaseLoader loader = switch (format) {
         case DB -> LoaderFactory.createJdbcLoader(settings, srcPath, ignoreSchemaList);

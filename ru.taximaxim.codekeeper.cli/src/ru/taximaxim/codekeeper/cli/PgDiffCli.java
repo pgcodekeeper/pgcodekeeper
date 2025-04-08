@@ -42,8 +42,8 @@ public final class PgDiffCli extends PgDiff {
     public void updateProject()
             throws IOException, InterruptedException, PgCodekeeperException {
 
-        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries();
-        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries();
+        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries(arguments);
+        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries(arguments);
         IgnoreList ignoreList = getIgnoreList();
         TreeElement root = DiffTree.create(oldDatabase, newDatabase, null);
         root.setAllChecked();
@@ -56,7 +56,7 @@ public final class PgDiffCli extends PgDiff {
     }
 
     public void exportProject() throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase newDb = loadNewDatabase();
+        AbstractDatabase newDb = loadNewDatabase(arguments);
         TreeElement root = DiffTree.create(newDb, null, null);
         root.setAllChecked();
 
