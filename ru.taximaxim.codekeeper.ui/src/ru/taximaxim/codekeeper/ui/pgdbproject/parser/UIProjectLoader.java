@@ -43,7 +43,6 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
@@ -58,6 +57,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
@@ -71,13 +71,13 @@ public final class UIProjectLoader extends ProjectLoader {
     private final IProject iProject;
     private final boolean projectOnly;
 
-    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor) {
-        this(iProject, arguments, monitor, null, false);
+    public UIProjectLoader(IProject iProject, ISettings settings, IProgressMonitor monitor) {
+        this(iProject, settings, monitor, null, false);
     }
 
-    public UIProjectLoader(IProject iProject, PgDiffArguments arguments, IProgressMonitor monitor,
+    public UIProjectLoader(IProject iProject, ISettings settings, IProgressMonitor monitor,
             IgnoreSchemaList ignoreSchemaList, boolean projectOnly) {
-        super(null, arguments, monitor, new ArrayList<>(), ignoreSchemaList);
+        super(null, settings, monitor, new ArrayList<>(), ignoreSchemaList);
         this.iProject = iProject;
         this.projectOnly = projectOnly;
     }
@@ -213,10 +213,10 @@ public final class UIProjectLoader extends ProjectLoader {
 
     private void loadFile(IFile file, IProgressMonitor monitor, AbstractDatabase db)
             throws CoreException, InterruptedException {
-        PgDiffArguments arguments = db.getArguments().copy();
+        ISettings arguments = settings.copy();
         arguments.setInCharsetName(file.getCharset());
 
-        PgUIDumpLoader loader = new PgUIDumpLoader(file, arguments, monitor);
+        PgUIDumpLoader loader = new PgUIDumpLoader(file, settings, monitor);
         if (isOverrideMode) {
             loader.setOverridesMap(overrides);
         }
@@ -226,9 +226,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
     private AbstractDatabase buildMsFiles(Collection<IFile> files, SubMonitor mon)
             throws InterruptedException, IOException, CoreException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(DatabaseType.MS);
-        MsDatabase db = (MsDatabase) createDb(args);
+        MsDatabase db = (MsDatabase) createDb(settings);
 
         IPath schemasPath = new Path(WorkDirs.MS_SECURITY).append(WorkDirs.MS_SCHEMAS);
         Set<String> schemaFiles = new HashSet<>();
@@ -260,12 +258,12 @@ public final class UIProjectLoader extends ProjectLoader {
         }
         AntlrParser.finishAntlr(antlrTasks);
 
-        AbstractDatabase newDb = createDb(args);
+        AbstractDatabase newDb = createDb(settings);
 
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
         .filter(sc -> schemaFiles.contains(ModelExporter.getExportedFilename(sc)) || sc.hasChildren())
-        .forEach(st -> newDb.addChild(st.deepCopy()));
+                .forEach(st -> newDb.addChild(st.deepCopy()));
 
         db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
         db.getRoles().forEach(st -> newDb.addChild(st.deepCopy()));
@@ -279,9 +277,7 @@ public final class UIProjectLoader extends ProjectLoader {
             DatabaseType dbType) throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(schemasDir);
-        var args = new PgDiffArguments();
-        args.setDbType(dbType);
-        AbstractDatabase db = createDb(args);
+        AbstractDatabase db = createDb(settings);
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
@@ -330,14 +326,14 @@ public final class UIProjectLoader extends ProjectLoader {
 
     private AbstractDatabase loadDatabaseWithLibraries()
             throws InterruptedException, IOException, CoreException {
-        AbstractDatabase db = createDb(arguments);
+        AbstractDatabase db = createDb(settings);
         loadDbStructure(iProject,  db);
 
         if (!projectOnly) {
-            loadLibraries(db, arguments);
+            loadLibraries(db, settings);
         }
 
-        if (!arguments.isIgnorePrivileges() && !projectOnly) {
+        if (!settings.isIgnorePrivileges() && !projectOnly) {
             isOverrideMode = true;
             // read overrides from special folder
             IFolder privs = iProject.getFolder(WorkDirs.OVERRIDES);
@@ -356,7 +352,7 @@ public final class UIProjectLoader extends ProjectLoader {
     private void loadDbStructure(IContainer dir, AbstractDatabase db)
             throws InterruptedException, IOException, CoreException {
         if (dir.exists()) {
-            switch (arguments.getDbType()) {
+            switch (settings.getDbType()) {
             case PG:
                 loadPgStructure(dir, db);
                 break;
@@ -367,19 +363,19 @@ public final class UIProjectLoader extends ProjectLoader {
                 loadChStructure(dir, db);
                 break;
             default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
             }
         }
         AntlrParser.finishAntlr(antlrTasks);
     }
 
-    private void loadLibraries(AbstractDatabase db, PgDiffArguments arguments)
+    private void loadLibraries(AbstractDatabase db, ISettings settings)
             throws InterruptedException, IOException {
         LibraryLoader ll = new LibraryLoader(db,
                 Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
                         .append("dependencies").toString()), errors); //$NON-NLS-1$
         ll.loadXml(new DependenciesXmlStore(Paths.get(iProject.getLocation()
-                .append(DependenciesXmlStore.FILE_NAME).toString())), arguments);
+                .append(DependenciesXmlStore.FILE_NAME).toString())), settings);
     }
 
     @Override

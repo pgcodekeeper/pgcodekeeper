@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.GrantMsPrivilege
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class TSQLOverridesListener extends CustomParserListener<MsDatabase>
 implements TSqlContextProcessor {
@@ -50,8 +51,9 @@ implements TSqlContextProcessor {
     private final Map<PgStatement, StatementOverride> overrides;
 
     public TSQLOverridesListener(MsDatabase db, String filename, ParserListenerMode mode,
-            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, mode, errors, mon);
+            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides,
+            ISettings settings) {
+        super(db, filename, mode, errors, mon, settings);
         this.overrides = overrides;
     }
 
@@ -73,7 +75,7 @@ implements TSqlContextProcessor {
     private void clause(St_clauseContext st) {
         Ddl_clauseContext ddl = st.ddl_clause();
         Another_statementContext ast;
-        if (ddl != null && !db.getArguments().isIgnorePrivileges()) {
+        if (ddl != null && !settings.isIgnorePrivileges()) {
             Schema_createContext create = ddl.schema_create();
             Schema_alterContext alter;
             if (create != null) {
@@ -84,7 +86,7 @@ implements TSqlContextProcessor {
         } else if ((ast = st.another_statement()) != null) {
             Security_statementContext ss;
             if ((ss = ast.security_statement()) != null && ss.rule_common() != null) {
-                safeParseStatement(new GrantMsPrivilege(ss.rule_common(), db, overrides), ss);
+                safeParseStatement(new GrantMsPrivilege(ss.rule_common(), db, overrides, settings), ss);
             }
         }
     }
@@ -99,7 +101,7 @@ implements TSqlContextProcessor {
     private void alter(Schema_alterContext ctx) {
         if (ctx.alter_authorization() != null) {
             safeParseStatement(new AlterMsAuthorization(
-                    ctx.alter_authorization(), db, overrides), ctx);
+                    ctx.alter_authorization(), db, overrides, settings), ctx);
         }
     }
 

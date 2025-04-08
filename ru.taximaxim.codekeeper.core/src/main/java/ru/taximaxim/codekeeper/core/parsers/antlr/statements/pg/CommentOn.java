@@ -35,19 +35,20 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
+import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
-import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CommentOn extends PgParserAbstract {
 
     private final Comment_on_statementContext ctx;
 
-    public CommentOn(Comment_on_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CommentOn(Comment_on_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
@@ -94,10 +95,10 @@ public class CommentOn extends PgParserAbstract {
                 if (view == null) {
                     PgCompositeType t = ((PgCompositeType) getSafe(PgSchema::getType, schema, tableCtx));
                     addObjReference(tableIds, DbObjType.TYPE, null);
-                    t.getAttr(name).setComment(db.getArguments(), comment);
+                    t.getAttr(name).setComment(settings, comment);
                 } else {
                     addObjReference(tableIds, DbObjType.VIEW, null);
-                    view.addColumnComment(db.getArguments(), name, comment);
+                    view.addColumnComment(settings, name, comment);
                 }
             } else {
                 PgColumn column;
@@ -113,7 +114,7 @@ public class CommentOn extends PgParserAbstract {
                     }
                 }
                 addObjReference(tableIds, DbObjType.TABLE, null);
-                column.setComment(db.getArguments(), comment);
+                column.setComment(settings, comment);
             }
             return;
         }
@@ -241,7 +242,7 @@ public class CommentOn extends PgParserAbstract {
             return;
         }
 
-        doSafe((s, c) -> s.setComment(db.getArguments(), c), st, comment);
+        doSafe((s, c) -> s.setComment(settings, c), st, comment);
         if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
             addObjReference(ids, type, ACTION_ALTER, parseArguments(obj.function_args()));
         } else {

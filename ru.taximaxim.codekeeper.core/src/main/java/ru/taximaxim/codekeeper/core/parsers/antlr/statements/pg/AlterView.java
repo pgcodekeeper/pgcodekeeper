@@ -29,14 +29,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterView extends PgParserAbstract {
 
     private final Alter_view_statementContext ctx;
     private final CommonTokenStream stream;
 
-    public AlterView(Alter_view_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
-        super(db);
+    public AlterView(Alter_view_statementContext ctx, PgDatabase db, CommonTokenStream stream, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.stream = stream;
     }

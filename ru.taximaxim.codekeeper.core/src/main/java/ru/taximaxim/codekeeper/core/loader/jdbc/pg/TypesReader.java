@@ -127,11 +127,11 @@ public final class TypesReader extends JdbcReader {
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_domain_statement().dom_constraint,
                         ctx -> CreateDomain.parseDomainConstraint(d, constrCheck, ctx,
-                                dataBase, loader.getCurrentLocation()));
+                                dataBase, loader.getCurrentLocation(), loader.getSettings()));
 
                 d.addConstraint(constrCheck);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
-                    constrCheck.setComment(loader.getArgs(), PgDiffUtils.quoteString(concomments[i]));
+                    constrCheck.setComment(loader.getSettings(), PgDiffUtils.quoteString(concomments[i]));
                 }
             }
         }
@@ -293,7 +293,7 @@ public final class TypesReader extends JdbcReader {
             }
             t.addAttr(a);
             if (attcomments[i] != null && !attcomments[i].isEmpty()) {
-                a.setComment(loader.getArgs(), PgDiffUtils.quoteString(attcomments[i]));
+                a.setComment(loader.getSettings(), PgDiffUtils.quoteString(attcomments[i]));
             }
         }
 

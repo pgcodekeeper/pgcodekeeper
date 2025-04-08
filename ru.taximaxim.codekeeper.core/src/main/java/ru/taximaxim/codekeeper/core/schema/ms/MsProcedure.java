@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsProcedure extends AbstractMsFunction {
 
@@ -30,13 +31,13 @@ public final class MsProcedure extends AbstractMsFunction {
     }
 
     @Override
-    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate, ISettings settings) {
         sbSQL.append("SET QUOTED_IDENTIFIER ").append(isQuotedIdentified() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(isAnsiNulls() ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
 
-        appendSourceStatement(isCreate, sbSQL);
+        appendSourceStatement(isCreate, sbSQL, settings);
     }
 
     @Override

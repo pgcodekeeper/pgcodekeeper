@@ -4,6 +4,7 @@ import java.util.Collection;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
+import ru.taximaxim.codekeeper.core.SourceFormat;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -122,7 +123,7 @@ public class CliSettings implements ISettings {
 
     @Override
     public String getTimeZone() {
-        return args.getInCharsetName();
+        return args.getTimeZone();
     }
 
     @Override
@@ -143,6 +144,101 @@ public class CliSettings implements ISettings {
     @Override
     public ISettings copy() {
         return new CliSettings(args.copy());
+    }
+
+    @Override
+    public void setIsAddTransaction(boolean isAddTransaction) {
+        args.setAddTransaction(isAddTransaction);
+    }
+
+    @Override
+    public boolean isLibSafeMode() {
+        return args.isLibSafeMode();
+    }
+
+    @Override
+    public boolean isIgnoreErrors() {
+        return args.isIgnoreErrors();
+    }
+
+    @Override
+    public boolean isDisableCheckFunctionBodies() {
+        return args.isDisableCheckFunctionBodies();
+    }
+
+    @Override
+    public String getNewSrc() {
+        return args.getNewSrc();
+    }
+
+    @Override
+    public String getOldSrc() {
+        return args.getOldSrc();
+    }
+
+    @Override
+    public String getIgnoreSchemaList() {
+        return args.getIgnoreSchemaList();
+    }
+
+    @Override
+    public SourceFormat getNewSrcFormat() {
+        return args.getNewSrcFormat();
+    }
+
+    @Override
+    public SourceFormat getOldSrcFormat() {
+        return args.getOldSrcFormat();
+    }
+
+    @Override
+    public Collection<String> getIgnoreLists() {
+        return args.getIgnoreLists();
+    }
+
+    @Override
+    public Collection<String> getTargetLibXmls() {
+        return args.getTargetLibXmls();
+    }
+
+    @Override
+    public Collection<String> getTargetLibs() {
+        return args.getTargetLibs();
+    }
+
+    @Override
+    public Collection<String> getTargetLibsWithoutPriv() {
+        return args.getTargetLibsWithoutPriv();
+    }
+
+    @Override
+    public Collection<String> getSourceLibXmls() {
+        return args.getSourceLibXmls();
+    }
+
+    @Override
+    public Collection<String> getSourceLibs() {
+        return args.getSourceLibs();
+    }
+
+    @Override
+    public Collection<String> getSourceLibsWithoutPriv() {
+        return args.getSourceLibsWithoutPriv();
+    }
+
+    @Override
+    public Collection<String> getPreFilePath() {
+        return args.getPreFilePath();
+    }
+
+    @Override
+    public Collection<String> getPostFilePath() {
+        return args.getPostFilePath();
+    }
+
+    @Override
+    public boolean isUsingTypeCastOff() {
+        return args.isUsingTypeCastOff();
     }
 }
 

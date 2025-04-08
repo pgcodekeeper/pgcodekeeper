@@ -110,7 +110,7 @@ public final class PgServer extends PgStatement implements PgForeignOptionContai
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE SERVER ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(PgDiffUtils.getQuotedName(name));
         if (type != null) {
             sb.append(" TYPE ").append(type);

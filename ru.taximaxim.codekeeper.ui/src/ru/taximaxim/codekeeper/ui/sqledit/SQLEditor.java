@@ -532,7 +532,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             IDocument document = getDocumentProvider().getDocument(in);
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             String name = Paths.get(uriInput.getURI()).toString();
-            parser.fillRefsFromInputStream(stream, name, dbType, monitor);
+            parser.fillRefsFromInputStream(stream, name, dbType, monitor, res.getProject());
         }
     }
 

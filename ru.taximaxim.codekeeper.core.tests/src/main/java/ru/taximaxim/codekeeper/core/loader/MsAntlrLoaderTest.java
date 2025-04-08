@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 /**
  * Tests for PgDiffLoader class.
@@ -80,7 +81,8 @@ class MsAntlrLoaderTest {
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
+        var settings = new CliSettings(args);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, settings);
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -95,18 +97,19 @@ class MsAntlrLoaderTest {
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, new CliSettings(args));
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING, new CliSettings(args)).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
             args.setDbType(DatabaseType.MS);
-            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), new CliSettings(args))
+                    .loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
@@ -122,7 +125,8 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsTable table = new MsTable("fax_boxes");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("fax_boxes", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -143,7 +147,7 @@ class MsAntlrLoaderTest {
 
         table.setOwner(MS_USER);
 
-        table = new MsTable("faxes");
+        table = new MsTable("faxes", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -207,7 +211,7 @@ class MsAntlrLoaderTest {
         constraintFk.setUpdAction("CASCADE");
         table.addConstraint(constraintFk);
 
-        table = new MsTable("extensions");
+        table = new MsTable("extensions", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -225,7 +229,7 @@ class MsAntlrLoaderTest {
         constraintFk.setNotForRepl(true);
         table.addConstraint(constraintFk);
 
-        table = new MsTable("table1");
+        table = new MsTable("table1", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -254,7 +258,8 @@ class MsAntlrLoaderTest {
 
         schema = d.getSchema(Consts.DBO);
 
-        MsTable table = new MsTable("contacts");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("contacts", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -289,7 +294,8 @@ class MsAntlrLoaderTest {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        MsTable table = new MsTable("admins");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("admins", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -393,7 +399,8 @@ class MsAntlrLoaderTest {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        MsTable table = new MsTable("call_logs");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("call_logs", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -412,7 +419,8 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsTable table = new MsTable("table1");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("table1", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -503,7 +511,8 @@ class MsAntlrLoaderTest {
         schema.addPrivilege(new PgPrivilege(GRANT, "DELETE", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
         schema.addPrivilege(new PgPrivilege(GRANT, "INSERT", SCHEMA_DBO, QUOTED_MS_USER, false, dbType));
 
-        MsTable table = new MsTable("test_table");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("test_table", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -557,7 +566,8 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsType type = new MsType("testtt");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsType type = new MsType("testtt", settings);
         MsColumn col = new MsColumn("a");
         col.setType(INT);
         type.addChild(col);
@@ -607,7 +617,8 @@ class MsAntlrLoaderTest {
         seq.setOwner(MS_USER);
         schema.addSequence(seq);
 
-        MsTable table = new MsTable("user_data");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("user_data", settings);
         table.setAnsiNulls(true);
         table.setOwner(MS_USER);
         schema.addTable(table);
@@ -630,7 +641,7 @@ class MsAntlrLoaderTest {
         col.setDefaultValue("getdate()");
         table.addColumn(col);
 
-        table = new MsTable("t1");
+        table = new MsTable("t1", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -722,7 +733,8 @@ class MsAntlrLoaderTest {
 
         schema.setOwner(MS_USER);
 
-        MsTable table = new MsTable("acl_role");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("acl_role", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -739,7 +751,7 @@ class MsAntlrLoaderTest {
 
         table.setOwner(MS_USER);
 
-        table = new MsTable("\"user\"");
+        table = new MsTable("\"user\"", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -841,7 +853,8 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsTable table = new MsTable("TABLE_1");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("TABLE_1", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -995,7 +1008,8 @@ class MsAntlrLoaderTest {
 
         proc.setOwner(MS_USER);
 
-        MsTable table = new MsTable("test");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("test", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1062,7 +1076,8 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsTable table = new MsTable("test");
+        var settings = new CliSettings(new PgDiffArguments());
+        MsTable table = new MsTable("test", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1078,8 +1093,10 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
+        var settings = new CliSettings(new PgDiffArguments());
+
         // table1
-        MsTable table = new MsTable("\"t_work\"");
+        MsTable table = new MsTable("\"t_work\"", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1088,7 +1105,7 @@ class MsAntlrLoaderTest {
         table.addColumn(col);
 
         // table2
-        MsTable table2 = new MsTable("\"t_chart\"");
+        MsTable table2 = new MsTable("\"t_chart\"", settings);
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
@@ -1119,8 +1136,10 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
+        var settings = new CliSettings(new PgDiffArguments());
+
         // table1
-        MsTable table = new MsTable("\"t_work\"");
+        MsTable table = new MsTable("\"t_work\"", settings);
         table.setAnsiNulls(true);
         schema.addTable(table);
 
@@ -1129,7 +1148,7 @@ class MsAntlrLoaderTest {
         table.addColumn(col);
 
         // table2
-        MsTable table2 = new MsTable("\"t_chart\"");
+        MsTable table2 = new MsTable("\"t_chart\"", settings);
         table2.setAnsiNulls(true);
         schema.addTable(table2);
         col = new MsColumn("id");
@@ -1137,7 +1156,7 @@ class MsAntlrLoaderTest {
         table2.addColumn(col);
 
         // table 3
-        MsTable table3 = new MsTable("\"t_memo\"");
+        MsTable table3 = new MsTable("\"t_memo\"", settings);
         table3.setAnsiNulls(true);
         schema.addTable(table3);
         col = new MsColumn("name");

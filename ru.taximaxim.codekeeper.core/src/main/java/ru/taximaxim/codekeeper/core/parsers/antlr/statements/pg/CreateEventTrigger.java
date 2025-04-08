@@ -24,14 +24,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Event_trig
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qualified_name_nontypeContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateEventTrigger extends PgParserAbstract {
 
     private static final String TAG = "tag";
     private final Create_event_trigger_statementContext ctx;
 
-    public CreateEventTrigger(Create_event_trigger_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateEventTrigger(Create_event_trigger_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

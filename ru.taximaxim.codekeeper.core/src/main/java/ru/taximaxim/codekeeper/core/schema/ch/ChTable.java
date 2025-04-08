@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class ChTable extends AbstractTable {
 
@@ -38,8 +39,8 @@ public class ChTable extends AbstractTable {
 
     protected ChEngine engine;
 
-    public ChTable(String name) {
-        super(name);
+    public ChTable(String name, ISettings settings) {
+        super(name, settings);
     }
 
     public void addProjection(String key, String expression) {
@@ -61,7 +62,7 @@ public class ChTable extends AbstractTable {
     public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE TABLE ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(getQualifiedName()).append("\n(");
         appendTableBody(sb);
         if (isNotEmptyTable()) {
@@ -96,7 +97,7 @@ public class ChTable extends AbstractTable {
         int startSize = script.getSize();
         ChTable newTable = (ChTable) newCondition;
 
-        if (isRecreated(newTable)) {
+        if (isRecreated(newTable, script.getSettings())) {
             return ObjectState.RECREATE;
         }
 
@@ -141,7 +142,7 @@ public class ChTable extends AbstractTable {
         for (Entry<String, String> toAdd : toAdds.entrySet()) {
             StringBuilder sb = new StringBuilder();
             sb.append(getAlterTable(false)).append("\n\tADD PROJECTION ");
-            appendIfNotExists(sb);
+            appendIfNotExists(sb, script.getSettings());
             sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue());
             script.addStatement(sb);
         }
@@ -197,7 +198,7 @@ public class ChTable extends AbstractTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        var table = new ChTable(name);
+        var table = new ChTable(name, settings);
         table.projections.putAll(projections);
         table.setEngine(engine);
         return table;

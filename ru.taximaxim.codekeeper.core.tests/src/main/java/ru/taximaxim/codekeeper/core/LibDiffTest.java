@@ -27,6 +27,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 class LibDiffTest {
 
@@ -60,17 +62,18 @@ class LibDiffTest {
             throws IOException, InterruptedException, URISyntaxException {
         PgDiffArguments args = new PgDiffArguments();
         args.setIgnorePrivileges(isIgnorePrivileges);
+        ISettings settings = new CliSettings(args);
         List<String> libs = new ArrayList<>();
         for (String lib : libList) {
             libs.add(TestUtils.getPathToResource(lib, getClass()).toString());
         }
-        AbstractDatabase dbOld = DatabaseLoader.createDb(args);
-        AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, getClass(), args);
+        AbstractDatabase dbOld = DatabaseLoader.createDb(settings);
+        AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, getClass(), settings);
         LibraryLoader loader = new LibraryLoader(dbNew, null, null);
 
-        loader.loadLibraries(args, isIgnorePrivileges, libs);
+        loader.loadLibraries(settings, isIgnorePrivileges, libs);
 
-        String script = new PgDiff(args).diff(dbOld, dbNew, null);
+        String script = new PgDiff(settings).diff(dbOld, dbNew, null);
 
         TestUtils.compareResult(script, fileNameTemplate, getClass());
     }

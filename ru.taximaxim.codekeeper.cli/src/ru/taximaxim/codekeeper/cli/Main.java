@@ -51,6 +51,7 @@ import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in
@@ -109,7 +110,7 @@ public final class Main {
     private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            PgDiff diff = new PgDiff(arguments);
+            PgDiff diff = new PgDiff(new CliSettings(arguments));
             String text;
             try {
                 text = diff.createDiff();
@@ -178,7 +179,7 @@ public final class Main {
 
     private static boolean insert(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException, SQLException {
-        PgDiff diff = new PgDiff(arguments);
+        PgDiff diff = new PgDiff(new CliSettings(arguments));
         AbstractDatabase db;
         try {
             db = diff.loadNewDatabaseWithLibraries();
@@ -206,7 +207,8 @@ public final class Main {
 
     private static boolean graph(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException {
-        PgDiff diff = new PgDiff(arguments);
+        var settings = new CliSettings(arguments);
+        PgDiff diff = new PgDiff(settings);
         AbstractDatabase d;
         try {
             d = diff.loadNewDatabaseWithLibraries();
@@ -216,7 +218,8 @@ public final class Main {
         }
 
         List<String> deps = DepcyFinder.byPatterns(arguments.getGraphDepth(), arguments.isGraphReverse(),
-                arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter(), d, arguments.getGraphNames());
+                arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter(), d, arguments.getGraphNames(),
+                settings);
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             var w = pw != null ? pw : writer;

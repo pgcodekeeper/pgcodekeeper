@@ -29,13 +29,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterFtsStatement extends PgParserAbstract {
 
     private final Alter_fts_statementContext ctx;
 
-    public AlterFtsStatement(Alter_fts_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterFtsStatement(Alter_fts_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

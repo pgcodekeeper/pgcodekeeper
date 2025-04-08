@@ -20,13 +20,14 @@ import java.util.Arrays;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_database_statementContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateDatabase extends PgParserAbstract {
 
     private final Create_database_statementContext ctx;
 
-    public CreateDatabase(Create_database_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateDatabase(Create_database_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

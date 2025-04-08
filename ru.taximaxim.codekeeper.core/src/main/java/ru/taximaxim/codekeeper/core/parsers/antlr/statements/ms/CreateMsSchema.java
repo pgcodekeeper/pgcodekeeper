@@ -19,20 +19,21 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_schemaContext;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsSchema extends MsParserAbstract {
 
     private final Create_schemaContext ctx;
 
-    public CreateMsSchema(Create_schemaContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsSchema(Create_schemaContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
     @Override
     public void parseObject() {
         AbstractSchema schema = createAndAddSchemaWithCheck(ctx.schema_name);
-        if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
+        if (ctx.owner_name != null && !settings.isIgnorePrivileges()) {
             schema.setOwner(ctx.owner_name.getText());
         }
     }

@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class DepcyFinder {
 
@@ -48,9 +49,9 @@ public class DepcyFinder {
     private final List<PrintObj> printObjects = new ArrayList<>();
 
     private DepcyFinder(AbstractDatabase db, int depth, boolean isReverse,
-            Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
+            Collection<DbObjType> filterObjTypes, boolean isInvertFilter, ISettings settings) {
         this.db = db;
-        DepcyGraph dg = new DepcyGraph(db);
+        DepcyGraph dg = new DepcyGraph(db, settings);
         this.graph = isReverse ? dg.getGraph() : dg.getReversedGraph();
         this.depth = depth;
         if (filterObjTypes.isEmpty()) {
@@ -62,15 +63,15 @@ public class DepcyFinder {
     }
 
     public static final List<String> byPatterns(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
-            boolean isInvertFilter, AbstractDatabase db, Collection<String> names) {
-        DepcyFinder depcyFinder = new DepcyFinder(db, depth, isReverse, filterObjTypes, isInvertFilter);
+            boolean isInvertFilter, AbstractDatabase db, Collection<String> names, ISettings settings) {
+        DepcyFinder depcyFinder = new DepcyFinder(db, depth, isReverse, filterObjTypes, isInvertFilter, settings);
         depcyFinder.searchDeps(names);
         return depcyFinder.getResult();
     }
 
     public static final List<String> byStatement(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
-            PgStatement st) {
-        DepcyFinder depcyFinder = new DepcyFinder(st.getDatabase(), depth, isReverse, filterObjTypes, false);
+            PgStatement st, ISettings settings) {
+        DepcyFinder depcyFinder = new DepcyFinder(st.getDatabase(), depth, isReverse, filterObjTypes, false, settings);
         depcyFinder.fillTree(st, START_LEVEL, new HashSet<>(), null, 0);
         return depcyFinder.getResult();
     }

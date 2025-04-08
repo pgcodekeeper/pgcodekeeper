@@ -33,20 +33,21 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsType extends MsParserAbstract {
 
     private final Create_typeContext ctx;
 
-    public CreateMsType(Create_typeContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsType(Create_typeContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
     @Override
     public void parseObject() {
         IdContext nameCtx = ctx.qualified_name().name;
-        MsType type = new MsType(nameCtx.getText());
+        MsType type = new MsType(nameCtx.getText(), settings);
 
         Type_definitionContext def = ctx.type_definition();
 

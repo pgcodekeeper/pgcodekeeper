@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer, IForeignTable {
 
@@ -42,8 +43,8 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     private boolean isRowReject = true;
     private boolean isLogErrors;
 
-    public GpExternalTable(String name) {
-        super(name);
+    public GpExternalTable(String name, ISettings settings) {
+        super(name, settings);
     }
 
     @Override
@@ -52,7 +53,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void appendName(StringBuilder sbSQL) {
+    protected void appendName(StringBuilder sbSQL, ISettings settings) {
         sbSQL.append("CREATE ");
         if (isWritable) {
             sbSQL.append("WRITABLE ");
@@ -156,7 +157,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new GpExternalTable(name);
+        return new GpExternalTable(name, settings);
     }
 
     @Override

@@ -29,13 +29,14 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class DisableMsTrigger extends MsParserAbstract {
 
     private final Enable_disable_triggerContext ctx;
 
-    public DisableMsTrigger(Enable_disable_triggerContext ctx, MsDatabase db) {
-        super(db);
+    public DisableMsTrigger(Enable_disable_triggerContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

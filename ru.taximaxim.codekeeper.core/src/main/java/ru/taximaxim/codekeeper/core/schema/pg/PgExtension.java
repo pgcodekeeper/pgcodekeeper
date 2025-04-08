@@ -66,7 +66,7 @@ public final class PgExtension extends PgStatement {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE EXTENSION ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(getQualifiedName());
 
         if (schema != null && !schema.isEmpty()) {

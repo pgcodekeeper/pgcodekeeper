@@ -24,6 +24,7 @@ import java.util.List;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject.AddStatus;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class TreeFlattener {
 
@@ -73,14 +74,14 @@ public class TreeFlattener {
         return this;
     }
 
-    public List<TreeElement> flatten(TreeElement root) {
+    public List<TreeElement> flatten(TreeElement root, ISettings settings) {
         result.clear();
         addSubtreeRoots.clear();
-        recurse(root);
+        recurse(root, settings);
         return result;
     }
 
-    private void recurse(TreeElement el) {
+    private void recurse(TreeElement el, ISettings settings) {
         AddStatus status;
         if (ignoreList == null) {
             status = AddStatus.ADD;
@@ -95,7 +96,7 @@ public class TreeFlattener {
             addSubtreeRoots.push(el);
         }
         for (TreeElement sub : el.getChildren()) {
-            recurse(sub);
+            recurse(sub, settings);
         }
         if (status == AddStatus.ADD_SUBTREE) {
             addSubtreeRoots.pop();
@@ -105,7 +106,7 @@ public class TreeFlattener {
                 (!onlySelected || el.isSelected()) &&
                 (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
                 (!onlyEdits || el.getSide() != DiffSide.BOTH ||
-                !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
+                        !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
             result.add(el);
         }
     }

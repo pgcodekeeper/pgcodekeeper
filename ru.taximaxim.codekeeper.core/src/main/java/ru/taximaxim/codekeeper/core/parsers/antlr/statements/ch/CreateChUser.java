@@ -21,13 +21,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_user
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.HostContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChUser;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateChUser extends ChParserAbstract {
 
     private final Create_user_stmtContext ctx;
 
-    public CreateChUser(Create_user_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public CreateChUser(Create_user_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

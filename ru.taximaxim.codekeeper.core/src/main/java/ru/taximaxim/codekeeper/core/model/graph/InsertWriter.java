@@ -101,8 +101,8 @@ public final class InsertWriter {
     private final Map<String, List<AbstractColumn>> cols = new HashMap<>();
     private final Graph<RowData, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
 
-    private InsertWriter(AbstractDatabase d) {
-        this.dbType = d.getArguments().getDbType();
+    private InsertWriter(AbstractDatabase d, DatabaseType dbType) {
+        this.dbType = dbType;
         fillCollections(d);
     }
 
@@ -160,7 +160,7 @@ public final class InsertWriter {
         }
 
         String qName = getQualifiedName(name, db);
-        new InsertWriter(db).generateScript(arguments.getNewSrc(), qName, filter, sb);
+        new InsertWriter(db, dbType).generateScript(arguments.getNewSrc(), qName, filter, sb);
 
         if (isTransaction) {
             switch (dbType) {

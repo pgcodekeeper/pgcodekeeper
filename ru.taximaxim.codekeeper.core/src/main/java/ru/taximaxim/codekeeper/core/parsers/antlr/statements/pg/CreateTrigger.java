@@ -40,13 +40,14 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateTrigger extends PgParserAbstract {
 
     private final Create_trigger_statementContext ctx;
 
-    public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateTrigger(Create_trigger_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

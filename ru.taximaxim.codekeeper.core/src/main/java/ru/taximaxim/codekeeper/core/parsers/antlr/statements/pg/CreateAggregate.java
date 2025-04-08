@@ -41,13 +41,14 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggFuncs;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggKinds;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.ModifyType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateAggregate extends PgParserAbstract {
 
     private final Create_aggregate_statementContext ctx;
 
-    public CreateAggregate(Create_aggregate_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateAggregate(Create_aggregate_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

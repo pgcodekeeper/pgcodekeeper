@@ -41,13 +41,15 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionForeignPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.SimpleForeignPgTable;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateForeignTable extends TableAbstract {
 
     private final Create_foreign_table_statementContext ctx;
 
-    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
-        super(db, stream);
+    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db, CommonTokenStream stream,
+            ISettings settings) {
+        super(db, stream, settings);
         this.ctx = ctx;
     }
 
@@ -77,12 +79,12 @@ public class CreateForeignTable extends TableAbstract {
 
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
-                    tableName, srvName.getText()));
+                    tableName, srvName.getText(), settings));
             fillColumns(colCtx, table, schemaName, null);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
-                    tableName, srvName.getText(), partBound));
+                    tableName, srvName.getText(), partBound, settings));
 
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
             addInherit(table, getIdentifiers(partCtx.parent_table));

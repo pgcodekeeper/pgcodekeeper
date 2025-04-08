@@ -113,7 +113,7 @@ public class ViewsReader extends JdbcReader {
                 }
                 String colComment = colComments[i];
                 if (colComment != null) {
-                    v.addColumnComment(loader.getArgs(), colName, PgDiffUtils.quoteString(colComment));
+                    v.addColumnComment(loader.getSettings(), colName, PgDiffUtils.quoteString(colComment));
                 }
                 String colAcl = colACLs[i];
                 // Привилегии на столбцы view записываются в саму view
@@ -139,7 +139,7 @@ public class ViewsReader extends JdbcReader {
 
     @Override
     protected void setParams(PreparedStatement statement) throws SQLException {
-        statement.setBoolean(1, loader.getArgs().isSimplifyView());
+        statement.setBoolean(1, loader.getSettings().isSimplifyView());
     }
 
     @Override

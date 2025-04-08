@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * По выбранным элементам в дереве, находит зависимые элементы в дереве,
@@ -54,12 +55,13 @@ public class DepcyTreeExtender {
      */
     private final List<TreeElement> treeDepcyDelete = new ArrayList<>();
 
-    public DepcyTreeExtender(AbstractDatabase dbSource, AbstractDatabase dbTarget, TreeElement root) {
+    public DepcyTreeExtender(AbstractDatabase dbSource, AbstractDatabase dbTarget, TreeElement root,
+            ISettings settings) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.root = root;
-        userSelection = new TreeFlattener().onlySelected().flatten(root);
-        depRes = new SimpleDepcyResolver(dbSource, dbTarget, false);
+        userSelection = new TreeFlattener().onlySelected().flatten(root, settings);
+        depRes = new SimpleDepcyResolver(dbSource, dbTarget, false, settings);
     }
 
     /**
@@ -75,7 +77,7 @@ public class DepcyTreeExtender {
                 newEditDepcy.addAll(depRes.getCreateDepcies(markedToCreate));
             }
         }
-        fillTreeDepcies(treeDepcyNewEdit , newEditDepcy);
+        fillTreeDepcies(treeDepcyNewEdit, newEditDepcy);
     }
 
     /**

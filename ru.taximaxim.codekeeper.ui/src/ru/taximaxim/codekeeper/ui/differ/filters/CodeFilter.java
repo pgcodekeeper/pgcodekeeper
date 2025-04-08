@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
@@ -36,44 +37,44 @@ public class CodeFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            AbstractDatabase dbProject, AbstractDatabase dbRemote) {
+            AbstractDatabase dbProject, AbstractDatabase dbRemote, ISettings settings) {
 
         Set<TreeElement> elements = elementInfoMap.keySet();
-        if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements)) {
+        if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements, settings)) {
             return true;
         }
 
         if (el.getSide() != DiffSide.LEFT) {
-            return checkSide(el, dbRemote, elements);
+            return checkSide(el, dbRemote, elements, settings);
         }
 
         return false;
     }
 
-    private String getScript(PgStatement st) {
-        SQLScript script = new SQLScript(st.getDbType());
+    private String getScript(PgStatement st, ISettings settings) {
+        SQLScript script = new SQLScript(settings.copy());
         st.getCreationSQL(script);
         return script.getFullScript();
     }
 
-    private boolean checkSide(TreeElement el, AbstractDatabase db, Set<TreeElement> elements) {
+    private boolean checkSide(TreeElement el, AbstractDatabase db, Set<TreeElement> elements, ISettings settings) {
         PgStatement statement = el.getPgStatement(db);
         if (statement != null) {
-            if (searchMatches(getScript(statement))) {
+            if (searchMatches(getScript(statement, settings))) {
                 return true;
             }
 
             if (el.isSubElement()) {
                 PgStatement parent = statement.getParent();
                 if (parent != null) {
-                    return searchMatches(getScript(parent));
+                    return searchMatches(getScript(parent, settings));
                 }
             }
 
             if (el.isContainer()) {
                 return el.getChildren().stream().filter(elements::contains)
                         .map(e -> e.getPgStatement(db))
-                        .anyMatch(s -> s != null && searchMatches(getScript(s)));
+                        .anyMatch(s -> s != null && searchMatches(getScript(s, settings)));
             }
         }
 

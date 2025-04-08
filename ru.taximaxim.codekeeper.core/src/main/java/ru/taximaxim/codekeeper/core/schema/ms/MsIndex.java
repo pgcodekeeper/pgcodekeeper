@@ -29,6 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsIndex extends AbstractIndex {
 
@@ -65,14 +66,14 @@ public final class MsIndex extends AbstractIndex {
         if (isColumnstore) {
             sbSQL.append("COLUMNSTORE ");
         }
-        sbSQL.append(getDefinition(false, dropExisting));
+        sbSQL.append(getDefinition(false, dropExisting, script.getSettings()));
         if (tablespace != null) {
             sbSQL.append("\nON ").append(tablespace);
         }
         script.addStatement(sbSQL);
     }
 
-    String getDefinition(boolean isTypeIndex, boolean dropExisting) {
+    String getDefinition(boolean isTypeIndex, boolean dropExisting, ISettings settings) {
         var sb = new StringBuilder();
         sb.append("INDEX ");
 
@@ -108,7 +109,7 @@ public final class MsIndex extends AbstractIndex {
         var tmpOptions = new LinkedHashMap<String, String>();
         tmpOptions.putAll(options);
         if (!isTypeIndex) {
-            if (getDatabaseArguments().isConcurrentlyMode() && !options.containsKey("ONLINE")) {
+            if (settings.isConcurrentlyMode() && !options.containsKey("ONLINE")) {
                 tmpOptions.put("ONLINE", "ON");
             }
             if (dropExisting) {

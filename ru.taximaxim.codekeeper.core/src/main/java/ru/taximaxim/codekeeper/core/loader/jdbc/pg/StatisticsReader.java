@@ -51,7 +51,8 @@ public class StatisticsReader extends JdbcReader {
         loader.submitAntlrTask(definition + ';',
                 p -> new Pair<>(p.sql().statement(0).schema_statement().schema_create()
                         .create_statistics_statement(), (CommonTokenStream) p.getTokenStream()),
-                pair -> new CreateStatistics(pair.getFirst(), (PgDatabase) schema.getDatabase(), pair.getSecond())
+                pair -> new CreateStatistics(pair.getFirst(), (PgDatabase) schema.getDatabase(), pair.getSecond(),
+                        loader.getSettings())
                 .parseStatistics(stat));
 
         if (SupportedPgVersion.VERSION_13.isLE(loader.getVersion())) {

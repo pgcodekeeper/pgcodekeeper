@@ -22,13 +22,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_db
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsRole;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsRole extends MsParserAbstract {
 
     private final Create_db_roleContext ctx;
 
-    public CreateMsRole(Create_db_roleContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsRole(Create_db_roleContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
@@ -37,7 +38,7 @@ public class CreateMsRole extends MsParserAbstract {
         IdContext nameCtx = ctx.role_name;
         String name = nameCtx.getText();
         MsRole role = new MsRole(name);
-        if (ctx.owner_name != null && !db.getArguments().isIgnorePrivileges()) {
+        if (ctx.owner_name != null && !settings.isIgnorePrivileges()) {
             role.setOwner(ctx.owner_name.getText());
         }
 

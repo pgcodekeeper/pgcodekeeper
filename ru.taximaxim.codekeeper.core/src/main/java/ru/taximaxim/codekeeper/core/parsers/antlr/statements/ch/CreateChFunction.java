@@ -28,14 +28,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Identifier_
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateChFunction extends ChParserAbstract {
 
     private final Create_function_stmtContext ctx;
 
-    public CreateChFunction(Create_function_stmtContext ctx,
-            ChDatabase db) {
-        super(db);
+    public CreateChFunction(Create_function_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
@@ -55,7 +55,7 @@ public class CreateChFunction extends ChParserAbstract {
 
         parseArgs(function, ctx.lambda_expr().function_arguments());
 
-        db.addAnalysisLauncher(new ChFuncAnalysisLauncher(function, bodyCtx, fileName));
+        db.addAnalysisLauncher(new ChFuncAnalysisLauncher(function, bodyCtx, fileName, settings));
     }
 
     private void parseArgs(ChFunction function, Function_argumentsContext funcArgs) {

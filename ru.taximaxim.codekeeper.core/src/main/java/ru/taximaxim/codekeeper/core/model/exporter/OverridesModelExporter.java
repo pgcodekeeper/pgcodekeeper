@@ -39,12 +39,13 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class OverridesModelExporter extends ModelExporter {
 
     public OverridesModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
-            Collection<TreeElement> changedObjects, String sqlEncoding, DatabaseType dbType) {
-        super(outDir, newDb, oldDb, dbType, changedObjects, sqlEncoding);
+            Collection<TreeElement> changedObjects, String sqlEncoding, DatabaseType dbType, ISettings settings) {
+        super(outDir, newDb, oldDb, dbType, changedObjects, sqlEncoding, settings);
     }
 
     @Override
@@ -93,8 +94,8 @@ public class OverridesModelExporter extends ModelExporter {
     }
 
     @Override
-    protected String getDumpSql(PgStatement st) {
-        SQLScript script = new SQLScript(st.getDbType());
+    protected String getDumpSql(PgStatement st, ISettings settings) {
+        SQLScript script = new SQLScript(settings.copy());
         Set<PgPrivilege> privs = st.getPrivileges();
         st.appendOwnerSQL(script);
         PgPrivilege.appendPrivileges(privs, script);

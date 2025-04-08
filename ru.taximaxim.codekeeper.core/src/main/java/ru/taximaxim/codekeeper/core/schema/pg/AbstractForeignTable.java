@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Base implementation of foreign table
@@ -35,8 +36,8 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
 
     protected final String serverName;
 
-    protected AbstractForeignTable(String name, String serverName) {
-        super(name);
+    protected AbstractForeignTable(String name, String serverName, ISettings settings) {
+        super(name, settings);
         this.serverName = serverName;
     }
 
@@ -77,9 +78,9 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
     }
 
     @Override
-    protected void appendName(StringBuilder sbSQL) {
+    protected void appendName(StringBuilder sbSQL, ISettings settings) {
         sbSQL.append("CREATE FOREIGN TABLE ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, settings);
         sbSQL.append(getQualifiedName());
     }
 

@@ -30,11 +30,12 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintFk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class MsTableAbstract extends MsParserAbstract {
 
-    protected MsTableAbstract(MsDatabase db) {
-        super(db);
+    protected MsTableAbstract(MsDatabase db, ISettings settings) {
+        super(db, settings);
     }
 
     protected AbstractConstraint getMsConstraint(Table_constraintContext conCtx,

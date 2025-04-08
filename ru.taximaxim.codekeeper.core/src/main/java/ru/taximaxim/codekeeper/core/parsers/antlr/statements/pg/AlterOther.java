@@ -45,13 +45,14 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgStatistics;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterOther extends PgParserAbstract {
 
     private final Schema_alterContext ctx;
 
-    public AlterOther(Schema_alterContext ctx, PgDatabase db) {
-        super(db);
+    public AlterOther(Schema_alterContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

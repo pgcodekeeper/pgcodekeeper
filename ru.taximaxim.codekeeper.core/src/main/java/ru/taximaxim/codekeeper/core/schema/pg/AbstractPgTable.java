@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -63,17 +64,17 @@ public abstract class AbstractPgTable extends AbstractTable {
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
 
-    protected AbstractPgTable(String name) {
-        super(name);
+    protected AbstractPgTable(String name, ISettings settings) {
+        super(name, settings);
     }
 
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
 
-        SQLScript temp = new SQLScript(getDbType());
+        SQLScript temp = new SQLScript(script.getSettings().copy());
 
-        appendName(sbSQL);
+        appendName(sbSQL, script.getSettings());
         appendColumns(sbSQL, temp);
         appendInherit(sbSQL);
         appendOptions(sbSQL);
@@ -110,7 +111,7 @@ public abstract class AbstractPgTable extends AbstractTable {
      *
      * @param sbSQL - StringBuilder for statement
      */
-    protected abstract void appendName(StringBuilder sbSQl);
+    protected abstract void appendName(StringBuilder sbSQl, ISettings settings);
 
     /**
      * Fills columns and their options to create table statement. Options will be
@@ -194,7 +195,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         int startSize = script.getSize();
         AbstractPgTable newTable = (AbstractPgTable) newCondition;
 
-        if (isRecreated(newTable)) {
+        if (isRecreated(newTable, script.getSettings())) {
             return ObjectState.RECREATE;
         }
 
@@ -253,11 +254,11 @@ public abstract class AbstractPgTable extends AbstractTable {
     }
 
     @Override
-    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
+    protected boolean isColumnsOrderChanged(AbstractTable newTable, ISettings settings) {
         // broken inherit algorithm
         if (newTable instanceof AbstractPgTable table && !(newTable instanceof TypedPgTable)
                 && inherits.isEmpty() && table.inherits.isEmpty()) {
-            return super.isColumnsOrderChanged(newTable);
+            return super.isColumnsOrderChanged(newTable, settings);
         }
 
         return false;
@@ -366,7 +367,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         AbstractSequence sequence = column.getSequence();
         if (sequence != null) {
             StringBuilder sbSeq = new StringBuilder();
-            if (getDatabaseArguments().isGenerateExistDoBlock()) {
+            if (script.getSettings().isGenerateExistDoBlock()) {
                 StringBuilder tmpSb = new StringBuilder();
                 writeSequences(column, tmpSb);
                 PgDiffUtils.appendSqlWrappedInDo(sbSeq, tmpSb, Consts.DUPLICATE_RELATION);

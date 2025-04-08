@@ -30,13 +30,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Sequence_
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSequence;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsSequence extends MsParserAbstract {
 
     private final Create_sequenceContext ctx;
 
-    public CreateMsSequence(Create_sequenceContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsSequence(Create_sequenceContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

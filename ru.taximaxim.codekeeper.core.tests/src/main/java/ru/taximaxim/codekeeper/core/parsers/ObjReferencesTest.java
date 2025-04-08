@@ -32,6 +32,7 @@ import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 class ObjReferencesTest {
 
@@ -211,7 +212,8 @@ class ObjReferencesTest {
         args.setDbType(dbType);
 
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;
-        PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, args);
+        PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource,
+                new CliSettings(args));
         loader.setMode(ParserListenerMode.REF);
         AbstractDatabase db = loader.load();
 

@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
@@ -58,8 +59,8 @@ public class CreateTable extends TableAbstract {
 
 
     public CreateTable(Create_table_statementContext ctx, PgDatabase db,
-            String tablespace, String accessMethod, String oids, CommonTokenStream stream) {
-        super(db, stream);
+            String tablespace, String accessMethod, String oids, CommonTokenStream stream, ISettings settings) {
+        super(db, stream, settings);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.accessMethod = accessMethod;
@@ -100,15 +101,15 @@ public class CreateTable extends TableAbstract {
         } else if (colCtx != null) {
             AbstractRegularTable abstractRegTable;
             if (ctx.partition_gp() != null) {
-                abstractRegTable = new PartitionGpTable(tableName);
+                abstractRegTable = new PartitionGpTable(tableName, settings);
             } else {
-                abstractRegTable = new SimplePgTable(tableName);
+                abstractRegTable = new SimplePgTable(tableName, settings);
             }
             table = fillRegularTable(abstractRegTable);
             fillColumns(colCtx, table, schemaName, tablespace);
         } else {
             String partBound = getFullCtxText(partCtx.for_values_bound());
-            table = fillRegularTable(new PartitionPgTable(tableName, partBound));
+            table = fillRegularTable(new PartitionPgTable(tableName, partBound, settings));
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, getIdentifiers(partCtx.parent_table));
         }
@@ -120,7 +121,7 @@ public class CreateTable extends TableAbstract {
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
         String ofType = getTypeName(typeName);
-        TypedPgTable table = new TypedPgTable(tableName, ofType);
+        TypedPgTable table = new TypedPgTable(tableName, ofType, settings);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
         addTypeDepcy(typeName, table);
         fillRegularTable(table);

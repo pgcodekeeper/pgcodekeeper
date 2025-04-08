@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.core.schema.FuncTypes;
 import ru.taximaxim.codekeeper.core.schema.ms.MsClrFunction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsFunction;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsFunction extends BatchContextProcessor {
 
@@ -54,8 +55,8 @@ public class CreateMsFunction extends BatchContextProcessor {
     private final boolean quotedIdentifier;
 
     public CreateMsFunction(Batch_statementContext ctx, MsDatabase db,
-            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db, ctx, stream);
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream, ISettings settings) {
+        super(db, ctx, stream, settings);
         this.ctx = ctx.batch_statement_body().create_or_alter_function();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
@@ -114,18 +115,18 @@ public class CreateMsFunction extends BatchContextProcessor {
 
             if (select != null) {
                 db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
-                        func, select, fileName));
+                        func, select, fileName, settings));
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
                     db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
-                            func, exp, fileName));
+                            func, exp, fileName, settings));
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
                     db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
-                            func, clausesCtx, fileName));
+                            func, clausesCtx, fileName, settings));
                 }
             }
 

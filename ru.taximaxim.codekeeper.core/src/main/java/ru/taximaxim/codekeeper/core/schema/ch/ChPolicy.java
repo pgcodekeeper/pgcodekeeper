@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.ch;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -50,7 +51,7 @@ public final class ChPolicy extends AbstractPolicy {
         sbSQL.append(isCreate ? "CREATE" : "ALTER").append(" POLICY ");
 
         if (isCreate) {
-            appendIfNotExists(sbSQL);
+            appendIfNotExists(sbSQL, script.getSettings());
         }
 
         sbSQL.append(name);

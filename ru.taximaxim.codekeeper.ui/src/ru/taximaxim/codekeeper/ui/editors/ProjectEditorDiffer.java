@@ -161,6 +161,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
@@ -248,7 +249,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
         diffTable = new DiffTable(sashOuter, false, manager,
-                Paths.get(getProject().getLocationURI()));
+                Paths.get(getProject().getLocationURI()), proj.getProject());
 
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(e -> {
@@ -267,7 +268,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         diffTable.getViewer().addPostSelectionChangedListener(
                 e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
-        diffPane = new DiffPaneViewer(sashOuter);
+        diffPane = new DiffPaneViewer(sashOuter, proj.getProject());
 
         // notifications container
         // simplified for 1 static notification
@@ -348,7 +349,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     manualDepciesSource, manualDepciesTarget,
                     AbstractDatabase.listPgObjects(dbRemote.getDbObject()),
                     AbstractDatabase.listPgObjects(dbProject.getDbObject()),
-                    Messages.database, Messages.ProjectEditorDiffer_project);
+                    Messages.database, Messages.ProjectEditorDiffer_project,
+                    new UISettings(getProject(), oneTimePrefs));
             if (dialog.open() == Window.OK) {
                 manualDepciesSource = dialog.getDepciesSourceList();
                 manualDepciesTarget = dialog.getDepciesTargetList();
@@ -454,6 +456,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void getChanges() {
+        System.err.println("hi");
         Object currentRemote = getCurrentDb();
         if (currentRemote == null) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
@@ -702,6 +705,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void diff() {
+        System.err.println("hi2");
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
@@ -919,7 +923,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         TreeElement treeCopy = diffTree.getCopy();
         Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(
-                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy).getDepcies();
+                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy, new UISettings(getProject(), oneTimePrefs))
+                .getDepcies();
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
@@ -1031,8 +1036,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         private ImageDescriptor imgDescrProj;
         private ImageDescriptor imgDescrDb;
 
-        public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
-            super(parent, viewOnly, lineManager, location, dbType);
+        public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
+                IProject proj) {
+            super(parent, viewOnly, lineManager, location, dbType, proj);
         }
 
         @Override

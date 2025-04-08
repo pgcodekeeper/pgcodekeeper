@@ -61,11 +61,12 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
 
-    protected MsParserAbstract(MsDatabase db) {
-        super(db);
+    protected MsParserAbstract(MsDatabase db, ISettings settings) {
+        super(db, settings);
     }
 
     protected AbstractConstraint getMsPKConstraint(String schema, String table, String conName,

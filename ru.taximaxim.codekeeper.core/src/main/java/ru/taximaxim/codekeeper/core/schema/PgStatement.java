@@ -30,7 +30,6 @@ import java.util.stream.Stream;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
@@ -42,6 +41,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * The superclass for general pgsql statement.
@@ -141,10 +141,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         meta.setAuthor(author);
     }
 
-    public PgDiffArguments getDatabaseArguments() {
-        return getDatabase().getArguments();
-    }
-
     public void setParent(PgStatement parent) {
         if(parent != null && this.parent != null) {
             throw new IllegalStateException("Statement already has a parent: "
@@ -187,8 +183,8 @@ public abstract class PgStatement implements IStatement, IHashable {
     /**
      * Sets {@link #comment} with newlines as requested in arguments.
      */
-    public void setComment(PgDiffArguments args, String comment) {
-        setComment(args.isKeepNewlines() ? comment : comment.replace("\r", ""));
+    public void setComment(ISettings settings, String comment) {
+        setComment(settings.isKeepNewlines() ? comment : comment.replace("\r", ""));
     }
 
     public void appendComments(SQLScript script) {
@@ -213,11 +209,12 @@ public abstract class PgStatement implements IStatement, IHashable {
         appendFullName(sb);
         sb.append(" IS ")
         .append(checkComments() ? comment : "NULL");
-        script.addStatement(sb.toString(), getCommentsOrder());
+        script.addStatement(sb.toString(), getCommentsOrder(script));
     }
 
-    protected SQLActionType getCommentsOrder() {
-        return getDatabaseArguments().isCommentsToEnd() ? SQLActionType.POST : SQLActionType.MID;
+    protected SQLActionType getCommentsOrder(SQLScript script) {
+        // TODO decide what do with this
+        return script.getSettings().isCommentsToEnd() ? SQLActionType.POST : SQLActionType.MID;
     }
 
     protected void appendAlterOwner(PgStatement newObj, SQLScript script) {
@@ -399,20 +396,20 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public abstract void getCreationSQL(SQLScript script);
 
-    public String getSQL(boolean isFormatted) {
-        SQLScript script = new SQLScript(getDbType());
+    public String getSQL(boolean isFormatted, ISettings settings) {
+        SQLScript script = new SQLScript(settings.copy());
         getCreationSQL(script);
         String sql = script.getFullScript();
-        PgDiffArguments args = getDatabaseArguments();
-        if (!isFormatted || !args.isAutoFormatObjectCode()) {
+        if (!isFormatted || !settings.isAutoFormatObjectCode()) {
             return sql;
         }
-        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), args.getFormatConfiguration(), getDbType());
+        FileFormatter fileForm = new FileFormatter(sql, 0, sql.length(), settings.getFormatConfiguration(),
+                getDbType());
         return fileForm.formatText();
     }
 
     public final void getDropSQL(SQLScript script) {
-        getDropSQL(script, getDatabaseArguments().isGenerateExists());
+        getDropSQL(script, script.getSettings().isGenerateExists());
     }
 
     public boolean canDropBeforeCreate() {
@@ -429,8 +426,9 @@ public abstract class PgStatement implements IStatement, IHashable {
         script.addStatement(sb);
     }
 
-    protected void appendIfNotExists(StringBuilder sb) {
-        if (getDatabaseArguments().isGenerateExists()) {
+    protected void appendIfNotExists(StringBuilder sb, ISettings settings) {
+        // TODO decide what do with this
+        if (settings.isGenerateExists()) {
             sb.append("IF NOT EXISTS ");
         }
     }

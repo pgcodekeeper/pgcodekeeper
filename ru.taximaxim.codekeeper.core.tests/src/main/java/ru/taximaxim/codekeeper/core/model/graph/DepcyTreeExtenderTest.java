@@ -33,6 +33,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * An 'factory' that creates 'artificial' predefined objects
@@ -77,14 +79,15 @@ class DepcyTreeExtenderTest {
         String fileName = "depcy_schema_" + fileIndex + ".sql";
         String targetFileName = "depcy_schema_new_" + fileIndex + ".sql";
 
+        ISettings settings = new CliSettings(args);
         AbstractDatabase dbSource = TestUtils.loadTestDump(
-                fileName, DepcyTreeExtenderTest.class, args);
+                fileName, DepcyTreeExtenderTest.class, settings);
         AbstractDatabase dbTarget = TestUtils.loadTestDump(
-                targetFileName, DepcyTreeExtenderTest.class, args);
+                targetFileName, DepcyTreeExtenderTest.class, settings);
 
         TreeElement tree = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         predefined.setUserSelection(tree);
-        DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree);
+        DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree, settings);
         Set<TreeElement> depcy = dte.getDepcies();
         Set<TreeElement> depcyPredefined = predefined.getDepcySet(dbSource, dbTarget, tree);
         Assertions.assertEquals(depcyPredefined, depcy, "List of dependencies is not as expected");

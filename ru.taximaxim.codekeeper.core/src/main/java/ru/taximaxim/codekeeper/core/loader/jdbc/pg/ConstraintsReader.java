@@ -94,7 +94,8 @@ public class ConstraintsReader extends JdbcReader {
         loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                 p -> new Pair<>(p.sql().statement(0).schema_statement().schema_alter()
                         .alter_table_statement().table_action(0), (CommonTokenStream) p.getTokenStream()),
-                pair -> new AlterTable(null, (PgDatabase) schema.getDatabase(), tablespace, pair.getSecond())
+                pair -> new AlterTable(null, (PgDatabase) schema.getDatabase(), tablespace, pair.getSecond(),
+                        loader.getSettings())
                 .parseAlterTableConstraint(
                         pair.getFirst(), constr, schemaName, tableName, loader.getCurrentLocation()));
         loader.setAuthor(constr, res);

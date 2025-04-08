@@ -30,26 +30,27 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterOwner extends PgParserAbstract {
 
     private final Alter_owner_statementContext ctx;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public AlterOwner(Alter_owner_statementContext ctx, PgDatabase db) {
-        this(ctx, db, null);
+    public AlterOwner(Alter_owner_statementContext ctx, PgDatabase db, ISettings settings) {
+        this(ctx, db, null, settings);
     }
 
     public AlterOwner(Alter_owner_statementContext ctx, PgDatabase db,
-            Map<PgStatement, StatementOverride> overrides) {
-        super(db);
+            Map<PgStatement, StatementOverride> overrides, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.overrides = overrides;
     }
 
     @Override
     public void parseObject() {
-        if (db.getArguments().isIgnorePrivileges()) {
+        if (settings.isIgnorePrivileges()) {
             return;
         }
 

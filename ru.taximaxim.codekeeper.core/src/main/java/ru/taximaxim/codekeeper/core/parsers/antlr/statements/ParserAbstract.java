@@ -34,7 +34,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
@@ -53,6 +52,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Abstract Class contents common operations for parsing
@@ -72,12 +72,14 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
     protected static final String ACTION_COMMENT = "COMMENT";
 
     protected final S db;
+    protected final ISettings settings;
 
     private boolean refMode;
     protected String fileName;
 
-    protected ParserAbstract(S db) {
+    protected ParserAbstract(S db, ISettings settings) {
         this.db = db;
+        this.settings = settings;
     }
 
     public void parseObject(String fileName, ParserListenerMode mode, ParserRuleContext ctx) {
@@ -116,11 +118,11 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
     }
 
     protected String checkNewLines(String text) {
-        return checkNewLines(text, db.getArguments());
+        return checkNewLines(text, settings);
     }
 
-    protected static String checkNewLines(String text, PgDiffArguments args) {
-        return args.isKeepNewlines() ? text : text.replace("\r", "");
+    protected static String checkNewLines(String text, ISettings settings) {
+        return settings.isKeepNewlines() ? text : text.replace("\r", "");
     }
 
     /**
@@ -355,7 +357,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
             adder.accept(statement, object);
         }
     }
-
+    
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type) {
         addDepSafe(st, ids, type, null);
     }

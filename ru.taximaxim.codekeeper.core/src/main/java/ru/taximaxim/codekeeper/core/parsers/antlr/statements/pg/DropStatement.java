@@ -39,13 +39,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Target_operatorContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class DropStatement extends PgParserAbstract {
 
     private final Schema_dropContext ctx;
 
-    public DropStatement(Schema_dropContext ctx, PgDatabase db) {
-        super(db);
+    public DropStatement(Schema_dropContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

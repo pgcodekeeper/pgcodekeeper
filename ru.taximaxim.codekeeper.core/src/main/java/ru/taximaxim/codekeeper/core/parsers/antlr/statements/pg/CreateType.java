@@ -37,13 +37,14 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEnumType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRangeType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgShellType;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class CreateType extends PgParserAbstract {
 
     private final Create_type_statementContext ctx;
 
-    public CreateType(Create_type_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateType(Create_type_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

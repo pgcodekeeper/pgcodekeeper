@@ -28,14 +28,15 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class AlterIndex extends PgParserAbstract {
 
     private final Alter_index_statementContext ctx;
     private final String alterIdxAllAction;
 
-    public AlterIndex(Alter_index_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterIndex(Alter_index_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         alterIdxAllAction = ctx.ALL() == null ? null : "ALTER INDEX ALL";
     }

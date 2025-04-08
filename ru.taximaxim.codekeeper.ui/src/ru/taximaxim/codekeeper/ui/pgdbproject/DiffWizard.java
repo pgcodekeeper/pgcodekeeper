@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
@@ -123,7 +124,7 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
                 return;
             }
 
-            pagePartial.setData(treediffer, pageDiff.getIgnoreList(), pageDiff.getSelectedDbType());
+            pagePartial.setData(treediffer, pageDiff.getIgnoreList(), pageDiff.getSelectedDbType(), proj);
         }
     }
 
@@ -142,12 +143,12 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
             AbstractDatabase source = treediffer.getDbSource().getDbObject();
 
             Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(),
-                    treediffer.getDiffTree(), false, pageDiff.getTimezone(),
-                    source.getArguments().getDbType(), null, pageDiff.getOneTimePrefs());
+                    treediffer.getDiffTree(), false, pageDiff.getTimezone(), pageDiff.getSelectedDbType(), null,
+                    pageDiff.getOneTimePrefs());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(), "diff_wizard_result", //$NON-NLS-1$
-                    source.getArguments().getDbType());
+                    pageDiff.getSelectedDbType());
             return true;
         } catch (InvocationTargetException ex) {
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
@@ -379,9 +380,11 @@ class PagePartial extends WizardPage {
     private Label lblSource;
     private Label lblTarget;
     private DiffTableViewer diffTable;
+    private IProject proj;
 
-    public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList, DatabaseType dbType) {
+    public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList, DatabaseType dbType, PgDbProject proj) {
         this.treeDiffer = treeDiffer;
+        this.proj = proj.getProject();
         DbSource source = treeDiffer.getDbSource();
         DbSource target = treeDiffer.getDbTarget();
         lblSource.setText(source.getOrigin());
@@ -389,6 +392,7 @@ class PagePartial extends WizardPage {
         lblSource.getParent().layout();
         diffTable.setInput(source, target, treeDiffer.getDiffTree(), ignoreList);
         diffTable.setDbType(dbType);
+
     }
 
     public TreeDiffer getTreeDiffer() {
@@ -410,7 +414,7 @@ class PagePartial extends WizardPage {
         lblSource = new Label(container, SWT.WRAP);
         lblTarget = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false, null);
+        diffTable = new DiffTableViewer(container, false, null, proj);
         diffTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         setControl(container);

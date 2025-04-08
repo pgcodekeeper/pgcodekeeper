@@ -21,11 +21,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class SQLScript {
 
+    private final ISettings settings;
     private static final String PG_SEPARATOR = ";";
     private static final String MS_SEPARATOR = "\nGO";
 
@@ -33,12 +34,10 @@ public class SQLScript {
 
     private final Map<SQLActionType, Set<String>> statements = new EnumMap<>(SQLActionType.class);
 
-    private final DatabaseType databaseType;
-
     private int count;
 
-    public SQLScript(DatabaseType databaseType) {
-        this.databaseType = databaseType;
+    public SQLScript(ISettings settings) {
+        this.settings = settings;
     }
 
     public void addStatement(StringBuilder sb) {
@@ -66,10 +65,10 @@ public class SQLScript {
             return sql;
         }
 
-        String separator = switch (databaseType) {
+        String separator = switch (settings.getDbType()) {
             case PG, CH -> PG_SEPARATOR;
             case MS -> MS_SEPARATOR;
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
 
         return sql + separator;
@@ -102,5 +101,9 @@ public class SQLScript {
 
     public boolean isEmpty() {
         return 0 == count;
+    }
+
+    public ISettings getSettings() {
+        return settings;
     }
 }

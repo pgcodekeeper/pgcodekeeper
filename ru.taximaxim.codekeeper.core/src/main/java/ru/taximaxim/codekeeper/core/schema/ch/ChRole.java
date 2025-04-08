@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.ch;
 
 import java.util.Objects;
+
 import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -39,7 +40,7 @@ public final class ChRole extends PgStatement {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE ROLE ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(ChDiffUtils.getQuotedName(name));
         if (!DEF_STORAGE.equals(storageType)) {
             sbSQL.append("\n\tIN ").append(storageType);

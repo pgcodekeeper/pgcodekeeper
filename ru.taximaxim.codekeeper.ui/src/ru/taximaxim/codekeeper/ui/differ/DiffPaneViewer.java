@@ -20,6 +20,7 @@ import java.util.Collection;
 import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
@@ -40,6 +41,7 @@ import ru.taximaxim.codekeeper.ui.comparetools.CompareItem;
 import ru.taximaxim.codekeeper.ui.comparetools.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefChangeAction;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public final class DiffPaneViewer extends Composite {
 
@@ -53,6 +55,8 @@ public final class DiffPaneViewer extends Composite {
     private TreeElement currentEl;
     private Collection<TreeElement> availableElements;
 
+    private final IProject project;
+
     private final IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
     private final PrefChangeAction swapAction;
@@ -63,8 +67,9 @@ public final class DiffPaneViewer extends Composite {
         this.dbRemote = dbRemote;
     }
 
-    public DiffPaneViewer(Composite parent) {
+    public DiffPaneViewer(Composite parent, IProject project) {
         super(parent, SWT.BORDER);
+        this.project = project;
 
         setLayoutData(new GridData(GridData.FILL_BOTH));
         GridLayout filterLayout = new GridLayout();
@@ -151,24 +156,26 @@ public final class DiffPaneViewer extends Composite {
         return sb.toString();
     }
 
-    private String getElementSql(TreeElement el, boolean project, boolean isFormatted) {
-        if ((el.getSide() == DiffSide.LEFT) != project && el.getSide() != DiffSide.BOTH) {
+    private String getElementSql(TreeElement el, boolean isProject, boolean isFormatted) {
+        if ((el.getSide() == DiffSide.LEFT) != isProject && el.getSide() != DiffSide.BOTH) {
             return null;
         }
 
-        DbSource db = project ? dbProject : dbRemote;
+        DbSource db = isProject ? dbProject : dbRemote;
         PgStatement st = el.getPgStatement(db.getDbObject());
         if (st.getStatementType() == DbObjType.ASSEMBLY) {
-            return ((MsAssembly) st).getPreview();
+            return ((MsAssembly) st).getPreview(new UISettings(project, null));
         }
 
-        String sql = st.getSQL(isFormatted);
+        String sql = st.getSQL(isFormatted, new UISettings(project, null));
         if (!el.isContainer() || !store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return sql;
         }
 
         StringBuilder sb = new StringBuilder(sql);
-        st.getChildren().forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL).append(c.getSQL(isFormatted)));
+        st.getChildren()
+                .forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL)
+                        .append(c.getSQL(isFormatted, new UISettings(project, null))));
         return sb.toString();
     }
 }

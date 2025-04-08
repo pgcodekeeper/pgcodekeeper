@@ -21,6 +21,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Tests for migrate data option .
@@ -69,15 +71,16 @@ class MoveDataDiffTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setDataMovementMode(true);
         args.setDbType(dbType);
+        ISettings settings = new CliSettings(args);
         AbstractDatabase dbOld = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, args);
+                fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, settings);
         AbstractDatabase dbNew = TestUtils.loadTestDump(
-                fileNameTemplate + FILES_POSTFIX.NEW_SQL, MoveDataDiffTest.class, args);
+                fileNameTemplate + FILES_POSTFIX.NEW_SQL, MoveDataDiffTest.class, settings);
 
-        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
-        TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
+        TestUtils.runDiffSame(dbOld, fileNameTemplate, settings);
+        TestUtils.runDiffSame(dbNew, fileNameTemplate, settings);
 
-        String script = new PgDiff(args).diff(dbOld, dbNew, null);
+        String script = new PgDiff(settings).diff(dbOld, dbNew, null);
         String content = script.replaceAll("([0-9a-fA-F]{32})", "randomly_generated_part");
 
         TestUtils.compareResult(content, fileNameTemplate, MoveDataDiffTest.class);

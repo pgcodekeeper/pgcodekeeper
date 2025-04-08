@@ -47,7 +47,7 @@ public final class ChFunctionsReader extends AbstractStatementReader {
 
         loader.submitChAntlrTask(definition,
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_function_stmt(),
-                ctx -> new CreateChFunction(ctx, db).parseObject(function));
+                ctx -> new CreateChFunction(ctx, db, loader.getSettings()).parseObject(function));
 
         db.addChild(function);
     }

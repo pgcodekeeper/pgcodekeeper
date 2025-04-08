@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.IConstraint;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsType extends AbstractType implements IStatementContainer {
 
@@ -47,8 +48,11 @@ public final class MsType extends AbstractType implements IStatementContainer {
     private final List<String> constraints = new ArrayList<>();
     private final List<String> indices = new ArrayList<>();
 
-    public MsType(String name) {
+    private final ISettings settings;
+
+    public MsType(String name, ISettings settings) {
         super(name);
+        this.settings = settings;
     }
 
     @Override
@@ -108,7 +112,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
     @Override
     protected AbstractType getTypeCopy() {
-        MsType copy = new MsType(name);
+        MsType copy = new MsType(name, settings);
         copy.setNotNull(isNotNull);
         copy.setMemoryOptimized(isMemoryOptimized);
         copy.setBaseType(baseType);
@@ -171,7 +175,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
         var type = stmt.getStatementType();
         switch (type) {
         case INDEX:
-            indices.add(((MsIndex) stmt).getDefinition(true, false));
+            indices.add(((MsIndex) stmt).getDefinition(true, false, settings));
             break;
         case CONSTRAINT:
             constraints.add(((IConstraint) stmt).getDefinition());

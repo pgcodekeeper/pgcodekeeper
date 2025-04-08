@@ -60,7 +60,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenStatementIsNotNull(true);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(true, result);
     }
@@ -72,7 +72,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenStatementIsNotNull(true);
         whenSearchPatternIs(INVALID);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -82,7 +82,7 @@ class CodeFilterTest extends AbstractFilterTest{
     void testElementPgStatementIsNull(DiffSide side) {
         whenElementSideIs(side);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -94,7 +94,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenElementIsChild(false);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(true, result);
     }
@@ -106,7 +106,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenElementIsChild(false);
         whenSearchPatternIs(INVALID);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -117,7 +117,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenElementIsChild(true);
         whenSearchPatternIs(INVALID);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -129,7 +129,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenElementIsContainer(false);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(true, result);
     }
@@ -141,7 +141,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenElementIsContainer(false);
         whenSearchPatternIs(INVALID);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -152,7 +152,7 @@ class CodeFilterTest extends AbstractFilterTest{
         whenElementIsContainer(true);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }

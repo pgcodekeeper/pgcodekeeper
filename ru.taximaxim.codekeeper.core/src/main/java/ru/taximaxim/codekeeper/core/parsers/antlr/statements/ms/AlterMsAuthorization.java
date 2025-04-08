@@ -29,19 +29,20 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterMsAuthorization extends MsParserAbstract {
 
     private final Alter_authorizationContext ctx;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public AlterMsAuthorization(Alter_authorizationContext ctx, MsDatabase db) {
-        this(ctx, db, null);
+    public AlterMsAuthorization(Alter_authorizationContext ctx, MsDatabase db, ISettings settings) {
+        this(ctx, db, null, settings);
     }
 
     public AlterMsAuthorization(Alter_authorizationContext ctx, MsDatabase db,
-            Map<PgStatement, StatementOverride> overrides) {
-        super(db);
+            Map<PgStatement, StatementOverride> overrides, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.overrides = overrides;
     }
@@ -49,7 +50,7 @@ public class AlterMsAuthorization extends MsParserAbstract {
     @Override
     public void parseObject() {
         IdContext ownerId = ctx.id();
-        if (db.getArguments().isIgnorePrivileges() || ownerId == null) {
+        if (settings.isIgnorePrivileges() || ownerId == null) {
             return;
         }
         String owner = ownerId.getText();

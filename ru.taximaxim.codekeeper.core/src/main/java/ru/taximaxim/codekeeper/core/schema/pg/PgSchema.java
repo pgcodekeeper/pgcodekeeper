@@ -57,7 +57,7 @@ public final class PgSchema extends AbstractSchema {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE SCHEMA ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(getQualifiedName());
         script.addStatement(sbSQL);
 

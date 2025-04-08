@@ -63,6 +63,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -70,8 +71,8 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
  */
 public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
 
-    protected PgParserAbstract(PgDatabase db) {
-        super(db);
+    protected PgParserAbstract(PgDatabase db, ISettings settings) {
+        super(db, settings);
     }
 
     protected void fillSimpleColumns(ISimpleColumnContainer cont,
@@ -154,7 +155,7 @@ public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
      * @param st    object
      */
     protected void fillOwnerTo(IdentifierContext owner, PgStatement st) {
-        if (owner == null || db.getArguments().isIgnorePrivileges() || isRefMode()) {
+        if (owner == null || settings.isIgnorePrivileges() || isRefMode()) {
             return;
         }
         st.setOwner(owner.getText());

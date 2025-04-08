@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Stores column information.
@@ -134,7 +135,7 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
         if (type != null && getParentCol((AbstractPgTable) parent) == null) {
             sb.append(getAlterTable(false));
             sb.append("\n\tADD COLUMN ");
-            appendIfNotExists(sb);
+            appendIfNotExists(sb, script.getSettings());
             sb.append(PgDiffUtils.getQuotedName(name))
             .append(' ')
             .append(type);
@@ -267,7 +268,7 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
         }
         AtomicBoolean isNeedDepcies = new AtomicBoolean();
         StringBuilder typeBuilder = new StringBuilder();
-        compareTypes(this, newColumn, isNeedDepcies, typeBuilder, true, true);
+        compareTypes(this, newColumn, isNeedDepcies, typeBuilder, true, true, script.getSettings());
         if (!typeBuilder.isEmpty()) {
             script.addStatement(typeBuilder);
         }
@@ -337,7 +338,7 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
 
             if (newIdentityType == null) {
                 sb.append(" DROP IDENTITY");
-                if (getDatabaseArguments().isGenerateExists()) {
+                if (script.getSettings().isGenerateExists()) {
                     sb.append(" IF EXISTS");
                 }
             } else if (oldIdentityType == null) {
@@ -380,8 +381,8 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
     }
 
     public void joinAction(StringBuilder sb, PgColumn newColumn, boolean isNeedAlterTable,
-            boolean isLastColumn) {
-        compareTypes(this, newColumn, new AtomicBoolean(), sb, isNeedAlterTable, isLastColumn);
+            boolean isLastColumn, ISettings settings) {
+        compareTypes(this, newColumn, new AtomicBoolean(), sb, isNeedAlterTable, isLastColumn, settings);
     }
 
     /**
@@ -397,7 +398,7 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
      * @param  isLastColumn -  if true will be added ";" in the end of ALTER COLUMN. If false then - ",".
      */
     private void compareTypes(PgColumn oldColumn, PgColumn newColumn, AtomicBoolean isNeedDepcies,
-            StringBuilder sb, boolean isNeedAlterTable, boolean isLastColumn) {
+            StringBuilder sb, boolean isNeedAlterTable, boolean isLastColumn, ISettings settings) {
         String oldType = oldColumn.type;
         String newType = newColumn.type;
         if (newType == null) {
@@ -416,7 +417,7 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
                 sb.append(COLLATE).append(newCollation);
             }
 
-            if (!getDatabaseArguments().isUsingTypeCastOff() && !(parent instanceof IForeignTable)) {
+            if (!settings.isUsingTypeCastOff() && !(parent instanceof IForeignTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.name))
                 .append("::").append(newType);
             }

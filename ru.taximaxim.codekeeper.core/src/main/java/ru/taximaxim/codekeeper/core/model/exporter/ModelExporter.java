@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Exports AbstractDatabase model as a directory tree with sql files with objects' code as leaves.<br>
@@ -97,6 +98,8 @@ public class ModelExporter {
      */
     private final DatabaseType databaseType;
 
+    private final ISettings settings;
+
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb} and {@link #sqlEncoding}.
      *
@@ -107,18 +110,20 @@ public class ModelExporter {
      * @param sqlEncoding
      *            encoding
      */
-    public ModelExporter(Path outDir, AbstractDatabase db, DatabaseType databaseType, String sqlEncoding) {
-        this(outDir, db, null, databaseType, null, sqlEncoding);
+    public ModelExporter(Path outDir, AbstractDatabase db, DatabaseType databaseType, String sqlEncoding,
+            ISettings settings) {
+        this(outDir, db, null, databaseType, null, sqlEncoding, settings);
     }
 
     public ModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
-            DatabaseType databaseType, Collection<TreeElement> changedObjects, String sqlEncoding) {
+            DatabaseType databaseType, Collection<TreeElement> changedObjects, String sqlEncoding, ISettings settings) {
         this.outDir = outDir;
         this.newDb = newDb;
         this.oldDb = oldDb;
         this.sqlEncoding = sqlEncoding;
         this.changeList = changedObjects;
         this.databaseType = databaseType;
+        this.settings = settings;
     }
 
     /**
@@ -197,7 +202,7 @@ public class ModelExporter {
         Map<Path, StringBuilder> dumps = new HashMap<>();
         list.stream().filter(st -> paths.contains(getRelativeFilePath(st)))
         .sorted(ExportTableOrder.INSTANCE)
-        .forEach(st -> dumpStatement(st, dumps));
+                .forEach(st -> dumpStatement(st, dumps));
 
         writeDumps(dumps);
     }
@@ -212,7 +217,7 @@ public class ModelExporter {
         Map<Path, StringBuilder> dumps = new HashMap<>();
         list.stream()
         .sorted(ExportTableOrder.INSTANCE)
-        .forEach(st -> dumpStatement(st, dumps));
+                .forEach(st -> dumpStatement(st, dumps));
 
         writeDumps(dumps);
     }
@@ -228,7 +233,7 @@ public class ModelExporter {
     protected void dumpStatement(PgStatement st, Map<Path, StringBuilder> dumps) {
         Path path = outDir.resolve(getRelativeFilePath(st));
         StringBuilder sb = dumps.computeIfAbsent(path, e -> new StringBuilder());
-        String dump = getDumpSql(st);
+        String dump = getDumpSql(st, settings);
 
         if (dump.isEmpty()) {
             return;
@@ -249,8 +254,8 @@ public class ModelExporter {
         }
     }
 
-    protected String getDumpSql(PgStatement statement) {
-        return statement.getSQL(true);
+    protected String getDumpSql(PgStatement statement, ISettings settings) {
+        return statement.getSQL(true, settings);
     }
 
     /**

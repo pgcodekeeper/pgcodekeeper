@@ -69,7 +69,7 @@ public abstract class JdbcReader extends AbstractStatementReader {
         try {
             processResult(result, schema);
         } catch (ConcurrentModificationException ex) {
-            if (!loader.getArgs().isIgnoreConcurrentModification()) {
+            if (!loader.getSettings().isIgnoreConcurrentModification()) {
                 throw ex;
             }
             LOG.error(ex.getLocalizedMessage(), ex);

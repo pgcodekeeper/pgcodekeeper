@@ -24,13 +24,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts_parser_statementContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsParser;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateFtsParser extends PgParserAbstract {
 
     private final Create_fts_parser_statementContext ctx;
 
-    public CreateFtsParser(Create_fts_parser_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateFtsParser(Create_fts_parser_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

@@ -22,13 +22,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_ext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateExtension extends PgParserAbstract {
 
     private final Create_extension_statementContext ctx;
 
-    public CreateExtension(Create_extension_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateExtension(Create_extension_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

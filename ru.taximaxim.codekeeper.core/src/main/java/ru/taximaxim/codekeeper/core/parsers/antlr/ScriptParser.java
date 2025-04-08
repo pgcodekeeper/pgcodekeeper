@@ -33,6 +33,7 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 public class ScriptParser {
 
@@ -49,7 +50,7 @@ public class ScriptParser {
         args.setDbType(dbType);
         PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
-                name, args, new NullProgressMonitor(), 0);
+                name, new CliSettings(args), new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
         // script mode collects only references
         batches = new ArrayList<>(loader.load().getObjReferences(name));

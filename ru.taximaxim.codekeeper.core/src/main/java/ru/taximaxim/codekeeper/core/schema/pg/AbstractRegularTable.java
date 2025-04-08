@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.ISimpleOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Base implementation of regular table
@@ -45,18 +46,18 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     private String distribution;
     private String method = Consts.HEAP;
 
-    protected AbstractRegularTable(String name) {
-        super(name);
+    protected AbstractRegularTable(String name, ISettings settings) {
+        super(name, settings);
     }
 
     @Override
-    protected void appendName(StringBuilder sbSQL) {
+    protected void appendName(StringBuilder sbSQL, ISettings settings) {
         sbSQL.append("CREATE ");
         if (!isLogged) {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("TABLE ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, settings);
         sbSQL.append(getQualifiedName());
     }
 

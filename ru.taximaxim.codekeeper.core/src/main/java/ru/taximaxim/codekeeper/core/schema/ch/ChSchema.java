@@ -93,7 +93,7 @@ public final class ChSchema extends AbstractSchema {
     public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE DATABASE ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(getQualifiedName()).append("\nENGINE = ").append(engine);
         if (getComment() != null) {
             sb.append("\nCOMMENT ").append(getComment());

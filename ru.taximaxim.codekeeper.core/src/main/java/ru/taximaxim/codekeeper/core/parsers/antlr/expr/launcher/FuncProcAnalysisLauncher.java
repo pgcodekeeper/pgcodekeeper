@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.AbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Function;
@@ -34,6 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -44,23 +44,27 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      * Used to set up namespace for function body analysis.
      */
     private final List<Pair<String, GenericColumn>> funcArgs;
+    private final ISettings settings;
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, SqlContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, ISettings settings) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
+        this.settings = settings;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Function_bodyContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, ISettings settings) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
+        this.settings = settings;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Plpgsql_functionContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, ISettings settings) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
+        this.settings = settings;
     }
 
     @Override
@@ -91,8 +95,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        PgDiffArguments args = stmt.getDatabaseArguments();
-        if (!args.isEnableFunctionBodiesDependencies()) {
+        if (!settings.isEnableFunctionBodiesDependencies()) {
             return EnumSet.of(DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
 

@@ -33,14 +33,15 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateDomain extends PgParserAbstract {
 
     private final Create_domain_statementContext ctx;
     private final CommonTokenStream stream;
 
-    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
-        super(db);
+    public CreateDomain(Create_domain_statementContext ctx, PgDatabase db, CommonTokenStream stream, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.stream = stream;
     }
@@ -64,7 +65,7 @@ public class CreateDomain extends PgParserAbstract {
             if (constrCtx.CHECK() != null) {
                 IdentifierContext name = constrCtx.name;
                 var constrCheck = new PgConstraintCheck(name != null ? name.getText() : "");
-                parseDomainConstraint(domain, constrCheck, constrCtx, db, fileName);
+                parseDomainConstraint(domain, constrCheck, constrCtx, db, fileName, settings);
                 domain.addConstraint(constrCheck);
             }
             // вынесено ограничение, т.к. мы привязываем ограничение на нул к
@@ -78,9 +79,9 @@ public class CreateDomain extends PgParserAbstract {
     }
 
     public static void parseDomainConstraint(PgDomain domain, PgConstraintCheck constr,
-            Domain_constraintContext ctx, AbstractDatabase db, String location) {
+            Domain_constraintContext ctx, AbstractDatabase db, String location, ISettings settings) {
         VexContext vexCtx = ctx.vex();
-        constr.setExpression(checkNewLines(getFullCtxText(vexCtx), db.getArguments()));
+        constr.setExpression(checkNewLines(getFullCtxText(vexCtx), settings));
         db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));
     }
 

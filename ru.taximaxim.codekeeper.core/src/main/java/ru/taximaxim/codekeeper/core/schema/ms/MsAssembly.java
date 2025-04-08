@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsAssembly extends PgStatement {
 
@@ -58,8 +59,8 @@ public final class MsAssembly extends PgStatement {
     /**
      * Returns assembly definition without full binaries
      */
-    public String getPreview() {
-        SQLScript script = new SQLScript(getDbType());
+    public String getPreview(ISettings settings) {
+        SQLScript script = new SQLScript(settings.copy());
         getAssemblyFullSQL(true, script);
         return script.getFullScript();
     }

@@ -25,13 +25,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_fts
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Storage_parameter_optionContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateFtsDictionary extends PgParserAbstract {
 
     private final Create_fts_dictionary_statementContext ctx;
 
-    public CreateFtsDictionary(Create_fts_dictionary_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateFtsDictionary(Create_fts_dictionary_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsTrigger extends BatchContextProcessor {
 
@@ -39,8 +40,8 @@ public class CreateMsTrigger extends BatchContextProcessor {
     private final boolean quotedIdentifier;
 
     public CreateMsTrigger(Batch_statementContext ctx, MsDatabase db,
-            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db, ctx, stream);
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream, ISettings settings) {
+        super(db, ctx, stream, settings);
         this.ctx = ctx.batch_statement_body().create_or_alter_trigger();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
@@ -80,7 +81,7 @@ public class CreateMsTrigger extends BatchContextProcessor {
         }
 
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
-                ctx.sql_clauses(), fileName));
+                ctx.sql_clauses(), fileName, settings));
 
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);

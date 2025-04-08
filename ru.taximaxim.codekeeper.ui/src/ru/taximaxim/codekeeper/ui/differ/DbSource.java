@@ -45,24 +45,25 @@ import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.formatter.Formatter;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public abstract class DbSource {
 
@@ -259,7 +260,7 @@ class DbSourceDirTree extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
 
         return load(new ProjectLoader(dirTreePath,
-                getPgDiffArgs(encoding, forceUnixNewlines, dbType, null, oneTimePrefs),
+                new CliSettings(getPgDiffArgs(encoding, forceUnixNewlines, dbType, null, oneTimePrefs)),
                 new ArrayList<>()));
     }
 }
@@ -286,14 +287,12 @@ class DbSourceProject extends DbSource {
 
         IEclipsePreferences pref = proj.getPrefs();
 
-        PgDiffArguments arguments = getPgDiffArgs(charset,
-                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                OpenProjectUtils.getDatabaseType(project), project, oneTimePrefs);
+        ISettings settings = new UISettings(project, oneTimePrefs);
 
         Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         boolean projectOnly = oneTimePrefs != null && Boolean.TRUE == oneTimePrefs.get(Consts.PROJECT_ONLY);
 
-        return load(new UIProjectLoader(project, arguments, monitor,
+        return load(new UIProjectLoader(project, settings, monitor,
                 InternalIgnoreList.getIgnoreSchemaList(listFile), projectOnly));
     }
 }
@@ -339,8 +338,8 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, dbType, proj, oneTimePrefs);
-        return load(new PgDumpLoader(filename, args, monitor, 2));
+        ISettings settings = new UISettings(proj, oneTimePrefs);
+        return load(new PgDumpLoader(filename, settings, monitor, 2));
     }
 
     private int countLines(Path filename) throws IOException {
@@ -420,8 +419,8 @@ class DbSourceDb extends DbSource {
 
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-        PgDiffArguments args = getPgDiffArgs(encoding, forceUnixNewlines, DatabaseType.PG, proj, oneTimePrefs);
-        return load(new PgDumpLoader(streamProvider, "pg_dump", args, monitor)); //$NON-NLS-1$
+        ISettings settings = new UISettings(proj, oneTimePrefs);
+        return load(new PgDumpLoader(streamProvider, "pg_dump", settings, monitor)); //$NON-NLS-1$
     }
 }
 
@@ -457,8 +456,7 @@ class DbSourceJdbc extends DbSource {
     protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        PgDiffArguments args = getPgDiffArgs(Consts.UTF_8, forceUnixNewlines,
-                dbType, proj, oneTimePrefs);
+        ISettings settings = new UISettings(proj, oneTimePrefs);
 
         IgnoreSchemaList ignoreShemaList = null;
         if (proj != null) {
@@ -466,7 +464,7 @@ class DbSourceJdbc extends DbSource {
             ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
 
-        return load(LoaderFactory.createJdbcLoader(args, timezone, jdbcConnector, monitor, ignoreShemaList));
+        return load(LoaderFactory.createJdbcLoader(settings, timezone, jdbcConnector, monitor, ignoreShemaList));
     }
 }
 class DbSourceFromDbObject extends DbSource {

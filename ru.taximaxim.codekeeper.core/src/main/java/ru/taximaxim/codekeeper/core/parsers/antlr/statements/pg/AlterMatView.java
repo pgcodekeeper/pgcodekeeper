@@ -25,16 +25,17 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_mate
 import ru.taximaxim.codekeeper.core.schema.AbstractIndex;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
+import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterMatView extends PgParserAbstract {
 
     private final Alter_materialized_view_statementContext ctx;
     private final String action;
 
-    public AlterMatView(Alter_materialized_view_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterMatView(Alter_materialized_view_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.action = ctx.ALL() != null ? "ALTER MATERIALIZED VIEW ALL" : "ALTER MATERIALIZED";
     }

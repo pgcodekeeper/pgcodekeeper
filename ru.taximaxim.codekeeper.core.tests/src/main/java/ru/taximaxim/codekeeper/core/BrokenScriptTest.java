@@ -22,6 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 class BrokenScriptTest {
 
@@ -34,7 +35,8 @@ class BrokenScriptTest {
         PgDiffArguments args = new PgDiffArguments();
 
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;
-        PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, args);
+        PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource,
+                new CliSettings(args));
         loader.loadAndAnalyze();
         var errors = loader.getErrors();
 

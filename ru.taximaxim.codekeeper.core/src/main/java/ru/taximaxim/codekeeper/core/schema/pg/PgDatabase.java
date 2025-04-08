@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -33,6 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Stores database information.
@@ -50,10 +50,6 @@ public final class PgDatabase extends AbstractDatabase {
 
     public PgDatabase() {
         super();
-    }
-
-    public PgDatabase(PgDiffArguments arguments) {
-        super(arguments);
     }
 
     @Override
@@ -202,7 +198,7 @@ public final class PgDatabase extends AbstractDatabase {
     }
 
     @Override
-    protected void concat(PgStatement st) {
+    protected void concat(PgStatement st, ISettings settings) {
         DbObjType type = st.getStatementType();
         String name = st.getName();
         if (type == DbObjType.SCHEMA && Consts.PUBLIC.equals(name) && !st.hasChildren()) {
@@ -210,7 +206,7 @@ public final class PgDatabase extends AbstractDatabase {
             return;
         }
 
-        super.concat(st);
+        super.concat(st, settings);
     }
 
     public void sortColumns() {
@@ -227,7 +223,7 @@ public final class PgDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        return new PgDatabase(arguments);
+        return new PgDatabase();
     }
 
     @Override

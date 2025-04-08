@@ -57,6 +57,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 /**
  * Tests for PgDiffLoader class.
@@ -82,7 +83,8 @@ class PgAntlrLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, args);
+        var settings = new CliSettings(args);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -96,18 +98,18 @@ class PgAntlrLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        AbstractDatabase dbFromFile = TestUtils.loadTestDump(
-                fileName, PgAntlrLoaderTest.class, args);
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, new CliSettings(args));
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING, new CliSettings(args)).exportFull();
 
             args = new PgDiffArguments();
             args.setInCharsetName(ENCODING);
             args.setKeepNewlines(true);
-            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), new CliSettings(args))
+                    .loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
@@ -123,7 +125,8 @@ class PgAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractTable table = new SimplePgTable("fax_boxes");
+        var settings = new CliSettings(new PgDiffArguments());
+        AbstractTable table = new SimplePgTable("fax_boxes", settings);
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("fax_box_id");
@@ -142,7 +145,7 @@ class PgAntlrLoaderTest {
 
         table.setOwner(POSTGRES);
 
-        table = new SimplePgTable("faxes");
+        table = new SimplePgTable("faxes", settings);
         schema.addTable(table);
 
         col = new PgColumn("fax_id");
@@ -202,7 +205,7 @@ class PgAntlrLoaderTest {
         constraintFk.addDelActCol("fax_box_id");
         table.addConstraint(constraintFk);
 
-        table = new SimplePgTable("extensions");
+        table = new SimplePgTable("extensions", settings);
         schema.addTable(table);
 
         col = new PgColumn("id");
@@ -236,7 +239,7 @@ class PgAntlrLoaderTest {
 
         schema = d.getSchema(Consts.PUBLIC);
 
-        AbstractTable table = new SimplePgTable("contacts");
+        AbstractTable table = new SimplePgTable("contacts", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -268,7 +271,7 @@ class PgAntlrLoaderTest {
         seq.setCache("1");
         schema.addSequence(seq);
 
-        AbstractTable table = new SimplePgTable("admins");
+        AbstractTable table = new SimplePgTable("admins", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("aid");
@@ -355,7 +358,7 @@ class PgAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractTable table = new SimplePgTable("call_logs");
+        AbstractTable table = new SimplePgTable("call_logs", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -450,7 +453,7 @@ class PgAntlrLoaderTest {
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", POSTGRES, false, dbType));
         schema.addPrivilege(new PgPrivilege("GRANT", "ALL", "SCHEMA public", "PUBLIC", false, dbType));
 
-        AbstractTable table = new SimplePgTable("test_table");
+        AbstractTable table = new SimplePgTable("test_table", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -568,7 +571,7 @@ class PgAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractTable table = new SimplePgTable("user_data");
+        AbstractTable table = new SimplePgTable("user_data", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -601,7 +604,7 @@ class PgAntlrLoaderTest {
         schema.addSequence(seq);
         seq.setOwner(POSTGRES);
 
-        table = new SimplePgTable("t1");
+        table = new SimplePgTable("t1", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         col = new PgColumn("c1");
@@ -651,7 +654,7 @@ class PgAntlrLoaderTest {
 
         schema.setOwner(POSTGRES);
 
-        AbstractTable table = new SimplePgTable("acl_role");
+        AbstractTable table = new SimplePgTable("acl_role", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -665,7 +668,7 @@ class PgAntlrLoaderTest {
 
         table.setOwner(POSTGRES);
 
-        table = new SimplePgTable("user");
+        table = new SimplePgTable("user", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         col = new PgColumn("id");
@@ -811,7 +814,7 @@ class PgAntlrLoaderTest {
 
         func.setOwner("fordfrog");
 
-        AbstractTable table = new SimplePgTable("test");
+        AbstractTable table = new SimplePgTable("test", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -860,7 +863,7 @@ class PgAntlrLoaderTest {
         schema.addView(view);
 
         view.setComment("'test view'");
-        view.addColumnComment(d.getArguments(), "id", "'view id col'");
+        view.addColumnComment(new CliSettings(new PgDiffArguments()), "id", "'view id col'");
 
         view.setOwner("fordfrog");
 
@@ -881,7 +884,7 @@ class PgAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.PG);
         AbstractSchema schema = d.getDefaultSchema();
 
-        AbstractTable table = new SimplePgTable("test");
+        AbstractTable table = new SimplePgTable("test", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -899,7 +902,7 @@ class PgAntlrLoaderTest {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        AbstractTable table = new SimplePgTable("t_work");
+        AbstractTable table = new SimplePgTable("t_work", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -907,7 +910,7 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         // table2
-        AbstractTable table2 = new SimplePgTable("t_chart");
+        AbstractTable table2 = new SimplePgTable("t_chart", new CliSettings(new PgDiffArguments()));
         schema.addTable(table2);
         col = new PgColumn("id");
         col.setType(INTEGER);
@@ -930,7 +933,7 @@ class PgAntlrLoaderTest {
         AbstractSchema schema = d.getDefaultSchema();
 
         // table1
-        AbstractTable table = new SimplePgTable("t_work");
+        AbstractTable table = new SimplePgTable("t_work", new CliSettings(new PgDiffArguments()));
         schema.addTable(table);
 
         AbstractColumn col = new PgColumn("id");
@@ -938,14 +941,14 @@ class PgAntlrLoaderTest {
         table.addColumn(col);
 
         // table2
-        AbstractTable table2 = new SimplePgTable("t_chart");
+        AbstractTable table2 = new SimplePgTable("t_chart", new CliSettings(new PgDiffArguments()));
         schema.addTable(table2);
         col = new PgColumn("id");
         col.setType(INTEGER);
         table2.addColumn(col);
 
         // table 3
-        AbstractTable table3 = new SimplePgTable("t_memo");
+        AbstractTable table3 = new SimplePgTable("t_memo", new CliSettings(new PgDiffArguments()));
         schema.addTable(table3);
         col = new PgColumn("name");
         col.setType("text");

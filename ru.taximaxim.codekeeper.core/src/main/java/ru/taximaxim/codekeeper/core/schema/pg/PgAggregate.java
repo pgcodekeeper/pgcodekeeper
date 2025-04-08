@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.Argument;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class PgAggregate extends AbstractPgFunction {
 
@@ -73,7 +74,7 @@ public final class PgAggregate extends AbstractPgFunction {
     }
 
     @Override
-    protected void appendFunctionFullSQL(StringBuilder sb, boolean isCreate) {
+    protected void appendFunctionFullSQL(StringBuilder sb, boolean isCreate, ISettings settings) {
         sb.append("CREATE AGGREGATE ");
         appendFullName(sb);
 

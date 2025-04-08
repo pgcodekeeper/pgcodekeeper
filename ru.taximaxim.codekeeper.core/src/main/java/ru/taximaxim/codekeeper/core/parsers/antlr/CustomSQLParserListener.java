@@ -86,6 +86,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.MergeStatement;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.UpdateStatement;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CustomSQLParserListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
@@ -96,8 +97,8 @@ implements SqlContextProcessor {
     private final Queue<AntlrTask<?>> antlrTasks;
 
     public CustomSQLParserListener(PgDatabase database, String filename, ParserListenerMode mode,
-            List<Object> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor) {
-        super(database, filename, mode, errors, monitor);
+            List<Object> errors, Queue<AntlrTask<?>> antlrTasks, IProgressMonitor monitor, ISettings settings) {
+        super(database, filename, mode, errors, monitor, settings);
         this.antlrTasks = antlrTasks;
     }
 
@@ -135,65 +136,65 @@ implements SqlContextProcessor {
     private void create(Schema_createContext ctx, CommonTokenStream stream) {
         PgParserAbstract p;
         if (ctx.create_table_statement() != null) {
-            p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids, stream);
+            p = new CreateTable(ctx.create_table_statement(), db, tablespace, accessMethod, oids, stream, settings);
         } else if (ctx.create_foreign_table_statement() != null) {
-            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db, stream);
+            p = new CreateForeignTable(ctx.create_foreign_table_statement(), db, stream, settings);
         } else if (ctx.create_table_external_statement() != null) {
-            p = new CreateGpExternalTable(db, stream, ctx.create_table_external_statement());
+            p = new CreateGpExternalTable(db, stream, ctx.create_table_external_statement(), settings);
         } else if (ctx.create_index_statement() != null) {
-            p = new CreateIndex(ctx.create_index_statement(), db, tablespace, stream);
+            p = new CreateIndex(ctx.create_index_statement(), db, tablespace, stream, settings);
         } else if (ctx.create_extension_statement() != null) {
-            p = new CreateExtension(ctx.create_extension_statement(), db);
+            p = new CreateExtension(ctx.create_extension_statement(), db, settings);
         } else if (ctx.create_foreign_data_wrapper_statement() != null) {
-            p = new CreateFdw(ctx.create_foreign_data_wrapper_statement(), db);
+            p = new CreateFdw(ctx.create_foreign_data_wrapper_statement(), db, settings);
         } else if (ctx.create_server_statement() != null) {
-            p = new CreateServer(ctx.create_server_statement(), db);
+            p = new CreateServer(ctx.create_server_statement(), db, settings);
         } else if (ctx.create_cast_statement() != null) {
-            p = new CreateCast(ctx.create_cast_statement(), db);
+            p = new CreateCast(ctx.create_cast_statement(), db, settings);
         } else if (ctx.create_user_mapping_statement() != null) {
-            p = new CreateUserMapping(ctx.create_user_mapping_statement(), db);
+            p = new CreateUserMapping(ctx.create_user_mapping_statement(), db, settings);
         } else if (ctx.create_trigger_statement() != null) {
-            p = new CreateTrigger(ctx.create_trigger_statement(), db);
+            p = new CreateTrigger(ctx.create_trigger_statement(), db, settings);
         } else if (ctx.create_rewrite_statement() != null) {
-            p = new CreateRule(ctx.create_rewrite_statement(), db);
+            p = new CreateRule(ctx.create_rewrite_statement(), db, settings);
         } else if (ctx.create_policy_statement() != null) {
-            p = new CreatePolicy(ctx.create_policy_statement(), db);
+            p = new CreatePolicy(ctx.create_policy_statement(), db, settings);
         } else if (ctx.create_collation_statement() != null) {
-            p = new CreateCollation(ctx.create_collation_statement(), db);
+            p = new CreateCollation(ctx.create_collation_statement(), db, settings);
         } else if (ctx.create_function_statement() != null) {
-            p = new CreateFunction(ctx.create_function_statement(), db, errors, antlrTasks);
+            p = new CreateFunction(ctx.create_function_statement(), db, errors, antlrTasks, settings);
         } else if (ctx.create_aggregate_statement() != null) {
-            p = new CreateAggregate(ctx.create_aggregate_statement(), db);
+            p = new CreateAggregate(ctx.create_aggregate_statement(), db, settings);
         } else if (ctx.create_operator_statement() != null) {
-            p = new CreateOperator(ctx.create_operator_statement(), db);
+            p = new CreateOperator(ctx.create_operator_statement(), db, settings);
         } else if (ctx.create_sequence_statement() != null) {
-            p = new CreateSequence(ctx.create_sequence_statement(), db);
+            p = new CreateSequence(ctx.create_sequence_statement(), db, settings);
         } else if (ctx.create_schema_statement() != null) {
-            p = new CreateSchema(ctx.create_schema_statement(), db);
+            p = new CreateSchema(ctx.create_schema_statement(), db, settings);
         } else if (ctx.create_view_statement() != null) {
-            p = new CreateView(ctx.create_view_statement(), db, tablespace, accessMethod, stream);
+            p = new CreateView(ctx.create_view_statement(), db, tablespace, accessMethod, stream, settings);
         } else if (ctx.create_type_statement() != null) {
-            p = new CreateType(ctx.create_type_statement(), db);
+            p = new CreateType(ctx.create_type_statement(), db, settings);
         } else if (ctx.create_domain_statement() != null) {
-            p = new CreateDomain(ctx.create_domain_statement(), db, stream);
+            p = new CreateDomain(ctx.create_domain_statement(), db, stream, settings);
         } else if (ctx.create_fts_configuration_statement() != null) {
-            p = new CreateFtsConfiguration(ctx.create_fts_configuration_statement(), db);
+            p = new CreateFtsConfiguration(ctx.create_fts_configuration_statement(), db, settings);
         } else if (ctx.create_fts_template_statement() != null) {
-            p = new CreateFtsTemplate(ctx.create_fts_template_statement(), db);
+            p = new CreateFtsTemplate(ctx.create_fts_template_statement(), db, settings);
         } else if (ctx.create_fts_parser_statement() != null) {
-            p = new CreateFtsParser(ctx.create_fts_parser_statement(), db);
+            p = new CreateFtsParser(ctx.create_fts_parser_statement(), db, settings);
         } else if (ctx.create_event_trigger_statement() != null) {
-            p = new CreateEventTrigger(ctx.create_event_trigger_statement(), db);
+            p = new CreateEventTrigger(ctx.create_event_trigger_statement(), db, settings);
         } else if (ctx.create_fts_dictionary_statement() != null) {
-            p = new CreateFtsDictionary(ctx.create_fts_dictionary_statement(), db);
+            p = new CreateFtsDictionary(ctx.create_fts_dictionary_statement(), db, settings);
         } else if (ctx.comment_on_statement() != null) {
-            p = new CommentOn(ctx.comment_on_statement(), db);
+            p = new CommentOn(ctx.comment_on_statement(), db, settings);
         } else if (ctx.rule_common() != null) {
-            p = new GrantPrivilege(ctx.rule_common(), db);
+            p = new GrantPrivilege(ctx.rule_common(), db, settings);
         } else if (ctx.create_database_statement() != null) {
-            p = new CreateDatabase(ctx.create_database_statement(), db);
+            p = new CreateDatabase(ctx.create_database_statement(), db, settings);
         } else if (ctx.create_statistics_statement() != null) {
-            p = new CreateStatistics(ctx.create_statistics_statement(), db, stream);
+            p = new CreateStatistics(ctx.create_statistics_statement(), db, stream, settings);
         } else if (ctx.set_statement() != null) {
             Set_statementContext setCtx = ctx.set_statement();
             set(setCtx);
@@ -209,21 +210,21 @@ implements SqlContextProcessor {
     private void alter(Schema_alterContext ctx, CommonTokenStream stream) {
         PgParserAbstract p;
         if (ctx.alter_table_statement() != null) {
-            p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream);
+            p = new AlterTable(ctx.alter_table_statement(), db, tablespace, stream, settings);
         } else if (ctx.alter_index_statement() != null) {
-            p = new AlterIndex(ctx.alter_index_statement(), db);
+            p = new AlterIndex(ctx.alter_index_statement(), db, settings);
         } else if (ctx.alter_sequence_statement() != null) {
-            p = new AlterSequence(ctx.alter_sequence_statement(), db);
+            p = new AlterSequence(ctx.alter_sequence_statement(), db, settings);
         } else if (ctx.alter_view_statement() != null) {
-            p = new AlterView(ctx.alter_view_statement(), db, stream);
+            p = new AlterView(ctx.alter_view_statement(), db, stream, settings);
         } else if (ctx.alter_materialized_view_statement() != null) {
-            p = new AlterMatView(ctx.alter_materialized_view_statement(), db);
+            p = new AlterMatView(ctx.alter_materialized_view_statement(), db, settings);
         } else if (ctx.alter_domain_statement() != null) {
-            p = new AlterDomain(ctx.alter_domain_statement(), db);
+            p = new AlterDomain(ctx.alter_domain_statement(), db, settings);
         } else if (ctx.alter_fts_statement() != null) {
-            p = new AlterFtsStatement(ctx.alter_fts_statement(), db);
+            p = new AlterFtsStatement(ctx.alter_fts_statement(), db, settings);
         } else if (ctx.alter_owner_statement() != null) {
-            p = new AlterOwner(ctx.alter_owner_statement(), db);
+            p = new AlterOwner(ctx.alter_owner_statement(), db, settings);
         } else if (ctx.alter_database_statement() != null
                 || ctx.alter_extension_statement() != null
                 || ctx.alter_function_statement() != null
@@ -237,7 +238,7 @@ implements SqlContextProcessor {
                 || ctx.alter_event_trigger_statement() != null
                 || ctx.alter_user_mapping_statement() != null
                 || ctx.alter_statistics_statement() != null) {
-            p = new AlterOther(ctx, db);
+            p = new AlterOther(ctx, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -256,7 +257,7 @@ implements SqlContextProcessor {
                 || ctx.drop_cast_statement() != null
                 || ctx.drop_policy_statement() != null
                 || ctx.drop_user_mapping_statement() != null) {
-            p = new DropStatement(ctx, db);
+            p = new DropStatement(ctx, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -267,13 +268,13 @@ implements SqlContextProcessor {
     private void data(Data_statementContext ctx) {
         PgParserAbstract p;
         if (ctx.update_stmt_for_psql() != null) {
-            p = new UpdateStatement(ctx.update_stmt_for_psql(), db);
+            p = new UpdateStatement(ctx.update_stmt_for_psql(), db, settings);
         } else if (ctx.insert_stmt_for_psql() != null) {
-            p = new InsertStatement(ctx.insert_stmt_for_psql(), db);
+            p = new InsertStatement(ctx.insert_stmt_for_psql(), db, settings);
         } else if (ctx.delete_stmt_for_psql() != null) {
-            p = new DeleteStatement(ctx.delete_stmt_for_psql(), db);
+            p = new DeleteStatement(ctx.delete_stmt_for_psql(), db, settings);
         } else if (ctx.merge_stmt_for_psql() != null) {
-            p = new MergeStatement(ctx.merge_stmt_for_psql(), db);
+            p = new MergeStatement(ctx.merge_stmt_for_psql(), db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;

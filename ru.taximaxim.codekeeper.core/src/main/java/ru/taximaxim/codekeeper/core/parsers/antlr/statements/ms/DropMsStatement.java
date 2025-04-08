@@ -32,14 +32,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Schema_dropContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class DropMsStatement extends MsParserAbstract {
 
     private final Schema_dropContext ctx;
 
-    public DropMsStatement(Schema_dropContext ctx, MsDatabase db) {
-        super(db);
+    public DropMsStatement(Schema_dropContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

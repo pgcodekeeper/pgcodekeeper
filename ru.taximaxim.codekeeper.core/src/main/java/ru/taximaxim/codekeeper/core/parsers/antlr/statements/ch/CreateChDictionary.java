@@ -27,13 +27,14 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChColumn;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDictionary;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class CreateChDictionary extends ChParserAbstract {
 
     private final Create_dictinary_stmtContext ctx;
 
-    public CreateChDictionary(Create_dictinary_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public CreateChDictionary(Create_dictinary_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

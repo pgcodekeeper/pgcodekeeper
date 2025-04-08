@@ -55,6 +55,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /*
  * implementation notes:
@@ -109,11 +110,14 @@ public final class DepcyResolver {
 
     private final Map<String, Boolean> recreatedObjs = new HashMap<>();
 
-    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase) {
+    private final ISettings settings;
+
+    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, ISettings settings) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase);
-        this.newDepcyGraph = new DepcyGraph(newDatabase);
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase, settings);
+        this.newDepcyGraph = new DepcyGraph(newDatabase, settings);
+        this.settings = settings;
     }
 
     /**
@@ -179,6 +183,8 @@ public final class DepcyResolver {
 
     /**
      * Добавить выражение для изменения объекта
+     * 
+     * @param script
      * @param oldObj исходный объект
      * @param newObj новый объект
      */
@@ -358,11 +364,12 @@ public final class DepcyResolver {
 
     private ObjectState getObjectState(PgStatement oldSt, PgStatement newSt) {
         return states.computeIfAbsent(oldSt.getQualifiedName(),
-                x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
+                x -> oldSt.appendAlterSQL(newSt, new SQLScript(settings)));
     }
 
     private Boolean getRecreatedObj(AbstractTable oldTable, AbstractTable newTable) {
-        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(), x -> oldTable.isRecreated(newTable));
+        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(),
+                x -> oldTable.isRecreated(newTable, settings));
     }
 
     /**

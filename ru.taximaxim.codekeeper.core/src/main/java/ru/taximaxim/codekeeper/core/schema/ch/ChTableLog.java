@@ -26,13 +26,14 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class ChTableLog extends ChTable {
 
     private final List<AbstractConstraint> constrs = new ArrayList<>();
 
-    public ChTableLog(String name) {
-        super(name);
+    public ChTableLog(String name, ISettings settings) {
+        super(name, settings);
     }
 
     @Override
@@ -52,7 +53,8 @@ public final class ChTableLog extends ChTable {
 
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
-        return (compare(newCondition) && compareChildren(newCondition)) ? ObjectState.NOTHING : ObjectState.RECREATE;
+        return (compare(newCondition) && compareChildren(newCondition)) ? ObjectState.NOTHING
+                : ObjectState.RECREATE;
     }
 
     @Override
@@ -78,7 +80,7 @@ public final class ChTableLog extends ChTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        var table = new ChTableLog(name);
+        var table = new ChTableLog(name, settings);
         table.projections.putAll(projections);
         table.engine = engine;
         table.constrs.addAll(constrs);

@@ -34,7 +34,6 @@ import ru.taximaxim.codekeeper.core.ChDiffUtils;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -71,7 +70,6 @@ public final class ActionsToScriptConverter {
     private final SQLScript script;
     private final Set<ActionContainer> actions;
     private final Set<PgStatement> toRefresh;
-    private final PgDiffArguments arguments;
     private final AbstractDatabase oldDbFull;
     private final AbstractDatabase newDbFull;
 
@@ -96,23 +94,21 @@ public final class ActionsToScriptConverter {
     private List<String> partitionChildren;
 
     public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
-            PgDiffArguments arguments, AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
-        this(script, actions, Collections.emptySet(), arguments, oldDbFull, newDbFull);
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
+        this(script, actions, Collections.emptySet(), oldDbFull, newDbFull);
     }
 
     /**
      * @param toRefresh an ordered set of refreshed statements in reverse order
      */
     public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
-            Set<PgStatement> toRefresh, PgDiffArguments arguments, AbstractDatabase oldDbFull,
-            AbstractDatabase newDbFull) {
+            Set<PgStatement> toRefresh, AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
         this.script = script;
         this.actions = actions;
-        this.arguments = arguments;
         this.toRefresh = toRefresh;
         this.oldDbFull = oldDbFull;
         this.newDbFull = newDbFull;
-        if (arguments.isDataMovementMode()) {
+        if (script.getSettings().isDataMovementMode()) {
             tblTmpNames = new HashMap<>();
             tblIdentityCols = new HashMap<>();
             partitionTables = new HashMap<>();
@@ -128,7 +124,7 @@ public final class ActionsToScriptConverter {
      */
     public void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
-        if (arguments.isDataMovementMode()) {
+        if (script.getSettings().isDataMovementMode()) {
             fillPartitionTables();
         }
 
@@ -224,17 +220,17 @@ public final class ActionsToScriptConverter {
             var oldObj = obj.getTwin(oldDbFull);
 
             // explicitly deleting a sequence due to a name conflict
-            if (arguments.isDataMovementMode() && obj instanceof PgSequence && oldObj != null) {
+            if (script.getSettings().isDataMovementMode() && obj instanceof PgSequence && oldObj != null) {
                 addToDropScript(obj, false);
             }
 
-            if (arguments.isDropBeforeCreate() && obj.canDropBeforeCreate()) {
+            if (script.getSettings().isDropBeforeCreate() && obj.canDropBeforeCreate()) {
                 addToDropScript(obj, true);
             }
 
             addToAddScript(obj);
 
-            if (arguments.isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {
+            if (script.getSettings().isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {
                 moveData(oldTable, obj);
             }
             break;
@@ -242,7 +238,7 @@ public final class ActionsToScriptConverter {
             if (depcy != null) {
                 script.addStatementWithoutSeparator(depcy);
             }
-            if (arguments.isDataMovementMode()
+            if (script.getSettings().isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
                     && !(obj instanceof IForeignTable)
                     && obj.getTwin(newDbFull) != null) {
@@ -258,7 +254,7 @@ public final class ActionsToScriptConverter {
                 getAlterTableScript(joinableActions);
                 return;
             }
-            SQLScript temp = new SQLScript(action.getNewObj().getDbType());
+            SQLScript temp = new SQLScript(script.getSettings());
             ObjectState state = obj.appendAlterSQL(action.getNewObj(), temp);
 
             if (state.in(ObjectState.ALTER, ObjectState.ALTER_WITH_DEP)) {
@@ -303,7 +299,7 @@ public final class ActionsToScriptConverter {
         for (var colAction : actionsList) {
             PgColumn oldNextCol = (PgColumn) colAction.getOldObj();
             PgColumn newNextCol = (PgColumn) colAction.getNewObj();
-            oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size());
+            oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size(), script.getSettings());
             i++;
         }
         script.addStatement(sb);
@@ -367,7 +363,7 @@ public final class ActionsToScriptConverter {
     private void printDropTempTable(AbstractTable table) {
         String tblTmpName = tblTmpNames.get(table.getQualifiedName());
         if (tblTmpName != null) {
-            UnaryOperator<String> quoter = Utils.getQuoter(arguments.getDbType());
+            UnaryOperator<String> quoter = Utils.getQuoter(script.getSettings().getDbType());
             StringBuilder sb = new StringBuilder();
             sb.append("DROP TABLE ")
             .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName));
@@ -387,7 +383,7 @@ public final class ActionsToScriptConverter {
         }
 
         // skip partition tables in data move mode
-        if (arguments.isDataMovementMode() && partitionChildren.contains(oldObj.getQualifiedName())) {
+        if (script.getSettings().isDataMovementMode() && partitionChildren.contains(oldObj.getQualifiedName())) {
             return null;
         }
 
@@ -409,7 +405,7 @@ public final class ActionsToScriptConverter {
             addHiddenObj(action, "object cannot be dropped");
             return true;
         }
-        if (arguments.isSelectedOnly() && !isSelectedAction(action, selected)) {
+        if (script.getSettings().isSelectedOnly() && !isSelectedAction(action, selected)) {
             addHiddenObj(action, "cannot change unselected objects in selected-only mode");
             return true;
         }
@@ -418,9 +414,9 @@ public final class ActionsToScriptConverter {
         if (type == DbObjType.COLUMN) {
             type = DbObjType.TABLE;
         }
-        Collection<DbObjType> allowedTypes = arguments.getAllowedTypes();
+        Collection<DbObjType> allowedTypes = script.getSettings().getAllowedTypes();
         if (!allowedTypes.isEmpty() && !allowedTypes.contains(type)) {
-            if (arguments.isStopNotAllowed()) {
+            if (script.getSettings().isStopNotAllowed()) {
                 throw new NotAllowedObjectException(action.getOldObj().getQualifiedName()
                         + " (" + type + ") is not an allowed script object. Stopping.");
             }
@@ -475,7 +471,7 @@ public final class ActionsToScriptConverter {
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
         tblTmpNames.put(qname, tmpTblName);
 
-        DatabaseType dbtype = arguments.getDbType();
+        DatabaseType dbtype = script.getSettings().getDbType();
         List<String> identityCols = new ArrayList<>();
         for (AbstractColumn col : oldTbl.getColumns()) {
             switch (dbtype) {
@@ -532,14 +528,15 @@ public final class ActionsToScriptConverter {
      * @return sql command to rename the given object
      */
     private String getRenameCommand(PgStatement st, String newName) {
-        return switch (arguments.getDbType()) {
+        return switch (script.getSettings().getDbType()) {
         case PG -> MessageFormat.format(RENAME_PG_OBJECT,
                 st.getStatementType(), st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
         case MS -> MessageFormat.format(RENAME_MS_OBJECT,
                 PgDiffUtils.quoteString(st.getQualifiedName()), PgDiffUtils.quoteString(newName));
         case CH -> MessageFormat.format(RENAME_CH_OBJECT,
                 st.getStatementType(), st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        default -> throw new IllegalArgumentException(
+                Messages.DatabaseType_unsupported_type + script.getSettings().getDbType());
         };
     }
 }

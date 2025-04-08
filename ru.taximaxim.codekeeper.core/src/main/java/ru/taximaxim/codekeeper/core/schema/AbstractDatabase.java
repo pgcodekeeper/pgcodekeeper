@@ -30,19 +30,17 @@ import java.util.Map;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Stores database information.
  */
 public abstract class AbstractDatabase extends PgStatement implements IDatabase {
-
-    protected PgDiffArguments arguments;
 
     private SupportedPgVersion version;
 
@@ -60,17 +58,12 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     // (used for launch analyze and getting dependencies).
     private final ArrayList<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
 
-    protected AbstractDatabase(PgDiffArguments arguments) {
+    protected AbstractDatabase() {
         super("DB_name_placeholder");
-        this.arguments = arguments;
     }
 
     public List<PgOverride> getOverrides() {
         return overrides;
-    }
-
-    protected AbstractDatabase() {
-        this(new PgDiffArguments());
     }
 
     @Override
@@ -78,17 +71,9 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         return DbObjType.DATABASE;
     }
 
-    public void setArguments(PgDiffArguments arguments) {
-        this.arguments = arguments;
-    }
-
     @Override
     public AbstractDatabase getDatabase() {
         return this;
-    }
-
-    public final PgDiffArguments getArguments() {
-        return arguments;
     }
 
     public SupportedPgVersion getVersion() {
@@ -211,7 +196,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         hasher.putUnordered(schemas);
     }
 
-    public void addLib(AbstractDatabase lib, String libName, String owner) {
+    public void addLib(AbstractDatabase lib, String libName, String owner, ISettings settings) {
         lib.getDescendants().forEach(st -> {
             // do not override dependent library name
             if (libName != null && st.getLibName() == null) {
@@ -220,7 +205,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
             if (st.isOwned() && owner != null && !owner.isEmpty()) {
                 st.setOwner(owner);
             }
-            concat(st);
+            concat(st, settings);
         });
 
         lib.analysisLaunchers.stream()
@@ -238,7 +223,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         overrides.add(override);
     }
 
-    protected void concat(PgStatement st) {
+    protected void concat(PgStatement st, ISettings settings) {
         DbObjType type = st.getStatementType();
         PgStatement parent = st.parent;
         String parentName = parent.getName();

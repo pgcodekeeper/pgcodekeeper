@@ -36,6 +36,7 @@ import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.ms.MsClrProcedure;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsProcedure;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsProcedure extends BatchContextProcessor {
 
@@ -45,8 +46,8 @@ public class CreateMsProcedure extends BatchContextProcessor {
     private final boolean quotedIdentifier;
 
     public CreateMsProcedure(Batch_statementContext ctx, MsDatabase db,
-            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db, ctx, stream);
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream, ISettings settings) {
+        super(db, ctx, stream, settings);
         this.ctx = ctx.batch_statement_body().create_or_alter_procedure();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
@@ -96,7 +97,7 @@ public class CreateMsProcedure extends BatchContextProcessor {
         setSourceParts(procedure);
 
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(procedure,
-                ctx.proc_body().sql_clauses(), fileName));
+                ctx.proc_body().sql_clauses(), fileName, settings));
 
         if (isJdbc && schema != null) {
             schema.addFunction(procedure);

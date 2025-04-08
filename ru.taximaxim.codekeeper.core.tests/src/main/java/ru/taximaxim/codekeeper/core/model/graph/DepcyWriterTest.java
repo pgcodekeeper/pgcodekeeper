@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
 public class DepcyWriterTest {
 
@@ -93,9 +94,11 @@ public class DepcyWriterTest {
         }
         args.setEnableFunctionBodiesDependencies(true);
 
-        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), args);
+        var settings = new CliSettings(args);
+        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), settings);
 
-        var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName));
+        var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName),
+                settings);
         String actual = String.join("\n", deps);
         String expected = TestUtils.readResource(fileName + expectedPostfix, getClass());
 

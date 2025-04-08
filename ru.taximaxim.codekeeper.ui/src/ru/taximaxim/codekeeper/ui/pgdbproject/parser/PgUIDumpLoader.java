@@ -28,11 +28,11 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 
@@ -45,14 +45,14 @@ public class PgUIDumpLoader extends PgDumpLoader {
 
     private final IFile file;
 
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
+    public PgUIDumpLoader(IFile ifile, ISettings settings, IProgressMonitor monitor, int monitoringLevel) {
         super(() -> {
             try {
                 return ifile.getContents();
             } catch (CoreException ex) {
                 throw new IOException(ex.getLocalizedMessage(), ex);
             }
-        }, ifile.getLocation().toOSString(), args, monitor, monitoringLevel);
+        }, ifile.getLocation().toOSString(), settings, monitor, monitoringLevel);
         file = ifile;
     }
 
@@ -60,16 +60,16 @@ public class PgUIDumpLoader extends PgDumpLoader {
      * This constructor sets the monitoring level to the default of 1.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args, IProgressMonitor monitor) {
-        this(ifile, args, monitor, 1);
+    public PgUIDumpLoader(IFile ifile, ISettings settings, IProgressMonitor monitor) {
+        this(ifile, settings, monitor, 1);
     }
 
     /**
      * This constructor uses {@link NullProgressMonitor}.
      * @throws CoreException
      */
-    public PgUIDumpLoader(IFile ifile, PgDiffArguments args) {
-        this(ifile, args, new NullProgressMonitor(), 0);
+    public PgUIDumpLoader(IFile ifile, ISettings settings) {
+        this(ifile, settings, new NullProgressMonitor(), 0);
     }
 
     public AbstractDatabase loadFile(AbstractDatabase db) throws InterruptedException, IOException {

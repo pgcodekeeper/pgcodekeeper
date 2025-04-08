@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public class ProjectOverrideView extends ViewPart implements ISelectionListener {
 
@@ -181,7 +182,7 @@ public class ProjectOverrideView extends ViewPart implements ISelectionListener 
                 if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
                     Object obj = ss.getFirstElement();
                     if (obj instanceof PgOverride override) {
-                        CompareAction.openCompareEditor(new CompareInput(override));
+                        CompareAction.openCompareEditor(new CompareInput(override, new UISettings(project, null)));
                     }
                 }
             }

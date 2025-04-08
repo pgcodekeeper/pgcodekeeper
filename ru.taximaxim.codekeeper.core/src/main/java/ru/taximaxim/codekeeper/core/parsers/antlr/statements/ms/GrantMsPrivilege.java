@@ -44,6 +44,7 @@ import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class GrantMsPrivilege extends MsParserAbstract {
     private final Rule_commonContext ctx;
@@ -51,12 +52,13 @@ public class GrantMsPrivilege extends MsParserAbstract {
     private final boolean isGO;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public GrantMsPrivilege(Rule_commonContext ctx, MsDatabase db) {
-        this(ctx, db, null);
+    public GrantMsPrivilege(Rule_commonContext ctx, MsDatabase db, ISettings settings) {
+        this(ctx, db, null, settings);
     }
 
-    public GrantMsPrivilege(Rule_commonContext ctx, MsDatabase db, Map<PgStatement, StatementOverride> overrides) {
-        super(db);
+    public GrantMsPrivilege(Rule_commonContext ctx, MsDatabase db, Map<PgStatement, StatementOverride> overrides,
+            ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.overrides = overrides;
         if (ctx.DENY() != null) {
@@ -72,7 +74,7 @@ public class GrantMsPrivilege extends MsParserAbstract {
     public void parseObject() {
         Object_typeContext nameCtx = ctx.object_type();
         // unsupported rules without object names
-        if (db.getArguments().isIgnorePrivileges() || nameCtx == null) {
+        if (settings.isIgnorePrivileges() || nameCtx == null) {
             addOutlineRefForCommentOrRule(state, ctx);
             return;
         }

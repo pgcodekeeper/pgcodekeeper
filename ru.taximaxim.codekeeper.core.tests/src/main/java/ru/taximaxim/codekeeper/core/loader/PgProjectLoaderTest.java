@@ -37,6 +37,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 class PgProjectLoaderTest {
 
@@ -46,10 +48,10 @@ class PgProjectLoaderTest {
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();
 
-            AbstractDatabase dbDump = TestUtils.loadTestDump(
-                    TestUtils.RESOURCE_DUMP, TestUtils.class, args);
+            ISettings settings = new CliSettings(args);
+            AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
 
-            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8, new CliSettings(args)).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");
@@ -59,7 +61,7 @@ class PgProjectLoaderTest {
             IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
             ignoreParser.parse(listFile);
 
-            AbstractDatabase loader = new ProjectLoader(dir.toString(), args, SubMonitor.convert(null), null,
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), settings, SubMonitor.convert(null), null,
                     ignoreSchemaList).load();
 
             for (AbstractSchema dbSchema : loader.getSchemas()) {
@@ -78,9 +80,9 @@ class PgProjectLoaderTest {
         try(TempDir tempDir = new TempDir("new-project")){
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();
+            ISettings settings = new CliSettings(args);
 
-            AbstractDatabase dbDump = TestUtils.loadTestDump(
-                    TestUtils.RESOURCE_DUMP, TestUtils.class, args);
+            AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
             TreeElement root = DiffTree.create(dbDump, null, null);
             root.setAllChecked();
 
@@ -94,12 +96,13 @@ class PgProjectLoaderTest {
             List<TreeElement> selected = new TreeFlattener()
                     .onlySelected()
                     .useIgnoreList(ignoreList)
-                    .onlyTypes(args.getAllowedTypes())
-                    .flatten(root);
+                    .onlyTypes(settings.getAllowedTypes())
+                    .flatten(root, settings);
 
-            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8).exportProject();
+            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8, new CliSettings(args))
+                    .exportProject();
 
-            AbstractDatabase loader = new ProjectLoader(dir.toString(), args).load();
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), settings).load();
             var objects = loader.getDescendants().toList();
             var ignoredObj = "people";
             for (var st : objects) {

@@ -46,6 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public class DepcyGraph {
@@ -84,7 +85,7 @@ public class DepcyGraph {
         return db;
     }
 
-    public DepcyGraph(AbstractDatabase graphSrc) {
+    public DepcyGraph(AbstractDatabase graphSrc, ISettings settings) {
         this(graphSrc, false);
     }
 

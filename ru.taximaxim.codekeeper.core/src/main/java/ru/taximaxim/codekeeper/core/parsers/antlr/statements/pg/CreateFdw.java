@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Foreign_op
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgForeignDataWrapper;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateFdw extends PgParserAbstract {
 
@@ -32,8 +33,8 @@ public class CreateFdw extends PgParserAbstract {
 
     private final Create_foreign_data_wrapper_statementContext ctx;
 
-    public CreateFdw(Create_foreign_data_wrapper_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateFdw(Create_foreign_data_wrapper_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

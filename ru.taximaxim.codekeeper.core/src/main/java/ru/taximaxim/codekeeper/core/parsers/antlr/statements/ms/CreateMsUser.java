@@ -25,13 +25,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.User_logi
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.User_optionContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsUser;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsUser extends MsParserAbstract {
 
     private final Create_userContext ctx;
 
-    public CreateMsUser(Create_userContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsUser(Create_userContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

@@ -32,6 +32,8 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 class MsProjectLoaderTest {
 
@@ -41,11 +43,12 @@ class MsProjectLoaderTest {
             Path dir = tempDir.get();
             PgDiffArguments args = new PgDiffArguments();
             args.setDbType(DatabaseType.MS);
+            ISettings settings = new CliSettings(args);
 
             AbstractDatabase msDbDump = TestUtils.loadTestDump(
-                    TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
+                    TestUtils.RESOURCE_MS_DUMP, TestUtils.class, settings);
 
-            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8, new CliSettings(args)).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");
@@ -55,7 +58,7 @@ class MsProjectLoaderTest {
             IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
             ignoreParser.parse(listFile);
 
-            AbstractDatabase loader = new ProjectLoader(dir.toString(), args, SubMonitor.convert(null), null,
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), settings, SubMonitor.convert(null), null,
                     ignoreSchemaList).load();
 
             for (AbstractSchema dbSchema : loader.getSchemas()) {

@@ -23,13 +23,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_role_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_stmtContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_user_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterChOther extends ChParserAbstract {
 
     private final Alter_stmtContext ctx;
 
-    public AlterChOther(Alter_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public AlterChOther(Alter_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

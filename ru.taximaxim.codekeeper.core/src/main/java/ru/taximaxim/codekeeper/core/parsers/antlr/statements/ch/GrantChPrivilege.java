@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class GrantChPrivilege extends ChParserAbstract {
 
@@ -42,8 +43,9 @@ public final class GrantChPrivilege extends ChParserAbstract {
     private final String state;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public GrantChPrivilege(Privilegy_stmtContext ctx, ChDatabase db, Map<PgStatement, StatementOverride> overrides) {
-        super(db);
+    public GrantChPrivilege(Privilegy_stmtContext ctx, ChDatabase db, Map<PgStatement, StatementOverride> overrides,
+            ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.overrides = overrides;
         state = ctx.REVOKE() != null ? "REVOKE" : "GRANT";
@@ -51,7 +53,7 @@ public final class GrantChPrivilege extends ChParserAbstract {
 
     @Override
     public void parseObject() {
-        if (db.getArguments().isIgnorePrivileges() || isRefMode()) {
+        if (settings.isIgnorePrivileges() || isRefMode()) {
             addOutlineRefForCommentOrRule(state, ctx);
             return;
         }

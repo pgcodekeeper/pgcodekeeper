@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.IPartitionTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Partition regular table object
@@ -38,8 +39,8 @@ public final class PartitionPgTable extends AbstractRegularTable implements IPar
 
     private final String partitionBounds;
 
-    public PartitionPgTable(String name, String partitionBounds) {
-        super(name);
+    public PartitionPgTable(String name, String partitionBounds, ISettings settings) {
+        super(name, settings);
         this.partitionBounds = partitionBounds;
     }
 
@@ -137,7 +138,7 @@ public final class PartitionPgTable extends AbstractRegularTable implements IPar
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new PartitionPgTable(name, partitionBounds);
+        return new PartitionPgTable(name, partitionBounds, settings);
     }
 
     @Override

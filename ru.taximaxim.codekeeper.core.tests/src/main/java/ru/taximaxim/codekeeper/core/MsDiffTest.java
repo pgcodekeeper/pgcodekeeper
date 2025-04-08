@@ -20,6 +20,8 @@ import java.io.IOException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.settings.CliSettings;
+
 /**
  * Tests for MS SQL statements
  *
@@ -337,7 +339,7 @@ class MsDiffTest {
     void testCorrectOrderScript(String fileNameTamplate) throws IOException, InterruptedException {
         PgDiffArguments args = new PgDiffArguments();
         args.setDbType(DatabaseType.MS);
-        String script = TestUtils.getScript(fileNameTamplate, args, PgDiffTest.class, true);
+        String script = TestUtils.getScript(fileNameTamplate, new CliSettings(args), PgDiffTest.class, true);
         TestUtils.compareResult(script, fileNameTamplate, PgDiffTest.class);
     }
 }

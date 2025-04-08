@@ -36,6 +36,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.exporter.OverridesModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class ProjectUpdater {
 
@@ -49,13 +50,15 @@ public class ProjectUpdater {
     private final Path dirExport;
     private final DatabaseType dbType;
     private final boolean overridesOnly;
+    private final ISettings settings;
 
-    public ProjectUpdater(AbstractDatabase dbNew, DatabaseType dbType, String encoding, Path dirExport) {
-        this(dbNew, null, null, dbType, encoding, dirExport, false);
+    public ProjectUpdater(AbstractDatabase dbNew, DatabaseType dbType, String encoding, Path dirExport,
+            ISettings settings) {
+        this(dbNew, null, null, dbType, encoding, dirExport, false, settings);
     }
 
     public ProjectUpdater(AbstractDatabase dbNew, AbstractDatabase dbOld, Collection<TreeElement> changedObjects,
-            DatabaseType dbType, String encoding, Path dirExport, boolean overridesOnly) {
+            DatabaseType dbType, String encoding, Path dirExport, boolean overridesOnly, ISettings settings) {
         this.dbNew = dbNew;
         this.dbOld = dbOld;
 
@@ -66,6 +69,7 @@ public class ProjectUpdater {
 
         this.dbType = dbType;
         this.overridesOnly = overridesOnly;
+        this.settings = settings;
     }
 
     public void updatePartial() throws IOException {
@@ -110,7 +114,7 @@ public class ProjectUpdater {
         if (overridesOnly) {
             updateFolder(dirTmp, WorkDirs.OVERRIDES);
             new OverridesModelExporter(dirExport.resolve(WorkDirs.OVERRIDES),
-                    dbNew, dbOld, changedObjects, encoding, dbType).exportPartial();
+                    dbNew, dbOld, changedObjects, encoding, dbType, settings).exportPartial();
             return;
         }
 
@@ -118,7 +122,7 @@ public class ProjectUpdater {
             updateFolder(dirTmp, subdirName);
         }
 
-        new ModelExporter(dirExport, dbNew, dbOld, dbType, changedObjects, encoding).exportPartial();
+        new ModelExporter(dirExport, dbNew, dbOld, dbType, changedObjects, encoding, settings).exportPartial();
     }
 
     private void updateFolder(Path dirTmp, String folder) throws IOException {
@@ -150,7 +154,7 @@ public class ProjectUpdater {
 
             try {
                 safeCleanProjectDir(dirTmp);
-                new ModelExporter(dirExport, dbNew, dbType, encoding).exportFull();
+                new ModelExporter(dirExport, dbNew, dbType, encoding, settings).exportFull();
                 if (projectOnly) {
                     restoreFolder(dirTmp, WorkDirs.OVERRIDES);
                 }

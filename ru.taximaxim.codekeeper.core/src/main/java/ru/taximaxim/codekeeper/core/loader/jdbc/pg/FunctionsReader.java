@@ -262,18 +262,21 @@ public class FunctionsReader extends JdbcReader {
             body = probody;
         }
 
-        function.setBody(loader.getArgs(), body);
+        function.setBody(loader.getSettings(), body);
 
         // Parsing the function definition and adding its result context for analysis.
         if (function.isInStatementBody()) {
             loader.submitAntlrTask(body, SQLParser::function_body, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            loader.getSettings())));
         } else if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            loader.getSettings())));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            loader.getSettings())));
         }
     }
 

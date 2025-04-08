@@ -102,7 +102,7 @@ public final class ChView extends AbstractView {
     public void getCreationSQL(SQLScript script) {
         StringBuilder sb = new StringBuilder(query.length() * 2);
         sb.append("CREATE ").append(type.sql).append(" ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         appendFullName(sb);
 
         if (destination != null) {

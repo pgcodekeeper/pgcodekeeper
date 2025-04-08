@@ -23,13 +23,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_ass
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Assembly_optionContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterMsAssembly extends MsParserAbstract {
 
     private final Alter_assemblyContext ctx;
 
-    public AlterMsAssembly(Alter_assemblyContext ctx, MsDatabase db) {
-        super(db);
+    public AlterMsAssembly(Alter_assemblyContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

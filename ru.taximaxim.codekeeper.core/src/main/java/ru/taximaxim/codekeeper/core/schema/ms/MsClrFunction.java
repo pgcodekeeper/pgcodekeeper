@@ -25,6 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
 import ru.taximaxim.codekeeper.core.schema.FuncTypes;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsClrFunction extends AbstractMsClrFunction {
 
@@ -63,7 +64,7 @@ public final class MsClrFunction extends AbstractMsClrFunction {
     }
 
     @Override
-    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate, ISettings settings) {
         sbSQL.append("SET QUOTED_IDENTIFIER OFF").append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS OFF").append(GO).append('\n');
         sbSQL.append(isCreate ? "CREATE" : "ALTER");

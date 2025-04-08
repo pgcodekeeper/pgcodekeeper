@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Simple foreign table object
@@ -28,13 +29,13 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  */
 public final class SimpleForeignPgTable extends AbstractForeignTable {
 
-    public SimpleForeignPgTable(String name, String serverName) {
-        super(name, serverName);
+    public SimpleForeignPgTable(String name, String serverName, ISettings settings) {
+        super(name, serverName, settings);
     }
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new SimpleForeignPgTable(name, serverName);
+        return new SimpleForeignPgTable(name, serverName, settings);
     }
 
     @Override

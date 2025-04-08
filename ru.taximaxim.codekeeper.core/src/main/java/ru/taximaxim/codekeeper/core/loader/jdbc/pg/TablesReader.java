@@ -78,25 +78,25 @@ public class TablesReader extends JdbcReader {
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
             if (partitionBound == null) {
-                t = new SimpleForeignPgTable(tableName, serverName);
+                t = new SimpleForeignPgTable(tableName, serverName, loader.getSettings());
             } else {
-                t = new PartitionForeignPgTable(tableName, serverName, partitionBound);
+                t = new PartitionForeignPgTable(tableName, serverName, partitionBound, loader.getSettings());
             }
             t.addDep(new GenericColumn(serverName, DbObjType.SERVER));
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.getCachedTypeByOid(ofTypeOid);
             String ofType = jdbcOfType.getFullName();
-            t = new TypedPgTable(tableName, ofType);
+            t = new TypedPgTable(tableName, ofType, loader.getSettings());
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
-            t = new PartitionPgTable(tableName, partitionBound);
+            t = new PartitionPgTable(tableName, partitionBound, loader.getSettings());
         } else if (partitionGpBound != null) {
             t = createGpParttionTable(tableName, partitionGpBound, partitionGpTemplate);
         } else if (loader.isGreenplumDb() && res.getString("exloc") != null) {
-            t = new GpExternalTable(tableName);
+            t = new GpExternalTable(tableName, loader.getSettings());
             readExternalTable((GpExternalTable) t, res);
         } else {
-            t = new SimplePgTable(tableName);
+            t = new SimplePgTable(tableName, loader.getSettings());
         }
 
         if (SupportedPgVersion.VERSION_12.isLE(loader.getVersion()) && t instanceof AbstractRegularTable regTable) {
@@ -154,7 +154,7 @@ public class TablesReader extends JdbcReader {
 
     private AbstractPgTable createGpParttionTable(String tableName, String partitionGpBound,
             String partitionGpTemplate) {
-        PartitionGpTable table = new PartitionGpTable(tableName);
+        PartitionGpTable table = new PartitionGpTable(tableName, loader.getSettings());
         var partGp = partitionGpBound;
 
         loader.submitAntlrTask(CREATE_TABLE + partitionGpBound + ';',
@@ -357,7 +357,7 @@ public class TablesReader extends JdbcReader {
 
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()) {
-                column.setComment(loader.getArgs(), PgDiffUtils.quoteString(comment));
+                column.setComment(loader.getSettings(), PgDiffUtils.quoteString(comment));
             }
 
             // COLUMNS PRIVILEGES

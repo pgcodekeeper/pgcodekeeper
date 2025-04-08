@@ -21,13 +21,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Alter_db_roleContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsRole;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterMsRole extends MsParserAbstract {
 
     private final Alter_db_roleContext ctx;
 
-    public AlterMsRole(Alter_db_roleContext ctx, MsDatabase db) {
-        super(db);
+    public AlterMsRole(Alter_db_roleContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

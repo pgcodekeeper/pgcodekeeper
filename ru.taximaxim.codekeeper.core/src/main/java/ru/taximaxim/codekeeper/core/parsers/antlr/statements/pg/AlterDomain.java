@@ -28,13 +28,14 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterDomain extends PgParserAbstract {
 
     private final Alter_domain_statementContext ctx;
 
-    public AlterDomain(Alter_domain_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterDomain(Alter_domain_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
@@ -48,7 +49,7 @@ public class AlterDomain extends PgParserAbstract {
         if (constrCtx != null && constrCtx.CHECK() != null) {
             IdentifierContext name = constrCtx.name;
             var constrCheck = new PgConstraintCheck(name != null ? name.getText() : "");
-            CreateDomain.parseDomainConstraint(domain, constrCheck, constrCtx, db, fileName);
+            CreateDomain.parseDomainConstraint(domain, constrCheck, constrCtx, db, fileName, settings);
             if (ctx.not_valid != null) {
                 constrCheck.setNotValid(true);
             }

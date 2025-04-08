@@ -50,6 +50,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class SQLOverridesListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
@@ -57,9 +58,9 @@ implements SqlContextProcessor {
     private final Map<PgStatement, StatementOverride> overrides;
 
     public SQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
-            List<Object> errors, IProgressMonitor mon,
-            Map<PgStatement, StatementOverride> overrides) {
-        super(db, filename, mode, errors, mon);
+            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides,
+            ISettings settings) {
+        super(db, filename, mode, errors, mon, settings);
         this.overrides = overrides;
     }
 
@@ -83,7 +84,7 @@ implements SqlContextProcessor {
         Rule_commonContext rule = ctx.rule_common();
         Create_schema_statementContext schema;
         if (rule != null) {
-            safeParseStatement(new GrantPrivilege(rule, db, overrides), ctx);
+            safeParseStatement(new GrantPrivilege(rule, db, overrides, settings), ctx);
         } else if ((schema = ctx.create_schema_statement()) != null) {
             safeParseStatement(() -> createSchema(schema), ctx);
         }
@@ -93,7 +94,7 @@ implements SqlContextProcessor {
         Alter_owner_statementContext owner = ctx.alter_owner_statement();
         Alter_table_statementContext ats;
         if (owner != null) {
-            safeParseStatement(new AlterOwner(owner, db, overrides), ctx);
+            safeParseStatement(new AlterOwner(owner, db, overrides, settings), ctx);
         } else if ((ats  = ctx.alter_table_statement()) != null) {
             safeParseStatement(() -> alterTable(ats), ctx);
         }
@@ -102,7 +103,7 @@ implements SqlContextProcessor {
     private void createSchema(Create_schema_statementContext ctx) {
         User_nameContext user = ctx.user_name();
         IdentifierContext owner = user == null ? null : user.identifier();
-        if (db.getArguments().isIgnorePrivileges() || owner == null) {
+        if (settings.isIgnorePrivileges() || owner == null) {
             return;
         }
 

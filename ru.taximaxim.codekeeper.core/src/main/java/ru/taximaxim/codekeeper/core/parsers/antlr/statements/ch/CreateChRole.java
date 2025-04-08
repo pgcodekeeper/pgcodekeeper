@@ -20,13 +20,14 @@ import java.util.Arrays;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_role_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChRole;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateChRole extends ChParserAbstract {
 
     private final Create_role_stmtContext ctx;
 
-    public CreateChRole(Create_role_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public CreateChRole(Create_role_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

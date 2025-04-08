@@ -29,14 +29,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.VexContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgStatistics;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateStatistics extends PgParserAbstract {
 
     private final Create_statistics_statementContext ctx;
     private final CommonTokenStream stream;
 
-    public CreateStatistics(Create_statistics_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
-        super(db);
+    public CreateStatistics(Create_statistics_statementContext ctx, PgDatabase db, CommonTokenStream stream,
+            ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.stream = stream;
     }

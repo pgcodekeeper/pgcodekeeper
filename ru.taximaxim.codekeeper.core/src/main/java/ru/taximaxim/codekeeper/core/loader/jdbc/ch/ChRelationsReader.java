@@ -68,7 +68,8 @@ public final class ChRelationsReader extends JdbcReader {
         ChDictionary dict = new ChDictionary(name);
         loader.submitChAntlrTask(definition,
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_dictinary_stmt(),
-                ctx -> new CreateChDictionary(ctx, (ChDatabase) schema.getDatabase()).parseObject(dict));
+                ctx -> new CreateChDictionary(ctx, (ChDatabase) schema.getDatabase(), loader.getSettings())
+                        .parseObject(dict));
         return dict;
     }
 
@@ -79,7 +80,8 @@ public final class ChRelationsReader extends JdbcReader {
                 p -> new Pair<>(
                         p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_view_stmt(),
                         (CommonTokenStream) p.getTokenStream()),
-                pair -> new CreateChView(pair.getFirst(), (ChDatabase) schema.getDatabase(), pair.getSecond())
+                pair -> new CreateChView(pair.getFirst(), (ChDatabase) schema.getDatabase(), pair.getSecond(),
+                        loader.getSettings())
                 .parseObject(view));
         return view;
     }
@@ -88,13 +90,14 @@ public final class ChRelationsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.TABLE));
         ChTable table;
         if (engineName.endsWith("log")) {
-            table = new ChTableLog(name);
+            table = new ChTableLog(name, loader.getSettings());
         } else {
-            table = new ChTable(name);
+            table = new ChTable(name, loader.getSettings());
         }
         loader.submitChAntlrTask(definition,
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_table_stmt(),
-                ctx -> new CreateChTable(ctx, (ChDatabase) schema.getDatabase()).parseObject(table));
+                ctx -> new CreateChTable(ctx, (ChDatabase) schema.getDatabase(), loader.getSettings())
+                        .parseObject(table));
         return table;
     }
 

@@ -33,12 +33,13 @@ import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateRule extends PgParserAbstract {
     private final Create_rewrite_statementContext ctx;
 
-    public CreateRule(Create_rewrite_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateRule(Create_rewrite_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
@@ -53,7 +54,7 @@ public class CreateRule extends PgParserAbstract {
             rule.setInstead(true);
         }
 
-        setConditionAndAddCommands(ctx, rule, db, fileName);
+        setConditionAndAddCommands(ctx, rule, db, fileName, settings);
 
         ParserRuleContext parent = QNameParser.getFirstNameCtx(ids);
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
@@ -62,12 +63,12 @@ public class CreateRule extends PgParserAbstract {
     }
 
     public static void setConditionAndAddCommands(Create_rewrite_statementContext ctx,
-            PgRule rule, AbstractDatabase db, String location) {
+            PgRule rule, AbstractDatabase db, String location, ISettings settings) {
         rule.setCondition((ctx.WHERE() != null) ? getFullCtxText(ctx.vex()) : null);
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
         for (Rewrite_commandContext cmd : ctx.rewrite_command()) {
-            rule.addCommand(checkNewLines(getFullCtxText(cmd), db.getArguments()));
+            rule.addCommand(checkNewLines(getFullCtxText(cmd), settings));
         }
 
         db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx, location));

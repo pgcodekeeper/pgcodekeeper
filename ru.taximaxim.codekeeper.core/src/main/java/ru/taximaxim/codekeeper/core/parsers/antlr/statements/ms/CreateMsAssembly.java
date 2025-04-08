@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Expressio
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CreateMsAssembly extends MsParserAbstract {
 
@@ -34,8 +35,8 @@ public class CreateMsAssembly extends MsParserAbstract {
 
     private final Create_assemblyContext ctx;
 
-    public CreateMsAssembly(Create_assemblyContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsAssembly(Create_assemblyContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 
@@ -44,7 +45,7 @@ public class CreateMsAssembly extends MsParserAbstract {
         IdContext nameCtx = ctx.assembly_name;
         MsAssembly ass = new MsAssembly(ctx.assembly_name.getText());
         IdContext owner = ctx.owner_name;
-        if (owner != null && !db.getArguments().isIgnorePrivileges()) {
+        if (owner != null && !settings.isIgnorePrivileges()) {
             ass.setOwner(owner.getText());
         }
 

@@ -30,6 +30,7 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class PgView extends AbstractPgView {
 
@@ -54,7 +55,7 @@ public final class PgView extends AbstractPgView {
     }
 
     @Override
-    protected void appendIfNotExists(StringBuilder sb) {
+    protected void appendIfNotExists(StringBuilder sb, ISettings settings) {
         // noimpl
     }
 

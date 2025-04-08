@@ -34,13 +34,14 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterSequence extends PgParserAbstract {
 
     private final Alter_sequence_statementContext ctx;
 
-    public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db) {
-        super(db);
+    public AlterSequence(Alter_sequence_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

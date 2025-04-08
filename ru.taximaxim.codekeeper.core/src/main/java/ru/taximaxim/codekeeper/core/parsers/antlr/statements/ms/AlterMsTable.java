@@ -40,13 +40,14 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsConstraint;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class AlterMsTable extends MsTableAbstract {
 
     private final Alter_tableContext ctx;
 
-    public AlterMsTable(Alter_tableContext ctx, MsDatabase db) {
-        super(db);
+    public AlterMsTable(Alter_tableContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

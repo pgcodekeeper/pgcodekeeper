@@ -57,6 +57,7 @@ import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 /**
@@ -66,11 +67,11 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
  */
 public class PgDiff {
 
-    private final PgDiffArguments arguments;
+    private final ISettings settings;
     private final List<Object> errors = new ArrayList<>();
 
-    public PgDiff(PgDiffArguments arguments) {
-        this.arguments = arguments;
+    public PgDiff(ISettings settings) {
+        this.settings = settings;
     }
 
     public List<Object> getErrors() {
@@ -89,7 +90,7 @@ public class PgDiff {
         IgnoreList ignoreList = new IgnoreList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
 
-        for (String listFilename : arguments.getIgnoreLists()) {
+        for (String listFilename : settings.getIgnoreLists()) {
             ignoreParser.parse(Paths.get(listFilename));
         }
 
@@ -108,7 +109,7 @@ public class PgDiff {
             return;
         }
 
-        new ProjectLoader(source, arguments, errors).loadOverrides(db);
+        new ProjectLoader(source, settings, errors).loadOverrides(db);
         assertErrors();
     }
 
@@ -118,11 +119,11 @@ public class PgDiff {
         LibraryLoader ll = new LibraryLoader(db, META_PATH, errors);
 
         for (String xml : libXmls) {
-            ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), arguments);
+            ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), settings);
         }
 
-        ll.loadLibraries(arguments, false, libs);
-        ll.loadLibraries(arguments, true, libsWithoutPriv);
+        ll.loadLibraries(settings, false, libs);
+        ll.loadLibraries(settings, true, libsWithoutPriv);
         assertErrors();
     }
 
@@ -130,16 +131,16 @@ public class PgDiff {
             throws IOException, InterruptedException, PgCodekeeperException {
         AbstractDatabase newDatabase = loadNewDatabase();
 
-        loadLibraries(newDatabase, arguments.getTargetLibXmls(),
-                arguments.getTargetLibs(), arguments.getTargetLibsWithoutPriv());
+        loadLibraries(newDatabase, settings.getTargetLibXmls(),
+                settings.getTargetLibs(), settings.getTargetLibsWithoutPriv());
 
         List<PgOverride> overrides = newDatabase.getOverrides();
-        if (arguments.isLibSafeMode() && !overrides.isEmpty()) {
+        if (settings.isLibSafeMode() && !overrides.isEmpty()) {
             throw new LibraryObjectDuplicationException(overrides);
         }
 
         // read additional privileges from special folder
-        loadOverrides(newDatabase, arguments.getNewSrcFormat(), arguments.getNewSrc());
+        loadOverrides(newDatabase, settings.getNewSrcFormat(), settings.getNewSrc());
 
         analyzeDatabase(newDatabase);
 
@@ -150,16 +151,16 @@ public class PgDiff {
             throws IOException, InterruptedException, PgCodekeeperException {
         AbstractDatabase oldDatabase = loadOldDatabase();
 
-        loadLibraries(oldDatabase, arguments.getSourceLibXmls(),
-                arguments.getSourceLibs(), arguments.getSourceLibsWithoutPriv());
+        loadLibraries(oldDatabase, settings.getSourceLibXmls(),
+                settings.getSourceLibs(), settings.getSourceLibsWithoutPriv());
 
         List<PgOverride> overrides = oldDatabase.getOverrides();
-        if (arguments.isLibSafeMode() && !overrides.isEmpty()) {
+        if (settings.isLibSafeMode() && !overrides.isEmpty()) {
             throw new LibraryObjectDuplicationException(overrides);
         }
 
         // read additional privileges from special folder
-        loadOverrides(oldDatabase, arguments.getOldSrcFormat(), arguments.getOldSrc());
+        loadOverrides(oldDatabase, settings.getOldSrcFormat(), settings.getOldSrc());
 
         analyzeDatabase(oldDatabase);
 
@@ -167,19 +168,19 @@ public class PgDiff {
     }
 
     public AbstractDatabase loadNewDatabase() throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase db = loadDatabaseSchema(arguments.getNewSrcFormat(), arguments.getNewSrc());
+        AbstractDatabase db = loadDatabaseSchema(settings.getNewSrcFormat(), settings.getNewSrc());
         assertErrors();
         return db;
     }
 
     public AbstractDatabase loadOldDatabase() throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase db = loadDatabaseSchema(arguments.getOldSrcFormat(), arguments.getOldSrc());
+        AbstractDatabase db = loadDatabaseSchema(settings.getOldSrcFormat(), settings.getOldSrc());
         assertErrors();
         return db;
     }
 
     private void assertErrors() throws PgCodekeeperException {
-        if (!errors.isEmpty() && !arguments.isIgnoreErrors()) {
+        if (!errors.isEmpty() && !settings.isIgnoreErrors()) {
             throw new PgCodekeeperException("Error while load database");
         }
     }
@@ -197,13 +198,13 @@ public class PgDiff {
             throws InterruptedException, IOException {
         IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
         IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
-        if (arguments.getIgnoreSchemaList() != null) {
-            ignoreParser.parse(Paths.get(arguments.getIgnoreSchemaList()));
+        if (settings.getIgnoreSchemaList() != null) {
+            ignoreParser.parse(Paths.get(settings.getIgnoreSchemaList()));
         }
         DatabaseLoader loader = switch (format) {
-            case DB -> LoaderFactory.createJdbcLoader(arguments, srcPath, ignoreSchemaList);
-            case DUMP -> new PgDumpLoader(Paths.get(srcPath), arguments);
-            case PARSED -> new ProjectLoader(srcPath, arguments, null, errors, ignoreSchemaList);
+        case DB -> LoaderFactory.createJdbcLoader(settings, srcPath, ignoreSchemaList);
+        case DUMP -> new PgDumpLoader(Paths.get(srcPath), settings);
+        case PARSED -> new ProjectLoader(srcPath, settings, null, errors, ignoreSchemaList);
             default -> throw new UnsupportedOperationException(MessageFormat.format(Messages.UnknownDBFormat, format));
         };
 
@@ -219,11 +220,11 @@ public class PgDiff {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
 
-        return switch (arguments.getDbType()) {
+        return switch (settings.getDbType()) {
             case MS -> diffMs(root, oldDbFull, newDbFull, null, null, ignoreList);
             case PG -> diffPg(root, oldDbFull, newDbFull, null, null, ignoreList);
             case CH -> diffCh(root, oldDbFull, newDbFull, null, null, ignoreList);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
     }
 
@@ -235,11 +236,11 @@ public class PgDiff {
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
-        return switch (arguments.getDbType()) {
+        return switch (settings.getDbType()) {
             case MS -> diffMs(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
             case PG -> diffPg(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
             case CH -> diffCh(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
     }
 
@@ -248,26 +249,26 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) throws IOException {
-        SQLScript script = new SQLScript(arguments.getDbType());
+        SQLScript script = new SQLScript(settings);
 
-        for (String preFilePath : arguments.getPreFilePath()) {
+        for (String preFilePath : settings.getPreFilePath()) {
             addPrePostPath(script, preFilePath, SQLActionType.PRE);
         }
 
-        if (arguments.getTimeZone() != null) {
-            script.addStatement("SET TIMEZONE TO " + PgDiffUtils.quoteString(arguments.getTimeZone()),
+        if (settings.getTimeZone() != null) {
+            script.addStatement("SET TIMEZONE TO " + PgDiffUtils.quoteString(settings.getTimeZone()),
                     SQLActionType.BEGIN);
         }
 
-        if (arguments.isDisableCheckFunctionBodies()) {
+        if (settings.isDisableCheckFunctionBodies()) {
             script.addStatement("SET check_function_bodies = false", SQLActionType.BEGIN);
         }
 
-        if (arguments.isAddTransaction()) {
+        if (settings.isAddTransaction()) {
             script.addStatement("START TRANSACTION", SQLActionType.BEGIN);
         }
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, settings);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget);
@@ -276,13 +277,14 @@ public class PgDiff {
             script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN);
         }
 
-        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), oldDbFull, newDbFull).fillScript(selected);
 
-        if (arguments.isAddTransaction()) {
+        if (settings.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION", SQLActionType.END);
         }
 
-        for (String postFilePath : arguments.getPostFilePath()) {
+        // FIXME
+        for (String postFilePath : settings.getPostFilePath()) {
             addPrePostPath(script, postFilePath, SQLActionType.POST);
         }
         return script.getFullScript();
@@ -319,19 +321,19 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
-        SQLScript script = new SQLScript(arguments.getDbType());
+        SQLScript script = new SQLScript(settings);
 
-        if (arguments.isAddTransaction()) {
+        if (settings.isAddTransaction()) {
             script.addStatement("BEGIN TRANSACTION", SQLActionType.BEGIN);
         }
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, settings);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
-        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(), arguments, oldDbFull,
+        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(), oldDbFull,
                 newDbFull).fillScript(selected);
 
-        if (arguments.isAddTransaction()) {
+        if (settings.isAddTransaction()) {
             script.addStatement("COMMIT", SQLActionType.END);
         }
 
@@ -343,12 +345,12 @@ public class PgDiff {
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
             IgnoreList ignoreList) {
-        SQLScript script = new SQLScript(arguments.getDbType());
+        SQLScript script = new SQLScript(settings);
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, settings);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
-        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
+        new ActionsToScriptConverter(script, depRes.getActions(), oldDbFull, newDbFull).fillScript(selected);
 
         return script.getFullScript();
     }
@@ -357,8 +359,8 @@ public class PgDiff {
         return new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)
-                .onlyTypes(arguments.getAllowedTypes())
-                .flatten(root);
+                .onlyTypes(settings.getAllowedTypes())
+                .flatten(root, settings);
     }
 
     private void createScript(DepcyResolver depRes, List<TreeElement> selected,
@@ -409,5 +411,9 @@ public class PgDiff {
             }
         }
         selected.addAll(tempColumns);
+    }
+
+    public ISettings getSettings() {
+        return settings;
     }
 }

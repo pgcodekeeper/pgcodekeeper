@@ -47,6 +47,7 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class GrantPrivilege extends PgParserAbstract {
     private final Rule_commonContext ctx;
@@ -54,12 +55,13 @@ public class GrantPrivilege extends PgParserAbstract {
     private final boolean isGO;
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public GrantPrivilege(Rule_commonContext ctx, PgDatabase db) {
-        this(ctx, db, null);
+    public GrantPrivilege(Rule_commonContext ctx, PgDatabase db, ISettings settings) {
+        this(ctx, db, null, settings);
     }
 
-    public GrantPrivilege(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, StatementOverride> overrides) {
-        super(db);
+    public GrantPrivilege(Rule_commonContext ctx, PgDatabase db, Map<PgStatement, StatementOverride> overrides,
+            ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.overrides = overrides;
         state = ctx.REVOKE() != null ? "REVOKE" : "GRANT";
@@ -70,7 +72,7 @@ public class GrantPrivilege extends PgParserAbstract {
     public void parseObject() {
         Rule_member_objectContext obj = ctx.rule_member_object();
         // unsupported roles rules, ALL TABLES/SEQUENCES/FUNCTIONS IN SCHENA
-        if (db.getArguments().isIgnorePrivileges() || ctx.other_rules() != null || obj.ALL() != null) {
+        if (settings.isIgnorePrivileges() || ctx.other_rules() != null || obj.ALL() != null) {
             addOutlineRefForCommentOrRule(state, ctx);
             return;
         }
