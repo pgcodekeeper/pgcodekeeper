@@ -68,6 +68,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
 import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -106,7 +107,8 @@ public class DiffWizard extends Wizard implements IPageChangingListener {
         if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
             DbSource dbSource = pageDiff.getDbSource();
             DbSource dbTarget = pageDiff.getDbTarget();
-            TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
+            // FIXME
+            TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget, new UISettings(proj.getProject(), null));
 
             try {
                 getContainer().run(true, true, treediffer);

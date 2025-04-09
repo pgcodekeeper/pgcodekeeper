@@ -49,9 +49,9 @@ public final class CreateChTable extends ChParserAbstract {
             engType = engineClCtx.engine_expr().identifier();
         }
         if (engType != null && engType.getText().endsWith("Log")) {
-            table = new ChTableLog(name, settings);
+            table = new ChTableLog(name);
         } else {
-            table = new ChTable(name, settings);
+            table = new ChTable(name);
         }
         parseObject(table);
         addSafe(getSchemaSafe(ids), table, ids);

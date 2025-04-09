@@ -31,7 +31,6 @@ import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class ChTable extends AbstractTable {
 
@@ -39,8 +38,8 @@ public class ChTable extends AbstractTable {
 
     protected ChEngine engine;
 
-    public ChTable(String name, ISettings settings) {
-        super(name, settings);
+    public ChTable(String name) {
+        super(name);
     }
 
     public void addProjection(String key, String expression) {
@@ -198,7 +197,7 @@ public class ChTable extends AbstractTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        var table = new ChTable(name, settings);
+        var table = new ChTable(name);
         table.projections.putAll(projections);
         table.setEngine(engine);
         return table;

@@ -43,8 +43,8 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     private boolean isRowReject = true;
     private boolean isLogErrors;
 
-    public GpExternalTable(String name, ISettings settings) {
-        super(name, settings);
+    public GpExternalTable(String name) {
+        super(name);
     }
 
     @Override
@@ -157,7 +157,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new GpExternalTable(name, settings);
+        return new GpExternalTable(name);
     }
 
     @Override

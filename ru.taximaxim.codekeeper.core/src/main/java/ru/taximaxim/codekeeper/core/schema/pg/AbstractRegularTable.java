@@ -46,8 +46,8 @@ public abstract class AbstractRegularTable extends AbstractPgTable implements IS
     private String distribution;
     private String method = Consts.HEAP;
 
-    protected AbstractRegularTable(String name, ISettings settings) {
-        super(name, settings);
+    protected AbstractRegularTable(String name) {
+        super(name);
     }
 
     @Override

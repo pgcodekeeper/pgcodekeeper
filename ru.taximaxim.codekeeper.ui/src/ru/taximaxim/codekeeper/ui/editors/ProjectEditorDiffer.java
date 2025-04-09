@@ -496,13 +496,13 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
                     charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
                     getProject(), oneTimePrefs);
-            newDiffer = new TreeDiffer(dbProject, dbRemote);
+            newDiffer = new TreeDiffer(dbProject, dbRemote, new UISettings(getProject(), oneTimePrefs));
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
             DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
                     dbType, getProject(), oneTimePrefs);
-            newDiffer = new TreeDiffer(dbProject, dbRemote);
+            newDiffer = new TreeDiffer(dbProject, dbRemote, new UISettings(getProject(), oneTimePrefs));
         }
 
         if (!OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {

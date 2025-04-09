@@ -486,6 +486,10 @@ public abstract class PgStatement implements IStatement, IHashable {
                 && privileges.equals(obj.privileges);
     }
 
+    public boolean compare(PgStatement obj, ISettings settings) {
+        return compare(obj);
+    }
+
     protected final void copyBaseFields(PgStatement copy) {
         copy.setOwner(owner);
         copy.setComment(comment);

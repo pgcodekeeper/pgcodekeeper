@@ -126,7 +126,7 @@ public class PartialExporterTest {
     @ParameterizedTest
     @MethodSource("generator")
     void testExportPartial(PartialExportInfo info) throws Exception {
-        TreeElement tree = DiffTree.create(dbSource, dbTarget, null);
+        TreeElement tree = DiffTree.create(dbSource, dbTarget, new CliSettings(new PgDiffArguments()));
         Path exportDirFull = null;
         Path exportDirPartial = null;
         try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
@@ -143,7 +143,7 @@ public class PartialExporterTest {
 
             // get new db with selected changes
             info.setUserSelection(tree);
-            Collection<TreeElement> list = new TreeFlattener()
+            Collection<TreeElement> list = new TreeFlattener(new CliSettings(new PgDiffArguments()))
                     .onlySelected()
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(tree, new CliSettings(new PgDiffArguments()));

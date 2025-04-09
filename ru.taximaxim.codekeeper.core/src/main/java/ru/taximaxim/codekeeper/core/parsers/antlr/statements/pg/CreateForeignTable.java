@@ -79,12 +79,12 @@ public class CreateForeignTable extends TableAbstract {
 
         if (colCtx != null) {
             table = fillForeignTable(srvCtx, new SimpleForeignPgTable(
-                    tableName, srvName.getText(), settings));
+                    tableName, srvName.getText()));
             fillColumns(colCtx, table, schemaName, null);
         } else {
             String partBound = ParserAbstract.getFullCtxText(partCtx.for_values_bound());
             table = fillForeignTable(srvCtx, new PartitionForeignPgTable(
-                    tableName, srvName.getText(), partBound, settings));
+                    tableName, srvName.getText(), partBound));
 
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, null);
             addInherit(table, getIdentifiers(partCtx.parent_table));

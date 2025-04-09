@@ -65,8 +65,8 @@ public abstract class AbstractPgTable extends AbstractTable {
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
 
-    protected AbstractPgTable(String name, ISettings settings) {
-        super(name, settings);
+    protected AbstractPgTable(String name) {
+        super(name);
     }
 
     @Override

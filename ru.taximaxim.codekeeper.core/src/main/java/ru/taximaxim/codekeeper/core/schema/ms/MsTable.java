@@ -38,7 +38,6 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Base MS SQL table class
@@ -65,8 +64,8 @@ public final class MsTable extends AbstractTable implements ISimpleOptionContain
 
     private final Map<String, MsStatistics> statistics = new HashMap<>();
 
-    public MsTable(String name, ISettings settings) {
-        super(name, settings);
+    public MsTable(String name) {
+        super(name);
     }
 
     @Override
@@ -435,7 +434,7 @@ public final class MsTable extends AbstractTable implements ISimpleOptionContain
 
     @Override
     protected MsTable getTableCopy() {
-        MsTable table = new MsTable(name, settings);
+        MsTable table = new MsTable(name);
         table.setFileStream(fileStream);
         table.setTextImage(textImage);
         table.setAnsiNulls(ansiNulls);

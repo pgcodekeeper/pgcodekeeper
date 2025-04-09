@@ -62,7 +62,7 @@ public class CreateMsTable extends MsTableAbstract {
         IdContext nameCtx = ctx.qualified_name().name;
         String tableName = nameCtx.getText();
 
-        MsTable table = new MsTable(tableName, settings);
+        MsTable table = new MsTable(tableName);
 
         List<ParserRuleContext> ids = Arrays.asList(ctx.qualified_name().schema, nameCtx);
         addSafe(getSchemaSafe(ids), table, ids);

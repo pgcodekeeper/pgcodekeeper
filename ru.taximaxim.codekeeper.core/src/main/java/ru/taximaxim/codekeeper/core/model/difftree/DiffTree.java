@@ -30,21 +30,24 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class DiffTree {
 
-    public static TreeElement create(AbstractDatabase left, AbstractDatabase right) throws InterruptedException {
-        return create(left, right, null);
+    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, ISettings settings)
+            throws InterruptedException {
+        return create(left, right, null, settings);
     }
 
-    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, SubMonitor sMonitor)
+    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, SubMonitor sMonitor,
+            ISettings settings)
             throws InterruptedException {
-        return new DiffTree(sMonitor).createTree(left, right);
+        return new DiffTree(sMonitor, settings).createTree(left, right);
     }
 
     @Deprecated
     public static void addColumns(List<AbstractColumn> left, List<AbstractColumn> right,
-            TreeElement parent, List<TreeElement> list) {
+            TreeElement parent, List<TreeElement> list, ISettings settings) {
         for (AbstractColumn sLeft : left) {
             AbstractColumn foundRight = right.stream().filter(
                     sRight -> sLeft.getName().equals(sRight.getName()))
@@ -67,7 +70,7 @@ public final class DiffTree {
     }
 
     public static Set<TreeElement> getTablesWithChangedColumns(
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull, List<TreeElement> selected) {
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull, List<TreeElement> selected, ISettings settings) {
 
         Set<TreeElement> tables = new HashSet<>();
         for (TreeElement el : selected) {
@@ -92,7 +95,7 @@ public final class DiffTree {
                     newColumns = Collections.emptyList();
                 }
 
-                addColumns(oldColumns, newColumns, el, columns);
+                addColumns(oldColumns, newColumns, el, columns, settings);
 
                 if (!columns.isEmpty()) {
                     tables.add(el);
@@ -104,9 +107,11 @@ public final class DiffTree {
     }
 
     private final IProgressMonitor monitor;
+    private final ISettings settings;
 
-    private DiffTree(IProgressMonitor monitor) {
+    private DiffTree(IProgressMonitor monitor, ISettings settings) {
         this.monitor = monitor;
+        this.settings = settings;
     }
 
     public TreeElement createTree(AbstractDatabase left, AbstractDatabase right) throws InterruptedException {
@@ -149,7 +154,7 @@ public final class DiffTree {
 
                 if (foundRight == null) {
                     rv.add(new CompareResult(sLeft, null));
-                } else if(!sLeft.equals(foundRight)) {
+                } else if (!sLeft.equals(foundRight)) {
                     rv.add(new CompareResult(sLeft, foundRight));
                 }
             });

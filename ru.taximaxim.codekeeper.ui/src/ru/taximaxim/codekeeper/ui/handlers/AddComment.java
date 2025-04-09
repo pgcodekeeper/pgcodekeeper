@@ -119,7 +119,7 @@ public class AddComment extends AbstractHandler {
         DbSource oldDbSource = DbSource.fromDbObject(oldDb, "old");
         DbSource newDbSource = DbSource.fromDbObject(newDb, "new");
 
-        TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource);
+        TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource, settings);
         treeDiffer.run(new NullProgressMonitor());
         TreeElement el = treeDiffer.getDiffTree().findElement(statement);
 

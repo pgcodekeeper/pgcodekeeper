@@ -47,7 +47,7 @@ public class CreateMsType extends MsParserAbstract {
     @Override
     public void parseObject() {
         IdContext nameCtx = ctx.qualified_name().name;
-        MsType type = new MsType(nameCtx.getText(), settings);
+        MsType type = new MsType(nameCtx.getText(), settings.isConcurrentlyMode());
 
         Type_definitionContext def = ctx.type_definition();
 

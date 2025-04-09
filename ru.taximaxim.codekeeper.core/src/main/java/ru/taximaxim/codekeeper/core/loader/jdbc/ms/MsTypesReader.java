@@ -49,7 +49,7 @@ public class MsTypesReader extends JdbcReader {
         String name = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.TYPE));
 
-        MsType type = new MsType(name, loader.getSettings());
+        MsType type = new MsType(name, loader.getSettings().isConcurrentlyMode());
         String baseType = res.getString("base_type");
         String assembly = res.getString("assembly_class");
         if (assembly != null) {

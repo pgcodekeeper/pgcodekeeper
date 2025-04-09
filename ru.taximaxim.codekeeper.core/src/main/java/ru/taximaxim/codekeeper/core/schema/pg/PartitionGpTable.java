@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class PartitionGpTable extends AbstractRegularTable {
 
@@ -33,8 +32,8 @@ public final class PartitionGpTable extends AbstractRegularTable {
     private String normalizedPartitionGpBounds;
     private final Map<String, PartitionTemplateContainer> templates = new HashMap<>();
 
-    public PartitionGpTable(String name, ISettings settings) {
-        super(name, settings);
+    public PartitionGpTable(String name) {
+        super(name);
     }
 
     public void setPartitionGpBound(String partitionGpBounds, String normalizedPartitionGpBounds) {
@@ -150,7 +149,7 @@ public final class PartitionGpTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new PartitionGpTable(name, settings);
+        return new PartitionGpTable(name);
     }
 
     @Override

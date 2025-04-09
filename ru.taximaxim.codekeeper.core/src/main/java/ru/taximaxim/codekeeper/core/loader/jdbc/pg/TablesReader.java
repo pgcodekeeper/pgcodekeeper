@@ -78,25 +78,25 @@ public class TablesReader extends JdbcReader {
         long ofTypeOid = res.getLong("of_type");
         if (serverName != null) {
             if (partitionBound == null) {
-                t = new SimpleForeignPgTable(tableName, serverName, loader.getSettings());
+                t = new SimpleForeignPgTable(tableName, serverName);
             } else {
-                t = new PartitionForeignPgTable(tableName, serverName, partitionBound, loader.getSettings());
+                t = new PartitionForeignPgTable(tableName, serverName, partitionBound);
             }
             t.addDep(new GenericColumn(serverName, DbObjType.SERVER));
         } else if (ofTypeOid != 0) {
             JdbcType jdbcOfType = loader.getCachedTypeByOid(ofTypeOid);
             String ofType = jdbcOfType.getFullName();
-            t = new TypedPgTable(tableName, ofType, loader.getSettings());
+            t = new TypedPgTable(tableName, ofType);
             jdbcOfType.addTypeDepcy(t);
         } else if (partitionBound != null) {
-            t = new PartitionPgTable(tableName, partitionBound, loader.getSettings());
+            t = new PartitionPgTable(tableName, partitionBound);
         } else if (partitionGpBound != null) {
             t = createGpParttionTable(tableName, partitionGpBound, partitionGpTemplate);
         } else if (loader.isGreenplumDb() && res.getString("exloc") != null) {
-            t = new GpExternalTable(tableName, loader.getSettings());
+            t = new GpExternalTable(tableName);
             readExternalTable((GpExternalTable) t, res);
         } else {
-            t = new SimplePgTable(tableName, loader.getSettings());
+            t = new SimplePgTable(tableName);
         }
 
         if (SupportedPgVersion.VERSION_12.isLE(loader.getVersion()) && t instanceof AbstractRegularTable regTable) {
@@ -154,7 +154,7 @@ public class TablesReader extends JdbcReader {
 
     private AbstractPgTable createGpParttionTable(String tableName, String partitionGpBound,
             String partitionGpTemplate) {
-        PartitionGpTable table = new PartitionGpTable(tableName, loader.getSettings());
+        PartitionGpTable table = new PartitionGpTable(tableName);
         var partGp = partitionGpBound;
 
         loader.submitAntlrTask(CREATE_TABLE + partitionGpBound + ';',

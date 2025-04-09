@@ -47,7 +47,7 @@ public class MsTablesReader extends JdbcReader {
     protected void processResult(ResultSet res, AbstractSchema schema) throws SQLException, XmlReaderException {
         String tableName = res.getString("name");
         loader.setCurrentObject(new GenericColumn(schema.getName(), tableName, DbObjType.TABLE));
-        MsTable table = new MsTable(tableName, loader.getSettings());
+        MsTable table = new MsTable(tableName);
 
         if (SupportedMsVersion.VERSION_14.isLE(loader.getVersion())) {
             if (res.getBoolean("is_memory_optimized")) {

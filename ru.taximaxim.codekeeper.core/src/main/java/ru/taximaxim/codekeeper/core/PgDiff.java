@@ -232,7 +232,7 @@ public class PgDiff {
 
     public String diff(AbstractDatabase oldDbFull, AbstractDatabase newDbFull, IgnoreList ignoreList)
             throws InterruptedException, IOException {
-        TreeElement root = DiffTree.create(oldDbFull, newDbFull);
+        TreeElement root = DiffTree.create(oldDbFull, newDbFull, settings);
         root.setAllChecked();
 
         return switch (settings.getDbType()) {
@@ -369,7 +369,7 @@ public class PgDiff {
     }
 
     protected List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
-        return new TreeFlattener()
+        return new TreeFlattener(settings)
                 .onlySelected()
                 .useIgnoreList(ignoreList)
                 .onlyTypes(settings.getAllowedTypes())
@@ -420,7 +420,7 @@ public class PgDiff {
             if (el.getType() == DbObjType.TABLE && el.getSide() == DiffSide.BOTH) {
                 AbstractTable oldTbl = (AbstractTable) el.getPgStatement(oldDbFull);
                 AbstractTable newTbl = (AbstractTable) el.getPgStatement(newDbFull);
-                DiffTree.addColumns(oldTbl.getColumns(), newTbl.getColumns(), el, tempColumns);
+                DiffTree.addColumns(oldTbl.getColumns(), newTbl.getColumns(), el, tempColumns, settings);
             }
         }
         selected.addAll(tempColumns);

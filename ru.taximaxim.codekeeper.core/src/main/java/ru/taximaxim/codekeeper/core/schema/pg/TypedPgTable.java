@@ -35,8 +35,8 @@ public final class TypedPgTable extends AbstractRegularTable {
 
     private final String ofType;
 
-    public TypedPgTable(String name, String ofType, ISettings settings) {
-        super(name, settings);
+    public TypedPgTable(String name, String ofType) {
+        super(name);
         this.ofType = ofType;
     }
 
@@ -87,7 +87,7 @@ public final class TypedPgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new TypedPgTable(name, ofType, settings);
+        return new TypedPgTable(name, ofType);
     }
 
     @Override

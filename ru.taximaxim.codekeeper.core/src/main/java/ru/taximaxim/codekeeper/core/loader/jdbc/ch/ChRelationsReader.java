@@ -90,9 +90,9 @@ public final class ChRelationsReader extends JdbcReader {
         loader.setCurrentObject(new GenericColumn(schema.getName(), name, DbObjType.TABLE));
         ChTable table;
         if (engineName.endsWith("log")) {
-            table = new ChTableLog(name, loader.getSettings());
+            table = new ChTableLog(name);
         } else {
-            table = new ChTable(name, loader.getSettings());
+            table = new ChTable(name);
         }
         loader.submitChAntlrTask(definition,
                 p -> p.ch_file().query(0).stmt().ddl_stmt().create_stmt().create_table_stmt(),

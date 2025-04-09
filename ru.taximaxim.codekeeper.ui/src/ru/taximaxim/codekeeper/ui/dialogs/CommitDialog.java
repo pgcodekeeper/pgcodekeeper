@@ -129,7 +129,8 @@ public class CommitDialog extends TrayDialog {
         dtvTop.setLayoutData(gd);
 
         dtvTop.setAutoExpand(true);
-        List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree,
+        List<TreeElement> result = new TreeFlattener(new UISettings(proj.getProject(), null)).onlySelected()
+                .flatten(diffTree,
                 new CliSettings(new PgDiffArguments()));
         dtvTop.setInputCollection(result, dbProject, dbRemote, Collections.emptySet());
 
@@ -309,7 +310,7 @@ public class CommitDialog extends TrayDialog {
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
 
             try {
-                Collection<TreeElement> checked = new TreeFlattener()
+                Collection<TreeElement> checked = new TreeFlattener(new UISettings(proj.getProject(), null))
                         .onlySelected()
                         .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
                         .flatten(diffTree, new UISettings(proj.getProject(), null));

@@ -101,15 +101,15 @@ public class CreateTable extends TableAbstract {
         } else if (colCtx != null) {
             AbstractRegularTable abstractRegTable;
             if (ctx.partition_gp() != null) {
-                abstractRegTable = new PartitionGpTable(tableName, settings);
+                abstractRegTable = new PartitionGpTable(tableName);
             } else {
-                abstractRegTable = new SimplePgTable(tableName, settings);
+                abstractRegTable = new SimplePgTable(tableName);
             }
             table = fillRegularTable(abstractRegTable);
             fillColumns(colCtx, table, schemaName, tablespace);
         } else {
             String partBound = getFullCtxText(partCtx.for_values_bound());
-            table = fillRegularTable(new PartitionPgTable(tableName, partBound, settings));
+            table = fillRegularTable(new PartitionPgTable(tableName, partBound));
             fillTypeColumns(partCtx.list_of_type_column_def(), table, schemaName, tablespace);
             addInherit(table, getIdentifiers(partCtx.parent_table));
         }
@@ -121,7 +121,7 @@ public class CreateTable extends TableAbstract {
             String schemaName) {
         Data_typeContext typeName = typeCtx.type_name;
         String ofType = getTypeName(typeName);
-        TypedPgTable table = new TypedPgTable(tableName, ofType, settings);
+        TypedPgTable table = new TypedPgTable(tableName, ofType);
         fillTypeColumns(typeCtx.list_of_type_column_def(), table, schemaName, tablespace);
         addTypeDepcy(typeName, table);
         fillRegularTable(table);

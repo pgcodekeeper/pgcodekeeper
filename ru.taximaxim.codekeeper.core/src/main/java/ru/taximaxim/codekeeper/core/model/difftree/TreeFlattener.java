@@ -41,9 +41,14 @@ public class TreeFlattener {
     private IgnoreList ignoreList;
     private String[] dbNames;
     private Collection<DbObjType> onlyTypes;
+    private final ISettings settings;
 
     private final List<TreeElement> result = new ArrayList<>();
     private final Deque<TreeElement> addSubtreeRoots = new ArrayDeque<>();
+
+    public TreeFlattener(ISettings settings) {
+        this.settings = settings;
+    }
 
     /**
      * Sets {@link #onlySelected} setting true.
@@ -119,7 +124,7 @@ public class TreeFlattener {
                 (!onlySelected || el.isSelected()) &&
                 (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
                 (!onlyEdits || el.getSide() != DiffSide.BOTH ||
-                        !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
+                        !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget), settings))) {
             result.add(el);
         }
     }

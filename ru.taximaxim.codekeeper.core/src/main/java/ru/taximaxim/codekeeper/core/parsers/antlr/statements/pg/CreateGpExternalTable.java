@@ -60,7 +60,7 @@ public final class CreateGpExternalTable extends TableAbstract {
 
     private AbstractTable defineTable(String tableName, String schemaName) {
         External_table_formatContext formatCtx = ctx.external_table_format();
-        GpExternalTable table = new GpExternalTable(tableName, settings);
+        GpExternalTable table = new GpExternalTable(tableName);
 
         table.setWritable(ctx.WRITABLE() != null);
         table.setWeb(ctx.WEB() != null);

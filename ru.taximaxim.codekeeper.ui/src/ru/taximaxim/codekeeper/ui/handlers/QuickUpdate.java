@@ -73,6 +73,7 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
@@ -195,7 +196,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
-        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject);
+        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject, new UISettings(proj.getProject(), null));
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
@@ -234,7 +235,8 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote);
+        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote,
+                new UISettings(proj.getProject(), null));
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 

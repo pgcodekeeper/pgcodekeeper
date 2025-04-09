@@ -30,7 +30,6 @@ import ru.taximaxim.codekeeper.core.schema.IConstraint;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.IStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsType extends AbstractType implements IStatementContainer {
 
@@ -48,11 +47,11 @@ public final class MsType extends AbstractType implements IStatementContainer {
     private final List<String> constraints = new ArrayList<>();
     private final List<String> indices = new ArrayList<>();
 
-    private final ISettings settings;
+    private final boolean isConcurrentlyMode;
 
-    public MsType(String name, ISettings settings) {
+    public MsType(String name, boolean isConcurrentlyMode) {
         super(name);
-        this.settings = settings;
+        this.isConcurrentlyMode = isConcurrentlyMode;
     }
 
     @Override
@@ -112,7 +111,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
     @Override
     protected AbstractType getTypeCopy() {
-        MsType copy = new MsType(name, settings);
+        MsType copy = new MsType(name, isConcurrentlyMode);
         copy.setNotNull(isNotNull);
         copy.setMemoryOptimized(isMemoryOptimized);
         copy.setBaseType(baseType);
@@ -175,7 +174,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
         var type = stmt.getStatementType();
         switch (type) {
         case INDEX:
-            indices.add(((MsIndex) stmt).getDefinition(true, false, settings));
+            indices.add(((MsIndex) stmt).getDefinition(true, false, isConcurrentlyMode));
             break;
         case CONSTRAINT:
             constraints.add(((IConstraint) stmt).getDefinition());

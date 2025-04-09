@@ -36,8 +36,8 @@ public abstract class AbstractForeignTable extends AbstractPgTable implements Pg
 
     protected final String serverName;
 
-    protected AbstractForeignTable(String name, String serverName, ISettings settings) {
-        super(name, settings);
+    protected AbstractForeignTable(String name, String serverName) {
+        super(name);
         this.serverName = serverName;
     }
 

@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Simple table object
@@ -29,8 +28,8 @@ import ru.taximaxim.codekeeper.core.settings.ISettings;
  */
 public final class SimplePgTable extends AbstractRegularTable {
 
-    public SimplePgTable(String name, ISettings settings) {
-        super(name, settings);
+    public SimplePgTable(String name) {
+        super(name);
     }
 
     @Override
@@ -51,7 +50,7 @@ public final class SimplePgTable extends AbstractRegularTable {
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new SimplePgTable(name, settings);
+        return new SimplePgTable(name);
     }
 
     @Override

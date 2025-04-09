@@ -879,11 +879,11 @@ public class DiffTableViewer extends Composite {
         } else {
             AbstractDatabase source = dbProject.getDbObject();
             AbstractDatabase target = dbRemote.getDbObject();
-            selected = new TreeFlattener()
+            selected = new TreeFlattener(new UISettings(proj, null))
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
                     .flatten(diffTree, new UISettings(proj, null));
-            tabs = DiffTree.getTablesWithChangedColumns(source, target, selected);
+            tabs = DiffTree.getTablesWithChangedColumns(source, target, selected, new UISettings(proj, null));
         }
 
         setInputCollection(selected, dbProject, dbRemote, tabs);

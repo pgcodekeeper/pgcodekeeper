@@ -23,7 +23,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IPartitionTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Partition foreign table object
@@ -35,8 +34,8 @@ public final class PartitionForeignPgTable extends AbstractForeignTable implemen
 
     private final String partitionBounds;
 
-    public PartitionForeignPgTable(String name, String serverName, String partitionBounds, ISettings settings) {
-        super(name, serverName, settings);
+    public PartitionForeignPgTable(String name, String serverName, String partitionBounds) {
+        super(name, serverName);
         this.partitionBounds = partitionBounds;
     }
 
@@ -88,7 +87,7 @@ public final class PartitionForeignPgTable extends AbstractForeignTable implemen
 
     @Override
     protected AbstractTable getTableCopy() {
-        return new PartitionForeignPgTable(name, serverName, partitionBounds, settings);
+        return new PartitionForeignPgTable(name, serverName, partitionBounds);
     }
 
     @Override

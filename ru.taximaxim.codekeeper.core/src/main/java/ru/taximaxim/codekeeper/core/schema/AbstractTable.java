@@ -41,7 +41,6 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     protected final List<AbstractColumn> columns = new ArrayList<>();
     protected final Map<String, String> options = new LinkedHashMap<>();
-    protected final ISettings settings;
 
     private final Map<String, AbstractConstraint> constraints = new LinkedHashMap<>();
 
@@ -50,9 +49,8 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         return DbObjType.TABLE;
     }
 
-    protected AbstractTable(String name, ISettings settings) {
+    protected AbstractTable(String name) {
         super(name);
-        this.settings = settings;
     }
 
     @Override
@@ -182,19 +180,18 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         }
 
         if (obj instanceof AbstractTable table && super.compare(obj)) {
-            boolean isColumnsEqual;
-            if (settings.isIgnoreColumnOrder()) {
-                isColumnsEqual = PgDiffUtils.setlikeEquals(columns, table.columns);
-            } else {
-                isColumnsEqual = columns.equals(table.columns);
-            }
-
-            return isColumnsEqual
+            return columns.equals(table.columns)
                     && getClass().equals(table.getClass())
                     && options.equals(table.options);
         }
 
         return false;
+    }
+
+    @Override
+    public boolean compare(PgStatement obj, ISettings settings) {
+        return compare(obj) &&
+                (!settings.isIgnoreColumnOrder() || PgDiffUtils.setlikeEquals(columns, ((AbstractTable) obj).columns));
     }
 
     @Override
@@ -213,11 +210,8 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     @Override
     public void computeHash(Hasher hasher) {
-        if (settings.isIgnoreColumnOrder()) {
-            hasher.putUnordered(columns);
-        } else {
-            hasher.putOrdered(columns);
-        }
+        hasher.putUnordered(columns);
+//        hasher.putOrdered(columns);
         hasher.put(options);
     }
 
