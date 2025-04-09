@@ -17,9 +17,9 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.NoSuchFileException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -37,7 +37,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationParse
 import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationProperties;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class TokenLoader extends DatabaseLoader {
+public final class TokenLoader extends DatabaseLoader {
 
     private final PgDiffArguments args;
     private final VerificationProperties rules;
@@ -90,7 +90,7 @@ public class TokenLoader extends DatabaseLoader {
         try {
             loader.processVerification(f);
         } catch (NoSuchFileException e) {
-            LOG.info("Verification skipped. File don't exist."); //$NON-NLS-1$
+            LOG.info(Messages.TokenLoader_log_file_not_exist);
         }
     }
 

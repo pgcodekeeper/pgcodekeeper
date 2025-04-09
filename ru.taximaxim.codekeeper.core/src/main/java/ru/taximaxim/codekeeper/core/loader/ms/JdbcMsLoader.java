@@ -45,7 +45,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class JdbcMsLoader extends JdbcLoaderBase {
+public final class JdbcMsLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcMsLoader.class);
 
@@ -58,8 +58,8 @@ public class JdbcMsLoader extends JdbcLoaderBase {
     public AbstractDatabase load() throws IOException, InterruptedException {
         MsDatabase d = (MsDatabase) createDb(getSettings());
 
-        LOG.info("Reading db using JDBC.");
-        setCurrentOperation("connection setup");
+        LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
+        setCurrentOperation(Messages.JdbcChLoader_log_connection_db);
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement()) {
             this.connection = connection;
@@ -74,6 +74,8 @@ public class JdbcMsLoader extends JdbcLoaderBase {
             //setupMonitorWork();
 
             queryCheckMsVersion();
+
+            LOG.info(Messages.JdbcLoader_log_read_db_objects);
             new MsSchemasReader(this, d).read();
             new MsTablesReader(this).read();
             new MsFPVTReader(this).read();
@@ -92,7 +94,7 @@ public class JdbcMsLoader extends JdbcLoaderBase {
 
             connection.commit();
 
-            LOG.info("Database object has been successfully queried from JDBC");
+            LOG.info(Messages.JdbcLoader_log_succes_queried);
         } catch (InterruptedException ex) {
             throw ex;
         } catch (Exception e) {

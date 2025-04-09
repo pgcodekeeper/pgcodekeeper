@@ -52,7 +52,7 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaRelation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaStorage;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class JdbcSystemLoader extends JdbcLoaderBase {
+public final class JdbcSystemLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcSystemLoader.class);
 
@@ -73,9 +73,8 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
     public MetaStorage getStorageFromJdbc() throws IOException, InterruptedException {
         MetaStorage storage = new MetaStorage();
-        LOG.info("Reading db using JDBC.");
-        setCurrentOperation("connection setup");
-
+        LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
+        setCurrentOperation(Messages.JdbcChLoader_log_connection_db);
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement()) {
             this.connection = connection;
@@ -95,7 +94,7 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
 
             connection.commit();
             finishLoaders();
-            LOG.info("Database object has been successfully queried from JDBC");
+            LOG.info(Messages.JdbcLoader_log_succes_queried);
         } catch (InterruptedException ex) {
             throw ex;
         } catch (Exception e) {
@@ -192,19 +191,11 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String schemaName = result.getString(NAMESPACE_NAME);
                 String relationName = result.getString(NAME);
 
-                DbObjType type;
-                switch (result.getString("relkind")) {
-                case "v":
-                case "m":
-                    type = DbObjType.VIEW;
-                    break;
-                case "S":
-                    type = DbObjType.SEQUENCE;
-                    break;
-                default:
-                    type = DbObjType.TABLE;
-                    break;
-                }
+                DbObjType type = switch (result.getString("relkind")) {
+                case "v", "m" -> DbObjType.VIEW;
+                case "S" -> DbObjType.SEQUENCE;
+                default -> DbObjType.TABLE;
+                };
                 MetaRelation relation = new MetaRelation(schemaName, relationName, type);
 
                 String[] colNames = JdbcReader.getColArray(result, "col_names");
@@ -262,20 +253,12 @@ public class JdbcSystemLoader extends JdbcLoaderBase {
                 String target = result.getString("target");
                 JdbcReader.checkTypeValidity(target);
                 String type = result.getString("castcontext");
-                CastContext ctx;
-                switch (type) {
-                case "e":
-                    ctx = CastContext.EXPLICIT;
-                    break;
-                case "a":
-                    ctx = CastContext.ASSIGNMENT;
-                    break;
-                case "i":
-                    ctx = CastContext.IMPLICIT;
-                    break;
-                default:
-                    throw new IllegalStateException("Unknown cast context: " + type);
-                }
+                CastContext ctx = switch (type) {
+                case "e" -> CastContext.EXPLICIT;
+                case "a" -> CastContext.ASSIGNMENT;
+                case "i" -> CastContext.IMPLICIT;
+                default -> throw new IllegalStateException("Unknown cast context: " + type);
+                };
                 storage.addMetaChild(new MetaCast(source, target, ctx));
             }
         }

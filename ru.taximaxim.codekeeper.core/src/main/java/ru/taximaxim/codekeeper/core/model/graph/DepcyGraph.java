@@ -29,6 +29,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
@@ -49,11 +50,11 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class DepcyGraph {
+public final class DepcyGraph {
 
     private static final Logger LOG = LoggerFactory.getLogger(DepcyGraph.class);
 
-    private static final String REMOVE_DEP = "Remove dependency from {0} to {1}";
+    private static final String REMOVE_DEP = Messages.DepcyGraph_log_remove_deps;
 
     private final Graph<PgStatement, DefaultEdge> graph =
             new SimpleDirectedGraph<>(DefaultEdge.class);
@@ -237,7 +238,7 @@ public class DepcyGraph {
         for (Inherits in : tbl.getInherits()) {
             IStatement parentTbl = db.getStatement(new GenericColumn(in.getKey(), in.getValue(), DbObjType.TABLE));
             if (parentTbl == null) {
-                LOG.error("There is no such partitioned table as: {}", in.getQualifiedName());
+                LOG.error(Messages.DepcyGraph_log_no_such_table, in.getQualifiedName());
                 continue;
             }
 
@@ -249,7 +250,7 @@ public class DepcyGraph {
                 if (parentCol != null) {
                     graph.addEdge(col, parentCol);
                 } else {
-                    LOG.error("The parent ''{}.{}'' column for ''{}.{}.{}'' column is missed.",
+                    LOG.error(Messages.DepcyGraph_log_col_is_missed,
                             in.getQualifiedName(), colName, col.getSchemaName(), col.getParent().getName(), colName);
                 }
             }

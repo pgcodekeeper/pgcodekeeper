@@ -100,9 +100,27 @@ public class Messages extends NLS {
     public static String Main_show_stacktrace;
     public static String Main_cach_clear;
 
+    public static String Main_log_build_graph_deps;
+    public static String Main_log_contains_dangerous_statements;
+    public static String Main_log_create_script;
+    public static String Main_log_finish_code_verify;
+    public static String Main_log_run_insert_data;
+    public static String Main_log_running_error;
+    public static String Main_log_start_code_verify;
+
+    public static String Main_log_start_export_proj;
+    public static String Main_log_start_insert_data;
+
+    public static String Main_log_start_update_proj;
+
+    public static String Main_log_succes_finish;
+    public static String Main_log_apply_migration_script;
+
     public static String Utils_error_get_version;
 
     public static String DatabaseType_unsupported_type;
+
+    public static String PgDiffCli_log_load_ignored_obj;
     public static String UsageHelp;
     public static String Version;
 

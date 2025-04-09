@@ -9,11 +9,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added pgCodeKeeper build for Mac OS.
+- The ability to use a custom logback.xml configuration file for logging in the CLI version has been added. Additionally, logging of main operations has been added to the log file.
+
 ### Changed
 
 ### Fixed
 
 - Fixed a bug with the case of names of objects in MS SQL.
+- Fixed the error of incorrect reading of privileges with user names from the database.
 
 ### Removed
 

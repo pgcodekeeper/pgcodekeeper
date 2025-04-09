@@ -54,8 +54,8 @@ public final class JdbcChLoader extends JdbcLoaderBase {
     public AbstractDatabase load() throws IOException, InterruptedException {
         ChDatabase d = (ChDatabase) createDb(getSettings());
 
-        LOG.info("Reading db using JDBC.");
-        setCurrentOperation("connection setup");
+        LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
+        setCurrentOperation(Messages.JdbcChLoader_log_connection_db);
         try (Connection connection = connector.getConnection();
                 Statement statement = connection.createStatement()) {
             this.connection = connection;
@@ -63,6 +63,7 @@ public final class JdbcChLoader extends JdbcLoaderBase {
 
             connection.setAutoCommit(false);
 
+            LOG.info(Messages.JdbcLoader_log_read_db_objects);
             new ChSchemasReader(this, d).read();
             new ChFunctionsReader(this, d).read();
             new ChRelationsReader(this).read();
@@ -70,14 +71,13 @@ public final class JdbcChLoader extends JdbcLoaderBase {
             new ChUsersReader(this, d).read();
             new ChRolesReader(this, d).read();
             if (!getSettings().isIgnorePrivileges()) {
-                setCurrentOperation("reading privileges");
                 new ChPrivillegesReader(this, d).read();
             }
 
             finishLoaders();
             connection.commit();
 
-            LOG.info("Database object has been successfully queried from JDBC");
+            LOG.info(Messages.JdbcLoader_log_succes_queried);
         } catch (InterruptedException ex) {
             throw ex;
         } catch (Exception e) {
@@ -92,6 +92,6 @@ public final class JdbcChLoader extends JdbcLoaderBase {
     public String getSchemas() {
         return schemaIds.keySet().stream()
                 .map(e -> PgDiffUtils.quoteString(e.toString()))
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(", ")); //$NON-NLS-1$
     }
 }

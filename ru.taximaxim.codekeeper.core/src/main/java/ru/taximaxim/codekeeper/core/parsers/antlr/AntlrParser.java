@@ -303,44 +303,33 @@ public final class AntlrParser {
     }
 
     public static void checkToClean(DatabaseType databaseType, long cleaningInterval) {
-        long lastParserStart;
-        switch (databaseType) {
-        case CH:
-            lastParserStart = chParserLastStart;
-            break;
-        case MS:
-            lastParserStart = msParserLastStart;
-            break;
-        case PG:
-            lastParserStart = pgParserLastStart;
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
-        }
+        long lastParserStart = switch (databaseType) {
+        case CH -> chParserLastStart;
+        case MS -> msParserLastStart;
+        case PG -> pgParserLastStart;
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        };
         if (lastParserStart != 0 && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
             cleanParserCache(databaseType);
         }
     }
 
     private static void cleanParserCache(DatabaseType databaseType) {
-        Class<? extends Parser> parserClazz;
-        switch (databaseType) {
-        case CH:
+        Class<? extends Parser> parserClazz = switch (databaseType) {
+        case CH -> {
             chParserLastStart = 0;
-            parserClazz = CHParser.class;
-            break;
-        case MS:
-            msParserLastStart = 0;
-            parserClazz = TSQLParser.class;
-            break;
-        case PG:
-            pgParserLastStart = 0;
-            parserClazz = SQLParser.class;
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+            yield CHParser.class;
         }
-
+        case MS -> {
+            msParserLastStart = 0;
+            yield TSQLParser.class;
+        }
+        case PG -> {
+            pgParserLastStart = 0;
+            yield SQLParser.class;
+        }
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        };
         makeBasicParser(parserClazz, ";", "fake string to clean parser cache").getInterpreter().clearDFA();
     }
 

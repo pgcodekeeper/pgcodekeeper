@@ -26,17 +26,21 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
 
-public class ScriptParser {
+public final class ScriptParser {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ScriptParser.class);
     private final String script;
 
     private final List<PgObjLocation> batches;
@@ -48,6 +52,7 @@ public class ScriptParser {
         this.script = script;
         PgDiffArguments args = new PgDiffArguments();
         args.setDbType(dbType);
+        LOG.info(Messages.ScriptParser_log_load_dump);
         PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
                 name, new CliSettings(args), new NullProgressMonitor(), 0);
@@ -79,7 +84,7 @@ public class ScriptParser {
     public String getErrorMessage() {
         if (!errors.isEmpty()) {
             StringBuilder sb = new StringBuilder();
-            sb.append("Errors while parse script:\n");
+            sb.append("Errors while parse script:\n"); //$NON-NLS-1$
             for (Object er : errors) {
                 sb.append(er).append('\n');
             }

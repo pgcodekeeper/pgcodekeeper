@@ -33,6 +33,7 @@ import ru.taximaxim.codekeeper.core.loader.QueryBuilder;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcReader;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -100,7 +101,7 @@ public final class SequencesReader extends JdbcReader {
         if (isDefault || "a".equals(identityType)) {
             AbstractTable table = schema.getTable(refTable);
             if (table == null) {
-                LOG.error("Not found table {} for sequence {}", table, s);
+                LOG.error(Messages.SequencesReader_log_not_found_table, table, s);
                 return;
             }
             PgColumn column = (PgColumn) table.getColumn(refColumn);

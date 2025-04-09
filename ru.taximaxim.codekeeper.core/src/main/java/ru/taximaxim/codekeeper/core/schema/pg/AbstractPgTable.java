@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractSequence;
@@ -244,10 +245,10 @@ public abstract class AbstractPgTable extends AbstractTable {
                 if (inhtTable != null) {
                     inhColumns = Stream.concat(inhColumns, inhtTable.getRelationColumns());
                 } else {
-                    LOG.warn("Inherit table not found: {}.{} ", schemaName, tableName);
+                    LOG.warn(Messages.AbstractPgTable_log_inherits_not_found, schemaName, tableName);
                 }
             } else {
-                LOG.warn("Inherit schema not found: {}", schemaName);
+                LOG.warn(Messages.AbstractPgTable_log_schemas_not_found, schemaName);
             }
         }
         return Stream.concat(inhColumns, localColumns);
