@@ -49,7 +49,7 @@ public class DepcyFinder {
     private final List<PrintObj> printObjects = new ArrayList<>();
 
     private DepcyFinder(AbstractDatabase db, int depth, boolean isReverse,
-            Collection<DbObjType> filterObjTypes, boolean isInvertFilter, ISettings settings) {
+            Collection<DbObjType> filterObjTypes, boolean isInvertFilter) {
         this.db = db;
         DepcyGraph dg = new DepcyGraph(db);
         this.graph = isReverse ? dg.getGraph() : dg.getReversedGraph();
@@ -64,14 +64,14 @@ public class DepcyFinder {
 
     public static final List<String> byPatterns(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
             boolean isInvertFilter, AbstractDatabase db, Collection<String> names, ISettings settings) {
-        DepcyFinder depcyFinder = new DepcyFinder(db, depth, isReverse, filterObjTypes, isInvertFilter, settings);
+        DepcyFinder depcyFinder = new DepcyFinder(db, depth, isReverse, filterObjTypes, isInvertFilter);
         depcyFinder.searchDeps(names);
         return depcyFinder.getResult();
     }
 
     public static final List<String> byStatement(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
-            PgStatement st, ISettings settings) {
-        DepcyFinder depcyFinder = new DepcyFinder(st.getDatabase(), depth, isReverse, filterObjTypes, false, settings);
+            PgStatement st) {
+        DepcyFinder depcyFinder = new DepcyFinder(st.getDatabase(), depth, isReverse, filterObjTypes, false);
         depcyFinder.fillTree(st, START_LEVEL, new HashSet<>(), null, 0);
         return depcyFinder.getResult();
     }

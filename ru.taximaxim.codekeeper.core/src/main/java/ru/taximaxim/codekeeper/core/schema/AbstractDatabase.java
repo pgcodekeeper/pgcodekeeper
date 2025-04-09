@@ -35,7 +35,6 @@ import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Stores database information.
@@ -196,7 +195,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         hasher.putUnordered(schemas);
     }
 
-    public void addLib(AbstractDatabase lib, String libName, String owner, ISettings settings) {
+    public void addLib(AbstractDatabase lib, String libName, String owner) {
         lib.getDescendants().forEach(st -> {
             // do not override dependent library name
             if (libName != null && st.getLibName() == null) {

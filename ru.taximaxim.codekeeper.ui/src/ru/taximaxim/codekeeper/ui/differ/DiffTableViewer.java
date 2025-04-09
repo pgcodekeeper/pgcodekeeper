@@ -553,7 +553,7 @@ public class DiffTableViewer extends Composite {
         AbstractDatabase source = graphDlg.isProject() ? dbProject.getDbObject() : dbRemote.getDbObject();
         PgStatement st = el.getPgStatement(source);
         List<String> deps = DepcyFinder.byStatement(graphDlg.getGraphDepth(), graphDlg.isReverse(),
-                graphDlg.getObjTypes(), st, new UISettings(proj, null));
+                graphDlg.getObjTypes(), st);
 
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {

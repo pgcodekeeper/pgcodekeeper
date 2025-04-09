@@ -65,7 +65,7 @@ public final class LibraryLoader extends DatabaseLoader {
     public void loadLibraries(ISettings settings, boolean isIgnorePriv,
             Collection<String> paths) throws InterruptedException, IOException {
         for (String path : paths) {
-            database.addLib(getLibrary(path, settings, isIgnorePriv), path, null, settings);
+            database.addLib(getLibrary(path, settings, isIgnorePriv), path, null);
         }
     }
 
@@ -79,7 +79,7 @@ public final class LibraryLoader extends DatabaseLoader {
             for (PgLibrary lib : xmlLibs) {
                 String path = lib.getPath();
                 AbstractDatabase l = getLibrary(path, settings, lib.isIgnorePriv(), xmlPath);
-                database.addLib(l, path, lib.getOwner(), settings);
+                database.addLib(l, path, lib.getOwner());
             }
         } finally {
             loadNested = oldLoadNested;
@@ -211,7 +211,7 @@ public final class LibraryLoader extends DatabaseLoader {
             throws InterruptedException, IOException {
         String filePath = sub.toString();
         if (filePath.endsWith(".zip")) {
-            db.addLib(getLibrary(filePath, settings, settings.isIgnorePrivileges()), null, null, settings);
+            db.addLib(getLibrary(filePath, settings, settings.isIgnorePrivileges()), null, null);
         } else if (filePath.endsWith(".sql")) {
             PgDumpLoader loader = new PgDumpLoader(sub, settings);
             loader.loadDatabase(db, antlrTasks);
