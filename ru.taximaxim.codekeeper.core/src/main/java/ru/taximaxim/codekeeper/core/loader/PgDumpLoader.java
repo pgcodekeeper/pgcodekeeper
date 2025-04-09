@@ -27,6 +27,7 @@ import java.util.Queue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -144,7 +145,7 @@ public class PgDumpLoader extends DatabaseLoader {
         case MS -> new MsSchema(Consts.DBO);
         case PG -> new PgSchema(Consts.PUBLIC);
         case CH -> new ChSchema(Consts.CH_DEFAULT_DB);
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
         d.addSchema(schema);
         PgObjLocation loc = new PgObjLocation.Builder()

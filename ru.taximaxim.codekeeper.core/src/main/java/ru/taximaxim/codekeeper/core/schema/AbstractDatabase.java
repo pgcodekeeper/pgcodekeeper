@@ -205,7 +205,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
             if (st.isOwned() && owner != null && !owner.isEmpty()) {
                 st.setOwner(owner);
             }
-            concat(st, settings);
+            concat(st);
         });
 
         lib.analysisLaunchers.stream()
@@ -223,7 +223,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         overrides.add(override);
     }
 
-    protected void concat(PgStatement st, ISettings settings) {
+    protected void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
         PgStatement parent = st.parent;
         String parentName = parent.getName();

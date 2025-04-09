@@ -32,7 +32,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.IOperator;
 import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Stores database information.
@@ -198,7 +197,7 @@ public final class PgDatabase extends AbstractDatabase {
     }
 
     @Override
-    protected void concat(PgStatement st, ISettings settings) {
+    protected void concat(PgStatement st) {
         DbObjType type = st.getStatementType();
         String name = st.getName();
         if (type == DbObjType.SCHEMA && Consts.PUBLIC.equals(name) && !st.hasChildren()) {
@@ -206,7 +205,7 @@ public final class PgDatabase extends AbstractDatabase {
             return;
         }
 
-        super.concat(st, settings);
+        super.concat(st);
     }
 
     public void sortColumns() {

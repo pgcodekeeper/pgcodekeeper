@@ -213,7 +213,6 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected SQLActionType getCommentsOrder(SQLScript script) {
-        // TODO decide what do with this
         return script.getSettings().isCommentsToEnd() ? SQLActionType.POST : SQLActionType.MID;
     }
 
@@ -427,7 +426,6 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected void appendIfNotExists(StringBuilder sb, ISettings settings) {
-        // TODO decide what do with this
         if (settings.isGenerateExists()) {
             sb.append("IF NOT EXISTS ");
         }

@@ -285,8 +285,7 @@ public class PgDiff {
 
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, settings);
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
-        createScript(depRes, selected, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget);
+        createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
 
         if (!depRes.getActions().isEmpty()) {
             script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN); //$NON-NLS-1$

@@ -245,12 +245,12 @@ public class UISettings implements ISettings {
         return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
     }
 
-    private List<String> addPathsIfExists(String postDir, String postScript) {
+    private List<String> addPathsIfExists(String dir, String script) {
         List<String> paths = new ArrayList<>();
         if (project != null) {
-            addPathIfExists(paths, Paths.get(project.getLocationURI()).resolve(FILE.POST_DIR));
+            addPathIfExists(paths, Paths.get(project.getLocationURI()).resolve(dir));
         }
-        addPathIfExists(paths, PrePostScriptPrefPage.getScriptPath(FILE.POST_SCRIPT));
+        addPathIfExists(paths, PrePostScriptPrefPage.getScriptPath(script));
         return paths;
     }
 

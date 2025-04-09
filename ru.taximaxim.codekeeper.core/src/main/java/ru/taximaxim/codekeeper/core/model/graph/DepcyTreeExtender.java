@@ -61,7 +61,7 @@ public class DepcyTreeExtender {
         this.dbTarget = dbTarget;
         this.root = root;
         userSelection = new TreeFlattener().onlySelected().flatten(root, settings);
-        depRes = new SimpleDepcyResolver(dbSource, dbTarget, false, settings);
+        depRes = new SimpleDepcyResolver(dbSource, dbTarget, false);
     }
 
     /**

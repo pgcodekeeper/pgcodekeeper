@@ -32,7 +32,7 @@ abstract class AbstractFilterTest {
 
     protected static final String RIGHT = "RIGHT STRING";
 
-    protected final static ISettings SETTINGS = new CliSettings(new PgDiffArguments());
+    protected static final ISettings SETTINGS = new CliSettings(new PgDiffArguments());
 
     @Mock
     protected TreeElement treeElement;

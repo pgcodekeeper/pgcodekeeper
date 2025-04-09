@@ -115,8 +115,8 @@ public final class DepcyResolver {
     public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, ISettings settings) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
-        this.oldDepcyGraph = new DepcyGraph(oldDatabase, settings);
-        this.newDepcyGraph = new DepcyGraph(newDatabase, settings);
+        this.oldDepcyGraph = new DepcyGraph(oldDatabase);
+        this.newDepcyGraph = new DepcyGraph(newDatabase);
         this.settings = settings;
     }
 
