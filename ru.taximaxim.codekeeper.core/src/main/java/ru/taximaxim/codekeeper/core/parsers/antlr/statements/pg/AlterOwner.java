@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterOwner extends PgParserAbstract {
+public final class AlterOwner extends PgParserAbstract {
 
     private final Alter_owner_statementContext ctx;
     private final Map<PgStatement, StatementOverride> overrides;

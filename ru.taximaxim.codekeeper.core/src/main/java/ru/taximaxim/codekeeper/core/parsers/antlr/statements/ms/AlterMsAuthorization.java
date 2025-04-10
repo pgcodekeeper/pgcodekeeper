@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsAuthorization extends MsParserAbstract {
+public final class AlterMsAuthorization extends MsParserAbstract {
 
     private final Alter_authorizationContext ctx;
     private final Map<PgStatement, StatementOverride> overrides;

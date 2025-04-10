@@ -71,8 +71,8 @@ public class ProjectLoader extends DatabaseLoader {
     public ProjectLoader(String dirPath, ISettings settings,
             IProgressMonitor monitor, List<Object> errors, IgnoreSchemaList ignoreSchemaList) {
         super(errors);
-        this.settings = settings;
         this.dirPath = dirPath;
+        this.settings = settings;
         this.monitor = monitor;
         this.ignoreSchemaList = ignoreSchemaList;
     }

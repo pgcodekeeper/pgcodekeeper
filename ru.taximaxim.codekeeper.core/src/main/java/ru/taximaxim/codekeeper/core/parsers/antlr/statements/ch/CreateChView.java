@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChView;
 import ru.taximaxim.codekeeper.core.schema.ch.ChView.ChViewType;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChView extends ChParserAbstract {
+public final class CreateChView extends ChParserAbstract {
 
     private Create_view_stmtContext ctx;
     private CommonTokenStream stream;

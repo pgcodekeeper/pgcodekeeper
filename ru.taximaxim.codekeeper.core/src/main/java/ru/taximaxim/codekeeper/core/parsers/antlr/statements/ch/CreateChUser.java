@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChUser;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChUser extends ChParserAbstract {
+public final class CreateChUser extends ChParserAbstract {
 
     private final Create_user_stmtContext ctx;
 

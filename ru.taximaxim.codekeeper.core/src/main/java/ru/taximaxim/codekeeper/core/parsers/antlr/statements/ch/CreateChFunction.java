@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChFunction extends ChParserAbstract {
+public final class CreateChFunction extends ChParserAbstract {
 
     private final Create_function_stmtContext ctx;
 

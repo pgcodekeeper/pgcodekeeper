@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class InsertMsStatement extends MsParserAbstract {
+public final class InsertMsStatement extends MsParserAbstract {
 
     private final Insert_statementContext ctx;
 

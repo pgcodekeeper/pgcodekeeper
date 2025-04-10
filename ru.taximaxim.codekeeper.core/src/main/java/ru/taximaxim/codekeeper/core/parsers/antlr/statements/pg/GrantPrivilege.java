@@ -49,7 +49,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class GrantPrivilege extends PgParserAbstract {
+public final class GrantPrivilege extends PgParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;

@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Insert_stm
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class InsertStatement extends PgParserAbstract {
+public final class InsertStatement extends PgParserAbstract {
 
     private final Insert_stmt_for_psqlContext ctx;
 

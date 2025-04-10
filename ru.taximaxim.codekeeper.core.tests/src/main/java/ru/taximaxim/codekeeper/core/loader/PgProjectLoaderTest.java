@@ -51,7 +51,7 @@ class PgProjectLoaderTest {
             ISettings settings = new CliSettings(args);
             AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
 
-            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8, new CliSettings(args)).exportFull();
+            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");
@@ -99,7 +99,7 @@ class PgProjectLoaderTest {
                     .onlyTypes(settings.getAllowedTypes())
                     .flatten(root);
 
-            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8, new CliSettings(args))
+            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8, settings)
                     .exportProject();
 
             AbstractDatabase loader = new ProjectLoader(dir.toString(), settings).load();

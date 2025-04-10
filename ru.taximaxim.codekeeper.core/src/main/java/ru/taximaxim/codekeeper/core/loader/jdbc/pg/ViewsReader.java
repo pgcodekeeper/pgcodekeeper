@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.MaterializedPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class ViewsReader extends JdbcReader {
+public final class ViewsReader extends JdbcReader {
 
     public ViewsReader(JdbcLoaderBase loader) {
         super(loader);

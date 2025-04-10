@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgServer;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateServer extends PgParserAbstract {
+public final class CreateServer extends PgParserAbstract {
 
     private final Create_server_statementContext ctx;
 

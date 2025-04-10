@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class TablesReader extends JdbcReader {
+public final class TablesReader extends JdbcReader {
 
     private static final String CREATE_TABLE = "CREATE TABLE noname () ";
 

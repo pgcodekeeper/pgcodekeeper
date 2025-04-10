@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsRole;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsRole extends MsParserAbstract {
+public final class CreateMsRole extends MsParserAbstract {
 
     private final Create_db_roleContext ctx;
 

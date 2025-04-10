@@ -73,11 +73,10 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
-public class QuickUpdate extends AbstractHandler {
+public final class QuickUpdate extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
@@ -195,8 +194,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         DbSource dbRemote = DbSource.fromDbInfo(dbInfo, proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
-        var settings = new UISettings(proj.getProject(), null);
-        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject, settings);
+        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject);
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
@@ -207,8 +205,8 @@ class QuickUpdateJob extends SingletonEditorJob {
             return;
         }
 
-        Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(),
-                treeFull, false, timezone, dbType, proj.getProject());
+        Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(), treeFull, false, timezone,
+                proj.getProject());
         differ.run(monitor.newChild(1));
 
         checkFileModified();
@@ -235,7 +233,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote, settings);
+        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote);
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 

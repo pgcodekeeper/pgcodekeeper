@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgForeignDataWrapper;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateFdw extends PgParserAbstract {
+public final class CreateFdw extends PgParserAbstract {
 
     public static final String VALIDATOR_SIGNATURE  = "(text[], oid)";
     public static final String HANDLER_SIGNATURE  = "()";

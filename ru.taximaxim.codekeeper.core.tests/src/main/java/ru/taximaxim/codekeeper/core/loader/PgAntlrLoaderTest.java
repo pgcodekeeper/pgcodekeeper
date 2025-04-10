@@ -58,6 +58,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Tests for PgDiffLoader class.
@@ -83,8 +84,7 @@ class PgAntlrLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        var settings = new CliSettings(args);
-        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, new CliSettings(args));
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -98,17 +98,15 @@ class PgAntlrLoaderTest {
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
-        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, new CliSettings(args));
+        ISettings settings = new CliSettings(args);
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING, new CliSettings(args)).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING, settings).exportFull();
 
-            args = new PgDiffArguments();
-            args.setInCharsetName(ENCODING);
-            args.setKeepNewlines(true);
-            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), new CliSettings(args))
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), settings)
                     .loadAndAnalyze();
 
             // check the same db similarity before and after export

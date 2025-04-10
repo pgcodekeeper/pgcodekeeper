@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class SQLScript {
+public final class SQLScript {
 
     private final ISettings settings;
     private static final String PG_SEPARATOR = ";";

@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChSchema extends ChParserAbstract {
+public final class CreateChSchema extends ChParserAbstract {
 
     private final Create_database_stmtContext ctx;
 

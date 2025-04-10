@@ -122,6 +122,7 @@ import ru.taximaxim.codekeeper.core.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -168,7 +169,7 @@ import ru.taximaxim.codekeeper.ui.views.DBPair;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
 
-public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
+public final class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -201,6 +202,8 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     private DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
+    private ISettings settings;
+
     public IProject getProject() {
         return proj.getProject();
     }
@@ -226,6 +229,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         setPartName(in.getName());
 
         proj = new PgDbProject(in.getProject());
+        settings = new UISettings(getProject(), oneTimePrefs);
         sp = new ProjectEditorSelectionProvider(getProject());
         dbType = OpenProjectUtils.getDatabaseType(getProject());
 
@@ -268,7 +272,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         diffTable.getViewer().addPostSelectionChangedListener(
                 e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
-        diffPane = new DiffPaneViewer(sashOuter, proj.getProject());
+        diffPane = new DiffPaneViewer(sashOuter, getProject());
 
         // notifications container
         // simplified for 1 static notification
@@ -349,8 +353,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
                     manualDepciesSource, manualDepciesTarget,
                     AbstractDatabase.listPgObjects(dbRemote.getDbObject()),
                     AbstractDatabase.listPgObjects(dbProject.getDbObject()),
-                    Messages.database, Messages.ProjectEditorDiffer_project,
-                    new UISettings(getProject(), oneTimePrefs));
+                    Messages.database, Messages.ProjectEditorDiffer_project);
             if (dialog.open() == Window.OK) {
                 manualDepciesSource = dialog.getDepciesSourceList();
                 manualDepciesTarget = dialog.getDepciesTargetList();
@@ -467,7 +470,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
         DatabaseType dbType = OpenProjectUtils.getDatabaseType(getProject());
-        
         if (isDbInfo && ((DbInfo) currentRemote).getDbType() != dbType) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
@@ -493,12 +495,12 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
             DbInfo dbInfo = (DbInfo) currentRemote;
             DbSource dbRemote = DbSource.fromDbInfo(dbInfo, charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
                     getProject(), oneTimePrefs);
-            newDiffer = new TreeDiffer(dbProject, dbRemote, new UISettings(getProject(), oneTimePrefs));
+            newDiffer = new TreeDiffer(dbProject, dbRemote);
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
             DbSource dbRemote = DbSource.fromFile(file, getProject(), oneTimePrefs);
-            newDiffer = new TreeDiffer(dbProject, dbRemote, new UISettings(getProject(), oneTimePrefs));
+            newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
         if (!OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
@@ -710,8 +712,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC),
-                OpenProjectUtils.getDatabaseType(getProject()), getProject(), oneTimePrefs);
+                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs);
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
@@ -918,8 +919,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         TreeElement treeCopy = diffTree.getCopy();
         Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(
-                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy, new UISettings(getProject(), oneTimePrefs))
-                .getDepcies();
+                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy, settings).getDepcies();
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog
@@ -1033,7 +1033,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
                 IProject proj) {
-            super(parent, viewOnly, lineManager, location, dbType, proj);
+            super(parent, viewOnly, lineManager, location, dbType, new UISettings(proj, oneTimePrefs));
         }
 
         @Override

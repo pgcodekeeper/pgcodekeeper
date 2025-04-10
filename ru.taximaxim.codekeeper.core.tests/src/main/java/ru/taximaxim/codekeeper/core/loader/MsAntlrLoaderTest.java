@@ -47,6 +47,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Tests for PgDiffLoader class.
@@ -81,8 +82,7 @@ class MsAntlrLoaderTest {
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        var settings = new CliSettings(args);
-        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, settings);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, new CliSettings(args));
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -97,19 +97,15 @@ class MsAntlrLoaderTest {
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, new CliSettings(args));
+        ISettings settings = new CliSettings(args); 
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, settings);
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING, new CliSettings(args)).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING, settings).exportFull();
 
-            args = new PgDiffArguments();
-            args.setInCharsetName(ENCODING);
-            args.setKeepNewlines(true);
-            args.setDbType(DatabaseType.MS);
-            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), new CliSettings(args))
-                    .loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), settings).loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
@@ -560,8 +556,7 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        var settings = new CliSettings(new PgDiffArguments());
-        MsType type = new MsType("testtt", settings.isConcurrentlyMode());
+        MsType type = new MsType("testtt", false);
         MsColumn col = new MsColumn("a");
         col.setType(INT);
         type.addChild(col);

@@ -43,7 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CommentOn extends PgParserAbstract {
+public final class CommentOn extends PgParserAbstract {
 
     private final Comment_on_statementContext ctx;
 

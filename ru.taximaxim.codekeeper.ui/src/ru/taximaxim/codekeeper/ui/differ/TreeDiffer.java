@@ -32,7 +32,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -46,7 +45,6 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private final DbSource dbSource;
     private final DbSource dbTarget;
-    private final ISettings settings;
 
     private TreeElement diffTree;
 
@@ -70,11 +68,9 @@ public class TreeDiffer implements IRunnableWithProgress {
         return diffTree;
     }
 
-    public TreeDiffer(DbSource dbSource, DbSource dbTarget, ISettings settings) {
+    public TreeDiffer(DbSource dbSource, DbSource dbTarget) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
-        this.settings = settings;
-
     }
 
     @Override
@@ -105,7 +101,7 @@ public class TreeDiffer implements IRunnableWithProgress {
         + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
 
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm, settings);
+        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
         PgDiffUtils.checkCancelled(pm);
         monitor.done();
     }

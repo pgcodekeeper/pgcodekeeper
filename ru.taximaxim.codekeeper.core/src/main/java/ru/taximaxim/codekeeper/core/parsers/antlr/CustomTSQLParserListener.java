@@ -78,7 +78,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CustomTSQLParserListener extends CustomParserListener<MsDatabase>
+public final class CustomTSQLParserListener extends CustomParserListener<MsDatabase>
 implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;

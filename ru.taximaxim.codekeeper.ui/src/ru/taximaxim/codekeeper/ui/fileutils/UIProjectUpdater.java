@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
-public class UIProjectUpdater extends ProjectUpdater{
+public final class UIProjectUpdater extends ProjectUpdater {
 
     public UIProjectUpdater(AbstractDatabase dbNew, PgDbProject proj) throws CoreException {
         this(dbNew, null, null, proj, false);

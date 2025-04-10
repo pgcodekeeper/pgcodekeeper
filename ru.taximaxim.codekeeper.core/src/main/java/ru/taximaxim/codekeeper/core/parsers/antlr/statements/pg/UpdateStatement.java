@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class UpdateStatement extends PgParserAbstract {
+public final class UpdateStatement extends PgParserAbstract {
 
     private final Update_stmt_for_psqlContext ctx;
 

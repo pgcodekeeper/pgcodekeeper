@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alter_user_
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterChOther extends ChParserAbstract {
+public final class AlterChOther extends ChParserAbstract {
 
     private final Alter_stmtContext ctx;
 

@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSequence;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsSequence extends MsParserAbstract {
+public final class CreateMsSequence extends MsParserAbstract {
 
     private final Create_sequenceContext ctx;
 

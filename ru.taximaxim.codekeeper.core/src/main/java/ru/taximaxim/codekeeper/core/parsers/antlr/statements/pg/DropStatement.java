@@ -41,7 +41,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class DropStatement extends PgParserAbstract {
+public final class DropStatement extends PgParserAbstract {
 
     private final Schema_dropContext ctx;
 

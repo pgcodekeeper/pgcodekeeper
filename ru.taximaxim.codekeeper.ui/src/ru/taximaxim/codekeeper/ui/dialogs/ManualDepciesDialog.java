@@ -26,10 +26,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ManualDepciesDialog extends TrayDialog {
+public final class ManualDepciesDialog extends TrayDialog {
 
     private final List<Entry<PgStatement, PgStatement>> depciesSource;
     private final List<Entry<PgStatement, PgStatement>> depciesTarget;
@@ -37,7 +36,6 @@ public class ManualDepciesDialog extends TrayDialog {
     private final Map<String, PgStatement> objectsTarget;
     private final String groupSourceName;
     private final String groupTargetName;
-    private final ISettings settings;
 
     private ManualDepciesGroup depcyGroupSource;
     private ManualDepciesGroup depcyGroupTarget;
@@ -54,7 +52,7 @@ public class ManualDepciesDialog extends TrayDialog {
             List<Entry<PgStatement, PgStatement>> depciesSource,
             List<Entry<PgStatement, PgStatement>> depciesTarget,
             Map<String, PgStatement> objectsSource, Map<String, PgStatement> objectsTarget,
-            String groupSourceName, String groupTargetName, ISettings settings) {
+            String groupSourceName, String groupTargetName) {
         super(shell);
 
         this.depciesSource = depciesSource;
@@ -63,7 +61,6 @@ public class ManualDepciesDialog extends TrayDialog {
         this.objectsTarget = objectsTarget;
         this.groupSourceName = groupSourceName;
         this.groupTargetName = groupTargetName;
-        this.settings = settings;
 
         setShellStyle(getShellStyle() | SWT.RESIZE);
     }
@@ -78,10 +75,8 @@ public class ManualDepciesDialog extends TrayDialog {
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
 
-        depcyGroupSource = new ManualDepciesGroup(area, SWT.NONE,
-                depciesSource, objectsSource, groupSourceName, settings);
-        depcyGroupTarget = new ManualDepciesGroup(area, SWT.NONE,
-                depciesTarget, objectsTarget, groupTargetName, settings);
+        depcyGroupSource = new ManualDepciesGroup(area, SWT.NONE, depciesSource, objectsSource, groupSourceName);
+        depcyGroupTarget = new ManualDepciesGroup(area, SWT.NONE, depciesTarget, objectsTarget, groupTargetName);
         return area;
     }
 

@@ -72,7 +72,7 @@ import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
-public class PgDbParser implements IResourceChangeListener, Serializable {
+public final class PgDbParser implements IResourceChangeListener, Serializable {
 
     private static final long serialVersionUID = -234872770125300447L;
 

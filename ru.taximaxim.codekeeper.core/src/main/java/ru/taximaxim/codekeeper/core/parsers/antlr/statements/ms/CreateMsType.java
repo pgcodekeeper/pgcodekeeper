@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsType extends MsParserAbstract {
+public final class CreateMsType extends MsParserAbstract {
 
     private final Create_typeContext ctx;
 

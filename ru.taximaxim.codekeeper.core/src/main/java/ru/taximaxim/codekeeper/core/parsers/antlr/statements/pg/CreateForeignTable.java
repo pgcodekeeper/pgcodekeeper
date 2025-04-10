@@ -43,7 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.SimpleForeignPgTable;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateForeignTable extends TableAbstract {
+public final class CreateForeignTable extends TableAbstract {
 
     private final Create_foreign_table_statementContext ctx;
 

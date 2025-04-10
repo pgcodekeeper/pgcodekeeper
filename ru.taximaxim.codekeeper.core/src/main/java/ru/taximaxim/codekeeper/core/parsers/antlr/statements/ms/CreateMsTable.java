@@ -45,7 +45,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsTable extends MsTableAbstract {
+public final class CreateMsTable extends MsTableAbstract {
 
     private final Create_tableContext ctx;
 

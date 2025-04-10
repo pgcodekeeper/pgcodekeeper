@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.ui.formatter.Formatter;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
 
-public class UISettings implements ISettings {
+public final class UISettings implements ISettings {
 
     private String timeZone;
     private String inCharsetName;
@@ -39,22 +39,24 @@ public class UISettings implements ISettings {
     private boolean isIgnorePriv;
     private boolean isEnableProjPrefRoot;
     private boolean isEnableProjPrefDbUpdate;
-    private final IProject project;
+    private IProject project;
 
     private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
-    private final IEclipsePreferences projPS;
+    private IEclipsePreferences projPS;
     private final Map<String, Boolean> oneTimePS;
 
     public UISettings(IProject project, Map<String, Boolean> oneTimePS) {
         this.project = project;
         this.oneTimePS = oneTimePS;
-        projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
-        this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
-        this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
-        this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
-        this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
         this.dbType = OpenProjectUtils.getDatabaseType(project);
         this.isIgnorePriv = getBooleanOfRootPref(PREF.NO_PRIVILEGES);
+        if (project != null) {
+            this.projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
+            this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
+            this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
+            this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
+            this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+    }
     }
 
 

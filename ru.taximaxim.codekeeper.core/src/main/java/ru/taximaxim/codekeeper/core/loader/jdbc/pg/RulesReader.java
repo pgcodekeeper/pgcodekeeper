@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
-public class RulesReader extends JdbcReader {
+public final class RulesReader extends JdbcReader {
 
     public RulesReader(JdbcLoaderBase loader) {
         super(loader);

@@ -52,14 +52,13 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class SQLOverridesListener extends CustomParserListener<PgDatabase>
+public final class SQLOverridesListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public SQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode,
-            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides,
-            ISettings settings) {
+    public SQLOverridesListener(PgDatabase db, String filename, ParserListenerMode mode, List<Object> errors,
+            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides, ISettings settings) {
         super(db, filename, mode, errors, mon, settings);
         this.overrides = overrides;
     }

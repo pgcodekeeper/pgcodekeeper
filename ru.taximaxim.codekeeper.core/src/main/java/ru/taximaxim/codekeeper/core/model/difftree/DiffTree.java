@@ -30,19 +30,16 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class DiffTree {
 
-    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, ISettings settings)
-            throws InterruptedException {
-        return create(left, right, null, settings);
+    public static TreeElement create(AbstractDatabase left, AbstractDatabase right) throws InterruptedException {
+        return create(left, right, null);
     }
 
-    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, SubMonitor sMonitor,
-            ISettings settings)
+    public static TreeElement create(AbstractDatabase left, AbstractDatabase right, SubMonitor sMonitor)
             throws InterruptedException {
-        return new DiffTree(sMonitor, settings).createTree(left, right);
+        return new DiffTree(sMonitor).createTree(left, right);
     }
 
     @Deprecated
@@ -107,11 +104,9 @@ public final class DiffTree {
     }
 
     private final IProgressMonitor monitor;
-    private final ISettings settings;
 
-    private DiffTree(IProgressMonitor monitor, ISettings settings) {
+    private DiffTree(IProgressMonitor monitor) {
         this.monitor = monitor;
-        this.settings = settings;
     }
 
     public TreeElement createTree(AbstractDatabase left, AbstractDatabase right) throws InterruptedException {
@@ -154,7 +149,7 @@ public final class DiffTree {
 
                 if (foundRight == null) {
                     rv.add(new CompareResult(sLeft, null));
-                } else if (!sLeft.equals(foundRight)) {
+                } else if(!sLeft.equals(foundRight)) {
                     rv.add(new CompareResult(sLeft, foundRight));
                 }
             });

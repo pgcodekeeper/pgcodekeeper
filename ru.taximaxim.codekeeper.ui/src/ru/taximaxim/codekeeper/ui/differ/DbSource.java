@@ -44,7 +44,6 @@ import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -172,10 +171,8 @@ public abstract class DbSource {
         }
     }
 
-    public static DbSource fromDirTree(boolean forceUnixNewlines, String dirTreePath,
-            String encoding, DatabaseType dbType, Map<String, Boolean> oneTimePrefs) {
-        return new DbSourceDirTree(forceUnixNewlines, dirTreePath, encoding,
-                dbType, oneTimePrefs);
+    public static DbSource fromDirTree(String dirTreePath, Map<String, Boolean> oneTimePrefs) {
+        return new DbSourceDirTree(dirTreePath, oneTimePrefs);
     }
 
     public static DbSource fromProject(PgDbProject proj, Map<String, Boolean> oneTimePrefs) {
@@ -228,20 +225,13 @@ public abstract class DbSource {
 
 class DbSourceDirTree extends DbSource {
 
-    private final boolean forceUnixNewlines;
     private final String dirTreePath;
-    private final String encoding;
-    private final DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs;
 
-    DbSourceDirTree(boolean forceUnixNewlines, String dirTreePath, String encoding,
-            DatabaseType dbType, Map<String, Boolean> oneTimePrefs) {
+    DbSourceDirTree(String dirTreePath, Map<String, Boolean> oneTimePrefs) {
         super(dirTreePath);
 
-        this.forceUnixNewlines = forceUnixNewlines;
         this.dirTreePath = dirTreePath;
-        this.encoding = encoding;
-        this.dbType = dbType;
         this.oneTimePrefs = oneTimePrefs;
     }
 
@@ -250,9 +240,7 @@ class DbSourceDirTree extends DbSource {
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
-        return load(new ProjectLoader(dirTreePath,
-                new CliSettings(getPgDiffArgs(encoding, forceUnixNewlines, dbType, null, oneTimePrefs)),
-                new ArrayList<>()));
+        return load(new ProjectLoader(dirTreePath, new UISettings(null, oneTimePrefs), new ArrayList<>()));
     }
 }
 

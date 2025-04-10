@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChUser extends PgStatement {
+public final class ChUser extends PgStatement {
 
     private static final String DEF_STORAGE = "local_directory";
     private static final String EXCEPT = " EXCEPT ";

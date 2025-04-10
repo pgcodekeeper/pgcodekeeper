@@ -44,14 +44,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ManualDepciesGroup extends Group{
 
     private final List<Entry<PgStatement, PgStatement>> depcies;
     private final Map<String, PgStatement> objects;
-    private final ISettings settings;
 
     private final Text txtDependents;
     private final Text txtDependencies;
@@ -65,12 +63,11 @@ public class ManualDepciesGroup extends Group{
 
     public ManualDepciesGroup(Composite parent, int style,
             List<Entry<PgStatement, PgStatement>> dependencies,
-            Map<String, PgStatement> objects, String groupName, ISettings settings) {
+            Map<String, PgStatement> objects, String groupName) {
         super(parent, style);
 
         this.depcies = new LinkedList<>(dependencies);
         this.objects = objects;
-        this.settings = settings;
 
         int i = 0;
         IContentProposal[] prop = new IContentProposal[objects.size()];
@@ -195,7 +192,8 @@ public class ManualDepciesGroup extends Group{
             Iterator<Entry<PgStatement, PgStatement>> it) {
         while (it.hasNext()) {
             Entry<PgStatement, PgStatement> el = it.next();
-            if (toRemove.getKey().compare(el.getKey()) && toRemove.getValue().compare(el.getValue())) {
+            if (toRemove.getKey().compare(el.getKey())
+                    && toRemove.getValue().compare(el.getValue())) {
                 it.remove();
                 return true;
             }

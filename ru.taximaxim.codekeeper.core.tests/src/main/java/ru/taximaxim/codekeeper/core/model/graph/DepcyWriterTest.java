@@ -94,8 +94,7 @@ public class DepcyWriterTest {
         }
         args.setEnableFunctionBodiesDependencies(true);
 
-        var settings = new CliSettings(args);
-        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), settings);
+        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), new CliSettings(args));
 
         var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName));
         String actual = String.join("\n", deps);

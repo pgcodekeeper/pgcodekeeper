@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Delete_stm
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class DeleteStatement extends PgParserAbstract {
+public final class DeleteStatement extends PgParserAbstract {
 
     private final Delete_stmt_for_psqlContext ctx;
 

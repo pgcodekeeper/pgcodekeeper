@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.core.schema.ch;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
-
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;

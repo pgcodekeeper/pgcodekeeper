@@ -25,7 +25,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsAssembly extends MsParserAbstract {
+public final class AlterMsAssembly extends MsParserAbstract {
 
     private final Alter_assemblyContext ctx;
 

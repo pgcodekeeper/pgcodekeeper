@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateIndex extends PgParserAbstract {
+public final class CreateIndex extends PgParserAbstract {
 
     private final Create_index_statementContext ctx;
     private final String tablespace;

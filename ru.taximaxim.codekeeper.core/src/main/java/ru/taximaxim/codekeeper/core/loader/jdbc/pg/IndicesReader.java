@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class IndicesReader extends JdbcReader {
+public final class IndicesReader extends JdbcReader {
 
     public IndicesReader(JdbcLoaderBase loader) {
         super(loader);

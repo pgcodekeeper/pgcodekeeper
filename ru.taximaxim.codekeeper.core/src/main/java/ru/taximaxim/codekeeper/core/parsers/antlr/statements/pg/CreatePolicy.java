@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreatePolicy extends PgParserAbstract {
+public final class CreatePolicy extends PgParserAbstract {
 
     private final Create_policy_statementContext ctx;
 

@@ -34,7 +34,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateOperator extends PgParserAbstract {
+public final class CreateOperator extends PgParserAbstract {
 
     private final Create_operator_statementContext ctx;
 

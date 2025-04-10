@@ -34,7 +34,6 @@ public final class ChColumn extends AbstractColumn {
 
     private String ttl;
     private final List<String> codecs = new ArrayList<>();
-    private boolean isAutoIncremental;
     private String option;
 
     public ChColumn(String name) {
@@ -53,11 +52,6 @@ public final class ChColumn extends AbstractColumn {
 
     public void addCodec(String codec) {
         codecs.add(codec);
-        resetHash();
-    }
-
-    public void setAutoIncremental(boolean isAutoIncremental) {
-        this.isAutoIncremental = isAutoIncremental;
         resetHash();
     }
 
@@ -165,8 +159,9 @@ public final class ChColumn extends AbstractColumn {
                 && Objects.equals(defaultValue, newColumn.defaultValue)) {
             return;
         }
+        ISettings settings = script.getSettings();
         StringBuilder sb = new StringBuilder();
-        appendAlterColumn(sb, script.getSettings());
+        appendAlterColumn(sb, settings);
         if (newColumn.defaultType != null) {
             sb.append(' ').append(newColumn.defaultType).append(' ').append(newColumn.defaultValue);
             script.addStatement(sb);
@@ -175,7 +170,7 @@ public final class ChColumn extends AbstractColumn {
             sb.append(" DEFAULT ").append("0");
             script.addStatement(sb);
             StringBuilder sbRemove = new StringBuilder();
-            appendAlterColumn(sbRemove, script.getSettings());
+            appendAlterColumn(sbRemove, settings);
             sbRemove.append(" REMOVE").append(" DEFAULT");
             script.addStatement(sbRemove);
         } else {

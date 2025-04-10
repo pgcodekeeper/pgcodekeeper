@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
-public class UserFilter extends AbstractFilter {
+public final class UserFilter extends AbstractFilter {
 
     private final Function<ElementMetaInfo, String> getter;
 

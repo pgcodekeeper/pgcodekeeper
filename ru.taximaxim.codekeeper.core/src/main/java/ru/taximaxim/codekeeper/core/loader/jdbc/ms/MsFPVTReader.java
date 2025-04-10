@@ -38,8 +38,9 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class MsFPVTReader extends JdbcReader {
+public final class MsFPVTReader extends JdbcReader {
 
     public MsFPVTReader(JdbcLoaderBase loader) {
         super(loader);
@@ -77,11 +78,11 @@ public class MsFPVTReader extends JdbcReader {
 
         MsDatabase db = (MsDatabase) schema.getDatabase();
 
+        ISettings settings = loader.getSettings();
         if (tt == DbObjType.TRIGGER) {
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
-                return new CreateMsTrigger(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(),
-                        loader.getSettings());
+                return new CreateMsTrigger(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(), settings);
             }, creator -> {
                 MsTrigger tr = creator.getObject(schema, true);
                 tr.setDisable(isDisable);
@@ -94,13 +95,12 @@ public class MsFPVTReader extends JdbcReader {
 
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
-                return new CreateMsView(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(), loader.getSettings());
+                return new CreateMsView(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(), settings);
             }, creator -> creator.fillObject(view));
         } else if (tt == DbObjType.PROCEDURE) {
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
-                return new CreateMsProcedure(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(),
-                        loader.getSettings());
+                return new CreateMsProcedure(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(), settings);
             }, creator -> {
                 AbstractFunction st = creator.getObject(schema, true);
                 loader.setOwner(st, owner);
@@ -109,8 +109,7 @@ public class MsFPVTReader extends JdbcReader {
         } else {
             loader.submitMsAntlrTask(def, p -> {
                 Batch_statementContext ctx = p.tsql_file().batch(0).batch_statement();
-                return new CreateMsFunction(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(),
-                        loader.getSettings());
+                return new CreateMsFunction(ctx, db, an, qi, (CommonTokenStream) p.getInputStream(), settings);
             }, creator -> {
                 AbstractFunction st = creator.getObject(schema, true);
                 loader.setOwner(st, owner);

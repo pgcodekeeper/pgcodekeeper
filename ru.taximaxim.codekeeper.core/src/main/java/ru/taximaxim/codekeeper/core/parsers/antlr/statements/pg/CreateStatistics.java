@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgStatistics;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateStatistics extends PgParserAbstract {
+public final class CreateStatistics extends PgParserAbstract {
 
     private final Create_statistics_statementContext ctx;
     private final CommonTokenStream stream;

@@ -34,6 +34,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.SimpleColumn;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class PgIndex extends AbstractIndex {
 
@@ -66,10 +67,11 @@ public final class PgIndex extends AbstractIndex {
         }
 
         sbSQL.append("INDEX ");
-        if (script.getSettings().isConcurrentlyMode() && !script.getSettings().isAddTransaction()) {
+        ISettings settings = script.getSettings();
+        if (settings.isConcurrentlyMode() && !settings.isAddTransaction()) {
             sbSQL.append("CONCURRENTLY ");
         }
-        if (inherit != null || script.getSettings().isGenerateExists()) {
+        if (inherit != null || settings.isGenerateExists()) {
             sbSQL.append("IF NOT EXISTS ");
         }
         sbSQL.append(PgDiffUtils.getQuotedName(name))

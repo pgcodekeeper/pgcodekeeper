@@ -20,7 +20,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_stmt
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class MergeStatement extends PgParserAbstract {
+public final class MergeStatement extends PgParserAbstract {
 
     private final Merge_stmt_for_psqlContext ctx;
 

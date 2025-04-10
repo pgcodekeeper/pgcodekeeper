@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterView extends PgParserAbstract {
+public final class AlterView extends PgParserAbstract {
 
     private final Alter_view_statementContext ctx;
     private final CommonTokenStream stream;

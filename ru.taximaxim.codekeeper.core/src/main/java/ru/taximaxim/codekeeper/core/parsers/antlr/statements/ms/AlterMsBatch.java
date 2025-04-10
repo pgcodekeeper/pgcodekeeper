@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsBatch extends BatchContextProcessor {
+public final class AlterMsBatch extends BatchContextProcessor {
 
     private final Batch_statement_bodyContext ctx;
 

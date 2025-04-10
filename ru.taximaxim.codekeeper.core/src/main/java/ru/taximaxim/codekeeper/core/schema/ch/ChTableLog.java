@@ -52,8 +52,7 @@ public final class ChTableLog extends ChTable {
 
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
-        return (compare(newCondition) && compareChildren(newCondition)) ? ObjectState.NOTHING
-                : ObjectState.RECREATE;
+        return (compare(newCondition) && compareChildren(newCondition)) ? ObjectState.NOTHING : ObjectState.RECREATE;
     }
 
     @Override

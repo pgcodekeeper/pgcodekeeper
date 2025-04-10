@@ -88,8 +88,7 @@ public class PgDiff {
     /**
      * Creates diff on the two database schemas.
      */
-    public String createDiff(PgDiffArguments arguments)
-            throws InterruptedException, IOException, PgCodekeeperException {
+    public String createDiff(PgDiffArguments arguments) throws InterruptedException, IOException, PgCodekeeperException {
         AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries(arguments);
         AbstractDatabase newDatabase = loadNewDatabaseWithLibraries(arguments);
         IgnoreList ignoreList = new IgnoreList();
@@ -232,7 +231,7 @@ public class PgDiff {
 
     public String diff(AbstractDatabase oldDbFull, AbstractDatabase newDbFull, IgnoreList ignoreList)
             throws InterruptedException, IOException {
-        TreeElement root = DiffTree.create(oldDbFull, newDbFull, settings);
+        TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
 
         return switch (settings.getDbType()) {

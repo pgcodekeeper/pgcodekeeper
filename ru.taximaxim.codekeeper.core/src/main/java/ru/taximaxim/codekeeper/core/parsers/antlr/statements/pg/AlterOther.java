@@ -47,7 +47,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgStatistics;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterOther extends PgParserAbstract {
+public final class AlterOther extends PgParserAbstract {
 
     private final Schema_alterContext ctx;
 

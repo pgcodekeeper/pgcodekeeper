@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
+public final class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private final ISettings settings;
 

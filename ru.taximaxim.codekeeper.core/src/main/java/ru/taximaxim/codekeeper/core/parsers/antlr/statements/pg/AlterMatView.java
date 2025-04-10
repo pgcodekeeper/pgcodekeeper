@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMatView extends PgParserAbstract {
+public final class AlterMatView extends PgParserAbstract {
 
     private final Alter_materialized_view_statementContext ctx;
     private final String action;

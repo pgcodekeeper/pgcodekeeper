@@ -40,7 +40,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateView extends PgParserAbstract {
+public final class CreateView extends PgParserAbstract {
 
     private static final String RECURSIVE_PATTERN = """
         CREATE VIEW {0}

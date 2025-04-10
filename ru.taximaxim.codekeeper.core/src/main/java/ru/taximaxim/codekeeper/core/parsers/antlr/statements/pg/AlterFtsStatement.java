@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgFtsConfiguration;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterFtsStatement extends PgParserAbstract {
+public final class AlterFtsStatement extends PgParserAbstract {
 
     private final Alter_fts_statementContext ctx;
 

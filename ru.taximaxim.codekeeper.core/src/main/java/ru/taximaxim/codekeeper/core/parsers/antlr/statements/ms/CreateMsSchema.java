@@ -21,7 +21,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsSchema extends MsParserAbstract {
+public final class CreateMsSchema extends MsParserAbstract {
 
     private final Create_schemaContext ctx;
 

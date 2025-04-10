@@ -27,9 +27,7 @@ public interface SourceStatement extends ISearchPath {
 
     /**
      * Assembles entire statement from source parts
-     * 
      * @param isCreate do CREATE or ALTER
-     * @param settings
      */
     default StringBuilder appendSourceStatement(boolean isCreate, StringBuilder sb) {
         sb.append(getFirstPart())
@@ -42,8 +40,8 @@ public interface SourceStatement extends ISearchPath {
     }
 
     /**
-     * Appends the only normalized statement part: its name and location, always
-     * qualifies and quotes.
+     * Appends the only normalized statement part: its name and location,
+     * always qualifies and quotes.
      */
     default StringBuilder appendName(StringBuilder sb) {
         return sb.append(getQualifiedName());

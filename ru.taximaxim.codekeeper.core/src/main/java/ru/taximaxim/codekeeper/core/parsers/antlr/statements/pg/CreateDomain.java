@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateDomain extends PgParserAbstract {
+public final class CreateDomain extends PgParserAbstract {
 
     private final Create_domain_statementContext ctx;
     private final CommonTokenStream stream;

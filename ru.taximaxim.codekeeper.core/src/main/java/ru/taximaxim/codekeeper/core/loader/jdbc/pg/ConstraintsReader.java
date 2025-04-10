@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndexParamContainer;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class ConstraintsReader extends JdbcReader {
+public final class ConstraintsReader extends JdbcReader {
 
     private static final String ADD_CONSTRAINT = "ALTER TABLE noname ADD CONSTRAINT noname ";
 

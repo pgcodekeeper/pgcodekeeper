@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class ChSQLOverridesListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
+public final class ChSQLOverridesListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
 
     private Map<PgStatement, StatementOverride> overrides;
 

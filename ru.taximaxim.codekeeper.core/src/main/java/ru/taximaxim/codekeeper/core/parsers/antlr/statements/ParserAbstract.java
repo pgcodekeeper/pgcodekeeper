@@ -357,7 +357,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
             adder.accept(statement, object);
         }
     }
-    
+
     protected void addDepSafe(PgStatement st, List<? extends ParserRuleContext> ids, DbObjType type) {
         addDepSafe(st, ids, type, null);
     }

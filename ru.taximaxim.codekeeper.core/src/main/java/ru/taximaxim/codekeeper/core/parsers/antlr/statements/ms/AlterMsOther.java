@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsOther extends MsParserAbstract {
+public final class AlterMsOther extends MsParserAbstract {
 
     private final Schema_alterContext ctx;
 

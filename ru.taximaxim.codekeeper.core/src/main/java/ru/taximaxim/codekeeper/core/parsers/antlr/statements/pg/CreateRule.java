@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateRule extends PgParserAbstract {
+public final class CreateRule extends PgParserAbstract {
     private final Create_rewrite_statementContext ctx;
 
     public CreateRule(Create_rewrite_statementContext ctx, PgDatabase db, ISettings settings) {

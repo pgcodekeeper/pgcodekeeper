@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterDomain extends PgParserAbstract {
+public final class AlterDomain extends PgParserAbstract {
 
     private final Alter_domain_statementContext ctx;
 

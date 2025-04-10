@@ -121,8 +121,7 @@ class DbSourcePicker extends Composite {
             if (project != null) {
                 return DbSource.fromProject(project, oneTimePrefs);
             } else {
-                return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(), getEncoding(), dbType,
-                        oneTimePrefs);
+                return DbSource.fromDirTree(dir.getAbsolutePath(), oneTimePrefs);
             }
         }
         return null;

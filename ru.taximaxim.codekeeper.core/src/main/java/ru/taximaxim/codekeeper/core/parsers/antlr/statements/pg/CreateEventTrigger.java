@@ -26,7 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEventTrigger;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateEventTrigger extends PgParserAbstract {
+public final class CreateEventTrigger extends PgParserAbstract {
 
     private static final String TAG = "tag";
     private final Create_event_trigger_statementContext ctx;

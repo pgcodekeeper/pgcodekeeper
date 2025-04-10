@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateCollation extends PgParserAbstract {
+public final class CreateCollation extends PgParserAbstract {
 
     private final Create_collation_statementContext ctx;
 

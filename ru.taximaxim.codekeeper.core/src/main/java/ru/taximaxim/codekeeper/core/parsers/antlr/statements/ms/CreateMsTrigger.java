@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsTrigger extends BatchContextProcessor {
+public final class CreateMsTrigger extends BatchContextProcessor {
 
     private final Create_or_alter_triggerContext ctx;
 

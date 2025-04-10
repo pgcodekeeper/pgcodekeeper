@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateSequence extends PgParserAbstract {
+public final class CreateSequence extends PgParserAbstract {
 
     private final Create_sequence_statementContext ctx;
 

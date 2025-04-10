@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgExtension;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateExtension extends PgParserAbstract {
+public final class CreateExtension extends PgParserAbstract {
 
     private final Create_extension_statementContext ctx;
 

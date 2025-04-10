@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFtsDictionary;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateFtsDictionary extends PgParserAbstract {
+public final class CreateFtsDictionary extends PgParserAbstract {
 
     private final Create_fts_dictionary_statementContext ctx;
 

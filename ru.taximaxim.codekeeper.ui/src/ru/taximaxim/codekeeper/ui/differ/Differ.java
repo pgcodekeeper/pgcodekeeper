@@ -29,7 +29,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
@@ -40,14 +39,13 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
-public class Differ implements IRunnableWithProgress {
+public final class Differ implements IRunnableWithProgress {
 
     private final AbstractDatabase sourceDbFull;
     private final AbstractDatabase targetDbFull;
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
-    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
@@ -82,21 +80,19 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj,
-            Map<String, Boolean> oneTimePrefs) {
+            boolean needTwoWay, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
-        this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj) {
-        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, dbType, proj, null);
+            boolean needTwoWay, String timezone, IProject proj) {
+        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, proj, null);
     }
 
     public Job getDifferJob() {

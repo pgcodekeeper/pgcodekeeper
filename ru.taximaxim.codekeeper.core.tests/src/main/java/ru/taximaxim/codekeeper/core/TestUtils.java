@@ -200,7 +200,7 @@ public final class TestUtils {
         TestUtils.runDiffSame(oldDbFull, dbTemplate, settings);
         TestUtils.runDiffSame(newDbFull, dbTemplate, settings);
 
-        TreeElement tree = DiffTree.create(oldDatabase, newDatabase, settings);
+        TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
         tree.setAllChecked();
         String script = new PgDiff(settings).diffDatabaseSchemasAdditionalDepcies(tree, oldDbFull, newDbFull, null, null);
 

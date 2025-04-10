@@ -33,7 +33,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
+public final class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
 
     private final ISettings settings;
 

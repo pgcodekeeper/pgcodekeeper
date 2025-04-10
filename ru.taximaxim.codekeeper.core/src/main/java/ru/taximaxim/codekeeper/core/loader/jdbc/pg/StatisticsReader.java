@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgStatistics;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class StatisticsReader extends JdbcReader {
+public final class StatisticsReader extends JdbcReader {
 
     public StatisticsReader(JdbcLoaderBase loader) {
         super(loader);

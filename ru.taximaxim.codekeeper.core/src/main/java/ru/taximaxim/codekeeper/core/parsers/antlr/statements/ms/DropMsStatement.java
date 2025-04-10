@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class DropMsStatement extends MsParserAbstract {
+public final class DropMsStatement extends MsParserAbstract {
 
     private final Schema_dropContext ctx;
 

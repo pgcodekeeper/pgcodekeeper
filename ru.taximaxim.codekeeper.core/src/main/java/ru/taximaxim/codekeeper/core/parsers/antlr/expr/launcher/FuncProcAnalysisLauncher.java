@@ -36,7 +36,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
+public final class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     /**
      * Contains pairs, each of which contains the name of the function argument

@@ -41,7 +41,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -54,13 +53,6 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 
 public class AddComment extends AbstractHandler {
-
-    private final ISettings settings;
-
-    public AddComment(ISettings settings) {
-        super();
-        this.settings = settings;
-    }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -119,7 +111,7 @@ public class AddComment extends AbstractHandler {
         DbSource oldDbSource = DbSource.fromDbObject(oldDb, "old");
         DbSource newDbSource = DbSource.fromDbObject(newDb, "new");
 
-        TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource, settings);
+        TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource);
         treeDiffer.run(new NullProgressMonitor());
         TreeElement el = treeDiffer.getDiffTree().findElement(statement);
 

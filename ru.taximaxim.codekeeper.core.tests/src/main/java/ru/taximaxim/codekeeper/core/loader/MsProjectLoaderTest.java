@@ -48,7 +48,7 @@ class MsProjectLoaderTest {
             AbstractDatabase msDbDump = TestUtils.loadTestDump(
                     TestUtils.RESOURCE_MS_DUMP, TestUtils.class, settings);
 
-            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8, new CliSettings(args)).exportFull();
+            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8, settings).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");

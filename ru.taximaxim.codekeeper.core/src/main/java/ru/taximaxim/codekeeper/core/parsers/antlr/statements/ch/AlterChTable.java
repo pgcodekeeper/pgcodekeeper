@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterChTable extends ChParserAbstract {
+public final class AlterChTable extends ChParserAbstract {
 
     private final Alter_table_stmtContext ctx;
 

@@ -45,14 +45,13 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class TSQLOverridesListener extends CustomParserListener<MsDatabase>
+public final class TSQLOverridesListener extends CustomParserListener<MsDatabase>
 implements TSqlContextProcessor {
 
     private final Map<PgStatement, StatementOverride> overrides;
 
-    public TSQLOverridesListener(MsDatabase db, String filename, ParserListenerMode mode,
-            List<Object> errors, IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides,
-            ISettings settings) {
+    public TSQLOverridesListener(MsDatabase db, String filename, ParserListenerMode mode, List<Object> errors,
+            IProgressMonitor mon, Map<PgStatement, StatementOverride> overrides, ISettings settings) {
         super(db, filename, mode, errors, mon, settings);
         this.overrides = overrides;
     }

@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgUserMapping;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateUserMapping extends PgParserAbstract {
+public final class CreateUserMapping extends PgParserAbstract {
 
     private final Create_user_mapping_statementContext ctx;
 

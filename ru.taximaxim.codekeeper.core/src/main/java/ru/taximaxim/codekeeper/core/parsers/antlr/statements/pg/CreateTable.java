@@ -50,7 +50,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateTable extends TableAbstract {
+public final class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
     private final String accessMethod;

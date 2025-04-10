@@ -65,7 +65,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterTable extends TableAbstract {
+public final class AlterTable extends TableAbstract {
 
     private final Alter_table_statementContext ctx;
     private final String tablespace;

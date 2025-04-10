@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsAssembly extends MsParserAbstract {
+public final class CreateMsAssembly extends MsParserAbstract {
 
     private static final Pattern BINARY_NEWLINE = Pattern.compile("\\\\\\r?\\n");
     private static final int BINARY_LINE_LENGTH = 256;

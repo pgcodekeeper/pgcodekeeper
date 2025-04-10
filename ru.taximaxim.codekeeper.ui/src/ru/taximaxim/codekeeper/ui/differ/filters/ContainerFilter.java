@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
  * @since 4.2.0.
  * @author galiev_mr
  */
-public class ContainerFilter extends AbstractFilter {
+public final class ContainerFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,

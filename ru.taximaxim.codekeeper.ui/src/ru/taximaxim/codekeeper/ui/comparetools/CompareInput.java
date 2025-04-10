@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class CompareInput extends CompareEditorInput {
+public final class CompareInput extends CompareEditorInput {
 
     private static final String TITLE = "Compare (''{0}'' - ''{1}'')"; //$NON-NLS-1$
 

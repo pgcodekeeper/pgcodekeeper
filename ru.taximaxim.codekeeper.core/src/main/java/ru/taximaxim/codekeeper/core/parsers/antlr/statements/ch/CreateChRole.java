@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChRole;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChRole extends ChParserAbstract {
+public final class CreateChRole extends ChParserAbstract {
 
     private final Create_role_stmtContext ctx;
 

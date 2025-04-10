@@ -45,6 +45,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Test for partial export
@@ -114,10 +115,9 @@ public class PartialExporterTest {
         String targetFilename = "TestPartialExportTarget.sql";
         PgDiffArguments args = new PgDiffArguments();
         args.setInCharsetName(Consts.UTF_8);
-        dbSource = TestUtils.loadTestDump(sourceFilename, PartialExporterTest.class, new CliSettings(args), false);
-        args = new PgDiffArguments();
-        args.setInCharsetName(Consts.UTF_8);
-        dbTarget = TestUtils.loadTestDump(targetFilename, PartialExporterTest.class, new CliSettings(args), false);
+        ISettings settings = new CliSettings(args);
+        dbSource = TestUtils.loadTestDump(sourceFilename, PartialExporterTest.class, settings, false);
+        dbTarget = TestUtils.loadTestDump(targetFilename, PartialExporterTest.class, settings, false);
 
         Assertions.assertNotNull(dbSource);
         Assertions.assertNotNull(dbTarget);
@@ -126,7 +126,7 @@ public class PartialExporterTest {
     @ParameterizedTest
     @MethodSource("generator")
     void testExportPartial(PartialExportInfo info) throws Exception {
-        TreeElement tree = DiffTree.create(dbSource, dbTarget, new CliSettings(new PgDiffArguments()));
+        TreeElement tree = DiffTree.create(dbSource, dbTarget);
         Path exportDirFull = null;
         Path exportDirPartial = null;
         try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
@@ -134,22 +134,21 @@ public class PartialExporterTest {
             exportDirFull = dirFull.get();
             exportDirPartial = dirPartial.get();
 
+            ISettings settings = new CliSettings(new PgDiffArguments());
+
             // full export of source
-            new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8,
-                    new CliSettings(new PgDiffArguments())).exportFull();
+            new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
             // full export of source to target directory
-            new ModelExporter(exportDirPartial, dbSource, DatabaseType.PG, Consts.UTF_8,
-                    new CliSettings(new PgDiffArguments())).exportFull();
+            new ModelExporter(exportDirPartial, dbSource, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
 
             // get new db with selected changes
             info.setUserSelection(tree);
-            Collection<TreeElement> list = new TreeFlattener(new CliSettings(new PgDiffArguments()))
+            Collection<TreeElement> list = new TreeFlattener(settings)
                     .onlySelected()
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(tree);
             // apply partial changes to the full database
-            new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8,
-                    new CliSettings(new PgDiffArguments()))
+            new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8, settings)
             .exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, info);

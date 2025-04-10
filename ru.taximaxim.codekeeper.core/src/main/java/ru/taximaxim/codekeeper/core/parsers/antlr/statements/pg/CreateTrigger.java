@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateTrigger extends PgParserAbstract {
+public final class CreateTrigger extends PgParserAbstract {
 
     private final Create_trigger_statementContext ctx;
 

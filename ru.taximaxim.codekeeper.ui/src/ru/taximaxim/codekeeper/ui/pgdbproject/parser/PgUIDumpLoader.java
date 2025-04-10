@@ -41,7 +41,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
  * instead of actual file system.<br>
  * Converts ANTLR parsing errors to {@link IMarker}s for {@link IResource}s.
  */
-public class PgUIDumpLoader extends PgDumpLoader {
+public final class PgUIDumpLoader extends PgDumpLoader {
 
     private final IFile file;
 

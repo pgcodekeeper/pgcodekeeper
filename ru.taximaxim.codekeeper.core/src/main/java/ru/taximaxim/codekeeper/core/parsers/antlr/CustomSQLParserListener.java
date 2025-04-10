@@ -88,7 +88,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.UpdateStatement;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CustomSQLParserListener extends CustomParserListener<PgDatabase>
+public final class CustomSQLParserListener extends CustomParserListener<PgDatabase>
 implements SqlContextProcessor {
 
     private String tablespace;

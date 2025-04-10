@@ -46,7 +46,7 @@ import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class GrantMsPrivilege extends MsParserAbstract {
+public final class GrantMsPrivilege extends MsParserAbstract {
     private final Rule_commonContext ctx;
     private final String state;
     private final boolean isGO;

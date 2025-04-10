@@ -22,7 +22,7 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
-public class CliSettings implements ISettings {
+public final class CliSettings implements ISettings {
 
     private PgDiffArguments args;
 

@@ -41,7 +41,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class OverridesModelExporter extends ModelExporter {
+public final class OverridesModelExporter extends ModelExporter {
 
     public OverridesModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
             Collection<TreeElement> changedObjects, String sqlEncoding, DatabaseType dbType, ISettings settings) {

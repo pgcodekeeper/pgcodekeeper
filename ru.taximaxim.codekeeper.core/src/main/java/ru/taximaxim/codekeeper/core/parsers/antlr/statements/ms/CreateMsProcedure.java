@@ -38,7 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsProcedure;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsProcedure extends BatchContextProcessor {
+public final class CreateMsProcedure extends BatchContextProcessor {
 
     private final Create_or_alter_procedureContext ctx;
 

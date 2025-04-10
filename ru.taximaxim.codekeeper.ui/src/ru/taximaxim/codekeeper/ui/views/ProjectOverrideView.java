@@ -54,7 +54,7 @@ import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
-public class ProjectOverrideView extends ViewPart implements ISelectionListener {
+public final class ProjectOverrideView extends ViewPart implements ISelectionListener {
 
     private TableViewer viewer;
 

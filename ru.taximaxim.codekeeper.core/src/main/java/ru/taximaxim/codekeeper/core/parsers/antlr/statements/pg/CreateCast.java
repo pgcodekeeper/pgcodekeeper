@@ -28,7 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgCast.CastMethod;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateCast extends PgParserAbstract {
+public final class CreateCast extends PgParserAbstract {
 
     private final Create_cast_statementContext ctx;
 

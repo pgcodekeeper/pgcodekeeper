@@ -43,7 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.ModifyType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateAggregate extends PgParserAbstract {
+public final class CreateAggregate extends PgParserAbstract {
 
     private final Create_aggregate_statementContext ctx;
 

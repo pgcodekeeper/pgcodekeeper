@@ -46,7 +46,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -143,7 +142,6 @@ import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
@@ -218,18 +216,18 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, DatabaseType databaseType, IProject proj) {
-        this(parent, viewOnly, null, null, databaseType, proj);
+    public DiffTableViewer(Composite parent, boolean viewOnly, DatabaseType databaseType, ISettings settings) {
+        this(parent, viewOnly, null, null, databaseType, settings);
     }
 
     public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
-            DatabaseType databaseType, IProject proj) {
+            DatabaseType databaseType, ISettings settings) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
         this.location = location;
         this.dbType = databaseType;
-        this.settings = new UISettings(proj, null);
+        this.settings = settings;
         showGitUser = location != null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
@@ -558,8 +556,7 @@ public class DiffTableViewer extends Composite {
 
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {
-            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, //$NON-NLS-1$
-                    settings.getDbType());
+            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, settings.getDbType()); //$NON-NLS-1$
         } catch (IOException | CoreException ex) {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_creating_graph, ex);
         }
@@ -1513,18 +1510,15 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            if (!gitUserFilter.isEmpty()
-                    && !gitUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
+            if (!gitUserFilter.isEmpty() && !gitUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
                 return false;
             }
 
-            if (!dbUserFilter.isEmpty()
-                    && !dbUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
+            if (!dbUserFilter.isEmpty() && !dbUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
                 return false;
             }
 
-            if (!containerFilter.isEmpty()
-                    && !containerFilter.checkElement(el, null, null, null, settings)
+            if (!containerFilter.isEmpty() && !containerFilter.checkElement(el, null, null, null, settings)
                     && (!isContainer || el.getChildren().stream()
                             .noneMatch(e -> containerFilter.checkElement(e, null, null, null, settings)))) {
                 return false;

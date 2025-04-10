@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsUser;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsUser extends MsParserAbstract {
+public final class CreateMsUser extends MsParserAbstract {
 
     private final Create_userContext ctx;
 

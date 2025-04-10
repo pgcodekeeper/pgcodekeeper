@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class TreeFlattener {
+public final class TreeFlattener {
 
     private static final Logger LOG = LoggerFactory.getLogger(TreeFlattener.class);
 

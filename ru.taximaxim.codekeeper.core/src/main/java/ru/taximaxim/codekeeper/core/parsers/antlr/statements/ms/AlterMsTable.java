@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsTable extends MsTableAbstract {
+public final class AlterMsTable extends MsTableAbstract {
 
     private final Alter_tableContext ctx;
 

@@ -36,7 +36,7 @@ import ru.taximaxim.codekeeper.core.settings.ISettings;
  * @author botov_av
  *
  */
-public class DepcyTreeExtender {
+public final class DepcyTreeExtender {
 
     private final AbstractDatabase dbSource;
     private final AbstractDatabase dbTarget;
@@ -55,8 +55,7 @@ public class DepcyTreeExtender {
      */
     private final List<TreeElement> treeDepcyDelete = new ArrayList<>();
 
-    public DepcyTreeExtender(AbstractDatabase dbSource, AbstractDatabase dbTarget, TreeElement root,
-            ISettings settings) {
+    public DepcyTreeExtender(AbstractDatabase dbSource, AbstractDatabase dbTarget, TreeElement root, ISettings settings) {
         this.dbSource = dbSource;
         this.dbTarget = dbTarget;
         this.root = root;

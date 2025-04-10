@@ -36,7 +36,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterSequence extends PgParserAbstract {
+public final class AlterSequence extends PgParserAbstract {
 
     private final Alter_sequence_statementContext ctx;
 

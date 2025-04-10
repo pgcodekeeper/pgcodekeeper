@@ -33,6 +33,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsAssembly;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -163,18 +164,19 @@ public final class DiffPaneViewer extends Composite {
 
         DbSource db = isProject ? dbProject : dbRemote;
         PgStatement st = el.getPgStatement(db.getDbObject());
+        ISettings settings = new UISettings(project, null);
         if (st.getStatementType() == DbObjType.ASSEMBLY) {
-            return ((MsAssembly) st).getPreview(new UISettings(project, null));
+            return ((MsAssembly) st).getPreview(settings);
         }
 
-        String sql = st.getSQL(isFormatted, new UISettings(project, null));
+        String sql = st.getSQL(isFormatted, settings);
         if (!el.isContainer() || !store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return sql;
         }
 
         StringBuilder sb = new StringBuilder(sql);
         st.getChildren()
-            .forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL).append(c.getSQL(isFormatted, new UISettings(project, null))));
+                .forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL).append(c.getSQL(isFormatted, settings)));
         return sb.toString();
     }
 }
