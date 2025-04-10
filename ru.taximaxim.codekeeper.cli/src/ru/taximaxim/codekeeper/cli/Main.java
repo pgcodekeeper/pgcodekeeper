@@ -216,8 +216,7 @@ public final class Main {
         return true;
     }
 
-    private static boolean graph(PrintWriter writer, CliArgs arguments)
-            throws IOException, InterruptedException {
+    private static boolean graph(PrintWriter writer, CliArgs arguments) throws IOException, InterruptedException {
         var settings = new CliSettings(arguments);
         PgDiff diff = new PgDiff(settings);
         AbstractDatabase d;

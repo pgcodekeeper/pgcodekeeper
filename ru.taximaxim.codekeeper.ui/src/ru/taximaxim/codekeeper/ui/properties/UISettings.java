@@ -56,7 +56,7 @@ public final class UISettings implements ISettings {
             this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
             this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
             this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-    }
+        }
     }
 
 
@@ -164,7 +164,6 @@ public final class UISettings implements ISettings {
         try {
             return project.getDefaultCharset(true);
         } catch (CoreException e) {
-//            e.printStackTrace();
             return Consts.UTF_8;
         }
     }
@@ -181,7 +180,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public Collection<DbObjType> getAllowedTypes() {
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -212,6 +211,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public void setIsAddTransaction(boolean isAddTransaction) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
