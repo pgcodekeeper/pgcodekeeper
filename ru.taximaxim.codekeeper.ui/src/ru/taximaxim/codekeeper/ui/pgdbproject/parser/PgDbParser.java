@@ -240,8 +240,7 @@ public class PgDbParser implements IResourceChangeListener, Serializable {
 
     public void fillRefsFromInputStream(InputStream input, String fileName, IProgressMonitor monitor, IProject project)
             throws InterruptedException, IOException {
-        ISettings settings = new UISettings(project, null);
-        PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, settings, monitor);
+        PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, new UISettings(project, null), monitor);
         loader.setMode(ParserListenerMode.REF);
         AbstractDatabase db = loader.load();
         objDefinitions.clear();

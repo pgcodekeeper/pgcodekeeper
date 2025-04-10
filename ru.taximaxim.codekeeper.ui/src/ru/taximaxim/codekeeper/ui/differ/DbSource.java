@@ -31,7 +31,6 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -46,7 +45,6 @@ import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -188,39 +186,32 @@ public abstract class DbSource {
         return fromProject(proj, null);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, File filename,
-            String encoding, DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return fromFile(forceUnixNewlines, filename.toPath(), encoding, dbType, proj, oneTimePrefs);
+    public static DbSource fromFile(File filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return fromFile(filename.toPath(), proj, oneTimePrefs);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
-            String encoding, DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return new DbSourceFile(forceUnixNewlines, filename, encoding, dbType,
-                proj, oneTimePrefs);
+    public static DbSource fromFile(Path filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return new DbSourceFile(filename, proj, oneTimePrefs);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, File filename,
-            String encoding, DatabaseType dbType, IProject proj) {
-        return fromFile(forceUnixNewlines, filename.toPath(), encoding, dbType, proj);
+    public static DbSource fromFile(File filename, IProject proj) {
+        return fromFile(filename.toPath(), proj);
     }
 
-    public static DbSource fromFile(boolean forceUnixNewlines, Path filename,
-            String encoding, DatabaseType dbType, IProject proj) {
-        return fromFile(forceUnixNewlines, filename, encoding, dbType, proj, null);
+    public static DbSource fromFile(Path filename, IProject proj) {
+        return fromFile(filename, proj, null);
     }
 
-    public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
-            String charset, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs) {
+    public static DbSource fromDbInfo(DbInfo dbinfo, String charset, String timezone, IProject proj,
+            Map<String, Boolean> oneTimePrefs) {
         if (dbinfo.isPgDumpSwitch()) {
-            return new DbSourceDb(forceUnixNewlines, dbinfo, charset, timezone,
-                    proj, oneTimePrefs);
+            return new DbSourceDb(dbinfo, charset, timezone, proj, oneTimePrefs);
         }
-        return new DbSourceJdbc(dbinfo, timezone, forceUnixNewlines, proj, oneTimePrefs);
+        return new DbSourceJdbc(dbinfo, timezone, proj, oneTimePrefs);
     }
 
-    public static DbSource fromDbInfo(DbInfo dbinfo, boolean forceUnixNewlines,
-            String charset, String timezone, IProject proj) {
-        return fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone, proj, null);
+    public static DbSource fromDbInfo(DbInfo dbinfo, String charset, String timezone, IProject proj) {
+        return fromDbInfo(dbinfo, charset, timezone, proj, null);
     }
 
     public static DbSource fromDbObject(AbstractDatabase db, String origin) {
@@ -279,20 +270,15 @@ class DbSourceProject extends DbSource {
     @Override
     protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, CoreException, IOException {
-        String charset = proj.getProjectCharset();
         monitor.subTask(Messages.dbSource_loading_tree);
         IProject project = proj.getProject();
 
         monitor.setWorkRemaining(UIProjectLoader.countFiles(project));
 
-        IEclipsePreferences pref = proj.getPrefs();
-
-        ISettings settings = new UISettings(project, oneTimePrefs);
-
         Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         boolean projectOnly = oneTimePrefs != null && Boolean.TRUE == oneTimePrefs.get(Consts.PROJECT_ONLY);
 
-        return load(new UIProjectLoader(project, settings, monitor,
+        return load(new UIProjectLoader(project, new UISettings(project, oneTimePrefs), monitor,
                 InternalIgnoreList.getIgnoreSchemaList(listFile), projectOnly));
     }
 }
@@ -306,21 +292,14 @@ class DbSourceFile extends DbSource {
      */
     private static final int AVERAGE_STATEMENT_LENGTH = 5;
 
-    private final boolean forceUnixNewlines;
     private final Path filename;
-    private final String encoding;
-    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
-    DbSourceFile(boolean forceUnixNewlines, Path filename, String encoding,
-            DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
+    DbSourceFile(Path filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
         super(filename.toAbsolutePath().toString());
 
-        this.forceUnixNewlines = forceUnixNewlines;
         this.filename = filename;
-        this.encoding = encoding;
-        this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
@@ -338,8 +317,7 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-        ISettings settings = new UISettings(proj, oneTimePrefs);
-        return load(new PgDumpLoader(filename, settings, monitor, 2));
+        return load(new PgDumpLoader(filename, new UISettings(proj, oneTimePrefs), monitor, 2));
     }
 
     private int countLines(Path filename) throws IOException {
@@ -364,7 +342,6 @@ class DbSourceFile extends DbSource {
 
 class DbSourceDb extends DbSource {
 
-    private final boolean forceUnixNewlines;
     private final String exePgdump;
     private final String customParams;
 
@@ -383,12 +360,9 @@ class DbSourceDb extends DbSource {
         return dbname;
     }
 
-    DbSourceDb(boolean forceUnixNewlines,
-            DbInfo dbinfo, String encoding, String timezone, IProject proj,
-            Map<String, Boolean> oneTimePrefs) {
+    DbSourceDb(DbInfo dbinfo, String encoding, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs) {
         super(dbinfo.getDbName());
 
-        this.forceUnixNewlines = forceUnixNewlines;
         this.exePgdump = dbinfo.getPgdumpExePath();
         this.customParams = dbinfo.getPgdumpCustomParams();
         this.host = dbinfo.getDbHost();
@@ -419,8 +393,7 @@ class DbSourceDb extends DbSource {
 
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-        ISettings settings = new UISettings(proj, oneTimePrefs);
-        return load(new PgDumpLoader(streamProvider, "pg_dump", settings, monitor)); //$NON-NLS-1$
+        return load(new PgDumpLoader(streamProvider, "pg_dump", new UISettings(proj, oneTimePrefs), monitor)); //$NON-NLS-1$
     }
 }
 
@@ -428,8 +401,6 @@ class DbSourceJdbc extends DbSource {
 
     private final AbstractJdbcConnector jdbcConnector;
     private final String dbName;
-    private final boolean forceUnixNewlines;
-    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
     private final String timezone;
@@ -439,14 +410,11 @@ class DbSourceJdbc extends DbSource {
         return dbName;
     }
 
-    DbSourceJdbc(DbInfo dbinfo, String timezone, boolean forceUnixNewlines,
-            IProject proj, Map<String, Boolean> oneTimePrefs) {
+    DbSourceJdbc(DbInfo dbinfo, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs) {
         super(dbinfo.getDbName());
 
         this.jdbcConnector = new DbInfoJdbcConnector(dbinfo);
         this.dbName = dbinfo.getDbName();
-        this.forceUnixNewlines = forceUnixNewlines;
-        this.dbType = dbinfo.getDbType();
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
         this.timezone = timezone;
@@ -456,7 +424,6 @@ class DbSourceJdbc extends DbSource {
     protected AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
-        ISettings settings = new UISettings(proj, oneTimePrefs);
 
         IgnoreSchemaList ignoreShemaList = null;
         if (proj != null) {
@@ -464,7 +431,8 @@ class DbSourceJdbc extends DbSource {
             ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
 
-        return load(LoaderFactory.createJdbcLoader(settings, timezone, jdbcConnector, monitor, ignoreShemaList));
+        return load(LoaderFactory.createJdbcLoader(new UISettings(proj, oneTimePrefs), timezone, jdbcConnector, monitor,
+                ignoreShemaList));
     }
 }
 class DbSourceFromDbObject extends DbSource {

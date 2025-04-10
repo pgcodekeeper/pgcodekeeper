@@ -21,7 +21,6 @@ package ru.taximaxim.codekeeper.core.schema;
 
 import java.util.Collections;
 import java.util.Set;
-
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 

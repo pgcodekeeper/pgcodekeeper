@@ -23,7 +23,6 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class AbstractFunction extends PgStatement implements IFunction, ISearchPath {
 
@@ -58,7 +57,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
     @Override
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
-        appendFunctionFullSQL(sbSQL, true, script.getSettings());
+        appendFunctionFullSQL(sbSQL, true);
         script.addStatement(sbSQL);
         appendOwnerSQL(script);
         appendPrivileges(script);
@@ -84,7 +83,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
             isNeedDepcies = getDbType() == DatabaseType.MS || !deps.equals(newCondition.deps);
 
             StringBuilder sbSQL = new StringBuilder();
-            newFunction.appendFunctionFullSQL(sbSQL, false, script.getSettings());
+            newFunction.appendFunctionFullSQL(sbSQL, false);
             script.addStatement(sbSQL);
         }
 
@@ -95,7 +94,7 @@ public abstract class AbstractFunction extends PgStatement implements IFunction,
         return getObjectState(isNeedDepcies, script, startSize);
     }
 
-    protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate, ISettings settings);
+    protected abstract void appendFunctionFullSQL(StringBuilder sb, boolean isCreate);
 
     /**
      * Getter for {@link #arguments}. List cannot be modified.

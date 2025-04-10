@@ -97,8 +97,7 @@ public class DepcyWriterTest {
         var settings = new CliSettings(args);
         AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), settings);
 
-        var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName),
-                settings);
+        var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName));
         String actual = String.join("\n", deps);
         String expected = TestUtils.readResource(fileName + expectedPostfix, getClass());
 

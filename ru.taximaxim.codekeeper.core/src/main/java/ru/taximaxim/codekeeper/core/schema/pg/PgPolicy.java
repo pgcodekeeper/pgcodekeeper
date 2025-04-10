@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.Objects;
 import java.util.Set;
-
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractPolicy;

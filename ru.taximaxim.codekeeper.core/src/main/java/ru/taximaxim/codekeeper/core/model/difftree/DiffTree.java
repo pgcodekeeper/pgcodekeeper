@@ -47,7 +47,7 @@ public final class DiffTree {
 
     @Deprecated
     public static void addColumns(List<AbstractColumn> left, List<AbstractColumn> right,
-            TreeElement parent, List<TreeElement> list, ISettings settings) {
+            TreeElement parent, List<TreeElement> list) {
         for (AbstractColumn sLeft : left) {
             AbstractColumn foundRight = right.stream().filter(
                     sRight -> sLeft.getName().equals(sRight.getName()))
@@ -70,7 +70,7 @@ public final class DiffTree {
     }
 
     public static Set<TreeElement> getTablesWithChangedColumns(
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull, List<TreeElement> selected, ISettings settings) {
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull, List<TreeElement> selected) {
 
         Set<TreeElement> tables = new HashSet<>();
         for (TreeElement el : selected) {
@@ -95,7 +95,7 @@ public final class DiffTree {
                     newColumns = Collections.emptyList();
                 }
 
-                addColumns(oldColumns, newColumns, el, columns, settings);
+                addColumns(oldColumns, newColumns, el, columns);
 
                 if (!columns.isEmpty()) {
                     tables.add(el);

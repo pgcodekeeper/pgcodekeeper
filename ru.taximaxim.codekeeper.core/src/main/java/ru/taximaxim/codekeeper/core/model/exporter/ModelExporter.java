@@ -99,7 +99,7 @@ public class ModelExporter {
      */
     private final DatabaseType databaseType;
 
-    private final ISettings settings;
+    protected final ISettings settings;
 
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb} and {@link #sqlEncoding}.
@@ -208,7 +208,7 @@ public class ModelExporter {
         Map<Path, StringBuilder> dumps = new HashMap<>();
         list.stream().filter(st -> paths.contains(getRelativeFilePath(st)))
         .sorted(ExportTableOrder.INSTANCE)
-                .forEach(st -> dumpStatement(st, dumps));
+        .forEach(st -> dumpStatement(st, dumps));
 
         writeDumps(dumps);
     }
@@ -223,7 +223,7 @@ public class ModelExporter {
         Map<Path, StringBuilder> dumps = new HashMap<>();
         list.stream()
         .sorted(ExportTableOrder.INSTANCE)
-                .forEach(st -> dumpStatement(st, dumps));
+        .forEach(st -> dumpStatement(st, dumps));
 
         writeDumps(dumps);
     }
@@ -239,7 +239,7 @@ public class ModelExporter {
     protected void dumpStatement(PgStatement st, Map<Path, StringBuilder> dumps) {
         Path path = outDir.resolve(getRelativeFilePath(st));
         StringBuilder sb = dumps.computeIfAbsent(path, e -> new StringBuilder());
-        String dump = getDumpSql(st, settings);
+        String dump = getDumpSql(st);
 
         if (dump.isEmpty()) {
             return;
@@ -260,7 +260,7 @@ public class ModelExporter {
         }
     }
 
-    protected String getDumpSql(PgStatement statement, ISettings settings) {
+    protected String getDumpSql(PgStatement statement) {
         return statement.getSQL(true, settings);
     }
 

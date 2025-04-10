@@ -33,13 +33,15 @@ import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
 public class UISettings implements ISettings {
 
     private String timeZone;
+    private String inCharsetName;
     private DatabaseType dbType = DatabaseType.PG;
     private boolean keepNewlines;
+    private boolean isIgnorePriv;
     private boolean isEnableProjPrefRoot;
     private boolean isEnableProjPrefDbUpdate;
     private final IProject project;
 
-    private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();;
+    private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
     private final IEclipsePreferences projPS;
     private final Map<String, Boolean> oneTimePS;
 
@@ -52,6 +54,7 @@ public class UISettings implements ISettings {
         this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
         this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
         this.dbType = OpenProjectUtils.getDatabaseType(project);
+        this.isIgnorePriv = getBooleanOfRootPref(PREF.NO_PRIVILEGES);
     }
 
 
@@ -107,7 +110,7 @@ public class UISettings implements ISettings {
 
     @Override
     public boolean isIgnorePrivileges() {
-        return getBooleanOfRootPref(PREF.NO_PRIVILEGES);
+        return isIgnorePriv;
     }
 
     @Override
@@ -152,6 +155,10 @@ public class UISettings implements ISettings {
 
     @Override
     public String getInCharsetName() {
+        if (inCharsetName != null) {
+            return inCharsetName;
+        }
+
         try {
             return project.getDefaultCharset(true);
         } catch (CoreException e) {
@@ -197,7 +204,8 @@ public class UISettings implements ISettings {
     }
 
     @Override
-    public void setInCharsetName(String charset) {
+    public void setInCharsetName(String inCharsetName) {
+        this.inCharsetName = inCharsetName;
     }
 
     @Override
@@ -206,6 +214,7 @@ public class UISettings implements ISettings {
 
     @Override
     public void setIgnorePrivileges(boolean isIgnorePriv) {
+        this.isIgnorePriv = isIgnorePriv;
     }
 
     @Override

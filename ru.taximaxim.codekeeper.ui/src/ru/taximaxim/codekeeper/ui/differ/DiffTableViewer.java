@@ -121,6 +121,7 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -197,7 +198,7 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
     private DatabaseType dbType;
-    private final IProject proj;
+    private final ISettings settings;
 
     private boolean isApplyToProj = true;
 
@@ -228,7 +229,7 @@ public class DiffTableViewer extends Composite {
         this.lineManager = lineManager;
         this.location = location;
         this.dbType = databaseType;
-        this.proj = proj;
+        this.settings = new UISettings(proj, null);
         showGitUser = location != null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
@@ -516,7 +517,7 @@ public class DiffTableViewer extends Composite {
                 PgStatement project = el.getSide() == DiffSide.RIGHT ? null
                         : el.getPgStatement(dbProject.getDbObject());
                 CompareAction.openCompareEditor(new CompareInput(el.getName(),
-                        el.getType(), remote, project, new UISettings(proj, null)));
+                        el.getType(), remote, project, settings));
             }
         });
 
@@ -558,7 +559,7 @@ public class DiffTableViewer extends Composite {
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {
             FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, //$NON-NLS-1$
-                    new UISettings(proj, null).getDbType());
+                    settings.getDbType());
         } catch (IOException | CoreException ex) {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_creating_graph, ex);
         }
@@ -879,11 +880,11 @@ public class DiffTableViewer extends Composite {
         } else {
             AbstractDatabase source = dbProject.getDbObject();
             AbstractDatabase target = dbRemote.getDbObject();
-            selected = new TreeFlattener(new UISettings(proj, null))
+            selected = new TreeFlattener(settings)
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
-                    .flatten(diffTree, new UISettings(proj, null));
-            tabs = DiffTree.getTablesWithChangedColumns(source, target, selected, new UISettings(proj, null));
+                    .flatten(diffTree);
+            tabs = DiffTree.getTablesWithChangedColumns(source, target, selected);
         }
 
         setInputCollection(selected, dbProject, dbRemote, tabs);
@@ -1513,20 +1514,19 @@ public class DiffTableViewer extends Composite {
             }
 
             if (!gitUserFilter.isEmpty()
-                    && !gitUserFilter.checkElement(el, elementInfoMap, null, null, new UISettings(proj, null))) {
+                    && !gitUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
                 return false;
             }
 
             if (!dbUserFilter.isEmpty()
-                    && !dbUserFilter.checkElement(el, elementInfoMap, null, null, new UISettings(proj, null))) {
+                    && !dbUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
                 return false;
             }
 
             if (!containerFilter.isEmpty()
-                    && !containerFilter.checkElement(el, null, null, null, new UISettings(proj, null))
+                    && !containerFilter.checkElement(el, null, null, null, settings)
                     && (!isContainer || el.getChildren().stream()
-                            .noneMatch(e -> containerFilter.checkElement(e, null, null, null,
-                                    new UISettings(proj, null))))) {
+                            .noneMatch(e -> containerFilter.checkElement(e, null, null, null, settings)))) {
                 return false;
             }
 
@@ -1534,8 +1534,8 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            return (codeFilter.isEmpty() || codeFilter.checkElement(el,
-                    elementInfoMap, dbProject.getDbObject(), dbRemote.getDbObject(), new UISettings(proj, null)));
+            return (codeFilter.isEmpty() || codeFilter.checkElement(el, elementInfoMap, dbProject.getDbObject(),
+                    dbRemote.getDbObject(), settings));
         }
 
         private boolean checkType(TreeElement el, boolean isSubElement) {

@@ -174,8 +174,7 @@ public final class DiffPaneViewer extends Composite {
 
         StringBuilder sb = new StringBuilder(sql);
         st.getChildren()
-                .forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL)
-                        .append(c.getSQL(isFormatted, new UISettings(project, null))));
+            .forEach(c -> sb.append(UIConsts._NL).append(UIConsts._NL).append(c.getSQL(isFormatted, new UISettings(project, null))));
         return sb.toString();
     }
 }

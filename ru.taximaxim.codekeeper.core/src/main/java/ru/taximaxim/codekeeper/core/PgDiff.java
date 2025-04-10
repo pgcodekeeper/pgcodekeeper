@@ -71,7 +71,7 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 public class PgDiff {
 
     private static final Logger LOG = LoggerFactory.getLogger(PgDiff.class);
-    private final ISettings settings;
+    protected final ISettings settings;
     private final List<Object> errors = new ArrayList<>();
 
     public PgDiff(ISettings settings) {
@@ -373,7 +373,7 @@ public class PgDiff {
                 .onlySelected()
                 .useIgnoreList(ignoreList)
                 .onlyTypes(settings.getAllowedTypes())
-                .flatten(root, settings);
+                .flatten(root);
     }
 
     private void createScript(DepcyResolver depRes, List<TreeElement> selected,
@@ -420,13 +420,9 @@ public class PgDiff {
             if (el.getType() == DbObjType.TABLE && el.getSide() == DiffSide.BOTH) {
                 AbstractTable oldTbl = (AbstractTable) el.getPgStatement(oldDbFull);
                 AbstractTable newTbl = (AbstractTable) el.getPgStatement(newDbFull);
-                DiffTree.addColumns(oldTbl.getColumns(), newTbl.getColumns(), el, tempColumns, settings);
+                DiffTree.addColumns(oldTbl.getColumns(), newTbl.getColumns(), el, tempColumns);
             }
         }
         selected.addAll(tempColumns);
-    }
-
-    public ISettings getSettings() {
-        return settings;
     }
 }

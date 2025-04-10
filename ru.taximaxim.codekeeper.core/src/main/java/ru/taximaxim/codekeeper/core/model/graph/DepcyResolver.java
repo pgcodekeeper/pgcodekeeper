@@ -184,7 +184,6 @@ public final class DepcyResolver {
     /**
      * Добавить выражение для изменения объекта
      * 
-     * @param script
      * @param oldObj исходный объект
      * @param newObj новый объект
      */

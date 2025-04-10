@@ -192,11 +192,11 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        DbSource dbRemote = DbSource.fromDbInfo(dbInfo, projPrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                proj.getProjectCharset(), timezone, proj.getProject());
+        DbSource dbRemote = DbSource.fromDbInfo(dbInfo, proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
-        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject, new UISettings(proj.getProject(), null));
+        var settings = new UISettings(proj.getProject(), null);
+        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject, settings);
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
@@ -235,8 +235,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote,
-                new UISettings(proj.getProject(), null));
+        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote, settings);
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 

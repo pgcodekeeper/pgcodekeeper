@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsTrigger extends AbstractTrigger implements SourceStatement {
 
@@ -47,7 +46,7 @@ public final class MsTrigger extends AbstractTrigger implements SourceStatement 
         if (isDisable) {
             StringBuilder sb = new StringBuilder();
             sb.append("\nDISABLE TRIGGER ");
-            appendName(sb, script.getSettings());
+            appendName(sb);
             script.addStatement(sb);
         }
     }
@@ -58,12 +57,12 @@ public final class MsTrigger extends AbstractTrigger implements SourceStatement 
         sbSQL.append(GO).append('\n');
         sbSQL.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sbSQL.append(GO).append('\n');
-        appendSourceStatement(isCreate, sbSQL, script.getSettings());
+        appendSourceStatement(isCreate, sbSQL);
         script.addStatement(sbSQL);
     }
 
     @Override
-    public StringBuilder appendName(StringBuilder sb, ISettings settings) {
+    public StringBuilder appendName(StringBuilder sb) {
         sb.append(MsDiffUtils.quoteName(getSchemaName()))
         .append('.')
         .append(MsDiffUtils.quoteName(name))
@@ -90,7 +89,7 @@ public final class MsTrigger extends AbstractTrigger implements SourceStatement 
             sbSQL.append('\n');
             sbSQL.append(newTrigger.isDisable ? "DISABLE" : "ENABLE");
             sbSQL.append(" TRIGGER ");
-            appendName(sbSQL, script.getSettings());
+            appendName(sbSQL);
             script.addStatement(sbSQL);
         }
         return getObjectState(isNeedDepcies, script, startSize);

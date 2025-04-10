@@ -64,7 +64,7 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     }
 
     @Override
-    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate, ISettings settings) {
+    protected void appendFunctionFullSQL(StringBuilder sbSQL, boolean isCreate) {
         sbSQL.append("CREATE OR REPLACE ");
         sbSQL.append(getStatementType());
         sbSQL.append(' ');

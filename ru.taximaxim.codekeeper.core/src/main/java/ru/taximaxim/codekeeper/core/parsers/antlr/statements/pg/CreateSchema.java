@@ -45,7 +45,7 @@ public final class CreateSchema extends PgParserAbstract {
         User_nameContext user = ctx.user_name();
         IdentifierContext userName = user == null ? null : user.identifier();
         if (userName != null && !settings.isIgnorePrivileges()
-                && (!nameCtx.getText().equals(Consts.PUBLIC) || !"postgres".equals(userName.getText()))) {
+                && (!Consts.PUBLIC.equals(nameCtx.getText()) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
         }
     }

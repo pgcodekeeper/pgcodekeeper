@@ -65,7 +65,7 @@ public final class MsView extends AbstractView implements SourceStatement {
         sb.append("SET ANSI_NULLS ").append(ansiNulls ? "ON" : "OFF");
         sb.append(GO).append('\n');
 
-        appendSourceStatement(isCreate, sb, script.getSettings());
+        appendSourceStatement(isCreate, sb);
         script.addStatement(sb);
     }
 

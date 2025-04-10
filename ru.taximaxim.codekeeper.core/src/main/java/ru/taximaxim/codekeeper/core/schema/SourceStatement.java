@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-import ru.taximaxim.codekeeper.core.settings.ISettings;
-
 /**
  * A statement that is represented only by its full source code
  * separated in two parts by CREATE ZZZZ schema.name
@@ -33,12 +31,12 @@ public interface SourceStatement extends ISearchPath {
      * @param isCreate do CREATE or ALTER
      * @param settings
      */
-    default StringBuilder appendSourceStatement(boolean isCreate, StringBuilder sb, ISettings settings) {
+    default StringBuilder appendSourceStatement(boolean isCreate, StringBuilder sb) {
         sb.append(getFirstPart())
         .append(isCreate ? "CREATE " : "ALTER ")
         .append(getStatementType())
         .append(' ');
-        appendName(sb, settings)
+        appendName(sb)
         .append(getSecondPart());
         return sb;
     }
@@ -46,10 +44,8 @@ public interface SourceStatement extends ISearchPath {
     /**
      * Appends the only normalized statement part: its name and location, always
      * qualifies and quotes.
-     * 
-     * @param settings
      */
-    default StringBuilder appendName(StringBuilder sb, ISettings settings) {
+    default StringBuilder appendName(StringBuilder sb) {
         return sb.append(getQualifiedName());
     }
 }

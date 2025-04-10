@@ -211,6 +211,7 @@ public final class ActionsToScriptConverter {
 
     private void printAction(ActionContainer action, PgStatement obj) {
         String depcy = getComment(action, obj);
+        var settings = script.getSettings();
         switch (action.getState()) {
         case CREATE:
             if (depcy != null) {
@@ -220,17 +221,17 @@ public final class ActionsToScriptConverter {
             var oldObj = obj.getTwin(oldDbFull);
 
             // explicitly deleting a sequence due to a name conflict
-            if (script.getSettings().isDataMovementMode() && obj instanceof PgSequence && oldObj != null) {
+            if (settings.isDataMovementMode() && obj instanceof PgSequence && oldObj != null) {
                 addToDropScript(obj, false);
             }
 
-            if (script.getSettings().isDropBeforeCreate() && obj.canDropBeforeCreate()) {
+            if (settings.isDropBeforeCreate() && obj.canDropBeforeCreate()) {
                 addToDropScript(obj, true);
             }
 
             addToAddScript(obj);
 
-            if (script.getSettings().isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {
+            if (settings.isDataMovementMode() && oldObj instanceof AbstractTable oldTable) {
                 moveData(oldTable, obj);
             }
             break;
@@ -238,7 +239,7 @@ public final class ActionsToScriptConverter {
             if (depcy != null) {
                 script.addStatementWithoutSeparator(depcy);
             }
-            if (script.getSettings().isDataMovementMode()
+            if (settings.isDataMovementMode()
                     && DbObjType.TABLE == obj.getStatementType()
                     && !(obj instanceof IForeignTable)
                     && obj.getTwin(newDbFull) != null) {
@@ -254,7 +255,7 @@ public final class ActionsToScriptConverter {
                 getAlterTableScript(joinableActions);
                 return;
             }
-            SQLScript temp = new SQLScript(script.getSettings());
+            SQLScript temp = new SQLScript(settings);
             ObjectState state = obj.appendAlterSQL(action.getNewObj(), temp);
 
             if (state.in(ObjectState.ALTER, ObjectState.ALTER_WITH_DEP)) {
@@ -405,7 +406,8 @@ public final class ActionsToScriptConverter {
             addHiddenObj(action, "object cannot be dropped");
             return true;
         }
-        if (script.getSettings().isSelectedOnly() && !isSelectedAction(action, selected)) {
+        var settings = script.getSettings();
+        if (settings.isSelectedOnly() && !isSelectedAction(action, selected)) {
             addHiddenObj(action, "cannot change unselected objects in selected-only mode");
             return true;
         }
@@ -414,9 +416,9 @@ public final class ActionsToScriptConverter {
         if (type == DbObjType.COLUMN) {
             type = DbObjType.TABLE;
         }
-        Collection<DbObjType> allowedTypes = script.getSettings().getAllowedTypes();
+        Collection<DbObjType> allowedTypes = settings.getAllowedTypes();
         if (!allowedTypes.isEmpty() && !allowedTypes.contains(type)) {
-            if (script.getSettings().isStopNotAllowed()) {
+            if (settings.isStopNotAllowed()) {
                 throw new NotAllowedObjectException(action.getOldObj().getQualifiedName()
                         + " (" + type + ") is not an allowed script object. Stopping.");
             }

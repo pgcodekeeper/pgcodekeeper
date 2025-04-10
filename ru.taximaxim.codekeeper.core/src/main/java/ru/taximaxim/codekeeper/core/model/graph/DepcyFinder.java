@@ -35,7 +35,6 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class DepcyFinder {
 
@@ -63,7 +62,7 @@ public class DepcyFinder {
     }
 
     public static final List<String> byPatterns(int depth, boolean isReverse, Collection<DbObjType> filterObjTypes,
-            boolean isInvertFilter, AbstractDatabase db, Collection<String> names, ISettings settings) {
+            boolean isInvertFilter, AbstractDatabase db, Collection<String> names) {
         DepcyFinder depcyFinder = new DepcyFinder(db, depth, isReverse, filterObjTypes, isInvertFilter);
         depcyFinder.searchDeps(names);
         return depcyFinder.getResult();

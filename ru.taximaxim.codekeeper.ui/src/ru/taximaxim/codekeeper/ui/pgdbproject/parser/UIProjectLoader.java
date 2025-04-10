@@ -213,8 +213,8 @@ public final class UIProjectLoader extends ProjectLoader {
 
     private void loadFile(IFile file, IProgressMonitor monitor, AbstractDatabase db)
             throws CoreException, InterruptedException {
-        ISettings arguments = settings.copy();
-        arguments.setInCharsetName(file.getCharset());
+        ISettings sets = settings.copy();
+        sets.setInCharsetName(file.getCharset());
 
         PgUIDumpLoader loader = new PgUIDumpLoader(file, settings, monitor);
         if (isOverrideMode) {
@@ -263,7 +263,7 @@ public final class UIProjectLoader extends ProjectLoader {
         // exclude empty schemas (except loaded from schema files) that have been loaded early
         db.getSchemas().stream()
         .filter(sc -> schemaFiles.contains(ModelExporter.getExportedFilename(sc)) || sc.hasChildren())
-                .forEach(st -> newDb.addChild(st.deepCopy()));
+        .forEach(st -> newDb.addChild(st.deepCopy()));
 
         db.getAssemblies().forEach(st -> newDb.addChild(st.deepCopy()));
         db.getRoles().forEach(st -> newDb.addChild(st.deepCopy()));

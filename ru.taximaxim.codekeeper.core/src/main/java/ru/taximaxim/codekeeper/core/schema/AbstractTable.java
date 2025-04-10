@@ -211,7 +211,6 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
     @Override
     public void computeHash(Hasher hasher) {
         hasher.putUnordered(columns);
-//        hasher.putOrdered(columns);
         hasher.put(options);
     }
 

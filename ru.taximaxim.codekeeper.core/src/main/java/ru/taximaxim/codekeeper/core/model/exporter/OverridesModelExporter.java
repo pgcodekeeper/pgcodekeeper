@@ -94,8 +94,8 @@ public class OverridesModelExporter extends ModelExporter {
     }
 
     @Override
-    protected String getDumpSql(PgStatement st, ISettings settings) {
-        SQLScript script = new SQLScript(settings.copy());
+    protected String getDumpSql(PgStatement st) {
+        SQLScript script = new SQLScript(settings);
         Set<PgPrivilege> privs = st.getPrivileges();
         st.appendOwnerSQL(script);
         PgPrivilege.appendPrivileges(privs, script);

@@ -146,7 +146,7 @@ public class PartialExporterTest {
             Collection<TreeElement> list = new TreeFlattener(new CliSettings(new PgDiffArguments()))
                     .onlySelected()
                     .onlyEdits(dbSource, dbTarget)
-                    .flatten(tree, new CliSettings(new PgDiffArguments()));
+                    .flatten(tree);
             // apply partial changes to the full database
             new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8,
                     new CliSettings(new PgDiffArguments()))

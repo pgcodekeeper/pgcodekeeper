@@ -85,15 +85,15 @@ public class TreeFlattener {
         return this;
     }
 
-    public List<TreeElement> flatten(TreeElement root, ISettings settings) {
+    public List<TreeElement> flatten(TreeElement root) {
         result.clear();
         addSubtreeRoots.clear();
         LOG.info(Messages.TreeFlattener_log_filter_obj);
-        recurse(root, settings);
+        recurse(root);
         return result;
     }
 
-    private void recurse(TreeElement el, ISettings settings) {
+    private void recurse(TreeElement el) {
         AddStatus status;
         if (ignoreList == null) {
             status = AddStatus.ADD;
@@ -114,7 +114,7 @@ public class TreeFlattener {
             addSubtreeRoots.push(el);
         }
         for (TreeElement sub : el.getChildren()) {
-            recurse(sub, settings);
+            recurse(sub);
         }
         if (status == AddStatus.ADD_SUBTREE) {
             addSubtreeRoots.pop();
@@ -124,7 +124,7 @@ public class TreeFlattener {
                 (!onlySelected || el.isSelected()) &&
                 (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
                 (!onlyEdits || el.getSide() != DiffSide.BOTH ||
-                        !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget), settings))) {
+                !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget), settings))) {
             result.add(el);
         }
     }

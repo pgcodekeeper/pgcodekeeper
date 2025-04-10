@@ -108,7 +108,8 @@ public final class Main {
     private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            PgDiff diff = new PgDiff(new CliSettings(arguments));
+            var settings = new CliSettings(arguments);
+            PgDiff diff = new PgDiff(settings);
             String text;
             try {
                 LOG.info(Messages.Main_log_create_script);
@@ -184,7 +185,8 @@ public final class Main {
 
     private static boolean insert(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException, SQLException {
-        PgDiff diff = new PgDiff(new CliSettings(arguments));
+        var settings = new CliSettings(arguments);
+        PgDiff diff = new PgDiff(settings);
         AbstractDatabase db;
         try {
             db = diff.loadNewDatabaseWithLibraries(arguments);
@@ -227,8 +229,7 @@ public final class Main {
         }
         LOG.info(Messages.Main_log_build_graph_deps);
         List<String> deps = DepcyFinder.byPatterns(arguments.getGraphDepth(), arguments.isGraphReverse(),
-                arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter(), d, arguments.getGraphNames(),
-                settings);
+                arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter(), d, arguments.getGraphNames());
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             var w = pw != null ? pw : writer;

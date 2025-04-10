@@ -47,10 +47,8 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -130,8 +128,7 @@ public class CommitDialog extends TrayDialog {
 
         dtvTop.setAutoExpand(true);
         List<TreeElement> result = new TreeFlattener(new UISettings(proj.getProject(), null)).onlySelected()
-                .flatten(diffTree,
-                new CliSettings(new PgDiffArguments()));
+                .flatten(diffTree);
         dtvTop.setInputCollection(result, dbProject, dbRemote, Collections.emptySet());
 
         Group gBottom = new Group(container, SWT.NONE);
@@ -313,7 +310,7 @@ public class CommitDialog extends TrayDialog {
                 Collection<TreeElement> checked = new TreeFlattener(new UISettings(proj.getProject(), null))
                         .onlySelected()
                         .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
-                        .flatten(diffTree, new UISettings(proj.getProject(), null));
+                        .flatten(diffTree);
                 new UIProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
                         checked,  proj, isOverridesOnly).updatePartial();
                 monitor.done();

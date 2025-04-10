@@ -97,7 +97,7 @@ class PgProjectLoaderTest {
                     .onlySelected()
                     .useIgnoreList(ignoreList)
                     .onlyTypes(settings.getAllowedTypes())
-                    .flatten(root, settings);
+                    .flatten(root);
 
             new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8, new CliSettings(args))
                     .exportProject();

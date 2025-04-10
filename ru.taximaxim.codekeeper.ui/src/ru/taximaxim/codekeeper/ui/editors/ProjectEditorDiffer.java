@@ -456,7 +456,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void getChanges() {
-        System.err.println("hi");
         Object currentRemote = getCurrentDb();
         if (currentRemote == null) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
@@ -468,6 +467,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
         DatabaseType dbType = OpenProjectUtils.getDatabaseType(getProject());
+        
         if (isDbInfo && ((DbInfo) currentRemote).getDbType() != dbType) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
@@ -485,23 +485,19 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         IEclipsePreferences projProps = proj.getPrefs();
 
-        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-
         DbSource dbProject = DbSource.fromProject(proj, oneTimePrefs);
 
         TreeDiffer newDiffer;
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
-                    charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
+            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
                     getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote, new UISettings(getProject(), oneTimePrefs));
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
-            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
-                    dbType, getProject(), oneTimePrefs);
+            DbSource dbRemote = DbSource.fromFile(file, getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote, new UISettings(getProject(), oneTimePrefs));
         }
 
@@ -705,7 +701,6 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
     }
 
     public void diff() {
-        System.err.println("hi2");
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
                 !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {

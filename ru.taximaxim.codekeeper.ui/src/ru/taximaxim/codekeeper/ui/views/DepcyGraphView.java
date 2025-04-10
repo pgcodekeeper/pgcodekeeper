@@ -52,7 +52,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.graph.SimpleDepcyResolver;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
@@ -65,7 +64,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private final Action projectAction;
     private final Action remoteAction;
     private final Action addColumnAction;
-    private final ISettings settings;
     private GraphViewer gv;
     private DepcyGraphLabelProvider labelProvider;
 
@@ -75,14 +73,13 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
     private IProject currentProject;
     private boolean isShowColumns;
 
-    public DepcyGraphView(ISettings settings) {
+    public DepcyGraphView() {
         projectAction = new ProjectAction(Messages.DepcyGraphView_project,
                 Activator.getRegisteredDescriptor(ProjectIcon.BALL_BLUE));
         remoteAction = new ToggleAction(Messages.DepcyGraphView_remote,
                 Activator.getRegisteredDescriptor(ProjectIcon.BALL_GREEN));
         addColumnAction = new ShowColumnAction(Messages.DepcyGraphView_show_columns,
                 Activator.getRegisteredDescriptor(ProjectIcon.COLUMN));
-        this.settings = settings;
     }
 
     @Override
