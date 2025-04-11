@@ -419,8 +419,8 @@ class DbSourceJdbc extends DbSource {
             ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
 
-        return load(LoaderFactory.createJdbcLoader(new UISettings(proj, oneTimePrefs), timezone, jdbcConnector, monitor,
-                ignoreShemaList));
+        return load(LoaderFactory.createJdbcLoader(new UISettings(proj, oneTimePrefs, jdbcConnector.getType()),
+                timezone, jdbcConnector, monitor, ignoreShemaList));
     }
 }
 class DbSourceFromDbObject extends DbSource {

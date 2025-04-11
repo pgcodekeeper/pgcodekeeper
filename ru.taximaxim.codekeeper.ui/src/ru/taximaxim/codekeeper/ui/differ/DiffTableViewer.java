@@ -1623,4 +1623,8 @@ public class DiffTableViewer extends Composite {
             return false;
         }
     }
+
+    public DatabaseType getDbType() {
+        return dbType;
+    }
 }

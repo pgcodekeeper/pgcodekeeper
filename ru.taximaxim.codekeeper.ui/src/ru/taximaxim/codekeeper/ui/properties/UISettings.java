@@ -45,10 +45,15 @@ public final class UISettings implements ISettings {
     private IEclipsePreferences projPS;
     private final Map<String, Boolean> oneTimePS;
 
+    public UISettings(IProject project, Map<String, Boolean> oneTimesPS, DatabaseType dbType) {
+        this(project, oneTimesPS);
+        this.dbType = dbType;
+    }
+
     public UISettings(IProject project, Map<String, Boolean> oneTimePS) {
         this.project = project;
         this.oneTimePS = oneTimePS;
-        this.dbType = OpenProjectUtils.getDatabaseType(project);
+        this.dbType = DatabaseType.PG;
         this.isIgnorePriv = getBooleanOfRootPref(PREF.NO_PRIVILEGES);
         if (project != null) {
             this.projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
@@ -59,10 +64,13 @@ public final class UISettings implements ISettings {
         }
     }
 
-
     @Override
     public DatabaseType getDbType() {
-        return dbType;
+        try {
+            return OpenProjectUtils.getDatabaseType(project);
+        } catch (Exception e) {
+            return dbType;
+        }
     }
 
     @Override
@@ -162,10 +170,11 @@ public final class UISettings implements ISettings {
         }
 
         try {
-            return project.getDefaultCharset(true);
-        } catch (CoreException e) {
-            return Consts.UTF_8;
+            if (project != null) {
+                return project.getDefaultCharset(true);
+            }
         }
+        return Consts.UTF_8;
     }
 
     @Override

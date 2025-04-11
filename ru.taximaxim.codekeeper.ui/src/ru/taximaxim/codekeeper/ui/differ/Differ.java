@@ -29,6 +29,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
+import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
@@ -48,6 +49,7 @@ public final class Differ implements IRunnableWithProgress {
     private final String timezone;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
+    private final DatabaseType dbType;
 
     private String diffDirect;
     private String diffReverse;
@@ -80,7 +82,8 @@ public final class Differ implements IRunnableWithProgress {
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs) {
+            boolean needTwoWay, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs,
+            DatabaseType dbType) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
@@ -88,11 +91,12 @@ public final class Differ implements IRunnableWithProgress {
         this.timezone = timezone;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
+        this.dbType = dbType;
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
             boolean needTwoWay, String timezone, IProject proj) {
-        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, proj, null);
+        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, proj, null, null);
     }
 
     public Job getDifferJob() {
@@ -141,8 +145,7 @@ public final class Differ implements IRunnableWithProgress {
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         try {
-            // forceUnixNewLines has no effect on diff operaiton, just pass true
-            UISettings settings = new UISettings(proj, oneTimePrefs);
+            UISettings settings = new UISettings(proj, oneTimePrefs, dbType);
             diffDirect = new PgDiff(settings).diffDatabaseSchemasAdditionalDepcies(
                     root,
                     sourceDbFull, targetDbFull,

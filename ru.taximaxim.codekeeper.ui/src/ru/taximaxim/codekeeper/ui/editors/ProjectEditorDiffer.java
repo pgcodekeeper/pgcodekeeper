@@ -712,7 +712,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs);
+                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType);
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
