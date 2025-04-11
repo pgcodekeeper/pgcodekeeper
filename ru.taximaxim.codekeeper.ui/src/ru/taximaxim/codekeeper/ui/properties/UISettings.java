@@ -173,6 +173,8 @@ public final class UISettings implements ISettings {
             if (project != null) {
                 return project.getDefaultCharset(true);
             }
+        } catch (CoreException e) {
+            // We're just trying, so if we can't it's not a big deal.
         }
         return Consts.UTF_8;
     }
