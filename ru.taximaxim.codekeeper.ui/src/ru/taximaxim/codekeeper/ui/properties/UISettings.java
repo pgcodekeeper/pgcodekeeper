@@ -201,7 +201,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public Collection<String> getPreFilePath() {
-        if (getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
+        if (!getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
             return Collections.emptyList();
         }
         return addPathsIfExists(FILE.PRE_DIR, FILE.PRE_SCRIPT);
@@ -209,7 +209,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public Collection<String> getPostFilePath() {
-        if (getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
+        if (!getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
             return Collections.emptyList();
         }
         return addPathsIfExists(FILE.POST_DIR, FILE.POST_SCRIPT);

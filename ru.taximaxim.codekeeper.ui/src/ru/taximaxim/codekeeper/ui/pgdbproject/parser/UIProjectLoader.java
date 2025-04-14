@@ -274,15 +274,15 @@ public final class UIProjectLoader extends ProjectLoader {
         return newDb;
     }
 
-    private AbstractDatabase buildPgChFiles(Collection<IFile> files, SubMonitor mon, String schemasDir,
-            DatabaseType dbType) throws InterruptedException, CoreException {
+    private AbstractDatabase buildPgChFiles(Collection<IFile> files, SubMonitor mon, String schemasDir)
+            throws InterruptedException, CoreException {
         Set<String> schemaDirnamesLoaded = new HashSet<>();
         IPath schemasPath = new Path(schemasDir);
         AbstractDatabase db = createDb(settings);
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, dbType)) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, settings.getDbType())) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -391,8 +391,8 @@ public final class UIProjectLoader extends ProjectLoader {
         UIProjectLoader loader = new UIProjectLoader(null, new UISettings(null, null, dbType), monitor);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         AbstractDatabase db = switch (dbType) {
-            case PG -> loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
-            case CH -> loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASE, dbType);
+            case PG -> loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA);
+            case CH -> loader.buildPgChFiles(files, mon, WorkDirs.CH_DATABASE);
             case MS -> loader.buildMsFiles(files, mon);
             default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         };
