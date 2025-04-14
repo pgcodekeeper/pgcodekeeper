@@ -63,6 +63,7 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public final class UIProjectLoader extends ProjectLoader {
 
@@ -387,7 +388,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
     public static AbstractDatabase buildFiles(Collection<IFile> files, DatabaseType dbType, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
-        UIProjectLoader loader = new UIProjectLoader(null, null, monitor);
+        UIProjectLoader loader = new UIProjectLoader(null, new UISettings(null, null, dbType), monitor);
         SubMonitor mon = SubMonitor.convert(monitor, files.size());
         AbstractDatabase db = switch (dbType) {
             case PG -> loader.buildPgChFiles(files, mon, WorkDirs.PG_SCHEMA, dbType);
