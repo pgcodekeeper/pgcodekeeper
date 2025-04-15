@@ -52,11 +52,6 @@ public class ProjectUpdater {
     private final boolean overridesOnly;
     private final ISettings settings;
 
-    public ProjectUpdater(AbstractDatabase dbNew, DatabaseType dbType, String encoding, Path dirExport,
-            ISettings settings) {
-        this(dbNew, null, null, dbType, encoding, dirExport, false, settings);
-    }
-
     public ProjectUpdater(AbstractDatabase dbNew, AbstractDatabase dbOld, Collection<TreeElement> changedObjects,
             DatabaseType dbType, String encoding, Path dirExport, boolean overridesOnly, ISettings settings) {
         this.dbNew = dbNew;
