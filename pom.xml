@@ -30,8 +30,8 @@
     </modules>
 
     <properties>
-        <revision>10.11.0-SNAPSHOT</revision>
-        <ui.revision>5.9.0-SNAPSHOT</ui.revision>
+        <revision>10.12.0-SNAPSHOT</revision>
+        <ui.revision>5.10.0-SNAPSHOT</ui.revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
