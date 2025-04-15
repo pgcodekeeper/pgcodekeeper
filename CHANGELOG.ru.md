@@ -9,18 +9,24 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.12.0] - 2025-04-15
+
+### Добавлено
+
 - Добавлена сборка pgCodeKeeper для Mac OS.
 - Добавлена возможность использования пользовательского конфигурационного файла `logback.xml` для логирования в CLI версии. Также добавлен запись в лог файл основных операций.
-
-### Изменено
 
 ### Исправлено
 
 - Исправлена ошибка с регистром имен у объектов в MS SQL.
 - Исправлена ошибка некорректного чтения привилегий с именами пользователей из БД.
 - Исправлена загрузка схемы из директории в мастере сравнений.
-
-### Удалено
 
 ## [10.11.0] - 2025-04-01
 
@@ -2239,7 +2245,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...HEAD
+[10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
 [10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
 [10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0
 [10.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...v10.9.0
