@@ -9,18 +9,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.12.0] - 2025-04-15
+
+### Added
+
 - Added pgCodeKeeper build for Mac OS.
 - The ability to use a custom logback.xml configuration file for logging in the CLI version has been added. Additionally, logging of main operations has been added to the log file.
-
-### Changed
 
 ### Fixed
 
 - Fixed a bug with the case of names of objects in MS SQL.
 - Fixed the error of incorrect reading of privileges with user names from the database.
 - Fixed loading of a scheme from a directory in the diff wizard.
-
-### Removed
 
 ## [10.11.0] - 2025-04-01
 
@@ -2238,7 +2244,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...HEAD
+[10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
 [10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
 [10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0
 [10.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...v10.9.0
