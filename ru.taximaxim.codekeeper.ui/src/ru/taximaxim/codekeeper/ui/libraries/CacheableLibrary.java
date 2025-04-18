@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Objects;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 public abstract class CacheableLibrary extends AbstractLibrary {
 

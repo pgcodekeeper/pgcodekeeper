@@ -22,11 +22,11 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.refactoring.PgRefactory;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class RenameReference extends AbstractHandler {
+public final class RenameReference extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -40,7 +40,7 @@ public class RenameReference extends AbstractHandler {
     public boolean isEnabled() {
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (part instanceof SQLEditor editor) {
-            return UIProjectLoader.isInProject(editor.getEditorInput()) && editor.getCurrentReference() != null;
+            return ProjectUtils.isInProject(editor.getEditorInput()) && editor.getCurrentReference() != null;
         }
 
         return false;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.fileutils;
+package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -38,10 +38,9 @@ import org.eclipse.jgit.treewalk.FileTreeIterator;
 import org.eclipse.jgit.util.io.NullOutputStream;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public final class GitUserReader implements AutoCloseable {
+final class GitUserReader implements AutoCloseable {
 
     public static boolean checkRepo(Path path) {
         FileRepositoryBuilder builder = new FileRepositoryBuilder().findGitDir(path.toFile());

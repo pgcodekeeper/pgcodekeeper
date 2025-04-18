@@ -13,36 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.fileutils;
+package ru.taximaxim.codekeeper.core.utils;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Wrapper for creation and auto deletion of a temp file.
+ * Wrapper for creation and automatic recursive deletion of a temp directory.
  * Intended for try-with-resources.
  *
  * @author Alexander Levsha
  */
-public class TempFile implements AutoCloseable {
+public final class TempDir implements AutoCloseable {
 
-    private final Path f;
+    private final Path dir;
 
-    public TempFile(String prefix, String suffix) throws IOException {
-        this.f = Files.createTempFile(prefix, suffix);
+    public TempDir(String prefix) throws IOException {
+        this.dir = Files.createTempDirectory(prefix);
     }
 
-    public TempFile(Path dir, String prefix, String suffix) throws IOException {
-        this.f = Files.createTempFile(dir, prefix, suffix);
+    public TempDir(Path dir, String prefix) throws IOException {
+        this.dir = Files.createTempDirectory(dir, prefix);
     }
 
     public Path get() {
-        return f;
+        return dir;
     }
 
     @Override
     public void close() throws IOException {
-        FileUtils.removeReadOnly(f);
+        FileUtils.deleteRecursive(dir);
     }
 }

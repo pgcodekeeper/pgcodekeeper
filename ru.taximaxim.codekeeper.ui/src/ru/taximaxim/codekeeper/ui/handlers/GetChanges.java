@@ -32,11 +32,11 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class GetChanges extends AbstractHandler {
+public final class GetChanges extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
@@ -78,6 +78,6 @@ public class GetChanges extends AbstractHandler {
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         return editor instanceof ProjectEditorDiffer ||
-                (editor instanceof SQLEditor && UIProjectLoader.isInProject(editor.getEditorInput()));
+                (editor instanceof SQLEditor && ProjectUtils.isInProject(editor.getEditorInput()));
     }
 }

@@ -45,14 +45,15 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
-public class AddComment extends AbstractHandler {
+public final class AddComment extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -125,7 +126,7 @@ public class AddComment extends AbstractHandler {
     public boolean isEnabled() {
         IEditorPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (part instanceof SQLEditor editor) {
-            if (!UIProjectLoader.isInProject(editor.getEditorInput())) {
+            if (!ProjectUtils.isInProject(editor.getEditorInput())) {
                 return false;
             }
 
@@ -135,7 +136,7 @@ public class AddComment extends AbstractHandler {
             }
 
             IFile file = FileUtilsUi.getFileForLocation(location);
-            return OpenProjectUtils.getDatabaseType(file.getProject()) == DatabaseType.PG;
+            return ProjectUtils.getDatabaseType(file.getProject()) == DatabaseType.PG;
         }
 
         return false;

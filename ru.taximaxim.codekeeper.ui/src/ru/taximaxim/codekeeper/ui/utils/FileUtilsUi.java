@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.fileutils;
+package ru.taximaxim.codekeeper.ui.utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -110,5 +110,6 @@ public final class FileUtilsUi {
     }
 
     private FileUtilsUi() {
+        // only statics
     }
 }

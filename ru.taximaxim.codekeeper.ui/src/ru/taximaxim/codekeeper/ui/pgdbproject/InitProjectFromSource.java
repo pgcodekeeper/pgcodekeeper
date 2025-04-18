@@ -27,10 +27,10 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
-import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
-public class InitProjectFromSource implements IRunnableWithProgress {
+public final class InitProjectFromSource implements IRunnableWithProgress {
 
     private final DbSource src;
     private final PgDbProject proj;
