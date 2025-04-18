@@ -49,16 +49,12 @@ public abstract class DatabaseLoader {
     }
 
     public static AbstractDatabase createDb(ISettings settings) {
-        switch (settings.getDbType()) {
-        case CH:
-            return new ChDatabase();
-        case MS:
-            return new MsDatabase();
-        case PG:
-            return new PgDatabase();
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
-        }
+        return switch (settings.getDbType()) {
+        case CH -> new ChDatabase();
+        case MS -> new MsDatabase();
+        case PG -> new PgDatabase();
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
+        };
     }
 
     /**

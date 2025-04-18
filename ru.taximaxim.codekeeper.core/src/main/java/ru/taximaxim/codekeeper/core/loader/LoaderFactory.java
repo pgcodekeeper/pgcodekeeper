@@ -36,17 +36,12 @@ public final class LoaderFactory {
 
     public static DatabaseLoader createJdbcLoader(ISettings settings, String timezone,
             AbstractJdbcConnector connnector, SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
-        var dbType = settings.getDbType();
-        switch (dbType) {
-        case MS:
-            return new JdbcMsLoader(connnector, settings, monitor, ignoreSchemaList);
-        case PG:
-            return new JdbcPgLoader(connnector, timezone, settings, monitor, ignoreSchemaList);
-        case CH:
-            return new JdbcChLoader(connnector, settings, monitor, ignoreSchemaList);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return switch (settings.getDbType()) {
+        case MS -> new JdbcMsLoader(connnector, settings, monitor, ignoreSchemaList);
+        case PG -> new JdbcPgLoader(connnector, timezone, settings, monitor, ignoreSchemaList);
+        case CH -> new JdbcChLoader(connnector, settings, monitor, ignoreSchemaList);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
+        };
     }
 
     private LoaderFactory() {
