@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.Platform;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class LibraryUtils {
 
@@ -37,7 +37,7 @@ public class LibraryUtils {
         Path xmlPath = Paths.get(proj.getLocation().toString()).resolve(DependenciesXmlStore.FILE_NAME);
         DependenciesXmlStore xml = new DependenciesXmlStore(xmlPath);
         List<PgLibrary> libs = xml.readObjects();
-        return new UiLibraryLoader(proj.getName(), OpenProjectUtils.getDatabaseType(proj), xml.readLoadNestedFlag(),
+        return new UiLibraryLoader(proj.getName(), ProjectUtils.getDatabaseType(proj), xml.readLoadNestedFlag(),
                 xmlPath)
                 .load(libs);
     }

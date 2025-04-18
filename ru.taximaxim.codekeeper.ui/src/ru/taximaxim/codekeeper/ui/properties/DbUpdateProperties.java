@@ -38,10 +38,10 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
 import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class DbUpdateProperties extends PropertyPage {
 
@@ -55,7 +55,7 @@ public class DbUpdateProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         IProject project = element.getAdapter(IProject.class);
-        dbType = OpenProjectUtils.getDatabaseType(project);
+        dbType = ProjectUtils.getDatabaseType(project);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 

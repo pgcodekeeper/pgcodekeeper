@@ -13,36 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.fileutils;
+package ru.taximaxim.codekeeper.ui.externalcalls;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
+final class ProcBuilderWrapper {
 
-/**
- * Wrapper for creation and automatic recursive deletion of a temp directory.
- * Intended for try-with-resources.
- *
- * @author Alexander Levsha
- */
-public class TempDir implements AutoCloseable {
+    private final ProcessBuilder pb;
 
-    private final Path dir;
-
-    public TempDir(String prefix) throws IOException {
-        this.dir = Files.createTempDirectory(prefix);
+    public ProcBuilderWrapper(ProcessBuilder pb) {
+        this.pb = pb;
     }
 
-    public TempDir(Path dir, String prefix) throws IOException {
-        this.dir = Files.createTempDirectory(dir, prefix);
+    public void addEnv(String variable, String value) {
+        if (value != null && !value.isEmpty()) {
+            pb.environment().put(variable, value);
+        }
     }
 
-    public Path get() {
-        return dir;
-    }
-
-    @Override
-    public void close() throws IOException {
-        FileUtils.deleteRecursive(dir);
+    public void addEnv(String variable, int value) {
+        if (value != 0) {
+            pb.environment().put(variable, String.valueOf(value));
+        }
     }
 }

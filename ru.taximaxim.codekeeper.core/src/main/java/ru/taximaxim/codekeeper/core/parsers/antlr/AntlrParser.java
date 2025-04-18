@@ -49,7 +49,6 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
@@ -66,6 +65,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
+import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class AntlrParser {

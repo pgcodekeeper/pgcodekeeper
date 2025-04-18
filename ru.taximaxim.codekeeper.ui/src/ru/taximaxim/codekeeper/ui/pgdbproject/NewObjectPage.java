@@ -68,24 +68,24 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.ObjectLevel;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParserWrapper;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
 import ru.taximaxim.codekeeper.ui.sqledit.SqlEditorTemplateProposal;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public final class NewObjectPage extends WizardPage {
 
@@ -128,9 +128,9 @@ public final class NewObjectPage extends WizardPage {
         Object element = selection.getFirstElement();
         if (element instanceof IResource resource) {
             currentProj = resource.getProject();
-            dbType = OpenProjectUtils.getDatabaseType(currentProj);
+            dbType = ProjectUtils.getDatabaseType(currentProj);
             fillAllowedTypes();
-            if (resource.getType() == IResource.FILE && UIProjectLoader.isInProject(resource)) {
+            if (resource.getType() == IResource.FILE && ProjectUtils.isInProject(resource)) {
                 parseSelectionFile(resource);
             } else if (resource.getType() == IResource.FOLDER) {
                 parseSelectionFolder(resource);
@@ -262,7 +262,7 @@ public final class NewObjectPage extends WizardPage {
 
         List<IProject> projectList = new ArrayList<>();
         for (IProject project : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
-            if (OpenProjectUtils.isPgCodeKeeperProject(project)) {
+            if (ProjectUtils.isPgCodeKeeperProject(project)) {
                 projectList.add(project);
             }
         }
@@ -277,7 +277,7 @@ public final class NewObjectPage extends WizardPage {
             Object object = ((StructuredSelection) e.getSelection()).getFirstElement();
             if (object != null) {
                 currentProj = ((IProject) object);
-                dbType = OpenProjectUtils.getDatabaseType(currentProj);
+                dbType = ProjectUtils.getDatabaseType(currentProj);
                 lblDbType.setText(dbType.getDbTypeName());
                 lblDbType.getParent().layout();
                 fillTypes();

@@ -40,10 +40,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.AbstractStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class DBStoreCombo extends WorkbenchWindowControlContribution {
 
@@ -131,8 +131,8 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         }
 
         DatabaseType dbType;
-        if (OpenProjectUtils.isPgCodeKeeperProject(proj)) {
-            dbType = OpenProjectUtils.getDatabaseType(proj);
+        if (ProjectUtils.isPgCodeKeeperProject(proj)) {
+            dbType = ProjectUtils.getDatabaseType(proj);
         } else {
             dbType = null;
         }

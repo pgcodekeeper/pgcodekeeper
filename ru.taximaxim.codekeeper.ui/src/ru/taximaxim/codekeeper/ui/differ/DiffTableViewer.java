@@ -108,7 +108,6 @@ import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
@@ -120,6 +119,7 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -128,7 +128,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.UiUtils;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.BuildDepsGraphDialog;
@@ -138,9 +137,9 @@ import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.ContainerFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.fileutils.GitUserReader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.UiUtils;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**

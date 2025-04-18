@@ -29,13 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationProperties;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 
 public final class TokenLoader extends DatabaseLoader {
 

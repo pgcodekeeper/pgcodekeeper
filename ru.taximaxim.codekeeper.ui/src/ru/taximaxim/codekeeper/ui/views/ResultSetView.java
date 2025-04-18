@@ -51,12 +51,12 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.ViewPart;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UiUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 
-public class ResultSetView extends ViewPart {
+public final class ResultSetView extends ViewPart {
 
     private CTabFolder tabFolder;
     private Menu popupMenu;

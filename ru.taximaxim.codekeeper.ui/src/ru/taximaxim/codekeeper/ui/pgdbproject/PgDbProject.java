@@ -25,13 +25,15 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class PgDbProject {
+public final class PgDbProject {
 
     private final IProject project;
     private IEclipsePreferences prefs;
@@ -86,20 +88,29 @@ public class PgDbProject {
         if (!newProject.exists()) {
             IProjectDescription desc = newProject.getWorkspace().newProjectDescription(newProject.getName());
             desc.setLocationURI(location);
-            desc.setNatureIds(OpenProjectUtils.getProjectNatures(dbType));
+            desc.setNatureIds(ProjectUtils.getProjectNatures(dbType));
             newProject.create(desc, null);
             newProject.open(IResource.BACKGROUND_REFRESH, null);
             newProject.refreshLocal(IResource.BACKGROUND_REFRESH, null);
-            OpenProjectUtils.configure(newProject);
+            ProjectUtils.configure(newProject);
         }
         return new PgDbProject(newProject);
+    }
+
+    public static PgDbProject getProject(ISelection sel) {
+        if (sel instanceof IStructuredSelection selection
+                && selection.getFirstElement() instanceof IProject proj
+                && ProjectUtils.isPgCodeKeeperProject(proj)) {
+            return new PgDbProject(proj);
+        }
+        return null;
     }
 
     /**
      * @return pgCodeKeeper project preferences or null if wrong project
      */
     public static IEclipsePreferences getPrefs(IProject proj, boolean isProject) {
-        if (!OpenProjectUtils.isPgCodeKeeperProject(proj)) {
+        if (!ProjectUtils.isPgCodeKeeperProject(proj)) {
             return null;
         }
 

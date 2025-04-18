@@ -4,7 +4,6 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.core;singleton:=true
 Bundle-Version: 10.12.0.qualifier
 Export-Package: ru.taximaxim.codekeeper.core,
- ru.taximaxim.codekeeper.core.fileutils,
  ru.taximaxim.codekeeper.core.formatter,
  ru.taximaxim.codekeeper.core.ignoreparser,
  ru.taximaxim.codekeeper.core.libraries,

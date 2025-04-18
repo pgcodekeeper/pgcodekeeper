@@ -35,8 +35,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorInput;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class OpenEditor extends AbstractHandler {
+public final class OpenEditor extends AbstractHandler {
 
     private IProject proj;
 
@@ -56,7 +57,7 @@ public class OpenEditor extends AbstractHandler {
     @Override
     public void setEnabled(Object evaluationContext) {
         proj = getSelectedProject(evaluationContext);
-        setBaseEnabled(OpenProjectUtils.isPgCodeKeeperProject(proj));
+        setBaseEnabled(ProjectUtils.isPgCodeKeeperProject(proj));
     }
 
     private IProject getSelectedProject(Object ctx) {
@@ -75,7 +76,7 @@ public class OpenEditor extends AbstractHandler {
     public static void openEditor(IWorkbenchPage page, IProject proj) throws PartInitException {
         Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
         Shell shell = page.getWorkbenchWindow().getShell();
-        if (OpenProjectUtils.checkVersionAndWarn(proj, shell, true)) {
+        if (ProjectUtils.checkVersionAndWarn(proj, shell, true)) {
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());
             page.openEditor(input, EDITOR.PROJECT);
         }

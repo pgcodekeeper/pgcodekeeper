@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ide.IDE;
 
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 
 public class PgRefactory {
 

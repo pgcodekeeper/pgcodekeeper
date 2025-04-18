@@ -28,14 +28,14 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DECORATOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class PgDecorator extends LabelProvider implements ILightweightLabelDecorator {
+public final class PgDecorator extends LabelProvider implements ILightweightLabelDecorator {
 
     @Override
     public void decorate(Object element, IDecoration decoration) {
         if (element instanceof IResource res && res.exists()
-                && OpenProjectUtils.isPgCodeKeeperProject(res.getProject())) {
+                && ProjectUtils.isPgCodeKeeperProject(res.getProject())) {
             addOverlay(decoration, res);
         }
     }
