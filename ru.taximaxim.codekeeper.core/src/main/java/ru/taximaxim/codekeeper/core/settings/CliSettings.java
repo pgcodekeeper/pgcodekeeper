@@ -22,6 +22,11 @@ import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
+/**
+ * The (@code CliSettings) is class wrapper for (@code PgDiffArguments) to wrap
+ * it in interface ISettings
+ */
+
 public final class CliSettings implements ISettings {
 
     private PgDiffArguments args;
