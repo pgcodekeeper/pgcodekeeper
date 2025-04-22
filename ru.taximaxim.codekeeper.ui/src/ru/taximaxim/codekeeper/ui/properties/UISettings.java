@@ -42,8 +42,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.formatter.Formatter;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public final class UISettings implements ISettings {
 
@@ -82,7 +82,7 @@ public final class UISettings implements ISettings {
     @Override
     public DatabaseType getDbType() {
         try {
-            return OpenProjectUtils.getDatabaseType(project);
+            return ProjectUtils.getDatabaseType(project);
         } catch (Exception e) {
             return dbType;
         }

@@ -264,12 +264,6 @@ class DbSourceProject extends DbSource {
 
         monitor.setWorkRemaining(ProjectUtils.countFiles(project));
 
-        IEclipsePreferences pref = proj.getPrefs();
-
-        PgDiffArguments arguments = getPgDiffArgs(charset,
-                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
-                ProjectUtils.getDatabaseType(project), project, oneTimePrefs);
-
         Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         boolean projectOnly = oneTimePrefs != null && Boolean.TRUE == oneTimePrefs.get(Consts.PROJECT_ONLY);
 
