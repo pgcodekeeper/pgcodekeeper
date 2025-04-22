@@ -36,7 +36,6 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
-import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.LoaderFactory;
@@ -44,6 +43,7 @@ import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -61,6 +61,7 @@ import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public abstract class DbSource {
 
@@ -261,7 +262,13 @@ class DbSourceProject extends DbSource {
         monitor.subTask(Messages.dbSource_loading_tree);
         IProject project = proj.getProject();
 
-        monitor.setWorkRemaining(UIProjectLoader.countFiles(project));
+        monitor.setWorkRemaining(ProjectUtils.countFiles(project));
+
+        IEclipsePreferences pref = proj.getPrefs();
+
+        PgDiffArguments arguments = getPgDiffArgs(charset,
+                pref.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true),
+                ProjectUtils.getDatabaseType(project), project, oneTimePrefs);
 
         Path listFile = Paths.get(project.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
         boolean projectOnly = oneTimePrefs != null && Boolean.TRUE == oneTimePrefs.get(Consts.PROJECT_ONLY);

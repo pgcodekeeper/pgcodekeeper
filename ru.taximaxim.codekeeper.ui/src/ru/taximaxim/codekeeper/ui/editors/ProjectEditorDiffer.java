@@ -114,7 +114,6 @@ import org.osgi.service.prefs.BackingStoreException;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -123,6 +122,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -154,17 +154,16 @@ import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
@@ -214,11 +213,10 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
 
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-        if (!(input instanceof ProjectEditorInput)) {
+        if (!(input instanceof ProjectEditorInput in)) {
             throw new PartInitException(Messages.ProjectEditorDiffer_error_bad_input_type);
         }
 
-        ProjectEditorInput in = (ProjectEditorInput) input;
         Exception ex = in.getError();
         if (ex != null) {
             throw new PartInitException(in.getError().getLocalizedMessage(), ex);
@@ -231,7 +229,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         proj = new PgDbProject(in.getProject());
         settings = new UISettings(getProject(), oneTimePrefs);
         sp = new ProjectEditorSelectionProvider(getProject());
-        dbType = OpenProjectUtils.getDatabaseType(getProject());
+        dbType = ProjectUtils.getDatabaseType(getProject());
 
         // message box
         if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
@@ -440,10 +438,10 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                 // something other than just markers has changed
                 // check that it's our resource
                 if (delta.getFlags() != IResourceDelta.MARKERS &&
-                        (UIProjectLoader.isInProject(delta, OpenProjectUtils.getDatabaseType(getProject()))
-                                || UIProjectLoader.isOverridesFolder(delta)) &&
-                        delta.getResource().getType() == IResource.FILE &&
-                        delta.getResource().getProject().equals(getProject())) {
+                        (ProjectUtils.isInProject(delta, ProjectUtils.getDatabaseType(getProject()))
+                                || ProjectUtils.isOverridesFolder(delta))
+                        && delta.getResource().getType() == IResource.FILE
+                        && delta.getResource().getProject().equals(getProject())) {
                     schemaChanged[0] = true;
                     return false;
                 }
@@ -469,7 +467,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         }
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
-        DatabaseType dbType = OpenProjectUtils.getDatabaseType(getProject());
+        DatabaseType dbType = ProjectUtils.getDatabaseType(getProject());
         if (isDbInfo && ((DbInfo) currentRemote).getDbType() != dbType) {
             MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
             mb.setText(Messages.ProjectEditorDiffer_different_types);
@@ -503,7 +501,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
-        if (!OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
+        if (!ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
 
@@ -643,7 +641,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             PgStatement st = el.getPgStatement(dbProject.getDbObject());
             IProject project = getProject();
             FileUtilsUi.openFileInSqlEditor(
-                    st.getLocation(), project.getName(), OpenProjectUtils.getDatabaseType(project), st.isLib());
+                    st.getLocation(), project.getName(), ProjectUtils.getDatabaseType(project), st.isLib());
         } catch (CoreException e) {
             ExceptionNotifier.notifyCoreException(e);
         }
@@ -705,7 +703,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     public void diff() {
         Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1 ||
-                !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
+                !ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
 
@@ -821,8 +819,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                 }
                 getSite().getPage().openEditor(file, EDITOR.SQL);
             } else {
-                FileUtilsUi.saveOpenTmpSqlEditor(content, filename,
-                        OpenProjectUtils.getDatabaseType(getProject()));
+                FileUtilsUi.saveOpenTmpSqlEditor(content, filename, ProjectUtils.getDatabaseType(getProject()));
             }
         } catch (CoreException | IOException ex) {
             ExceptionNotifier.notifyDefault(
@@ -882,7 +879,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     public void commit() {
         Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
         if (warnCheckedElements() < 1
-                || !OpenProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
+                || !ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
 

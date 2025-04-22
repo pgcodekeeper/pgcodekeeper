@@ -55,7 +55,6 @@ import org.eclipse.ui.ide.ResourceUtil;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
@@ -65,12 +64,13 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public final class PgDbParser implements IResourceChangeListener, Serializable {
 
@@ -217,7 +217,7 @@ public final class PgDbParser implements IResourceChangeListener, Serializable {
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
-        SubMonitor mon = SubMonitor.convert(monitor, UIProjectLoader.countFiles(proj));
+        SubMonitor mon = SubMonitor.convert(monitor, ProjectUtils.countFiles(proj));
         ISettings settings = new UISettings(proj, null);
         DatabaseLoader loader = new UIProjectLoader(proj, settings, mon);
         AbstractDatabase db = loader.load();
@@ -301,7 +301,7 @@ public final class PgDbParser implements IResourceChangeListener, Serializable {
 
     public static String getPathFromInput(IEditorInput in) {
         IResource res = ResourceUtil.getResource(in);
-        if (res != null && OpenProjectUtils.isPgCodeKeeperProject(res.getProject())) {
+        if (res != null && ProjectUtils.isPgCodeKeeperProject(res.getProject())) {
             return res.getLocation().toOSString();
         }
 

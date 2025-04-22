@@ -16,20 +16,16 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.PrintWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.ResourceBundle;
@@ -103,11 +99,9 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
-import ru.taximaxim.codekeeper.core.fileutils.TempFile;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
@@ -131,15 +125,14 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
+import ru.taximaxim.codekeeper.ui.externalcalls.RunScriptExternal;
 import ru.taximaxim.codekeeper.ui.handlers.AddBuilder;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class SQLEditor extends AbstractDecoratedTextEditor
 implements IResourceChangeListener, ITextErrorReporter {
@@ -342,7 +335,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void changeLanguage(DatabaseType dbType) {
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (res == null || !UIProjectLoader.isInProject(res)) {
+            if (res == null || !ProjectUtils.isInProject(res)) {
                 this.dbType = dbType;
                 refreshParser(getParser(), res, null);
             }
@@ -442,7 +435,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     private void checkBuilder() {
         IResource resource = ResourceUtil.getResource(getEditorInput());
         IProject proj = resource == null ? null : resource.getProject();
-        if (OpenProjectUtils.isPgCodeKeeperProject(proj) && !AddBuilder.hasBuilder(proj)) {
+        if (ProjectUtils.isPgCodeKeeperProject(proj) && !AddBuilder.hasBuilder(proj)) {
             MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
             mb.setText(Messages.SqlEditor_absent_builder_title);
             mb.setMessage(Messages.SqlEditor_absent_builder_message);
@@ -462,13 +455,13 @@ implements IResourceChangeListener, ITextErrorReporter {
         String projName = null;
 
         if (res != null) {
-            dbType = OpenProjectUtils.getDatabaseType(res.getProject());
+            dbType = ProjectUtils.getDatabaseType(res.getProject());
         } else if (in instanceof SQLEditorInput sqlEditor) {
             dbType = sqlEditor.getDbType();
             projName = sqlEditor.getProject();
         }
 
-        if (res != null && UIProjectLoader.isInProject(res)) {
+        if (res != null && ProjectUtils.isInProject(res)) {
             return PgDbParser.getParser(res);
         }
 
@@ -491,7 +484,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     void refreshParser() {
         IResource res = ResourceUtil.getResource(getEditorInput());
         try {
-            if (res == null || !UIProjectLoader.isInProject(res)) {
+            if (res == null || !ProjectUtils.isInProject(res)) {
                 refreshParser(getParser(), res, new NullProgressMonitor());
             }
         } catch (InterruptedException | IOException | CoreException ex) {
@@ -521,7 +514,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                 return;
             }
 
-            if (OpenProjectUtils.isPgCodeKeeperProject(proj)) {
+            if (ProjectUtils.isPgCodeKeeperProject(proj)) {
                 parser.getObjFromProjFile(file, monitor, dbType);
                 return;
             }
@@ -746,9 +739,9 @@ implements IResourceChangeListener, ITextErrorReporter {
 
             Thread scriptThread = null;
             try (UiProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this)) {
-                scriptThread = new Thread(new RunScriptExternal(parser.getScript(),
-                        reporter, new ArrayList<>(Arrays.asList(
-                                getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo).split(" "))))); //$NON-NLS-1$
+                scriptThread = new Thread(new RunScriptExternal(parser.getScript(), reporter,
+                        getReplacedCmd(mainPrefs.getString(DB_UPDATE_PREF.MIGRATION_COMMAND), dbInfo),
+                        () -> afterScriptFinished()));
                 scriptThread.setUncaughtExceptionHandler((t, e) ->  ExceptionNotifier.notifyDefault(
                         Messages.sqlScriptDialog_exception_during_script_execution, e));
                 scriptThread.start();
@@ -834,43 +827,6 @@ implements IResourceChangeListener, ITextErrorReporter {
             Log.log(e);
         }
         return image;
-    }
-
-    private class RunScriptExternal implements Runnable {
-        private final String textRetrieved;
-        private final List<String> command;
-        private final UiProgressReporter reporter;
-
-        RunScriptExternal(String textRetrieved, UiProgressReporter reporter, List<String> command) {
-            this.textRetrieved = textRetrieved;
-            this.command = command;
-            this.reporter = reporter;
-        }
-
-        @Override
-        public void run() {
-            final StdStreamRedirector sr = new StdStreamRedirector(reporter);
-            try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
-                File outFile = tempFile.get().toFile();
-                try (PrintWriter writer = new PrintWriter(outFile, Consts.UTF_8)) {
-                    writer.write(textRetrieved);
-                }
-
-                String filepath = outFile.getAbsolutePath();
-                ListIterator<String> it = command.listIterator();
-                while (it.hasNext()) {
-                    it.set(it.next().replace(CMD_VARS.SCRIPT_PLACEHOLDER, filepath));
-                }
-
-                ProcessBuilder pb = new ProcessBuilder(command);
-                sr.launchAndRedirect(pb);
-            } catch (IOException ex) {
-                throw new IllegalStateException(ex.getLocalizedMessage(), ex);
-            } finally {
-                reporter.terminate();
-                afterScriptFinished();
-            }
-        }
     }
 
     private class EditorSelectionChangedListener extends AbstractSelectionChangedListener {

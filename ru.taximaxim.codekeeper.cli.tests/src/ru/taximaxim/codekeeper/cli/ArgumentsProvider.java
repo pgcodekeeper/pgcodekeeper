@@ -21,7 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import ru.taximaxim.codekeeper.core.fileutils.TempDir;
+import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 public abstract class ArgumentsProvider implements AutoCloseable {
 

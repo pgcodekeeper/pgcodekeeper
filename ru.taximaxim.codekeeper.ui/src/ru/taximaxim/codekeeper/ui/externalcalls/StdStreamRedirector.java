@@ -14,7 +14,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-package ru.taximaxim.codekeeper.ui.externalcalls.utils;
+package ru.taximaxim.codekeeper.ui.externalcalls;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class StdStreamRedirector {
+final class StdStreamRedirector {
 
     private final IProgressReporter reporter;
     private volatile boolean isDestroyed = false;

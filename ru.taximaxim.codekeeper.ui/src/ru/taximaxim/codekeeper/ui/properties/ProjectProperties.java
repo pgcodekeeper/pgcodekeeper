@@ -49,10 +49,10 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
 import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class ProjectProperties extends PropertyPage {
 
@@ -82,7 +82,7 @@ public class ProjectProperties extends PropertyPage {
         IProject project = element.getAdapter(IProject.class);
         prefs = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
         dbBindPrefs = new ProjectScope(project).getNode(DB_BIND_PREF.DB_BINDING);
-        dbType = OpenProjectUtils.getDatabaseType(project);
+        dbType = ProjectUtils.getDatabaseType(project);
     }
 
     @Override

@@ -31,11 +31,11 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class ReferenceResultPage extends AbstractTextSearchViewPage {
 
@@ -83,8 +83,7 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
             var lib = LibraryStorage.getLibrary(filePath);
             if (lib != null) {
                 var project = lib.getProject();
-                var dbType = OpenProjectUtils
-                    .getDatabaseType(ResourcesPlugin.getWorkspace().getRoot().getProject(project));
+                var dbType = ProjectUtils.getDatabaseType(ResourcesPlugin.getWorkspace().getRoot().getProject(project));
                 FileUtilsUi.openFileInSqlEditor(loc, project, dbType, true);
             }
             return;

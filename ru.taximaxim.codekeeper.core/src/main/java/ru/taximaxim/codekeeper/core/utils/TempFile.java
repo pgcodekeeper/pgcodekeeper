@@ -13,25 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.externalcalls.utils;
+package ru.taximaxim.codekeeper.core.utils;
 
-public class ProcBuilderUtils {
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-    private final ProcessBuilder pb;
+/**
+ * Wrapper for creation and auto deletion of a temp file.
+ * Intended for try-with-resources.
+ *
+ * @author Alexander Levsha
+ */
+public final class TempFile implements AutoCloseable {
 
-    public ProcBuilderUtils(ProcessBuilder pb) {
-        this.pb = pb;
+    private final Path f;
+
+    public TempFile(String prefix, String suffix) throws IOException {
+        this.f = Files.createTempFile(prefix, suffix);
     }
 
-    public void addEnv(String variable, String value) {
-        if (value != null && !value.isEmpty()) {
-            pb.environment().put(variable, value);
-        }
+    public TempFile(Path dir, String prefix, String suffix) throws IOException {
+        this.f = Files.createTempFile(dir, prefix, suffix);
     }
 
-    public void addEnv(String variable, int value) {
-        if (value != 0) {
-            pb.environment().put(variable, String.valueOf(value));
-        }
+    public Path get() {
+        return f;
+    }
+
+    @Override
+    public void close() throws IOException {
+        FileUtils.removeReadOnly(f);
     }
 }

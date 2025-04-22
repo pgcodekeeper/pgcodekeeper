@@ -20,10 +20,10 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 public final class WorkDirs {
 

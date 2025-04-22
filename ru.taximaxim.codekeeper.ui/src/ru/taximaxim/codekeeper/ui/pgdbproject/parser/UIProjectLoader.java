@@ -31,7 +31,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -39,8 +38,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.ide.ResourceUtil;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -60,10 +57,10 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public final class UIProjectLoader extends ProjectLoader {
 
@@ -234,7 +231,8 @@ public final class UIProjectLoader extends ProjectLoader {
         boolean isLoaded = false;
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, DatabaseType.MS)) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension())
+                    || !ProjectUtils.isInProject(filePath, DatabaseType.MS)) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -282,7 +280,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
         for (IFile file : files) {
             IPath filePath = file.getProjectRelativePath();
-            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !isInProject(filePath, settings.getDbType())) {
+            if (!SQL_EXTENSION.equals(file.getFileExtension()) || !ProjectUtils.isInProject(filePath, settings.getDbType())) {
                 // skip non-sql or non-project files
                 // still report work
                 mon.worked(1);
@@ -402,98 +400,10 @@ public final class UIProjectLoader extends ProjectLoader {
 
     public static PgStatement parseStatement(IFile file, Collection<DbObjType> types)
             throws InterruptedException, IOException, CoreException {
-        DatabaseType dbType = OpenProjectUtils.getDatabaseType(file.getProject());
+        DatabaseType dbType = ProjectUtils.getDatabaseType(file.getProject());
         return buildFiles(Arrays.asList(file), dbType, new NullProgressMonitor())
                 .getDescendants()
                 .filter(e -> types.contains(e.getStatementType()))
                 .findAny().orElse(null);
-    }
-
-    public static int countFiles(IContainer container) throws CoreException {
-        int[] count = new int[1];
-        container.accept(p -> {
-            if (p.getType() == IResource.FILE) {
-                ++count[0];
-            }
-            return true;
-        }, 0);
-        return count[0];
-    }
-
-    /**
-     * @param path project relative path of checked resource
-     * @return whether this resource is within the main database schema hierarchy
-     */
-    private static boolean isInProject(IPath path, DatabaseType dbType) {
-        String dir = path.segment(0);
-        return dir != null && (WorkDirs.OVERRIDES.equals(dir)
-                || WorkDirs.getDirectoryNames(dbType).stream().anyMatch(dir::equals));
-    }
-
-    public static boolean isInProject(IResource resource) {
-        IProject project = resource.getProject();
-        if (!OpenProjectUtils.isPgCodeKeeperProject(project)) {
-            return false;
-        }
-
-        DatabaseType dbType = OpenProjectUtils.getDatabaseType(project);
-        return isInProject(resource.getProjectRelativePath(), dbType);
-    }
-
-    public static boolean isInProject(IResourceDelta delta, DatabaseType dbType) {
-        return isInProject(delta.getProjectRelativePath(), dbType);
-    }
-
-    public static boolean isOverridesFolder(IResourceDelta delta) {
-        return WorkDirs.OVERRIDES.equals(delta.getProjectRelativePath().segment(0));
-    }
-
-    public static boolean isInProject(IEditorInput editorInput) {
-        IResource res = ResourceUtil.getResource(editorInput);
-        return res != null && isInProject(res);
-    }
-
-    /**
-     * @param path project relative path
-     * @param dbType type of project
-     * @return whether the path corresponds to a schema sql file
-     */
-    public static boolean isSchemaFile(IPath path, DatabaseType dbType) {
-        return switch (dbType) {
-            case PG -> isPgSchemaFile(path);
-            case MS -> isMsSchemaFile(path);
-            case CH -> isChSchemaFile(path);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        };
-    }
-
-    /**
-     * @param path project relative path
-     * @return whether the path corresponds to a schema sql file
-     *  like this: /SCHEMA/schema_name/schema_name.sql
-     */
-    private static boolean isPgSchemaFile(IPath path) {
-        int c = path.segmentCount();
-        return c == 3
-                && path.segment(0).equals(WorkDirs.PG_SCHEMA)
-                && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
-    }
-
-    /**
-     * @param path project relative path
-     * @return whether the path corresponds to a schema sql file
-     *          like this: /Security/Schemas/schema_name.sql
-     */
-    private static boolean isMsSchemaFile(IPath path) {
-        return path.segmentCount() == 3
-                && WorkDirs.MS_SECURITY.equals(path.segment(0))
-                && WorkDirs.MS_SCHEMAS.equals(path.segment(1))
-                && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
-    }
-
-    private static boolean isChSchemaFile(IPath path) {
-        return path.segmentCount() == 3
-                && path.segment(0).equals(WorkDirs.CH_DATABASE)
-                && path.segment(2).endsWith(".sql");
     }
 }

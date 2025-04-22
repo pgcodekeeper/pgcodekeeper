@@ -25,11 +25,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import ru.taximaxim.codekeeper.core.IProgressReporter;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.ProcBuilderUtils;
-import ru.taximaxim.codekeeper.ui.externalcalls.utils.StdStreamRedirector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class PgDumper {
+public final class PgDumper {
 
     private static final Pattern PATTERN_VERSION = Pattern.compile(
             "^(?:pg_dump[\\s]+\\(PostgreSQL.*\\)[\\s]+)([\\d]+\\.[\\d]+\\.[\\d]+)$"); //$NON-NLS-1$
@@ -88,7 +86,7 @@ public class PgDumper {
 
         pgdump.command().addAll(customParams);
 
-        ProcBuilderUtils env = new ProcBuilderUtils(pgdump);
+        ProcBuilderWrapper env = new ProcBuilderWrapper(pgdump);
         env.addEnv("PGHOST", host); //$NON-NLS-1$
         env.addEnv("PGPORT", port); //$NON-NLS-1$
         env.addEnv("PGDATABASE", dbname); //$NON-NLS-1$

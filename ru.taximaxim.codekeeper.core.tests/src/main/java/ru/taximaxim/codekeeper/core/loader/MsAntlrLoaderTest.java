@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -48,6 +47,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
  * Tests for PgDiffLoader class.
@@ -97,7 +97,7 @@ class MsAntlrLoaderTest {
         args.setInCharsetName(ENCODING);
         args.setKeepNewlines(true);
         args.setDbType(DatabaseType.MS);
-        ISettings settings = new CliSettings(args); 
+        ISettings settings = new CliSettings(args);
         AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, settings);
 
         Path exportDir = null;

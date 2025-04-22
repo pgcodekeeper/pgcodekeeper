@@ -54,25 +54,25 @@ import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.IConstraintPk;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.generators.DataGenerator;
 import ru.taximaxim.codekeeper.ui.generators.DataType;
 import ru.taximaxim.codekeeper.ui.generators.DbData;
 import ru.taximaxim.codekeeper.ui.generators.IntegerData;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 /**
  *  Page of the creating mock data for PostgreSql data
@@ -754,10 +754,10 @@ public final class MockDataPage extends WizardPage {
      */
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
-        if (source instanceof IFile file && UIProjectLoader.isInProject(file)) {
+        if (source instanceof IFile file && ProjectUtils.isInProject(file)) {
             AbstractTable table = null;
             try {
-                dbType = OpenProjectUtils.getDatabaseType(file.getProject());
+                dbType = ProjectUtils.getDatabaseType(file.getProject());
                 table = (AbstractTable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
@@ -770,7 +770,7 @@ public final class MockDataPage extends WizardPage {
             }
         }
         // in case no file or exception
-        dbType = source instanceof IProject proj ? OpenProjectUtils.getDatabaseType(proj) : DatabaseType.PG;
+        dbType = source instanceof IProject proj ? ProjectUtils.getDatabaseType(proj) : DatabaseType.PG;
         DbData<?> c = new IntegerData(DataType.INTEGER);
         c.setName("id"); //$NON-NLS-1$
         columns.add(c);

@@ -40,7 +40,6 @@ import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.TokenLoader;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
@@ -49,6 +48,7 @@ import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in

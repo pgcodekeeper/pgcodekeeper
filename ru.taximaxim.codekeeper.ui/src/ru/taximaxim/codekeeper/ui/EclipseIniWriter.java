@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.dialogs.MessageDialogWithLink;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 
 /**
  * class for write properties in eclipse.ini file

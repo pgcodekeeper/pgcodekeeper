@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 class FormatterTest {
 

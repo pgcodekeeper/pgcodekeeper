@@ -49,7 +49,6 @@ import org.eclipse.ui.progress.IProgressConstants2;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -68,13 +67,14 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class QuickUpdate extends AbstractHandler {
 
@@ -123,7 +123,7 @@ public final class QuickUpdate extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        return editor instanceof SQLEditor && UIProjectLoader.isInProject(editor.getEditorInput());
+        return editor instanceof SQLEditor && ProjectUtils.isInProject(editor.getEditorInput());
     }
 }
 
@@ -164,13 +164,13 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     private void doRun() throws IOException, InterruptedException,
     CoreException, PgCodekeeperUIException, InvocationTargetException {
-        DatabaseType dbType = OpenProjectUtils.getDatabaseType(proj.getProject());
+        DatabaseType dbType = ProjectUtils.getDatabaseType(proj.getProject());
 
         if (dbInfo.getDbType() != dbType) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        boolean isSchemaFile = UIProjectLoader.isSchemaFile(file.getProjectRelativePath(), dbType);
+        boolean isSchemaFile = ProjectUtils.isSchemaFile(file.getProjectRelativePath(), dbType);
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
@@ -248,7 +248,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
-        ProjectUpdater updater = new UIProjectUpdater(dbRemote.getDbObject(),
+        var updater = new UIProjectUpdater(dbRemote.getDbObject(),
                 dbProject.getDbObject(), checkedAfter,
                 proj, false);
         updater.updatePartial();

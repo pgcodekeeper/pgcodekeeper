@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.fileutils;
+package ru.taximaxim.codekeeper.ui.utils;
 
 import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 
-import ru.taximaxim.codekeeper.core.fileutils.ProjectUpdater;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.core.utils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
@@ -36,7 +35,7 @@ public final class UIProjectUpdater extends ProjectUpdater {
             Collection<TreeElement> changedObjects, PgDbProject proj,
             boolean overridesOnly) throws CoreException {
         super(dbNew, dbOld, changedObjects,
-                OpenProjectUtils.getDatabaseType(proj.getProject()), proj.getProjectCharset(),
+                ProjectUtils.getDatabaseType(proj.getProject()), proj.getProjectCharset(),
                 proj.getPathToProject(), overridesOnly, new UISettings(proj.getProject(), null));
     }
 }
