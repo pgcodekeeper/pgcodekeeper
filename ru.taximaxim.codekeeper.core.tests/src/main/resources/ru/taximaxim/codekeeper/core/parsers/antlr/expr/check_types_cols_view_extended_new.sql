@@ -188,4 +188,24 @@ CREATE VIEW public.testview1 AS
 CREATE VIEW public.testview2 AS
  SELECT concat_ws(', ', null, 12) AS t1,
    concat('abcde', 2, NULL, 22) AS t2,
-   format('Hello %s, %1$s', 'World')
+   format('Hello %s, %1$s', 'World');
+
+CREATE VIEW public.testview3 AS
+ SELECT (SELECT a.a),
+    (SELECT a.b)
+   FROM (SELECT 1, 'test', 3) a(a, b, c);
+
+CREATE VIEW public.testview4 AS
+ SELECT (SELECT a.a),
+    (SELECT a.b)
+   FROM (SELECT 1 z, 'test' x, 3 c) a(a, b, c);
+
+CREATE VIEW public.testview5 AS
+ SELECT (SELECT a.z),
+    (SELECT a.x)
+   FROM (SELECT 1 z, 'test' x, 3 c) a;
+
+CREATE VIEW public.testview6 AS
+ SELECT (SELECT abs(a.b)) as num1,
+    (SELECT lower(a.a)) as text1
+   FROM (SELECT 'text' z, 2 x, 3 c) a(a, b, c);
