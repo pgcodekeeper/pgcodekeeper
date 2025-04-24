@@ -35,7 +35,6 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public boolean isConcurrentlyMode() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -46,13 +45,11 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public boolean isGenerateExists() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isConstraintNotValid() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -67,7 +64,6 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public boolean isPrintUsing() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -91,7 +87,6 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public boolean isAutoFormatObjectCode() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -102,7 +97,6 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public boolean isIgnoreColumnOrder() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -126,37 +120,31 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public boolean isDropBeforeCreate() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isStopNotAllowed() {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isSelectedOnly() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public boolean isIgnoreConcurrentModification() {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isSimplifyView() {
-        // TODO Auto-generated method stub
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isDisableCheckFunctionBodies() {
-        // TODO Auto-generated method stub
         return false;
     }
 
@@ -167,14 +155,12 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public String getTimeZone() {
-        // TODO Auto-generated method stub
         return null;
     }
 
     @Override
     public FormatConfiguration getFormatConfiguration() {
-        // TODO Auto-generated method stub
-        return null;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -203,8 +189,7 @@ public class TestCoreSettings implements ISettings {
 
     @Override
     public void setInCharsetName(String charset) {
-        // TODO Auto-generated method stub
-
+        this.inCharsetName = charset;
     }
 
     @Override
