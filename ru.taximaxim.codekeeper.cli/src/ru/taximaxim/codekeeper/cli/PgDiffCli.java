@@ -27,7 +27,6 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.core.utils.ProjectUpdater;
 
 public final class PgDiffCli extends PgDiff {
@@ -35,15 +34,15 @@ public final class PgDiffCli extends PgDiff {
     private final CliArgs arguments;
 
     public PgDiffCli(CliArgs arguments) {
-        super(new CliSettings(arguments));
+        super(arguments);
         this.arguments = arguments;
     }
 
     public void updateProject()
             throws IOException, InterruptedException, PgCodekeeperException {
 
-        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries(arguments);
-        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries(arguments);
+        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries(settings);
+        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries(settings);
         IgnoreList ignoreList = getIgnoreList();
         TreeElement root = DiffTree.create(oldDatabase, newDatabase, null);
         root.setAllChecked();
@@ -56,7 +55,7 @@ public final class PgDiffCli extends PgDiff {
     }
 
     public void exportProject() throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase newDb = loadNewDatabase(arguments);
+        AbstractDatabase newDb = loadNewDatabase(settings);
         TreeElement root = DiffTree.create(newDb, null, null);
         root.setAllChecked();
 

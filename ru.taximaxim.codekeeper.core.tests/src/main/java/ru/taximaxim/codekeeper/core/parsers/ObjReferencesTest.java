@@ -25,14 +25,13 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 class ObjReferencesTest {
 
@@ -208,12 +207,11 @@ class ObjReferencesTest {
     }
 
     void compareReferences(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
 
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;
-        PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource,
-                new CliSettings(args));
+        PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, settings);
         loader.setMode(ParserListenerMode.REF);
         AbstractDatabase db = loader.load();
 

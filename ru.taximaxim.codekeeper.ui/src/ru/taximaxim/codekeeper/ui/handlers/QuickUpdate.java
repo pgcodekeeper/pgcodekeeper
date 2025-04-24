@@ -71,6 +71,7 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -216,7 +217,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
 
         try {
-            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(), dbType);
+            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(),
+                    new UISettings(proj.getProject(), null));
             String error = parser.getErrorMessage();
             if (error != null) {
                 throw new PgCodekeeperUIException(error);

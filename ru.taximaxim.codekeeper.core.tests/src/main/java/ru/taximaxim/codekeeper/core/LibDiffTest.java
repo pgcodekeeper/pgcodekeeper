@@ -27,8 +27,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 class LibDiffTest {
 
@@ -60,9 +59,8 @@ class LibDiffTest {
 
     void runDiff(String fileNameTemplate, List<String> libList, boolean isIgnorePrivileges)
             throws IOException, InterruptedException, URISyntaxException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setIgnorePrivileges(isIgnorePrivileges);
-        ISettings settings = new CliSettings(args);
+        var settings = new TestCoreSettings();
+        settings.setIgnorePrivileges(isIgnorePrivileges);
         List<String> libs = new ArrayList<>();
         for (String lib : libList) {
             libs.add(TestUtils.getPathToResource(lib, getClass()).toString());

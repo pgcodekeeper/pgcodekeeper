@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.core.settings;
 import java.util.Collection;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.SourceFormat;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -35,7 +36,7 @@ public interface ISettings {
 
     boolean isGenerateExistDoBlock();
 
-    boolean isUsingTypeCastOff();
+    boolean isPrintUsing();
 
     boolean isKeepNewlines();
 
@@ -63,9 +64,23 @@ public interface ISettings {
 
     boolean isDisableCheckFunctionBodies();
 
+    boolean isIgnoreErrors();
+
+    boolean isLibSafeMode();
+
     String getInCharsetName();
 
     String getTimeZone();
+
+    String getIgnoreSchemaList();
+
+    String getNewSrc();
+
+    String getOldSrc();
+
+    SourceFormat getNewSrcFormat();
+
+    SourceFormat getOldSrcFormat();
 
     FormatConfiguration getFormatConfiguration();
 
@@ -75,7 +90,19 @@ public interface ISettings {
 
     Collection<String> getPostFilePath();
 
-    void setIsAddTransaction(boolean isAddTransaction);
+    Collection<String> getSourceLibs();
+
+    Collection<String> getSourceLibsWithoutPriv();
+
+    Collection<String> getSourceLibXmls();
+
+    Collection<String> getTargetLibs();
+
+    Collection<String> getTargetLibsWithoutPriv();
+
+    Collection<String> getTargetLibXmls();
+
+    Collection<String> getIgnoreLists();
 
     void setIgnorePrivileges(boolean isIgnorePriv);
 

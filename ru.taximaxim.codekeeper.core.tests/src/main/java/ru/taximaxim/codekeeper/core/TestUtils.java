@@ -43,8 +43,8 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 public final class TestUtils {
 
@@ -72,9 +72,9 @@ public final class TestUtils {
     }
 
     public static AbstractDatabase createDumpDB(DatabaseType dbType) {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
-        AbstractDatabase db = DatabaseLoader.createDb(new CliSettings(args));
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
+        AbstractDatabase db = DatabaseLoader.createDb(settings);
         AbstractSchema schema = switch (dbType) {
         case PG -> new PgSchema(Consts.PUBLIC);
         case MS -> new MsSchema(Consts.DBO);
@@ -132,18 +132,18 @@ public final class TestUtils {
     }
 
     static void runDiff(String fileNameTemplate, DatabaseType dbType, Class<?> clazz) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
-        String script = getScript(fileNameTemplate, new CliSettings(args), clazz);
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
+        String script = getScript(fileNameTemplate, settings, clazz);
         TestUtils.compareResult(script, fileNameTemplate, clazz);
     }
 
-    static String getScript(String fileNameTemplate, ISettings settings, Class<?> clazz)
+    static String getScript(String fileNameTemplate, TestCoreSettings settings, Class<?> clazz)
             throws IOException, InterruptedException {
         return getScript(fileNameTemplate, settings, clazz, false);
     }
 
-    static String getScript(String fileNameTemplate, ISettings settings, Class<?> clazz, boolean needTransaction)
+    static String getScript(String fileNameTemplate, TestCoreSettings settings, Class<?> clazz, boolean needTransaction)
             throws IOException, InterruptedException {
         AbstractDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
         TestUtils.runDiffSame(dbOld, fileNameTemplate, settings);
@@ -151,7 +151,7 @@ public final class TestUtils {
         AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
         TestUtils.runDiffSame(dbNew, fileNameTemplate, settings);
 
-        settings.setIsAddTransaction(needTransaction);
+        settings.setAddTransaction(needTransaction);
         return new PgDiff(settings).diff(dbOld, dbNew, null);
     }
 
@@ -172,11 +172,9 @@ public final class TestUtils {
         AbstractDatabase newDatabase;
         AbstractDatabase oldDbFull;
         AbstractDatabase newDbFull;
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
-        args.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
-
-        ISettings settings = new CliSettings(args);
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
+        settings.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
 
         String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         if (userSelTemplate.equals(dbTemplate)) {

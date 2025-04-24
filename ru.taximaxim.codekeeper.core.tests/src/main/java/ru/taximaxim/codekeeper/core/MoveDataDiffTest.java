@@ -21,8 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 /**
  * Tests for migrate data option .
@@ -68,10 +67,9 @@ class MoveDataDiffTest {
     }
 
     void runDiff(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDataMovementMode(true);
-        args.setDbType(dbType);
-        ISettings settings = new CliSettings(args);
+        var settings = new TestCoreSettings();
+        settings.setDataMovementMode(true);
+        settings.setDbType(dbType);
         AbstractDatabase dbOld = TestUtils.loadTestDump(
                 fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, MoveDataDiffTest.class, settings);
         AbstractDatabase dbNew = TestUtils.loadTestDump(

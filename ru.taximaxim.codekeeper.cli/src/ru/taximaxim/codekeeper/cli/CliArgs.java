@@ -41,17 +41,18 @@ import ru.taximaxim.codekeeper.cli.opthandlers.DbObjTypeOptionHandler;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.SourceFormat;
+import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Extension of {@link PgDiffArguments} with annotated CLI fields.
  * Override getters so that clients will access either CLI or parent fields
  * depending on the instance.
  */
-public class CliArgs extends PgDiffArguments {
+public class CliArgs implements ISettings {
 
     enum CliMode {
         DIFF,
@@ -296,6 +297,9 @@ public class CliArgs extends PgDiffArguments {
     @Option(name="--verify-rule-set", metaVar=CliArgsLocalizationsBunble.PATH, usage="verify-rule-set")
     private String verifyRuleSetPath;
 
+    private SourceFormat oldSrcFormat;
+    private SourceFormat newSrcFormat;
+
     public CliMode getMode() {
         return mode;
     }
@@ -317,7 +321,6 @@ public class CliArgs extends PgDiffArguments {
         return newSrc;
     }
 
-    @Override
     public void setNewSrc(String newSrc) {
         this.newSrc = newSrc;
     }
@@ -327,7 +330,6 @@ public class CliArgs extends PgDiffArguments {
         return oldSrc;
     }
 
-    @Override
     public void setOldSrc(String oldSrc) {
         this.oldSrc = oldSrc;
     }
@@ -342,16 +344,10 @@ public class CliArgs extends PgDiffArguments {
     }
 
     @Override
-    public void setAddTransaction(boolean addTransaction) {
-        this.addTransaction = addTransaction;
-    }
-
-    @Override
     public boolean isStopNotAllowed() {
         return stopNotAllowed;
     }
 
-    @Override
     public void setStopNotAllowed(boolean stopNotAllowed) {
         this.stopNotAllowed = stopNotAllowed;
     }
@@ -417,7 +413,6 @@ public class CliArgs extends PgDiffArguments {
         return libSafeMode;
     }
 
-    @Override
     public void setLibSafeMode(boolean libSafeMode) {
         this.libSafeMode = libSafeMode;
     }
@@ -432,7 +427,6 @@ public class CliArgs extends PgDiffArguments {
         return ignoreConcurrentModification;
     }
 
-    @Override
     public void setIgnoreConcurrentModification(boolean ignoreConcurrentModification) {
         this.ignoreConcurrentModification = ignoreConcurrentModification;
     }
@@ -446,7 +440,6 @@ public class CliArgs extends PgDiffArguments {
         return ignoreErrors;
     }
 
-    @Override
     public void setIgnoreErrors(boolean ignoreErrors) {
         this.ignoreErrors = ignoreErrors;
     }
@@ -456,7 +449,6 @@ public class CliArgs extends PgDiffArguments {
         return ignoreColumnOrder;
     }
 
-    @Override
     public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
         this.ignoreColumnOrder = ignoreColumnOrder;
     }
@@ -466,7 +458,6 @@ public class CliArgs extends PgDiffArguments {
         return generateConstraintNotValid;
     }
 
-    @Override
     public void setConstraintNotValid(boolean generateConstraintNotValid) {
         this.generateConstraintNotValid = generateConstraintNotValid;
     }
@@ -490,7 +481,6 @@ public class CliArgs extends PgDiffArguments {
         return disableCheckFunctionBodies;
     }
 
-    @Override
     public void setDisableCheckFunctionBodies(boolean disableCheckFunctionBodies) {
         this.disableCheckFunctionBodies = disableCheckFunctionBodies;
     }
@@ -500,7 +490,6 @@ public class CliArgs extends PgDiffArguments {
         return enableFunctionBodiesDependencies;
     }
 
-    @Override
     public void setEnableFunctionBodiesDependencies(boolean enableFunctionBodiesDependencies) {
         this.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
     }
@@ -510,7 +499,6 @@ public class CliArgs extends PgDiffArguments {
         return timeZone;
     }
 
-    @Override
     public void setTimeZone(String timeZone) {
         this.timeZone = timeZone;
     }
@@ -530,7 +518,6 @@ public class CliArgs extends PgDiffArguments {
         return keepNewlines;
     }
 
-    @Override
     public void setKeepNewlines(boolean keepNewlines) {
         this.keepNewlines = keepNewlines;
     }
@@ -540,7 +527,6 @@ public class CliArgs extends PgDiffArguments {
         return Collections.unmodifiableCollection(allowedTypes);
     }
 
-    @Override
     public void setGenerateExists(boolean generateExists) {
         this.generateExists = generateExists;
     }
@@ -555,7 +541,6 @@ public class CliArgs extends PgDiffArguments {
         return generateExistDoBlock;
     }
 
-    @Override
     public void setGenerateExistDoBlock(boolean generateExistDoBlock) {
         this.generateExistDoBlock = generateExistDoBlock;
     }
@@ -565,7 +550,6 @@ public class CliArgs extends PgDiffArguments {
         return dropBeforeCreate;
     }
 
-    @Override
     public void setDropBeforeCreate(boolean dropBeforeCreate) {
         this.dropBeforeCreate = dropBeforeCreate;
     }
@@ -575,7 +559,6 @@ public class CliArgs extends PgDiffArguments {
         return commentsToEnd;
     }
 
-    @Override
     public void setCommentsToEnd(boolean commentsToEnd) {
         this.commentsToEnd = commentsToEnd;
     }
@@ -593,7 +576,6 @@ public class CliArgs extends PgDiffArguments {
         return selectedOnly;
     }
 
-    @Override
     public void setSelectedOnly(boolean selectedOnly) {
         this.selectedOnly = selectedOnly;
     }
@@ -603,17 +585,15 @@ public class CliArgs extends PgDiffArguments {
         return dataMovementMode;
     }
 
-    @Override
     public void setDataMovementMode(boolean dataMovementMode) {
         this.dataMovementMode = dataMovementMode;
     }
 
     @Override
-    public boolean isUsingTypeCastOff() {
+    public boolean isPrintUsing() {
         return usingTypeCastOff;
     }
 
-    @Override
     public void setUsingTypeCastOff(boolean usingTypeCastOff) {
         this.usingTypeCastOff = usingTypeCastOff;
     }
@@ -623,7 +603,6 @@ public class CliArgs extends PgDiffArguments {
         return concurrentlyMode;
     }
 
-    @Override
     public void setConcurrentlyMode(boolean concurrentlyMode) {
         this.concurrentlyMode = concurrentlyMode;
     }
@@ -633,7 +612,6 @@ public class CliArgs extends PgDiffArguments {
         return simplifyView;
     }
 
-    @Override
     public void setSimplifyView(boolean simplifyView) {
         this.simplifyView = simplifyView;
     }
@@ -646,12 +624,10 @@ public class CliArgs extends PgDiffArguments {
         return graphReverse;
     }
 
-    @Override
     public boolean isProjUpdate() {
         return projUpdate;
     }
 
-    @Override
     public void setProjUpdate(boolean projUpdate) {
         this.projUpdate = projUpdate;
     }
@@ -665,7 +641,6 @@ public class CliArgs extends PgDiffArguments {
         return Collections.unmodifiableCollection(preFilePath);
     }
 
-    @Override
     public void setPreFilePath(List<String> preFilePath) {
         this.preFilePath = preFilePath;
     }
@@ -675,7 +650,6 @@ public class CliArgs extends PgDiffArguments {
         return Collections.unmodifiableCollection(postFilePath);
     }
 
-    @Override
     public void setPostFilePath(List<String> postFilePath) {
         this.postFilePath = postFilePath;
     }
@@ -686,6 +660,94 @@ public class CliArgs extends PgDiffArguments {
 
     public String getVerifyRuleSetPath() {
         return verifyRuleSetPath;
+    }
+
+    @Override
+    public boolean isAutoFormatObjectCode() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public FormatConfiguration getFormatConfiguration() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public SourceFormat getNewSrcFormat() {
+        return newSrcFormat;
+    }
+
+    @Override
+    public SourceFormat getOldSrcFormat() {
+        return oldSrcFormat;
+    }
+
+    @Override
+    public ISettings copy() {
+        var args = new CliArgs();
+        args.addTransaction = addTransaction;
+        args.allowedDangers = allowedDangers;
+        args.allowedTypes = allowedTypes;
+        args.clearLibCache = clearLibCache;
+        args.commentsToEnd = commentsToEnd;
+        args.concurrentlyMode = concurrentlyMode;
+        args.dataMovementMode = dataMovementMode;
+        args.dbType = dbType;
+        args.disableCheckFunctionBodies = disableCheckFunctionBodies;
+        args.dropBeforeCreate = dropBeforeCreate;
+        args.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
+        args.generateConstraintNotValid = generateConstraintNotValid;
+        args.generateExistDoBlock = generateExistDoBlock;
+        args.dropBeforeCreate = dropBeforeCreate;
+        args.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
+        args.generateConstraintNotValid = generateConstraintNotValid;
+        args.generateExistDoBlock = generateExistDoBlock;
+        args.generateExists = generateExists;
+        args.graphDepth = graphDepth;
+        args.graphFilterTypes = graphFilterTypes;
+        args.graphInvertFilter = graphInvertFilter;
+        args.graphNames = graphNames;
+        args.graphReverse = graphReverse;
+        args.ignoreColumnOrder = ignoreColumnOrder;
+        args.ignoreConcurrentModification = ignoreConcurrentModification;
+        args.ignoreErrors = ignoreErrors;
+        args.ignoreLists = ignoreLists;
+        args.ignorePrivileges = ignorePrivileges;
+        args.ignoreSchemaList = ignoreSchemaList;
+        args.inCharsetName = inCharsetName;
+        args.insertFilter = insertFilter;
+        args.insertName = insertName;
+        args.keepNewlines = keepNewlines;
+        args.libSafeMode = libSafeMode;
+        args.mode = mode;
+        args.newSrc = newSrc;
+        args.newSrcFormat = newSrcFormat;
+        args.oldSrc = oldSrc;
+        args.oldSrcFormat = oldSrcFormat;
+        args.outCharsetName = outCharsetName;
+        args.outputTarget = outputTarget;
+        args.postFilePath = postFilePath;
+        args.preFilePath = preFilePath;
+        args.projUpdate = projUpdate;
+        args.runOnDb = runOnDb;
+        args.runOnTarget = runOnTarget;
+        args.safeMode = safeMode;
+        args.selectedOnly = selectedOnly;
+        args.simplifyView = simplifyView;
+        args.sourceLibs = sourceLibs;
+        args.sourceLibsWithoutPriv = sourceLibsWithoutPriv;
+        args.sourceLibXmls = sourceLibXmls;
+        args.stopNotAllowed = stopNotAllowed;
+        args.targetLibs = targetLibs;
+        args.targetLibsWithoutPriv = targetLibsWithoutPriv;
+        args.targetLibXmls = targetLibXmls;
+        args.timeZone = timeZone;
+        args.usingTypeCastOff = usingTypeCastOff;
+        args.verifyRuleSetPath = verifyRuleSetPath;
+        args.verifySources = verifySources;
+        return args;
     }
 
     /**
@@ -732,14 +794,14 @@ public class CliArgs extends PgDiffArguments {
             if (oldSrc == null || newSrc == null) {
                 badArgs(Messages.CliArgs_error_source_dest);
             }
-            setOldSrcFormat(SourceFormat.parsePath(oldSrc));
+            oldSrcFormat = SourceFormat.parsePath(oldSrc);
         } else if (CliMode.PARSE == mode && projUpdate) {
             setOldSrc(outputTarget);
-            setOldSrcFormat(SourceFormat.parsePath(oldSrc));
+            oldSrcFormat = SourceFormat.parsePath(oldSrc);
         }
 
         if (CliMode.VERIFY != mode) {
-            setNewSrcFormat(SourceFormat.parsePath(newSrc));
+            newSrcFormat = SourceFormat.parsePath(newSrc);
         }
 
         return true;

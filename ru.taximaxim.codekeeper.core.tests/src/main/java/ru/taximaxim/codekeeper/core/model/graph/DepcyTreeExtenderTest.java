@@ -27,14 +27,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 /**
  * An 'factory' that creates 'artificial' predefined objects
@@ -73,13 +71,11 @@ class DepcyTreeExtenderTest {
          * Index of the file that should be tested.
          */
 
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(Consts.UTF_8);
+        var settings = new TestCoreSettings();
 
         String fileName = "depcy_schema_" + fileIndex + ".sql";
         String targetFileName = "depcy_schema_new_" + fileIndex + ".sql";
 
-        ISettings settings = new CliSettings(args);
         AbstractDatabase dbSource = TestUtils.loadTestDump(
                 fileName, DepcyTreeExtenderTest.class, settings);
         AbstractDatabase dbTarget = TestUtils.loadTestDump(

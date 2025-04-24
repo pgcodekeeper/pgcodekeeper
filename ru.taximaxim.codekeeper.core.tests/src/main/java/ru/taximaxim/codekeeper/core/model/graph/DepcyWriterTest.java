@@ -25,10 +25,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 public class DepcyWriterTest {
 
@@ -86,15 +85,15 @@ public class DepcyWriterTest {
 
     void compareGraph(String fileName, FILES_POSTFIX expectedPostfix, String objectName, boolean isReverse)
             throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
+        var settings = new TestCoreSettings();
         if (fileName.startsWith("ms_")) {
-            args.setDbType(DatabaseType.MS);
+            settings.setDbType(DatabaseType.MS);
         } else if (fileName.startsWith("ch_")) {
-            args.setDbType(DatabaseType.CH);
+            settings.setDbType(DatabaseType.CH);
         }
-        args.setEnableFunctionBodiesDependencies(true);
+        settings.setEnableFunctionBodiesDependencies(true);
 
-        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), new CliSettings(args));
+        AbstractDatabase db = TestUtils.loadTestDump(fileName + FILES_POSTFIX.SQL, getClass(), settings);
 
         var deps = DepcyFinder.byPatterns(10, isReverse, Collections.emptyList(), false, db, List.of(objectName));
         String actual = String.join("\n", deps);

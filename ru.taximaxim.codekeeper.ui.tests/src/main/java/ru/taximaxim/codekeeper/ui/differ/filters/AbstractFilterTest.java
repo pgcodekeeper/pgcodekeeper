@@ -19,11 +19,10 @@ import java.util.Map;
 
 import org.mockito.Mock;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.ui.TestUiSettings;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 abstract class AbstractFilterTest {
@@ -32,7 +31,7 @@ abstract class AbstractFilterTest {
 
     protected static final String RIGHT = "RIGHT STRING";
 
-    protected static final ISettings SETTINGS = new CliSettings(new PgDiffArguments());
+    protected static final ISettings SETTINGS = new TestUiSettings();
 
     @Mock
     protected TreeElement treeElement;

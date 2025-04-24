@@ -47,7 +47,6 @@ import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
 import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 /**
@@ -108,8 +107,7 @@ public final class Main {
     private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            var settings = new CliSettings(arguments);
-            PgDiff diff = new PgDiff(settings);
+            PgDiff diff = new PgDiff(arguments);
             String text;
             try {
                 LOG.info(Messages.Main_log_create_script);
@@ -119,7 +117,7 @@ public final class Main {
                 return false;
             }
 
-            ScriptParser parser = new ScriptParser("CLI", text, arguments.getDbType()); //$NON-NLS-1$
+            ScriptParser parser = new ScriptParser("CLI", text, arguments); //$NON-NLS-1$
 
             if (arguments.isSafeMode()) {
                 var dangerTypes = parser.getDangerDdl(arguments.getAllowedDangers());
@@ -185,8 +183,7 @@ public final class Main {
 
     private static boolean insert(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException, SQLException {
-        var settings = new CliSettings(arguments);
-        PgDiff diff = new PgDiff(settings);
+        PgDiff diff = new PgDiff(arguments);
         AbstractDatabase db;
         try {
             db = diff.loadNewDatabaseWithLibraries(arguments);
@@ -206,7 +203,7 @@ public final class Main {
             if (url != null) {
                 LOG.info(Messages.Main_log_run_insert_data);
                 new JdbcRunner().runBatches(new UrlJdbcConnector(url),
-                        new ScriptParser("CLI", script, arguments.getDbType()).batch(), null); //$NON-NLS-1$
+                        new ScriptParser("CLI", script, arguments).batch(), null); //$NON-NLS-1$
             } else if (pw == null) {
                 writer.println(script);
             }
@@ -217,8 +214,7 @@ public final class Main {
     }
 
     private static boolean graph(PrintWriter writer, CliArgs arguments) throws IOException, InterruptedException {
-        var settings = new CliSettings(arguments);
-        PgDiff diff = new PgDiff(settings);
+        PgDiff diff = new PgDiff(arguments);
         AbstractDatabase d;
         try {
             d = diff.loadNewDatabaseWithLibraries(arguments);

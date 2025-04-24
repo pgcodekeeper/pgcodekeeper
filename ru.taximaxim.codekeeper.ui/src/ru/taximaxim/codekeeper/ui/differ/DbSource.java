@@ -33,9 +33,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.IProgressReporter;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
 import ru.taximaxim.codekeeper.core.loader.LoaderFactory;
@@ -44,22 +42,16 @@ import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
-import ru.taximaxim.codekeeper.ui.formatter.Formatter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
-import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
-import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
@@ -118,53 +110,6 @@ public abstract class DbSource {
 
     protected abstract AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
-
-    static PgDiffArguments getPgDiffArgs(String charset, boolean forceUnixNewlines,
-            DatabaseType dbType, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return getPgDiffArgs(charset, Consts.UTC, forceUnixNewlines, dbType,
-                proj, oneTimePrefs);
-    }
-
-    static PgDiffArguments getPgDiffArgs(String charset, String timeZone,
-            boolean forceUnixNewlines, DatabaseType dbType, IProject proj,
-            Map<String, Boolean> oneTimePrefs) {
-        PgDiffArguments args = new PgDiffArguments();
-        OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
-        args.setInCharsetName(charset);
-        args.setAddTransaction(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION));
-        args.setDisableCheckFunctionBodies(!prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES));
-        args.setEnableFunctionBodiesDependencies(prefs.getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES));
-        args.setIgnoreConcurrentModification(Activator.getDefault().getPreferenceStore()
-                .getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION));
-        args.setSelectedOnly(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS));
-        args.setDataMovementMode(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DATA_MOVEMENT_MODE));
-        args.setIgnorePrivileges(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
-        args.setIgnoreColumnOrder(prefs.getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER));
-        args.setSimplifyView(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
-        args.setAutoFormatObjectCode(prefs.getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
-        args.setFormatConfiguration(Formatter.getFormatterConfig());
-        args.setCommentsToEnd(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.COMMENTS_TO_END));
-        args.setDropBeforeCreate(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DROP_BEFORE_CREATE));
-        args.setTimeZone(timeZone);
-        args.setKeepNewlines(!forceUnixNewlines);
-        args.setDbType(dbType);
-        if (prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
-            List<String> prePaths = new ArrayList<>();
-            if (proj != null) {
-                addPathIfExists(prePaths, Paths.get(proj.getLocationURI()).resolve(FILE.PRE_DIR));
-            }
-            addPathIfExists(prePaths, PrePostScriptPrefPage.getScriptPath(FILE.PRE_SCRIPT));
-            args.setPreFilePath(prePaths);
-
-            List<String> postPaths = new ArrayList<>();
-            if (proj != null) {
-                addPathIfExists(postPaths, Paths.get(proj.getLocationURI()).resolve(FILE.POST_DIR));
-            }
-            addPathIfExists(postPaths, PrePostScriptPrefPage.getScriptPath(FILE.POST_SCRIPT));
-            args.setPostFilePath(postPaths);
-        }
-        return args;
-    }
 
     private static void addPathIfExists(List<String> paths, Path path) {
         if (Files.exists(path)) {

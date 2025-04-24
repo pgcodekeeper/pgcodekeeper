@@ -29,7 +29,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.Utils;
@@ -39,7 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.core.settings.CliSettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -68,11 +67,11 @@ class ExprTypeTest {
             "check_named_notation",
     })
     void runCheck(String fileNameTemplate) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
+        var settings = new TestCoreSettings();
         String typesForCompare = TestUtils.readResource(
                 fileNameTemplate + FILES_POSTFIX.DIFF_SQL, getClass());
 
-        runDiff(fileNameTemplate, args, typesForCompare);
+        runDiff(fileNameTemplate, settings, typesForCompare);
     }
 
     @ParameterizedTest
@@ -81,24 +80,24 @@ class ExprTypeTest {
             "compare_types_aster_ord_view",
     })
     void runCompare(String fileNameTemplate) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
+        var settings = new TestCoreSettings();
         String typesForCompare = getRelationColumnsTypes(
-                loadAndAnalyze(fileNameTemplate, args, FILES_POSTFIX.ORIGINAL_SQL));
+                loadAndAnalyze(fileNameTemplate, settings, FILES_POSTFIX.ORIGINAL_SQL));
 
-        runDiff(fileNameTemplate, args, typesForCompare);
+        runDiff(fileNameTemplate, settings, typesForCompare);
     }
 
-    private void runDiff(String fileNameTemplate, PgDiffArguments args, String typesForCompare)
+    private void runDiff(String fileNameTemplate, TestCoreSettings settings, String typesForCompare)
             throws InterruptedException, IOException {
-        MetaContainer dbNew = loadAndAnalyze(fileNameTemplate, args, FILES_POSTFIX.NEW_SQL);
+        MetaContainer dbNew = loadAndAnalyze(fileNameTemplate, settings, FILES_POSTFIX.NEW_SQL);
         Assertions.assertEquals(typesForCompare,
                 getRelationColumnsTypes(dbNew), "File: " + fileNameTemplate);
     }
 
-    private MetaContainer loadAndAnalyze(String fileNameTemplate, PgDiffArguments args, FILES_POSTFIX postfix)
+    private MetaContainer loadAndAnalyze(String fileNameTemplate, TestCoreSettings settings, FILES_POSTFIX postfix)
             throws InterruptedException, IOException {
         AbstractDatabase dbNew = TestUtils.loadTestDump(
-                fileNameTemplate + postfix, ExprTypeTest.class, new CliSettings(args), false);
+                fileNameTemplate + postfix, ExprTypeTest.class, settings, false);
         MetaContainer metaDb = MetaUtils.createTreeFromDb(dbNew);
         FullAnalyze.fullAnalyze(dbNew, metaDb, new ArrayList<>());
         return metaDb;
