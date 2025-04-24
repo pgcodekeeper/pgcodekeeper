@@ -557,6 +557,13 @@ public final class Select extends AbstractExprWithNmspc<Select_stmtContext> {
 
                     String tableSubQueryAlias = alias.alias.getText();
                     addReference(tableSubQueryAlias, null);
+
+                    var columnAliases = alias.column_alias;
+                    for (int i = 0; i < columnAliases.size(); i++) {
+                        columnList.set(i, new ModPair<>(columnAliases.get(i).getText(),
+                                columnList.get(i).getSecond()));
+                    }
+
                     complexNamespace.put(tableSubQueryAlias, new ArrayList<>(columnList));
                 } finally {
                     lateralAllowed = oldLateral;

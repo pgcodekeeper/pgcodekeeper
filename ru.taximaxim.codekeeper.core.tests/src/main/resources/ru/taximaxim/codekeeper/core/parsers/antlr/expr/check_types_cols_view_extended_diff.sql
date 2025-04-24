@@ -62,3 +62,23 @@ Schema: public
      t1 - text
      t2 - text
      format - text
+
+  View: testview3
+    RelationColumns : 
+     a - integer
+     b - text
+
+  View: testview4
+    RelationColumns : 
+     a - integer
+     b - text
+
+  View: testview5
+    RelationColumns : 
+     z - integer
+     x - text
+
+  View: testview6
+    RelationColumns : 
+     num1 - integer
+     text1 - text
