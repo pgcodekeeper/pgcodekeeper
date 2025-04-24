@@ -6,7 +6,6 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.SourceFormat;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 
@@ -206,90 +205,6 @@ public class TestCoreSettings implements ISettings {
     public void setInCharsetName(String charset) {
         // TODO Auto-generated method stub
 
-    }
-
-    @Override
-    public List<String> getIgnoreLists() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public boolean isIgnoreErrors() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public boolean isLibSafeMode() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    @Override
-    public String getIgnoreSchemaList() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getNewSrc() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public String getOldSrc() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public SourceFormat getNewSrcFormat() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public SourceFormat getOldSrcFormat() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getSourceLibs() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getSourceLibsWithoutPriv() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getSourceLibXmls() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getTargetLibs() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getTargetLibsWithoutPriv() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getTargetLibXmls() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override

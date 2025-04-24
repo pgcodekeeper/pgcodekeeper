@@ -316,7 +316,6 @@ public class CliArgs implements ISettings {
         return clearLibCache;
     }
 
-    @Override
     public String getNewSrc() {
         return newSrc;
     }
@@ -325,7 +324,6 @@ public class CliArgs implements ISettings {
         this.newSrc = newSrc;
     }
 
-    @Override
     public String getOldSrc() {
         return oldSrc;
     }
@@ -368,47 +366,38 @@ public class CliArgs implements ISettings {
         return Collections.unmodifiableCollection(allowedDangers);
     }
 
-    @Override
     public Collection<String> getIgnoreLists() {
         return Collections.unmodifiableCollection(ignoreLists);
     }
 
-    @Override
     public String getIgnoreSchemaList() {
         return ignoreSchemaList;
     }
 
-    @Override
     public Collection<String> getSourceLibXmls() {
         return Collections.unmodifiableCollection(sourceLibXmls);
     }
 
-    @Override
     public Collection<String> getSourceLibs() {
         return Collections.unmodifiableCollection(sourceLibs);
     }
 
-    @Override
     public Collection<String> getSourceLibsWithoutPriv() {
         return Collections.unmodifiableCollection(sourceLibsWithoutPriv);
     }
 
-    @Override
     public Collection<String> getTargetLibXmls() {
         return Collections.unmodifiableCollection(targetLibXmls);
     }
 
-    @Override
     public Collection<String> getTargetLibs() {
         return Collections.unmodifiableCollection(targetLibs);
     }
 
-    @Override
     public Collection<String> getTargetLibsWithoutPriv() {
         return Collections.unmodifiableCollection(targetLibsWithoutPriv);
     }
 
-    @Override
     public boolean isLibSafeMode() {
         return libSafeMode;
     }
@@ -435,7 +424,6 @@ public class CliArgs implements ISettings {
         return isDebug;
     }
 
-    @Override
     public boolean isIgnoreErrors() {
         return ignoreErrors;
     }
@@ -674,12 +662,10 @@ public class CliArgs implements ISettings {
         return null;
     }
 
-    @Override
     public SourceFormat getNewSrcFormat() {
         return newSrcFormat;
     }
 
-    @Override
     public SourceFormat getOldSrcFormat() {
         return oldSrcFormat;
     }

@@ -141,7 +141,7 @@ public final class InsertWriter {
      * @throws IOException
      * @throws SQLException
      */
-    public static String write(AbstractDatabase db, ISettings settings, String name, String filter)
+    public static String write(AbstractDatabase db, ISettings settings, String name, String filter, String source)
             throws InterruptedException, IOException, SQLException {
         var sb = new StringBuilder();
         var dbType = settings.getDbType();
@@ -160,7 +160,7 @@ public final class InsertWriter {
         }
 
         String qName = getQualifiedName(name, db);
-        new InsertWriter(db, dbType).generateScript(settings.getNewSrc(), qName, filter, sb);
+        new InsertWriter(db, dbType).generateScript(source, qName, filter, sb);
 
         if (isTransaction) {
             switch (dbType) {

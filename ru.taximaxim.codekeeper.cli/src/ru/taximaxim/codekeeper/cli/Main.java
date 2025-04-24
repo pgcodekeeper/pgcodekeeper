@@ -107,11 +107,11 @@ public final class Main {
     private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            PgDiff diff = new PgDiff(arguments);
+            var diff = new PgDiffCli(arguments);
             String text;
             try {
                 LOG.info(Messages.Main_log_create_script);
-                text = diff.createDiff(arguments);
+                text = diff.createDiff();
             } catch (PgCodekeeperException ex) {
                 printError(diff);
                 return false;
@@ -183,17 +183,18 @@ public final class Main {
 
     private static boolean insert(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException, SQLException {
-        PgDiff diff = new PgDiff(arguments);
+        var diff = new PgDiffCli(arguments);
         AbstractDatabase db;
         try {
-            db = diff.loadNewDatabaseWithLibraries(arguments);
+            db = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
             printError(diff);
             return false;
         }
 
         LOG.info(Messages.Main_log_start_insert_data);
-        var script = InsertWriter.write(db, arguments, arguments.getInsertName(), arguments.getInsertFilter());
+        var script = InsertWriter.write(db, arguments, arguments.getInsertName(), arguments.getInsertFilter(),
+                arguments.getNewSrc());
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             if (pw != null) {
@@ -214,10 +215,10 @@ public final class Main {
     }
 
     private static boolean graph(PrintWriter writer, CliArgs arguments) throws IOException, InterruptedException {
-        PgDiff diff = new PgDiff(arguments);
+        var diff = new PgDiffCli(arguments);
         AbstractDatabase d;
         try {
-            d = diff.loadNewDatabaseWithLibraries(arguments);
+            d = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
             printError(diff);
             return false;

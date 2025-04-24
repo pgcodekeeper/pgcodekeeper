@@ -24,9 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -35,33 +33,22 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
-import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
-import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
-import ru.taximaxim.codekeeper.core.loader.LoaderFactory;
-import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.CompareTree;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.graph.ActionsToScriptConverter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyResolver;
-import ru.taximaxim.codekeeper.core.parsers.antlr.exception.LibraryObjectDuplicationException;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
-import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
-import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 /**
  * Creates diff of two database schemas.
@@ -70,9 +57,9 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
  */
 public class PgDiff {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PgDiff.class);
+    public static final Logger LOG = LoggerFactory.getLogger(PgDiff.class);
     protected final ISettings settings;
-    private final List<Object> errors = new ArrayList<>();
+    protected final List<Object> errors = new ArrayList<>();
 
     public PgDiff(ISettings settings) {
         this.settings = settings;
@@ -80,154 +67,6 @@ public class PgDiff {
 
     public List<Object> getErrors() {
         return Collections.unmodifiableList(errors);
-    }
-
-    private static final Path META_PATH = Paths.get(System.getProperty("user.home")) //$NON-NLS-1$
-            .resolve(".pgcodekeeper-cli").resolve("dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
-
-    /**
-     * Creates diff on the two database schemas.
-     */
-    public String createDiff(ISettings settings) throws InterruptedException, IOException, PgCodekeeperException {
-        AbstractDatabase oldDatabase = loadOldDatabaseWithLibraries(settings);
-        AbstractDatabase newDatabase = loadNewDatabaseWithLibraries(settings);
-        IgnoreList ignoreList = new IgnoreList();
-        IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
-
-        for (String listFilename : settings.getIgnoreLists()) {
-            ignoreParser.parse(Paths.get(listFilename));
-        }
-
-        return diff(oldDatabase, newDatabase, ignoreList);
-    }
-
-    private void analyzeDatabase(AbstractDatabase db, ISettings settings)
-            throws InterruptedException, IOException, PgCodekeeperException {
-        FullAnalyze.fullAnalyze(db, errors);
-        assertErrors(settings);
-    }
-
-    private void loadOverrides(AbstractDatabase db, SourceFormat format, String source, ISettings settings)
-            throws InterruptedException, IOException, PgCodekeeperException {
-        if (SourceFormat.PARSED != format) {
-            return;
-        }
-
-        new ProjectLoader(source, settings, errors).loadOverrides(db);
-        assertErrors(settings);
-    }
-
-    private void loadLibraries(AbstractDatabase db, Collection<String> libXmls,
-            Collection<String> libs, Collection<String> libsWithoutPriv, ISettings settings)
-                    throws InterruptedException, IOException, PgCodekeeperException {
-        LibraryLoader ll = new LibraryLoader(db, META_PATH, errors);
-
-        for (String xml : libXmls) {
-            ll.loadXml(new DependenciesXmlStore(Paths.get(xml)), settings);
-        }
-
-        ll.loadLibraries(settings, false, libs);
-        ll.loadLibraries(settings, true, libsWithoutPriv);
-        assertErrors(settings);
-    }
-
-    public AbstractDatabase loadNewDatabaseWithLibraries(ISettings settings)
-            throws IOException, InterruptedException, PgCodekeeperException {
-        LOG.info(Messages.PgDiff_log_load_new_db);
-        AbstractDatabase newDatabase = loadNewDatabase(settings);
-        LOG.info(Messages.PgDiff_log_load_new_db_lib);
-        loadLibraries(newDatabase, settings.getTargetLibXmls(), settings.getTargetLibs(),
-                settings.getTargetLibsWithoutPriv(), settings);
-
-        List<PgOverride> overrides = newDatabase.getOverrides();
-        if (settings.isLibSafeMode() && !overrides.isEmpty()) {
-            LOG.error(Messages.PgDiff_log_lib_have_dupl);
-            throw new LibraryObjectDuplicationException(overrides);
-        }
-
-        // read additional privileges from special folder
-        LOG.info(Messages.PgDiff_log_load_new_db_overrides);
-        loadOverrides(newDatabase, settings.getNewSrcFormat(), settings.getNewSrc(), settings);
-
-        LOG.info(Messages.PgDiff_log_start_db_analyze);
-        analyzeDatabase(newDatabase, settings);
-
-        return newDatabase;
-    }
-
-    public AbstractDatabase loadOldDatabaseWithLibraries(ISettings settings)
-            throws IOException, InterruptedException, PgCodekeeperException {
-        LOG.info(Messages.PgDiff_log_load_old_db);
-        AbstractDatabase oldDatabase = loadOldDatabase(settings);
-
-        LOG.info(Messages.PgDiff_log_load_old_db_lib);
-        loadLibraries(oldDatabase, settings.getSourceLibXmls(), settings.getSourceLibs(),
-                settings.getSourceLibsWithoutPriv(), settings);
-
-        List<PgOverride> overrides = oldDatabase.getOverrides();
-        if (settings.isLibSafeMode() && !overrides.isEmpty()) {
-            LOG.error(Messages.PgDiff_log_lib_have_dupl);
-            throw new LibraryObjectDuplicationException(overrides);
-        }
-        LOG.info(Messages.PgDiff_log_load_old_db_overrides);
-        // read additional privileges from special folder
-        loadOverrides(oldDatabase, settings.getOldSrcFormat(), settings.getOldSrc(), settings);
-
-        LOG.info(Messages.PgDiff_log_start_db_analyze);
-        analyzeDatabase(oldDatabase, settings);
-
-        return oldDatabase;
-    }
-
-    public AbstractDatabase loadNewDatabase(ISettings settings)
-            throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase db = loadDatabaseSchema(settings.getNewSrcFormat(), settings.getNewSrc(), settings);
-        assertErrors(settings);
-        return db;
-    }
-
-    public AbstractDatabase loadOldDatabase(ISettings settings)
-            throws IOException, InterruptedException, PgCodekeeperException {
-        AbstractDatabase db = loadDatabaseSchema(settings.getOldSrcFormat(), settings.getOldSrc(), settings);
-        assertErrors(settings);
-        return db;
-    }
-
-    private void assertErrors(ISettings settings) throws PgCodekeeperException {
-        if (!errors.isEmpty() && !settings.isIgnoreErrors()) {
-            throw new PgCodekeeperException("Error while load database"); //$NON-NLS-1$
-        }
-    }
-
-    /**
-     * Loads database schema choosing the provided method.
-     *
-     * @param format        format of the database source, must be "dump", "parsed" or "db"
-     *                         otherwise exception is thrown
-     * @param srcPath        path to the database source to load
-     *
-     * @return the loaded database
-     */
-    private AbstractDatabase loadDatabaseSchema(SourceFormat format, String srcPath, ISettings settings)
-            throws InterruptedException, IOException {
-        LOG.info(Messages.PgDiff_log_load_ignored_schemas);
-        IgnoreSchemaList ignoreSchemaList =  new IgnoreSchemaList();
-        IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
-        if (settings.getIgnoreSchemaList() != null) {
-            ignoreParser.parse(Paths.get(settings.getIgnoreSchemaList()));
-        }
-        DatabaseLoader loader = switch (format) {
-            case DB -> LoaderFactory.createJdbcLoader(settings, srcPath, ignoreSchemaList);
-            case DUMP -> new PgDumpLoader(Paths.get(srcPath), settings);
-            case PARSED -> new ProjectLoader(srcPath, settings, null, errors, ignoreSchemaList);
-            default -> throw new UnsupportedOperationException(MessageFormat.format(Messages.UnknownDBFormat, format));
-        };
-
-        try {
-            return loader.load();
-        } finally {
-            errors.addAll(loader.getErrors());
-        }
     }
 
     public String diff(AbstractDatabase oldDbFull, AbstractDatabase newDbFull, IgnoreList ignoreList)
