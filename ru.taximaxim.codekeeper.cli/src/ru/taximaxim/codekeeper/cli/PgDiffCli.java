@@ -45,8 +45,9 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public final class PgDiffCli extends PgDiff {
 
-    private static final Path META_PATH = Paths.get(System.getProperty("user.home")) //$NON-NLS-1$
-            .resolve(".pgcodekeeper-cli").resolve("dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
+    private static final Path META_PATH = Paths
+            .get(System.getProperty("user.home"), ".pgcodekeeper-cli", "dependencies"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+//            .resolve(".pgcodekeeper-cli").resolve("dependencies"); //$NON-NLS-1$ //$NON-NLS-2$
 
     private final CliArgs arguments;
 
