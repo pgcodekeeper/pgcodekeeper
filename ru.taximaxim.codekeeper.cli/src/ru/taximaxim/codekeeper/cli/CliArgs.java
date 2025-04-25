@@ -652,13 +652,11 @@ public class CliArgs implements ISettings {
 
     @Override
     public boolean isAutoFormatObjectCode() {
-        // TODO Auto-generated method stub
         return false;
     }
 
     @Override
     public FormatConfiguration getFormatConfiguration() {
-        // TODO Auto-generated method stub
         return null;
     }
 
