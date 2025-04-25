@@ -111,12 +111,6 @@ public abstract class DbSource {
     protected abstract AbstractDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
-    private static void addPathIfExists(List<String> paths, Path path) {
-        if (Files.exists(path)) {
-            paths.add(path.toString());
-        }
-    }
-
     public static DbSource fromDirTree(String dirTreePath, Map<String, Boolean> oneTimePrefs) {
         return new DbSourceDirTree(dirTreePath, oneTimePrefs);
     }
