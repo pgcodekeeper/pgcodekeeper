@@ -61,7 +61,7 @@ import ru.taximaxim.codekeeper.core.settings.ISettings;
  */
 public class PgDiff {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PgDiff.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(PgDiff.class);
 
     private static final String EMPTY_SCRIPT = ""; // $NON-NLS-1$
 
@@ -100,20 +100,20 @@ public class PgDiff {
             return EMPTY_SCRIPT;
         }
 
-        return switch (arguments.getDbType()) {
+        return switch (settings.getDbType()) {
             case MS -> getMsScript(actions, toRefresh, selected, oldDbFull, newDbFull);
             case PG -> getPgScript(actions, toRefresh, selected, oldDbFull, newDbFull);
             case CH -> getChScript(actions, toRefresh, selected, oldDbFull, newDbFull);
             default -> throw new IllegalArgumentException(
-                    Messages.DatabaseType_unsupported_type + arguments.getDbType());
+                Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
     }
 
     private String getPgScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull)
             throws IOException {
-        SQLScript script = new SQLScript(arguments.getDbType());
-        for (String preFilePath : arguments.getPreFilePath()) {
+        SQLScript script = new SQLScript(settings);
+        for (String preFilePath : settings.getPreFilePath()) {
             addPrePostPath(script, preFilePath, SQLActionType.PRE);
         }
 
@@ -131,7 +131,7 @@ public class PgDiff {
         }
 
         script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN); //$NON-NLS-1$
-        ActionsToScriptConverter.fillScript(script, actions, toRefresh, arguments, oldDbFull, newDbFull, selected);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
 
         if (settings.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION", SQLActionType.END);
@@ -171,12 +171,12 @@ public class PgDiff {
 
     private String getMsScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
-        SQLScript script = new SQLScript(arguments.getDbType());
-        if (arguments.isAddTransaction()) {
+        SQLScript script = new SQLScript(settings);
+        if (settings.isAddTransaction()) {
             script.addStatement("BEGIN TRANSACTION", SQLActionType.BEGIN); //$NON-NLS-1$
         }
 
-        ActionsToScriptConverter.fillScript(script, actions, toRefresh, arguments, oldDbFull, newDbFull, selected);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
 
         if (settings.isAddTransaction()) {
             script.addStatement("COMMIT", SQLActionType.END);
@@ -187,8 +187,8 @@ public class PgDiff {
 
     private String getChScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
-        SQLScript script = new SQLScript(arguments.getDbType());
-        ActionsToScriptConverter.fillScript(script, actions, toRefresh, arguments, oldDbFull, newDbFull, selected);
+        SQLScript script = new SQLScript(settings);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
         return script.getFullScript();
     }
 
@@ -229,7 +229,7 @@ public class PgDiff {
             objects.add(new DbObject(st.getQualifiedName(), oldStatement, newStatement));
         }
         return DepcyResolver.resolve(oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, toRefresh, objects);
+                additionalDepciesSource, additionalDepciesTarget, toRefresh, objects, settings);
     }
 
     /**

@@ -89,6 +89,7 @@ public final class Differ implements IRunnableWithProgress {
         this.root = root;
         this.needTwoWay = needTwoWay;
         this.timezone = timezone;
+        this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }

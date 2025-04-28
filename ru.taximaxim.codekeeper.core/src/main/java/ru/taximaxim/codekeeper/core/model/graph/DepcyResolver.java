@@ -112,7 +112,7 @@ public final class DepcyResolver {
 
     private final ISettings settings;
 
-    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, ISettings settings) {
+    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, ISettings settings, Set<PgStatement> toRefresh) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);
@@ -669,8 +669,8 @@ public final class DepcyResolver {
     public static Set<ActionContainer> resolve(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            Set<PgStatement> toRefresh, List<DbObject> dbObjects) {
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, toRefresh);
+            Set<PgStatement> toRefresh, List<DbObject> dbObjects, ISettings settings) {
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, settings, toRefresh);
         depRes.oldDepcyGraph.addCustomDepcies(additionalDepciesSource);
         depRes.newDepcyGraph.addCustomDepcies(additionalDepciesTarget);
         depRes.fillObjects(dbObjects/* , null */);
