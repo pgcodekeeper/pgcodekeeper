@@ -93,9 +93,10 @@ public final class ActionsToScriptConverter {
 
     private List<String> partitionChildren;
 
-    public ActionsToScriptConverter(SQLScript script, Set<ActionContainer> actions,
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
-        this(script, actions, Collections.emptySet(), oldDbFull, newDbFull);
+    public static void fillScript(SQLScript script,
+            Set<ActionContainer> actions, Set<PgStatement> toRefresh,
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull, List<TreeElement> selected) {
+        new ActionsToScriptConverter(script, actions, toRefresh, oldDbFull, newDbFull).fillScript(selected);
     }
 
     /**
@@ -122,7 +123,7 @@ public final class ActionsToScriptConverter {
      * @param selected
      *            list of selected elements
      */
-    public void fillScript(List<TreeElement> selected) {
+    private void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
         if (script.getSettings().isDataMovementMode()) {
             fillPartitionTables();

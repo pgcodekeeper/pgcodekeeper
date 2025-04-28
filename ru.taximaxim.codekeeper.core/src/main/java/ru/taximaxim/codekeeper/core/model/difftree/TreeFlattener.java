@@ -105,8 +105,10 @@ public final class TreeFlattener {
             LOG.debug(Messages.TreeFlattener_log_ignore_obj, el.getName());
         }
         if (status == AddStatus.SKIP_SUBTREE) {
-            LOG.debug(Messages.TreeFlattener_log_ignore_obj, el.getName());
-            writeChildrenInLog(el);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug(Messages.TreeFlattener_log_ignore_obj, el.getName());
+                writeChildrenInLog(el);
+            }
             return;
         }
 
@@ -120,11 +122,15 @@ public final class TreeFlattener {
             addSubtreeRoots.pop();
         }
 
-        if ((status == AddStatus.ADD || status == AddStatus.ADD_SUBTREE) &&
-                (!onlySelected || el.isSelected()) &&
-                (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType())) &&
-                (!onlyEdits || el.getSide() != DiffSide.BOTH ||
-                !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget), settings))) {
+        if (el.getType() == DbObjType.DATABASE) {
+            return;
+        }
+
+        if ((status == AddStatus.ADD || status == AddStatus.ADD_SUBTREE)
+                && (!onlySelected || el.isSelected())
+                && (onlyTypes == null || onlyTypes.isEmpty() || onlyTypes.contains(el.getType()))
+                && (!onlyEdits || el.getSide() != DiffSide.BOTH
+                        || !el.getPgStatement(dbSource).compare(el.getPgStatement(dbTarget)))) {
             result.add(el);
         }
     }

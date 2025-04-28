@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -91,8 +90,9 @@ public final class DepcyResolver {
     private final AbstractDatabase newDb;
     private final DepcyGraph oldDepcyGraph;
     private final DepcyGraph newDepcyGraph;
+    private final Set<PgStatement> toRefresh;
+
     private final Set<ActionContainer> actions = new LinkedHashSet<>();
-    private final Set<PgStatement> toRefresh = new LinkedHashSet<>();
     /**
      * Хранит запущенные итерации по удалению объектов, используется для предотвращения циклического прохода по графу
      */
@@ -117,34 +117,20 @@ public final class DepcyResolver {
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);
         this.newDepcyGraph = new DepcyGraph(newDatabase);
+        this.toRefresh = toRefresh;
         this.settings = settings;
     }
 
-    /**
-     * Добавить ручную зависимость к старому графу
-     * @param depcies ручная зависимость
-     */
-    public void addCustomDepciesToOld(List<Entry<PgStatement, PgStatement>> depcies) {
-        oldDepcyGraph.addCustomDepcies(depcies);
-    }
-
-    /**
-     * Добавить ручную зависимость к новому графу
-     * @param depcies ручная зависимость
-     */
-    public void addCustomDepciesToNew(List<Entry<PgStatement, PgStatement>> depcies) {
-        newDepcyGraph.addCustomDepcies(depcies);
-    }
-
-    public Set<ActionContainer> getActions() {
-        return Collections.unmodifiableSet(actions);
-    }
-
-    /**
-     * @return ordered Set of statements to refresh in reverse order
-     */
-    public Set<PgStatement> getToRefresh() {
-        return Collections.unmodifiableSet(toRefresh);
+    private void fillObjects(List<DbObject> objects/* , PgStatement starter */) {
+        for (DbObject obj : objects) {
+            if (obj.newStatement() == null) {
+                addDropStatements(obj.oldStatement());
+            } else if (obj.oldStatement() == null) {
+                addCreateStatements(obj.newStatement());
+            } else {
+                addAlterStatements(obj.oldStatement(), obj.newStatement());
+            }
+        }
     }
 
     /**
@@ -155,7 +141,7 @@ public final class DepcyResolver {
      * @param statement
      *            объект для удаления из старой базы
      */
-    public void addDropStatements(PgStatement statement) {
+    private void addDropStatements(PgStatement statement) {
         if (oldDepcyGraph.getReversedGraph().containsVertex(statement) && droppedObjects.add(statement)) {
             var dfi = new DepthFirstIterator<>(oldDepcyGraph.getReversedGraph(), statement);
             iterate(dfi, new DropTraversalAdapter(statement));
@@ -174,7 +160,7 @@ public final class DepcyResolver {
      *
      * @param statement
      */
-    public void addCreateStatements(PgStatement statement) {
+    private void addCreateStatements(PgStatement statement) {
         if (newDepcyGraph.getGraph().containsVertex(statement) && createdObjects.add(statement)) {
             var dfi = new DepthFirstIterator<>(newDepcyGraph.getGraph(), statement);
             iterate(dfi, new CreateTraversalAdapter(statement));
@@ -186,7 +172,7 @@ public final class DepcyResolver {
      * @param oldObj исходный объект
      * @param newObj новый объект
      */
-    public void addAlterStatements(PgStatement oldObjStat, PgStatement newObjStat) {
+    private void addAlterStatements(PgStatement oldObjStat, PgStatement newObjStat) {
         ObjectState state = getObjectState(oldObjStat, newObjStat);
         if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
             addDropStatements(oldObjStat);
@@ -230,7 +216,7 @@ public final class DepcyResolver {
     /**
      * Пересоздает ранее удаленные объекты в новое состояние
      */
-    public void recreateDrops() {
+    private void recreateDrops() {
         int oldActionsSize = -1;
         List<PgStatement> toRecreate = new ArrayList<>();
         // since a recreate can trigger a drop via  dependency being altered
@@ -292,7 +278,7 @@ public final class DepcyResolver {
     /**
      * Removes actions that for some reason should not be included in the script
      */
-    public void removeExtraActions() {
+    private void removeExtraActions() {
         Set<ActionContainer> toRemove = new HashSet<>();
         for (ActionContainer action : actions) {
             if (action.getState() != ObjectState.ALTER) {
@@ -678,5 +664,19 @@ public final class DepcyResolver {
             // unused
             return true;
         }
+    }
+
+    public static Set<ActionContainer> resolve(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
+            Set<PgStatement> toRefresh, List<DbObject> dbObjects) {
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, toRefresh);
+        depRes.oldDepcyGraph.addCustomDepcies(additionalDepciesSource);
+        depRes.newDepcyGraph.addCustomDepcies(additionalDepciesTarget);
+        depRes.fillObjects(dbObjects/* , null */);
+        depRes.recreateDrops();
+        depRes.removeExtraActions();
+
+        return depRes.actions;
     }
 }

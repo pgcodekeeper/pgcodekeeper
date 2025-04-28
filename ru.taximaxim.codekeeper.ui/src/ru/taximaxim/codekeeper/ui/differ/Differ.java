@@ -47,9 +47,9 @@ public final class Differ implements IRunnableWithProgress {
     private final TreeElement root;
     private final boolean needTwoWay;
     private final String timezone;
+    private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
-    private final DatabaseType dbType;
 
     private String diffDirect;
     private String diffReverse;
@@ -91,7 +91,6 @@ public final class Differ implements IRunnableWithProgress {
         this.timezone = timezone;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
-        this.dbType = dbType;
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
@@ -146,20 +145,20 @@ public final class Differ implements IRunnableWithProgress {
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         try {
             UISettings settings = new UISettings(proj, oneTimePrefs, dbType);
-            diffDirect = new PgDiff(settings).diffDatabaseSchemasAdditionalDepcies(
+            diffDirect = new PgDiff(settings).diff(
                     root,
                     sourceDbFull, targetDbFull,
-                    additionalDepciesSource, additionalDepciesTarget);
+                    additionalDepciesSource, additionalDepciesTarget, null);
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
                 + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                diffReverse = new PgDiff(settings).diffDatabaseSchemasAdditionalDepcies(
+                diffReverse = new PgDiff(settings).diff(
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
-                        additionalDepciesTarget, additionalDepciesSource);
+                        additionalDepciesTarget, additionalDepciesSource, null);
             }
         } catch (IOException e) {
             throw new InvocationTargetException(e, e.getLocalizedMessage());
