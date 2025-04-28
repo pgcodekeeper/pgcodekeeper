@@ -34,11 +34,7 @@ public class CompareTree implements Comparator<TreeElement> {
         DiffSide s2 = o2.getSide();
         int res = compareTypes(o1, o2);
         if (s1 == s2) {
-            if (s1 == LEFT) {
-                return -res;
-            } else {
-                return res;
-            }
+            return s1 == LEFT ? -res : res;
         }
 
         if (s1 == LEFT) {

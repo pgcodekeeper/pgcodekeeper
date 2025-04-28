@@ -15,9 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-/**
- * Object state which we get in appendAlterSQL() method
- */
 public enum ObjectState {
     CREATE,
     RECREATE,
