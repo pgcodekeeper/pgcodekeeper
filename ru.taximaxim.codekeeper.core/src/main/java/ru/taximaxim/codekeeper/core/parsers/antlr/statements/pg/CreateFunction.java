@@ -292,7 +292,7 @@ public final class CreateFunction extends PgParserAbstract {
                     funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                                function, funcCtx, fileName, funcArgs, settings);
+                                function, funcCtx, fileName, funcArgs, settings.isEnableFunctionBodiesDependencies());
                         launcher.setOffset(start);
                         db.addAnalysisLauncher(launcher);
                     });
@@ -306,7 +306,7 @@ public final class CreateFunction extends PgParserAbstract {
                     funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                                function, funcCtx, fileName, funcArgs, settings);
+                                function, funcCtx, fileName, funcArgs, settings.isEnableFunctionBodiesDependencies());
                         launcher.setOffset(start);
                         db.addAnalysisLauncher(launcher);
                     });
@@ -319,7 +319,7 @@ public final class CreateFunction extends PgParserAbstract {
         AntlrParser.submitAntlrTask(antlrTasks, () -> body,
                 funcCtx -> {
                     FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                            function, funcCtx, fileName, funcArgs, settings);
+                            function, funcCtx, fileName, funcArgs, settings.isEnableFunctionBodiesDependencies());
                     db.addAnalysisLauncher(launcher);
                 });
     }

@@ -31,34 +31,33 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    private final ISettings settings;
+    private final boolean isEnableFunctionBodiesDependencies;
 
     public MsFuncProcTrigAnalysisLauncher(AbstractMsFunction stmt,
-            Sql_clausesContext ctx, String location, ISettings settings) {
+            Sql_clausesContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public MsFuncProcTrigAnalysisLauncher(AbstractMsFunction stmt,
-            Select_statementContext ctx, String location, ISettings settings) {
+            Select_statementContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public MsFuncProcTrigAnalysisLauncher(AbstractMsFunction stmt,
-            ExpressionContext ctx, String location, ISettings settings) {
+            ExpressionContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public MsFuncProcTrigAnalysisLauncher(MsTrigger stmt,
-            Sql_clausesContext ctx, String location, ISettings settings) {
+            Sql_clausesContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     @Override
@@ -82,7 +81,7 @@ public final class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLaunch
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        if (!settings.isEnableFunctionBodiesDependencies()) {
+        if (!isEnableFunctionBodiesDependencies) {
             return EnumSet.of(DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
 

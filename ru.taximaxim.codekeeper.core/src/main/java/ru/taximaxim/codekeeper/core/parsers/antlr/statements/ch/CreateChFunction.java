@@ -55,7 +55,8 @@ public final class CreateChFunction extends ChParserAbstract {
 
         parseArgs(function, ctx.lambda_expr().function_arguments());
 
-        db.addAnalysisLauncher(new ChFuncAnalysisLauncher(function, bodyCtx, fileName, settings));
+        db.addAnalysisLauncher(
+                new ChFuncAnalysisLauncher(function, bodyCtx, fileName, settings.isEnableFunctionBodiesDependencies()));
     }
 
     private void parseArgs(ChFunction function, Function_argumentsContext funcArgs) {

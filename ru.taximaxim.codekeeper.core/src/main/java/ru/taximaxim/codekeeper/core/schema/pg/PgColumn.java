@@ -417,7 +417,7 @@ public final class PgColumn extends AbstractColumn implements ISimpleOptionConta
                 sb.append(COLLATE).append(newCollation);
             }
 
-            if (!settings.isPrintUsing() && !(parent instanceof IForeignTable)) {
+            if (settings.isPrintUsing() && !(parent instanceof IForeignTable)) {
                 sb.append(" USING ").append(PgDiffUtils.getQuotedName(newColumn.name))
                 .append("::").append(newType);
             }

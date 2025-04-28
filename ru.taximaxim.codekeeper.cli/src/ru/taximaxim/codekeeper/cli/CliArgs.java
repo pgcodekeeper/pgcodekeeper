@@ -320,16 +320,8 @@ public class CliArgs implements ISettings {
         return newSrc;
     }
 
-    public void setNewSrc(String newSrc) {
-        this.newSrc = newSrc;
-    }
-
     public String getOldSrc() {
         return oldSrc;
-    }
-
-    public void setOldSrc(String oldSrc) {
-        this.oldSrc = oldSrc;
     }
 
     public String getOutputTarget() {
@@ -344,10 +336,6 @@ public class CliArgs implements ISettings {
     @Override
     public boolean isStopNotAllowed() {
         return stopNotAllowed;
-    }
-
-    public void setStopNotAllowed(boolean stopNotAllowed) {
-        this.stopNotAllowed = stopNotAllowed;
     }
 
     public boolean isSafeMode() {
@@ -402,10 +390,6 @@ public class CliArgs implements ISettings {
         return libSafeMode;
     }
 
-    public void setLibSafeMode(boolean libSafeMode) {
-        this.libSafeMode = libSafeMode;
-    }
-
     @Override
     public DatabaseType getDbType() {
         return dbType;
@@ -416,10 +400,6 @@ public class CliArgs implements ISettings {
         return ignoreConcurrentModification;
     }
 
-    public void setIgnoreConcurrentModification(boolean ignoreConcurrentModification) {
-        this.ignoreConcurrentModification = ignoreConcurrentModification;
-    }
-
     public boolean isDebug() {
         return isDebug;
     }
@@ -428,26 +408,14 @@ public class CliArgs implements ISettings {
         return ignoreErrors;
     }
 
-    public void setIgnoreErrors(boolean ignoreErrors) {
-        this.ignoreErrors = ignoreErrors;
-    }
-
     @Override
     public boolean isIgnoreColumnOrder() {
         return ignoreColumnOrder;
     }
 
-    public void setIgnoreColumnOrder(boolean ignoreColumnOrder) {
-        this.ignoreColumnOrder = ignoreColumnOrder;
-    }
-
     @Override
     public boolean isConstraintNotValid() {
         return generateConstraintNotValid;
-    }
-
-    public void setConstraintNotValid(boolean generateConstraintNotValid) {
-        this.generateConstraintNotValid = generateConstraintNotValid;
     }
 
     @Override
@@ -469,26 +437,14 @@ public class CliArgs implements ISettings {
         return disableCheckFunctionBodies;
     }
 
-    public void setDisableCheckFunctionBodies(boolean disableCheckFunctionBodies) {
-        this.disableCheckFunctionBodies = disableCheckFunctionBodies;
-    }
-
     @Override
     public boolean isEnableFunctionBodiesDependencies() {
         return enableFunctionBodiesDependencies;
     }
 
-    public void setEnableFunctionBodiesDependencies(boolean enableFunctionBodiesDependencies) {
-        this.enableFunctionBodiesDependencies = enableFunctionBodiesDependencies;
-    }
-
     @Override
     public String getTimeZone() {
         return timeZone;
-    }
-
-    public void setTimeZone(String timeZone) {
-        this.timeZone = timeZone;
     }
 
     @Override
@@ -506,17 +462,9 @@ public class CliArgs implements ISettings {
         return keepNewlines;
     }
 
-    public void setKeepNewlines(boolean keepNewlines) {
-        this.keepNewlines = keepNewlines;
-    }
-
     @Override
     public Collection<DbObjType> getAllowedTypes() {
         return Collections.unmodifiableCollection(allowedTypes);
-    }
-
-    public void setGenerateExists(boolean generateExists) {
-        this.generateExists = generateExists;
     }
 
     @Override
@@ -529,26 +477,14 @@ public class CliArgs implements ISettings {
         return generateExistDoBlock;
     }
 
-    public void setGenerateExistDoBlock(boolean generateExistDoBlock) {
-        this.generateExistDoBlock = generateExistDoBlock;
-    }
-
     @Override
     public boolean isDropBeforeCreate() {
         return dropBeforeCreate;
     }
 
-    public void setDropBeforeCreate(boolean dropBeforeCreate) {
-        this.dropBeforeCreate = dropBeforeCreate;
-    }
-
     @Override
     public boolean isCommentsToEnd() {
         return commentsToEnd;
-    }
-
-    public void setCommentsToEnd(boolean commentsToEnd) {
-        this.commentsToEnd = commentsToEnd;
     }
 
     public Collection<DbObjType> getGraphFilterTypes() {
@@ -564,26 +500,14 @@ public class CliArgs implements ISettings {
         return selectedOnly;
     }
 
-    public void setSelectedOnly(boolean selectedOnly) {
-        this.selectedOnly = selectedOnly;
-    }
-
     @Override
     public boolean isDataMovementMode() {
         return dataMovementMode;
     }
 
-    public void setDataMovementMode(boolean dataMovementMode) {
-        this.dataMovementMode = dataMovementMode;
-    }
-
     @Override
     public boolean isPrintUsing() {
-        return usingTypeCastOff;
-    }
-
-    public void setUsingTypeCastOff(boolean usingTypeCastOff) {
-        this.usingTypeCastOff = usingTypeCastOff;
+        return !usingTypeCastOff;
     }
 
     @Override
@@ -591,17 +515,9 @@ public class CliArgs implements ISettings {
         return concurrentlyMode;
     }
 
-    public void setConcurrentlyMode(boolean concurrentlyMode) {
-        this.concurrentlyMode = concurrentlyMode;
-    }
-
     @Override
     public boolean isSimplifyView() {
         return simplifyView;
-    }
-
-    public void setSimplifyView(boolean simplifyView) {
-        this.simplifyView = simplifyView;
     }
 
     public int getGraphDepth() {
@@ -616,10 +532,6 @@ public class CliArgs implements ISettings {
         return projUpdate;
     }
 
-    public void setProjUpdate(boolean projUpdate) {
-        this.projUpdate = projUpdate;
-    }
-
     public Collection<String> getGraphNames() {
         return Collections.unmodifiableCollection(graphNames);
     }
@@ -629,17 +541,9 @@ public class CliArgs implements ISettings {
         return Collections.unmodifiableCollection(preFilePath);
     }
 
-    public void setPreFilePath(List<String> preFilePath) {
-        this.preFilePath = preFilePath;
-    }
-
     @Override
     public Collection<String> getPostFilePath() {
         return Collections.unmodifiableCollection(postFilePath);
-    }
-
-    public void setPostFilePath(List<String> postFilePath) {
-        this.postFilePath = postFilePath;
     }
 
     public Collection<String> getVerifySources() {
@@ -780,7 +684,7 @@ public class CliArgs implements ISettings {
             }
             oldSrcFormat = SourceFormat.parsePath(oldSrc);
         } else if (CliMode.PARSE == mode && projUpdate) {
-            setOldSrc(outputTarget);
+            oldSrc = outputTarget;
             oldSrcFormat = SourceFormat.parsePath(oldSrc);
         }
 

@@ -33,7 +33,6 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
@@ -44,27 +43,27 @@ public final class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      * Used to set up namespace for function body analysis.
      */
     private final List<Pair<String, GenericColumn>> funcArgs;
-    private final ISettings settings;
+    private final boolean isEnableFunctionBodiesDependencies;
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, SqlContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs, ISettings settings) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Function_bodyContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs, ISettings settings) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Plpgsql_functionContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs, ISettings settings) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     @Override
@@ -95,7 +94,7 @@ public final class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        if (!settings.isEnableFunctionBodiesDependencies()) {
+        if (!isEnableFunctionBodiesDependencies) {
             return EnumSet.of(DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
 

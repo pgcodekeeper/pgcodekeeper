@@ -81,7 +81,7 @@ public final class CreateMsTrigger extends BatchContextProcessor {
         }
 
         db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(trigger,
-                ctx.sql_clauses(), fileName, settings));
+                ctx.sql_clauses(), fileName, settings.isEnableFunctionBodiesDependencies()));
 
         PgStatementContainer cont = getSafe(AbstractSchema::getStatementContainer,
                 schema, tableNameCtx);

@@ -54,6 +54,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class ActionsToScriptConverter {
 
@@ -68,6 +69,7 @@ public final class ActionsToScriptConverter {
     private static final String RENAME_CH_OBJECT = "RENAME {0} {1} TO {2};";
 
     private final SQLScript script;
+    private final ISettings settings;
     private final Set<ActionContainer> actions;
     private final Set<PgStatement> toRefresh;
     private final AbstractDatabase oldDbFull;
@@ -109,7 +111,8 @@ public final class ActionsToScriptConverter {
         this.toRefresh = toRefresh;
         this.oldDbFull = oldDbFull;
         this.newDbFull = newDbFull;
-        if (script.getSettings().isDataMovementMode()) {
+        this.settings = script.getSettings();
+        if (settings.isDataMovementMode()) {
             tblTmpNames = new HashMap<>();
             tblIdentityCols = new HashMap<>();
             partitionTables = new HashMap<>();
@@ -125,7 +128,7 @@ public final class ActionsToScriptConverter {
      */
     private void fillScript(List<TreeElement> selected) {
         Set<PgStatement> refreshed = new HashSet<>(toRefresh.size());
-        if (script.getSettings().isDataMovementMode()) {
+        if (settings.isDataMovementMode()) {
             fillPartitionTables();
         }
 
@@ -212,7 +215,6 @@ public final class ActionsToScriptConverter {
 
     private void printAction(ActionContainer action, PgStatement obj) {
         String depcy = getComment(action, obj);
-        var settings = script.getSettings();
         switch (action.getState()) {
         case CREATE:
             if (depcy != null) {
@@ -301,7 +303,7 @@ public final class ActionsToScriptConverter {
         for (var colAction : actionsList) {
             PgColumn oldNextCol = (PgColumn) colAction.getOldObj();
             PgColumn newNextCol = (PgColumn) colAction.getNewObj();
-            oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size(), script.getSettings());
+            oldNextCol.joinAction(sb, newNextCol, i == 1, i == actionsList.size(), settings);
             i++;
         }
         script.addStatement(sb);
@@ -365,7 +367,7 @@ public final class ActionsToScriptConverter {
     private void printDropTempTable(AbstractTable table) {
         String tblTmpName = tblTmpNames.get(table.getQualifiedName());
         if (tblTmpName != null) {
-            UnaryOperator<String> quoter = Utils.getQuoter(script.getSettings().getDbType());
+            UnaryOperator<String> quoter = Utils.getQuoter(settings.getDbType());
             StringBuilder sb = new StringBuilder();
             sb.append("DROP TABLE ")
             .append(quoter.apply(table.getSchemaName())).append('.').append(quoter.apply(tblTmpName));
@@ -385,7 +387,7 @@ public final class ActionsToScriptConverter {
         }
 
         // skip partition tables in data move mode
-        if (script.getSettings().isDataMovementMode() && partitionChildren.contains(oldObj.getQualifiedName())) {
+        if (settings.isDataMovementMode() && partitionChildren.contains(oldObj.getQualifiedName())) {
             return null;
         }
 
@@ -407,7 +409,6 @@ public final class ActionsToScriptConverter {
             addHiddenObj(action, "object cannot be dropped");
             return true;
         }
-        var settings = script.getSettings();
         if (settings.isSelectedOnly() && !isSelectedAction(action, selected)) {
             addHiddenObj(action, "cannot change unselected objects in selected-only mode");
             return true;
@@ -474,7 +475,7 @@ public final class ActionsToScriptConverter {
         script.addStatement(getRenameCommand(oldTbl, tmpTblName));
         tblTmpNames.put(qname, tmpTblName);
 
-        DatabaseType dbtype = script.getSettings().getDbType();
+        DatabaseType dbtype = settings.getDbType();
         List<String> identityCols = new ArrayList<>();
         for (AbstractColumn col : oldTbl.getColumns()) {
             switch (dbtype) {
@@ -531,7 +532,7 @@ public final class ActionsToScriptConverter {
      * @return sql command to rename the given object
      */
     private String getRenameCommand(PgStatement st, String newName) {
-        return switch (script.getSettings().getDbType()) {
+        return switch (settings.getDbType()) {
         case PG -> MessageFormat.format(RENAME_PG_OBJECT,
                 st.getStatementType(), st.getQualifiedName(), PgDiffUtils.getQuotedName(newName));
         case MS -> MessageFormat.format(RENAME_MS_OBJECT,
@@ -539,7 +540,7 @@ public final class ActionsToScriptConverter {
         case CH -> MessageFormat.format(RENAME_CH_OBJECT,
                 st.getStatementType(), st.getQualifiedName(), ChDiffUtils.getQuotedName(newName));
         default -> throw new IllegalArgumentException(
-                Messages.DatabaseType_unsupported_type + script.getSettings().getDbType());
+                Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
     }
 }

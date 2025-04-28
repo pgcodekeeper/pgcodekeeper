@@ -68,7 +68,7 @@ public final class SQLScript {
         String separator = switch (settings.getDbType()) {
             case PG, CH -> PG_SEPARATOR;
             case MS -> MS_SEPARATOR;
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
 
         return sql + separator;

@@ -26,15 +26,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    private final ISettings settings;
+    private final boolean isEnableFunctionBodiesDependencies;
 
-    public ChFuncAnalysisLauncher(ChFunction st, ExprContext ctx, String location, ISettings settings) {
+    public ChFuncAnalysisLauncher(ChFunction st, ExprContext ctx, String location,
+            boolean isEnableFunctionBodiesDependencies) {
         super(st, ctx, location);
-        this.settings = settings;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     @Override
@@ -45,7 +45,7 @@ public final class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        if (!settings.isEnableFunctionBodiesDependencies()) {
+        if (!isEnableFunctionBodiesDependencies) {
             return EnumSet.of(DbObjType.FUNCTION);
         }
 

@@ -115,18 +115,18 @@ public final class CreateMsFunction extends BatchContextProcessor {
 
             if (select != null) {
                 db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
-                        func, select, fileName, settings));
+                        func, select, fileName, settings.isEnableFunctionBodiesDependencies()));
             } else {
                 ExpressionContext exp = bodyRet.expression();
                 if (exp != null) {
                     db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
-                            func, exp, fileName, settings));
+                            func, exp, fileName, settings.isEnableFunctionBodiesDependencies()));
                 }
 
                 Sql_clausesContext clausesCtx = bodyRet.sql_clauses();
                 if (clausesCtx != null) {
                     db.addAnalysisLauncher(new MsFuncProcTrigAnalysisLauncher(
-                            func, clausesCtx, fileName, settings));
+                            func, clausesCtx, fileName, settings.isEnableFunctionBodiesDependencies()));
                 }
             }
 

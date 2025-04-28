@@ -269,13 +269,16 @@ public final class FunctionsReader extends JdbcReader {
         // Parsing the function definition and adding its result context for analysis.
         if (function.isInStatementBody()) {
             loader.submitAntlrTask(body, SQLParser::function_body, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes, settings)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            settings.isEnableFunctionBodiesDependencies())));
         } else if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes, settings)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            settings.isEnableFunctionBodiesDependencies())));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes, settings)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            settings.isEnableFunctionBodiesDependencies())));
         }
     }
 
