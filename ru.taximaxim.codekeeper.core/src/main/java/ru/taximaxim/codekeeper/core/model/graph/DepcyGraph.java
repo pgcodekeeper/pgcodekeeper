@@ -257,6 +257,9 @@ public final class DepcyGraph {
     }
 
     public void addCustomDepcies(List<Entry<PgStatement, PgStatement>> depcies) {
+        if (depcies == null) {
+            return;
+        }
         for (Entry<PgStatement, PgStatement> depcy : depcies) {
             graph.addEdge(depcy.getKey(), depcy.getValue());
         }

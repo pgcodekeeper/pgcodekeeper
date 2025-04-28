@@ -24,7 +24,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  * Класс используется как контейнер для объединения дейсвий с объектом БД
  * (CREATE ALTER DROP) Также хранит объект, инициировавший действие
  */
-class ActionContainer {
+public class ActionContainer {
     private final PgStatement oldObj;
     private final PgStatement newObj;
     private final ObjectState state;

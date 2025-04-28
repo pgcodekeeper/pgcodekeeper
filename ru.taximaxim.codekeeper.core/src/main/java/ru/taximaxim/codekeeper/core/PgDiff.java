@@ -28,8 +28,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -51,7 +53,9 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
+import ru.taximaxim.codekeeper.core.model.graph.ActionContainer;
 import ru.taximaxim.codekeeper.core.model.graph.ActionsToScriptConverter;
+import ru.taximaxim.codekeeper.core.model.graph.DbObject;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyResolver;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.LibraryObjectDuplicationException;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -70,6 +74,9 @@ import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 public class PgDiff {
 
     private static final Logger LOG = LoggerFactory.getLogger(PgDiff.class);
+
+    private static final String EMPTY_SCRIPT = ""; // $NON-NLS-1$
+
     private final PgDiffArguments arguments;
     private final List<Object> errors = new ArrayList<>();
 
@@ -232,37 +239,38 @@ public class PgDiff {
         TreeElement root = DiffTree.create(oldDbFull, newDbFull);
         root.setAllChecked();
 
-        return switch (arguments.getDbType()) {
-            case MS -> diffMs(root, oldDbFull, newDbFull, null, null, ignoreList);
-            case PG -> diffPg(root, oldDbFull, newDbFull, null, null, ignoreList);
-            case CH -> diffCh(root, oldDbFull, newDbFull, null, null, ignoreList);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        };
+        return diff(root, oldDbFull, newDbFull, null, null, ignoreList);
     }
 
-    /**
-     * Делает то же, что и метод выше, однако принимает TreeElement - как
-     * элементы нужные для наката
-     */
-    public String diffDatabaseSchemasAdditionalDepcies(TreeElement root,
+    public String diff(TreeElement root,
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) throws IOException {
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget, IgnoreList ignoreList) throws IOException {
+        List<TreeElement> selected = getSelectedElements(root, ignoreList);
+        if (selected.isEmpty()) {
+            return EMPTY_SCRIPT;
+        }
+
+        Set<PgStatement> toRefresh = new LinkedHashSet<>();
+        var actions = resolveDependencies(selected, oldDbFull, newDbFull, additionalDepciesSource,
+                additionalDepciesTarget, toRefresh);
+        if (actions.isEmpty()) {
+            return EMPTY_SCRIPT;
+        }
+
         return switch (arguments.getDbType()) {
-            case MS -> diffMs(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
-            case PG -> diffPg(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
-            case CH -> diffCh(root, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget, null);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+            case MS -> getMsScript(actions, toRefresh, selected, oldDbFull, newDbFull);
+            case PG -> getPgScript(actions, toRefresh, selected, oldDbFull, newDbFull);
+            case CH -> getChScript(actions, toRefresh, selected, oldDbFull, newDbFull);
+            default -> throw new IllegalArgumentException(
+                    Messages.DatabaseType_unsupported_type + arguments.getDbType());
         };
     }
 
-    private String diffPg(
-            TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            IgnoreList ignoreList) throws IOException {
+    private String getPgScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull)
+            throws IOException {
         SQLScript script = new SQLScript(arguments.getDbType());
-
         for (String preFilePath : arguments.getPreFilePath()) {
             addPrePostPath(script, preFilePath, SQLActionType.PRE);
         }
@@ -280,16 +288,8 @@ public class PgDiff {
             script.addStatement("START TRANSACTION", SQLActionType.BEGIN); //$NON-NLS-1$
         }
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        List<TreeElement> selected = getSelectedElements(root, ignoreList);
-        createScript(depRes, selected, oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget);
-
-        if (!depRes.getActions().isEmpty()) {
-            script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN); //$NON-NLS-1$
-        }
-
-        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
+        script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN); //$NON-NLS-1$
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, arguments, oldDbFull, newDbFull, selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION", SQLActionType.END); //$NON-NLS-1$
@@ -327,22 +327,14 @@ public class PgDiff {
         }
     }
 
-    private String diffMs(
-            TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            IgnoreList ignoreList) {
+    private String getMsScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
         SQLScript script = new SQLScript(arguments.getDbType());
-
         if (arguments.isAddTransaction()) {
             script.addStatement("BEGIN TRANSACTION", SQLActionType.BEGIN); //$NON-NLS-1$
         }
 
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        List<TreeElement> selected = getSelectedElements(root, ignoreList);
-        createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
-        new ActionsToScriptConverter(script, depRes.getActions(), depRes.getToRefresh(), arguments, oldDbFull,
-                newDbFull).fillScript(selected);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, arguments, oldDbFull, newDbFull, selected);
 
         if (arguments.isAddTransaction()) {
             script.addStatement("COMMIT", SQLActionType.END); //$NON-NLS-1$
@@ -351,18 +343,10 @@ public class PgDiff {
         return script.getFullScript();
     }
 
-    private String diffCh(
-            TreeElement root, AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            IgnoreList ignoreList) {
+    private String getChScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
+            AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
         SQLScript script = new SQLScript(arguments.getDbType());
-
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull);
-        List<TreeElement> selected = getSelectedElements(root, ignoreList);
-        createScript(depRes, selected, oldDbFull, newDbFull, additionalDepciesSource, additionalDepciesTarget);
-        new ActionsToScriptConverter(script, depRes.getActions(), arguments, oldDbFull, newDbFull).fillScript(selected);
-
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, arguments, oldDbFull, newDbFull, selected);
         return script.getFullScript();
     }
 
@@ -374,37 +358,36 @@ public class PgDiff {
                 .flatten(root);
     }
 
-    private void createScript(DepcyResolver depRes, List<TreeElement> selected,
+    private Set<ActionContainer> resolveDependencies(List<TreeElement> selected,
             AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget) {
-        if (additionalDepciesSource != null) {
-            depRes.addCustomDepciesToOld(additionalDepciesSource);
-        }
-        if (additionalDepciesTarget != null) {
-            depRes.addCustomDepciesToNew(additionalDepciesTarget);
-        }
-
+            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget, Set<PgStatement> toRefresh) {
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
         addColumnsAsElements(oldDbFull, newDbFull, selected);
         // ---КОСТЫЛЬ-----------
 
         Collections.sort(selected, new CompareTree());
+
+        List<DbObject> objects = new ArrayList<>();
         for (TreeElement st : selected) {
+            PgStatement oldStatement = null;
+            PgStatement newStatement = null;
             switch (st.getSide()) {
             case LEFT:
-                depRes.addDropStatements(st.getPgStatement(oldDbFull));
+                oldStatement = st.getPgStatement(oldDbFull);
                 break;
             case BOTH:
-                depRes.addAlterStatements(st.getPgStatement(oldDbFull), st.getPgStatement(newDbFull));
+                oldStatement = st.getPgStatement(oldDbFull);
+                newStatement = st.getPgStatement(newDbFull);
                 break;
             case RIGHT:
-                depRes.addCreateStatements(st.getPgStatement(newDbFull));
+                newStatement = st.getPgStatement(newDbFull);
                 break;
             }
+            objects.add(new DbObject(st.getQualifiedName(), oldStatement, newStatement));
         }
-        depRes.recreateDrops();
-        depRes.removeExtraActions();
+        return DepcyResolver.resolve(oldDbFull, newDbFull,
+                additionalDepciesSource, additionalDepciesTarget, toRefresh, objects);
     }
 
     /**

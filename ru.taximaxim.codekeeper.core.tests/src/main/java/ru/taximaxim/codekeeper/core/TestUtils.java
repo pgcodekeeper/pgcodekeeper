@@ -198,8 +198,7 @@ public final class TestUtils {
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
-        String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
-                tree, oldDbFull, newDbFull, null, null);
+        String script = new PgDiff(args).diff(tree, oldDbFull, newDbFull, null, null, null);
 
         TestUtils.compareResult(script, userSelTemplate, clazz);
     }
