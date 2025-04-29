@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added rows count limit and logging in `insert` mode.
+
 ### Changed
 
 ### Fixed
