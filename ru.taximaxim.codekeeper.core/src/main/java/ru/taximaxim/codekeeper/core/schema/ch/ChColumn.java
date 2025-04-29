@@ -33,7 +33,6 @@ public final class ChColumn extends AbstractColumn {
 
     private String ttl;
     private final List<String> codecs = new ArrayList<>();
-    private boolean isAutoIncremental;
     private String option;
 
     public ChColumn(String name) {
@@ -52,11 +51,6 @@ public final class ChColumn extends AbstractColumn {
 
     public void addCodec(String codec) {
         codecs.add(codec);
-        resetHash();
-    }
-
-    public void setAutoIncremental(boolean isAutoIncremental) {
-        this.isAutoIncremental = isAutoIncremental;
         resetHash();
     }
 
