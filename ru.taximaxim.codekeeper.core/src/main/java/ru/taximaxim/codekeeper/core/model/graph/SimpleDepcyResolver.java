@@ -15,16 +15,13 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.model.graph;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.jgrapht.Graph;
-import org.jgrapht.event.TraversalListenerAdapter;
-import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
-import org.jgrapht.traverse.DepthFirstIterator;
 
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
@@ -46,54 +43,22 @@ public class SimpleDepcyResolver {
         this.newDepcyGraph = newDatabase == null ? null : new DepcyGraph(newDatabase, !isShowColumns);
     }
 
-    public Set<PgStatement> getCreateDepcies(PgStatement toCreate) {
+    public Collection<PgStatement> getCreateDepcies(PgStatement toCreate) {
         if (newDb == null) {
             throw new IllegalStateException("New database not setted");
         }
 
         PgStatement statement = toCreate.getTwin(newDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (newDepcyGraph.getGraph().containsVertex(statement)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    newDepcyGraph.getGraph(), statement);
-            dfi.addTraversalListener(new DepcyIterator(depcies));
-            while (dfi.hasNext()) {
-                dfi.next();
-            }
-        }
-
-        return depcies;
+        var dependencies = GraphUtils.forward(newDepcyGraph, statement);
+        dependencies.add(statement);
+        return dependencies;
     }
 
-    public Set<PgStatement> getDropDepcies(PgStatement toDrop) {
+    public Collection<PgStatement> getDropDepcies(PgStatement toDrop) {
         PgStatement statement = toDrop.getTwin(oldDb);
-        Set<PgStatement> depcies = new HashSet<>();
-        if (oldDepcyGraph.getReversedGraph().containsVertex(statement)) {
-            DepthFirstIterator<PgStatement, DefaultEdge> dfi = new DepthFirstIterator<>(
-                    oldDepcyGraph.getReversedGraph(), statement);
-            dfi.addTraversalListener(new DepcyIterator(depcies));
-            while (dfi.hasNext()) {
-                dfi.next();
-            }
-        }
-
-        return depcies;
-    }
-
-    private static class DepcyIterator extends TraversalListenerAdapter<PgStatement, DefaultEdge> {
-        private final Set<PgStatement> depcies;
-
-        public DepcyIterator(Set<PgStatement> depcies) {
-            this.depcies = depcies;
-        }
-
-        @Override
-        public void vertexFinished(VertexTraversalEvent<PgStatement> e) {
-            PgStatement statement = e.getVertex();
-            if (statement.getStatementType() != DbObjType.DATABASE) {
-                depcies.add(statement);
-            }
-        }
+        var dependents = GraphUtils.reverse(oldDepcyGraph, statement);
+        dependents.add(statement);
+        return dependents;
     }
 
     public Set<PgStatement> getConnectedTo(PgStatement entity) {
