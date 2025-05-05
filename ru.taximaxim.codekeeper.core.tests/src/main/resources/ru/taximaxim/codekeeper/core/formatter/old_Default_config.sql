@@ -3,7 +3,7 @@ CREATE FUNCTION public.fun2() RETURNS void LANGUAGE plpgsql AS $$ BEGIN
 select id, fio, _date, age, city FROM public.people WHERE age>20 GROUP BY city HAVING _date='12.12.1998'; 
 
 /*SELECT, SUBSELECT*/
-select to_jsonb(t) into param from (select pay as "sector",  act_id as "id", token as "token", _sign as "signature") t;  
+select to_jsonb(t) into param from (select pay as "🙈 🙉 🙊 😎 🤙 😎 🤙",  act_id as "id", token as "token", _sign as "signature") t;  
 
 /*SELECT, SUBSELECT, WHERE, operators*/
 select sum(account) into _sum_total from test.account where id in (select distinct public.test2 from public.test3 t where t.id = id  and t.acc<> acc  and t.sts = 'work') and price > 0.00 and id_currency = _currency;
@@ -27,7 +27,7 @@ exception when others then get stacked diagnostics _sqlstate = returned_sqlstate
 UPDATE public.test1 SET id_account = _id_account, id_phone = _id_phone, c_type = _type, c_address = _address WHERE id = _id;
 
 /*CASE WHEN*/
-case _user when 'one' then f ='1'; when 'two' then f ='2'; when 'three' then f='3'; when 'four' then f='4'; when 'five' then f='5'; else null; end case; 
+case _user when 'one' then f ='1'; when 'two' then f ='2'; when 'three' then f='3'; when 'four' then f='4'; when '🙈 🙉 🙊 😎 🤙 😎 🤙' then f='5'; else null; end case; 
 
 /*SELECT, SUBSELECT, UNION*/
 select array_agg(public.id) into id_total from (select id from public.events where _update> 30 and last_update > c_update and id_name = any(_name) UNION select id from public.events where _update > 5 and last_update > c__update  and c_name = any (name_5m)) alias_;

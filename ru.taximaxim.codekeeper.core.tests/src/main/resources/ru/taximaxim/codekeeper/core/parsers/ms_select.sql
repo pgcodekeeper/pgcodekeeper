@@ -1589,3 +1589,13 @@ GO
 
 SELECT TOP 100 PERCENT 1
 GO
+
+SELECT '😎 🤙 😎 🤙!!', ((OrderQty * UnitPrice) * (1.0 - UnitPriceDiscount)), ' 🙈 🙉 🙊 ',
+p.Name AS ProductName 
+FROM Production.Product AS p 
+INNER JOIN Sales.SalesOrderDetail AS sod
+ON p.ProductID = sod.ProductID 
+ORDER BY ProductName ASC;
+GO
+
+SELECT SERVERPROPERTY('😎 🤙 😎 🤙!! 🙈 🙉 🙊');

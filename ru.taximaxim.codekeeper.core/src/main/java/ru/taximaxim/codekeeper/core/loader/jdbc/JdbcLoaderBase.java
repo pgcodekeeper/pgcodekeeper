@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -47,8 +48,9 @@ import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
@@ -551,38 +553,42 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         }
     }
 
-    public <T> void submitAntlrTask(String sql,
-            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false, SQLParser.class);
+    public <T> void submitAntlrTask(String sql, Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, SQLParser> createFunction =
+                (list, location) -> AntlrParser.createSQLParser(sql, location, list);
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    public <T> void submitPlpgsqlTask(String sql,
-            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, true, SQLParser.class);
+    public <T> void submitPlpgsqlTask(String sql, Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, SQLParser> createFunction = (list, location) -> {
+            var parser = AntlrParser.createSQLParser(sql, location, list);
+            AntlrUtils.removeIntoStatements(parser);
+            return parser;
+        };
+
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    public <T> void submitMsAntlrTask(String sql,
-            Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
+    public <T> void submitMsAntlrTask(String sql, Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, TSQLParser> createFunction =
+                (list, location) -> AntlrParser.createTSQLParser(sql, location, list);
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    public <T> void submitChAntlrTask(String sql,
-            Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false, CHParser.class);
+    public <T> void submitChAntlrTask(String sql, Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, CHParser> createFunction =
+                (list, location) -> AntlrParser.createCHParser(sql, location, list);
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    private <T, P extends Parser> void submitAntlrTask(String sql,
-            Function<P, T> parserCtxReader, Consumer<T> finalizer,
-            boolean removeInto, Class<P> parserClass) {
+    private <T, P extends Parser> void submitAntlrTask(BiFunction<List<Object>, String, P> parserCreateFunction,
+            Function<P, T> parserCtxReader, Consumer<T> finalizer) {
         String location = getCurrentLocation();
         GenericColumn object = this.currentObject;
         List<Object> list = new ArrayList<>();
-        AntlrParser.submitAntlrTask(antlrTasks, () -> {
+        AntlrTaskManager.submit(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(monitor);
-            P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
-            if (removeInto) {
-                AntlrUtils.removeIntoStatements(p);
-            }
+            P p = parserCreateFunction.apply(list, location);
             return parserCtxReader.apply(p);
         }, t -> {
             errors.addAll(list);
@@ -607,7 +613,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     @Override
     protected void finishLoaders() throws InterruptedException, IOException {
         setCurrentOperation(Messages.JdbcLoaderBase_log_waiting_antlr_tasks);
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
     }
 
     private void debug(String message, Object argument) {

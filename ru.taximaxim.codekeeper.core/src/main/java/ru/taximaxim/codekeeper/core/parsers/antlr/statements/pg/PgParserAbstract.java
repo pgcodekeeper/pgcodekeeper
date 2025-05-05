@@ -21,13 +21,13 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.antlr.v4.runtime.CommonToken;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.All_opContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Boolean_valueContext;
@@ -183,11 +183,12 @@ public abstract class PgParserAbstract extends ParserAbstract<PgDatabase> {
             int start = text.indexOf('\'') + 1;
 
             Token t = string.getSymbol();
-            CommonToken copy = new CommonToken(t);
+            CodeUnitToken cuToken = (CodeUnitToken) t;
+            CodeUnitToken copy = new CodeUnitToken(cuToken);
 
-            copy.setStartIndex(t.getStartIndex() + start);
-            copy.setCharPositionInLine(t.getCharPositionInLine() + start);
-            copy.setStopIndex(t.getStopIndex() - 1);
+            copy.setCodeUnitStart(cuToken.getCodeUnitStart() + start);
+            copy.setCodeUnitPositionInLine(cuToken.getCodeUnitPositionInLine() + start);
+            copy.setCodeUnitStop(cuToken.getCodeUnitStop() - 1);
 
             return new Pair<>(PgDiffUtils.unquoteQuotedString(string.getText(), start), copy);
         }

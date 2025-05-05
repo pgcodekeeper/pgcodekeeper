@@ -160,3 +160,5 @@ CREATE ROLE regress_test_bypassrls WITH BYPASSRLS;
 ALTER ROLE regress_test_bypassrls WITH NOBYPASSRLS;
 CREATE ROLE regress_subscription_user LOGIN SUPERUSER;
 CREATE ROLE regress_subscription_user_dummy LOGIN NOSUPERUSER;
+CREATE ROLE "😎 🤙 !!";
+CREATE ROLE "🙈 🙉 🙊";

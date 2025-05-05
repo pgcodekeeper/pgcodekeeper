@@ -29,6 +29,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public abstract class StatementFormatter {
@@ -97,8 +98,9 @@ public abstract class StatementFormatter {
 
     public void format() {
         for (Token t : getTokens()) {
-            int tokenStart = defOffset + t.getStartIndex();
-            int length = t.getStopIndex() - t.getStartIndex() + 1;
+            CodeUnitToken cuToken = (CodeUnitToken) t;
+            int tokenStart = defOffset + cuToken.getCodeUnitStart();
+            int length = cuToken.getCodeUnitStop() - cuToken.getCodeUnitStart() + 1;
             int type = t.getType();
 
             if (isNewLineToken(type)) {

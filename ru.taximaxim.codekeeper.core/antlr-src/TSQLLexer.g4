@@ -2,9 +2,14 @@ lexer grammar TSQLLexer;
 
 options {
     caseInsensitive = true;
+    superClass = CodeUnitLexer;
 }
 
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
+@header {
+package ru.taximaxim.codekeeper.core.parsers.antlr.generated;
+
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitLexer;
+}
 
 // Basic keywords (from https://msdn.microsoft.com/en-us/library/ms189822.aspx)
 ADD: 'ADD';
@@ -942,28 +947,19 @@ LINE_COMMENT:       '--' ~[\r\n]* -> channel(HIDDEN);
 // TODO: ID can be not only Latin.
 LEFT_FIGURE_PAREN:  '{';
 RIGHT_FIGURE_PAREN: '}';
-DOUBLE_QUOTE_ID:  UnterminatedQuotedIdentifier '"'
-    // unquote so that we may always call getText() and not worry about quotes
-        {
-            String __tx = getText();
-            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
-        }
-    ;
+DOUBLE_QUOTE_ID:  UnterminatedQuotedIdentifier '"' {removeQuotes("\"\"", "\"");};
     
 SINGLE_QUOTE:       '\'';
-SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']'
-    // unquote so that we may always call getText() and not worry about quotes
-        {
-            String __tx = getText();
-            setText(__tx.substring(1, __tx.length() - 1).replace("]]", "]"));
-        }
-    ;
+SQUARE_BRACKET_ID:  UnterminatedSquareQuotedIdentifier ']' {removeQuotes("]]", "]");};
 
 // https://learn.microsoft.com/en-us/sql/t-sql/language-elements/variables-transact-sql?view=sql-server-ver16
 LOCAL_ID:           '@' ([A-Z_#$@0-9] | FullWidthLetter)+;
 DECIMAL:             DEC_DIGIT+;
 ID:                  ([A-Z_#] | FullWidthLetter) ([A-Z_#$@0-9] | FullWidthLetter)*;
-STRING:              'N'? '\'' (~'\'' | '\'\'')* '\'';
+STRING:              'N'? '\'' (~'\'' | '\'\'')* '\''
+    {
+        calculateOffset();
+    };
 BINARY:              '0' 'X' (HEX_DIGIT | BACKSLASH [\r]? [\n])*;
 FLOAT:               DEC_DOT_DEC;
 REAL:                (DECIMAL | DEC_DOT_DEC) ('E' [+-]? DEC_DIGIT+);
@@ -1051,7 +1047,11 @@ fragment FullWidthLetter options {
     ;
 
 BOM: '\ufeff';
-SPACE:              [ \t\r\n\u00A0]+    -> skip;
+SPACE:              [ \t\r\u00A0]+    -> skip;
+NEW_LINE : '\n'
+    {
+        resetLineOffset();
+    } -> skip;
 ZERO_LENGHT_SPACE: '\u200B'..'\u200F' -> skip;
 
 BAD

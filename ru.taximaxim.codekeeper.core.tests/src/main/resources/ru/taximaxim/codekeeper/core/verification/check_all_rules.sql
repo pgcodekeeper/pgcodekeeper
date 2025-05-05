@@ -51,13 +51,15 @@ BEGIN
     select *, 1 as first from public.t_files;
     select 2 as second, *, 1 as first from public.t_files;
     select 2 as second,*, 1 as first from public.t_files;
+    select 2 as "🙈 🙉 🙊",*, 1 as first from public.t_files;
 
     -- 5-6. check quote in column name, space after comma
     CREATE TEMP TABLE films (
         code                char(5),
         "title"            varchar(40),
         "did"                 integer,
-        CONSTRAINT code_title PRIMARY KEY(code,title)
+        "🙈 🙉 🙊"            integer
+        CONSTRAINT code_title PRIMARY KEY("🙈 🙉 🙊",title)
         );
     -- 7. check params count
     -- 8. check function body start

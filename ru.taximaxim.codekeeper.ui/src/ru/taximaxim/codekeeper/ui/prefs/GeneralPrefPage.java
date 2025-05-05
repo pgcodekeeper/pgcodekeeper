@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.EclipseIniWriter;
 import ru.taximaxim.codekeeper.ui.IntegerVerifyListener;
@@ -102,7 +103,7 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
 
         threadsTxt = new Text(getFieldEditorParent(), SWT.BORDER);
         threadsTxt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        threadsTxt.setText(Integer.toString(AntlrParser.getPoolSize()));
+        threadsTxt.setText(Integer.toString(AntlrTaskManager.getPoolSize()));
         threadsTxt.addVerifyListener(new IntegerVerifyListener());
 
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
@@ -130,7 +131,7 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
     public boolean performOk() {
         String newThreadVal = threadsTxt.getText();
 
-        if (AntlrParser.getPoolSize() != Integer.parseInt(newThreadVal)) {
+        if (AntlrTaskManager.getPoolSize() != Integer.parseInt(newThreadVal)) {
             var fullPropertyName = "-D" + Consts.POOL_SIZE + '='; //$NON-NLS-1$
             EclipseIniWriter.write(getShell(), fullPropertyName, newThreadVal,
                     Messages.GeneralPrefPage_number_of_thread);

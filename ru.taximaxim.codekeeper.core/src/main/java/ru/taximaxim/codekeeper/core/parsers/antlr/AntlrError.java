@@ -34,8 +34,8 @@ public class AntlrError extends ContextLocation {
 
     public AntlrError(Token tokenError, String location, int line, int charPositionInLine, String msg, ErrorTypes errorType) {
         this(location, line, charPositionInLine, msg,
-                (tokenError == null ? -1 : tokenError.getStartIndex()),
-                (tokenError == null ? -1 : tokenError.getStopIndex()),
+                (tokenError == null ? -1 : ((CodeUnitToken) tokenError).getCodeUnitStart()),
+                (tokenError == null ? -1 : ((CodeUnitToken) tokenError).getCodeUnitStop()),
                 (tokenError == null ? null : tokenError.getText()),
                 errorType);
     }

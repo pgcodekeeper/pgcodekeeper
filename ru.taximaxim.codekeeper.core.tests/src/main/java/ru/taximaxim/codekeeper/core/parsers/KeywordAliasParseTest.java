@@ -23,7 +23,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.sql.Keyword;
 import ru.taximaxim.codekeeper.core.sql.Keyword.LabelCategory;
 
@@ -44,8 +43,7 @@ class KeywordAliasParseTest {
         String select = sb.toString();
 
         List<Object> errors = new ArrayList<>();
-        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, select, labelCategory.name(), errors);
-        p.sql();
+        AntlrParser.createSQLParser(select, labelCategory.name(), errors).sql();
         Assertions.assertTrue(errors.isEmpty(), "KeywordAliasParseTest: " + labelCategory + " - ANTLR Error");
     }
 }

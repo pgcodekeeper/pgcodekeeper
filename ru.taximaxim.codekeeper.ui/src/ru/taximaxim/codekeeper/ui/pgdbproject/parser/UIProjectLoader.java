@@ -51,7 +51,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -161,7 +161,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
         loadSubdir(securityFolder.getFolder(WorkDirs.MS_SCHEMAS), db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
         addDboSchema(db);
 
         loadSubdir(securityFolder.getFolder(WorkDirs.MS_ROLES), db);
@@ -245,7 +245,7 @@ public final class UIProjectLoader extends ProjectLoader {
                 IProject proj = file.getProject();
                 loadSubdir(proj.getFolder(schemasPath), db);
                 // DBO schema check requires schema loads to finish first
-                AntlrParser.finishAntlr(antlrTasks);
+                AntlrTaskManager.finish(antlrTasks);
                 addDboSchema(db);
                 isLoaded = true;
             }
@@ -256,7 +256,7 @@ public final class UIProjectLoader extends ProjectLoader {
                 loadFile(file, mon, db);
             }
         }
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
 
         AbstractDatabase newDb = createDb(args);
 
@@ -368,7 +368,7 @@ public final class UIProjectLoader extends ProjectLoader {
                 throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
             }
         }
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
     }
 
     private void loadLibraries(AbstractDatabase db, PgDiffArguments arguments)
