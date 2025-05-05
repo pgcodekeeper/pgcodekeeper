@@ -26,13 +26,13 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Consts.FUNC_SIGN;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.FuncProcAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_actions_commonContext;
@@ -285,9 +285,8 @@ public final class CreateFunction extends PgParserAbstract {
         List<Object> err = new ArrayList<>();
 
         if ("SQL".equalsIgnoreCase(language)) {
-            AntlrParser.submitAntlrTask(antlrTasks,
-                    () -> AntlrParser.makeBasicParser(SQLParser.class, def,
-                            name, err, start).sql(),
+            AntlrTaskManager.submit(antlrTasks,
+                    () -> AntlrParser.createSQLParser(def, name, err, start).sql(),
                     funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
@@ -296,9 +295,9 @@ public final class CreateFunction extends PgParserAbstract {
                         db.addAnalysisLauncher(launcher);
                     });
         } else if ("PLPGSQL".equalsIgnoreCase(language)) {
-            AntlrParser.submitAntlrTask(antlrTasks,
+            AntlrTaskManager.submit(antlrTasks,
                     () -> {
-                        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, def, name, err, start);
+                        var parser = AntlrParser.createSQLParser(def, name, err, start);
                         AntlrUtils.removeIntoStatements(parser);
                         return parser.plpgsql_function();
                     },
@@ -315,7 +314,7 @@ public final class CreateFunction extends PgParserAbstract {
     private void analyzeFunctionBody(AbstractPgFunction function, Function_bodyContext body,
             List<Pair<String, GenericColumn>> funcArgs) {
         // finalizer-only task, defers analyzer until finalizing stage
-        AntlrParser.submitAntlrTask(antlrTasks, () -> body,
+        AntlrTaskManager.submit(antlrTasks, () -> body,
                 funcCtx -> {
                     FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
                             function, funcCtx, fileName, funcArgs);

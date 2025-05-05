@@ -39,7 +39,7 @@ import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
@@ -166,7 +166,7 @@ public class ProjectLoader extends DatabaseLoader {
 
         loadSubdir(securityFolder, WorkDirs.MS_SCHEMAS, db, this::checkIgnoreSchemaList);
         // DBO schema check requires schema loads to finish first
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
         addDboSchema(db);
 
         loadSubdir(securityFolder, WorkDirs.MS_ROLES, db);

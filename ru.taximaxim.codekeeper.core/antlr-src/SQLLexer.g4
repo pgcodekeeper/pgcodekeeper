@@ -20,12 +20,15 @@ lexer grammar SQLLexer;
 
 options {
     caseInsensitive = true;
+    superClass = CodeUnitLexer;
 }
 
 @header {
 package ru.taximaxim.codekeeper.core.parsers.antlr.generated;
+
 import java.util.ArrayDeque;
 import java.util.Deque;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitLexer;
 }
 
 @members {
@@ -957,22 +960,14 @@ DOLLAR_NUMBER: DOLLAR Integer;
 ===============================================================================
 */
 
-Identifier
-    : IdentifierStartChar IdentifierChar*
-    // always lowercase unquoted ids
-        { setText(getText().toLowerCase(java.util.Locale.ROOT)); }
-    ;
+Identifier: IdentifierStartChar IdentifierChar* {toLowerCase();}; // always lowercase unquoted ids
+
 fragment
-IdentifierStartChar options {
-       caseInsensitive = false;
-  } : // these are the valid identifier start characters below 0x7F
-    [a-zA-Z_]
-    | // these are the valid characters from 0x80 to 0xFF
-    [\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]
-    | // these are the letters above 0xFF which only need a single UTF-16 code unit
-    [\u0100-\uD7FF\uE000-\uFFFF] {Character.isLetter((char)_input.LA(-1))}?
-    | // letters which require multiple UTF-16 code units
-    [\uD800-\uDBFF] [\uDC00-\uDFFF] {Character.isLetter(Character.toCodePoint((char)_input.LA(-2), (char)_input.LA(-1)))}?
+IdentifierStartChar options {caseInsensitive = false;}
+    : [a-zA-Z_]                                                     // valid identifier start characters below 0x7F
+    | [\u00AA\u00B5\u00BA\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]   // valid characters from 0x80 to 0xFF
+    | [\u0100-\uD7FF\uE000-\uFFFF] {checkLetter()}?                 // letters above 0xFF which only need a single UTF-16 code unit
+    | [\uD800-\uDBFF] [\uDC00-\uDFFF] {checkEmoji()}?               // letters which require multiple UTF-16 code units
     ;
 
 fragment IdentifierChar: StrictIdentifierChar | '$' ;
@@ -985,14 +980,7 @@ UnicodeQuotedIdentifier: 'U&' QuotedIdentifier;
 * These are divided into four separate tokens, allowing distinction of valid quoted identifiers from invalid quoted
 * identifiers without sacrificing the ability of the lexer to reliably recover from lexical errors in the input.
 */
-QuotedIdentifier
-    : UnterminatedQuotedIdentifier '"'
-    // unquote so that we may always call getText() and not worry about quotes
-        {
-            String __tx = getText();
-            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
-        }
-    ;
+QuotedIdentifier: UnterminatedQuotedIdentifier '"' {removeQuotes("\"\"", "\"");};
 // This is a quoted identifier which only contains valid characters but is not terminated
 fragment UnterminatedQuotedIdentifier : '"' ( '""' | ~[\u0000"] )*;
 /*
@@ -1001,7 +989,7 @@ fragment UnterminatedQuotedIdentifier : '"' ( '""' | ~[\u0000"] )*;
 ===============================================================================
 */
 
-StringConstant: [ENXB]? SingleString (StringJoiner SingleString)*;
+StringConstant: [ENXB]? SingleString (StringJoiner SingleString)* {calculateOffset();};
 
 UnicodeEscapeStringConstant: 'U&' StringConstant;
 
@@ -1012,18 +1000,12 @@ fragment StringJoiner: ((Space | Tab | WhiteSpace | LineComment)* NewLine)+ (Spa
 fragment Control_Characters                  :   '\u0001' .. '\u0008' | '\u000B' | '\u000C' | '\u000E' .. '\u001F';
 fragment Extended_Control_Characters         :   '\u0080' .. '\u009F';
 
-fragment
-EXPONENT : 'E' ('+'|'-')? Digit+ ;
+fragment EXPONENT : 'E' ('+'|'-')? Digit+ ;
 
 // Dollar-quoted String Constants (§4.1.2.4)
-BeginDollarStringConstant
-    : '$' Tag? '$' {_tags.push(getText());} -> pushMode(DollarQuotedStringMode)
-    ;
+BeginDollarStringConstant: '$' Tag? '$' {_tags.push(getText());} -> pushMode(DollarQuotedStringMode);
 
-fragment
-Tag
-    : IdentifierStartChar StrictIdentifierChar*
-    ;
+fragment Tag: IdentifierStartChar StrictIdentifierChar*;
 
 /*
 ===============================================================================
@@ -1031,36 +1013,18 @@ Tag
 ===============================================================================
 */
 
-Space
-  : ' ' -> channel(HIDDEN)
-  ;
-
-WhiteSpace
-  : ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN)
-  ;
-
-NewLine
-    : ('\u000D' | '\u000D'? '\u000A') -> channel(HIDDEN)
-    ;
-
-Tab
-    : '\u0009' -> channel(HIDDEN)
-    ;
-
+Space: ' ' -> channel(HIDDEN);
+WhiteSpace: ( Control_Characters  | Extended_Control_Characters )+ -> channel(HIDDEN);
+NewLine: ('\u000D' | '\u000D'? '\u000A') {resetLineOffset();} -> channel(HIDDEN);
+Tab: '\u0009' -> channel(HIDDEN);
 BOM: '\ufeff';
-
-BAD
-  : .
-  ;
+BAD: .;
 
 mode DollarQuotedStringMode;
 Text_between_Dollar
-   : ~'$'+
-    | // this alternative improves the efficiency of handling $ characters within a dollar-quoted string which are
-    // not part of the ending tag.
-    '$' ~'$'*
+    : ~'$'+
+    // this alternative improves the efficiency of handling $ characters within a dollar-quoted string which are not part of the ending tag.
+    | '$' ~'$'*
     ;
 
-EndDollarStringConstant
-    : '$' Tag? '$' {getText().equals(_tags.peek())}? {_tags.pop();} -> popMode
-    ;
+EndDollarStringConstant: '$' Tag? '$' {getText().equals(_tags.peek())}? {_tags.pop();} -> popMode;

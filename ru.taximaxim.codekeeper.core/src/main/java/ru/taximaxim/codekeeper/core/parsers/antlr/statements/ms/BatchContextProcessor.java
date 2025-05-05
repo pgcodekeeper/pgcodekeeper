@@ -23,6 +23,7 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.SourceStatement;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -50,8 +51,8 @@ public abstract class BatchContextProcessor extends MsParserAbstract {
 
         List<Token> endTokens = stream.getHiddenTokensToRight(batchCtx.getStop().getTokenIndex());
         Token stopToken = endTokens != null ? endTokens.get(endTokens.size() - 1) : batchCtx.getStop();
-        int stop = stopToken.getStopIndex();
-        int start = getDelimiterCtx().getStop().getStopIndex() + 1;
+        int stop = ((CodeUnitToken) stopToken).getCodeUnitStop();
+        int start = ((CodeUnitToken) getDelimiterCtx().getStop()).getCodeUnitStop() + 1;
         String second = stopToken.getInputStream().getText(Interval.of(start, stop));
         st.setSecondPart(checkNewLines(second));
     }
@@ -65,9 +66,10 @@ public abstract class BatchContextProcessor extends MsParserAbstract {
         Token stop = stopTokens != null ? stopTokens.get(stopTokens.size() - 1) : ctx.getStop();
         String sql = getFullCtxText(start, stop);
         String action = act != null ? act : ctx.getStart().getText().toUpperCase(Locale.ROOT);
-        int offset = start.getStartIndex();
-        int lineNumber = start.getLine();
-        int charPositionInLine = start.getCharPositionInLine();
+        CodeUnitToken cuStart = (CodeUnitToken) start;
+        int offset = cuStart.getCodeUnitStart();
+        int lineNumber = cuStart.getLine();
+        int charPositionInLine = cuStart.getCodeUnitPositionInLine();
 
         PgObjLocation loc = new PgObjLocation.Builder()
                 .setAction(action)

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
 import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChAbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChValueExpr;
@@ -90,9 +91,10 @@ public abstract class AbstractAnalysisLauncher {
     }
 
     public void setOffset(Token codeStart) {
-        offset = codeStart.getStartIndex();
-        lineOffset = codeStart.getLine() - 1;
-        inLineOffset = codeStart.getCharPositionInLine();
+        CodeUnitToken cuToken = (CodeUnitToken) codeStart;
+        offset = cuToken.getCodeUnitStart();
+        lineOffset = cuToken.getLine() - 1;
+        inLineOffset = cuToken.getCodeUnitPositionInLine();
     }
 
     /**
@@ -136,7 +138,7 @@ public abstract class AbstractAnalysisLauncher {
             if (t != null) {
                 ErrorTypes errorType = ex instanceof MisplacedObjectException ? ErrorTypes.MISPLACEERROR : ErrorTypes.OTHER;
                 AntlrError err = new AntlrError(t, location, t.getLine(),
-                        t.getCharPositionInLine(), ex.getMessage(), errorType)
+                        ((CodeUnitToken) t).getCodeUnitPositionInLine(), ex.getMessage(), errorType)
                         .copyWithOffset(offset, lineOffset, inLineOffset);
                 LOG.warn(err.toString(), ex);
                 errors.add(err);

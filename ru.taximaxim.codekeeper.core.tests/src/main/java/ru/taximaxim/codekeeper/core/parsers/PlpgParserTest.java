@@ -32,9 +32,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 
 /**
  * Tests for plpgsql function bodies.
@@ -53,9 +52,7 @@ class PlpgParserTest {
         AtomicInteger ambiguity = new AtomicInteger();
 
         String sql = TestUtils.readResource(fileNameTemplate + FILES_POSTFIX.SQL, getClass());
-
-        SQLParser parser = AntlrParser
-                .makeBasicParser(SQLParser.class, sql, fileNameTemplate, errors);
+        var parser = AntlrParser.createSQLParser(sql, fileNameTemplate, errors);
         AntlrUtils.removeIntoStatements(parser);
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {

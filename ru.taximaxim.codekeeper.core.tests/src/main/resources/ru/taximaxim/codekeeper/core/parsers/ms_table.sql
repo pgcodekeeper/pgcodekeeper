@@ -547,3 +547,15 @@ CREATE TABLE RestoreDbTable (
 
 );
 GO
+
+CREATE TABLE [dbo].["😎 🤙 😎 🤙!!"](
+	[c1] [int] NULL,
+	[c2] [text] COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+
+CREATE TABLE [dbo].["🙈 🙉 🙊 🙈 🙉 🙊"](
+	[c1] [int] NULL,
+	[c2] [text] COLLATE SQL_Latin1_General_CP1_CI_AS NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO

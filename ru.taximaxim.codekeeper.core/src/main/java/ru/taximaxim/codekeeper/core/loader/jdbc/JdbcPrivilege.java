@@ -24,9 +24,6 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.PrivilegeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.PrivilegesContext;
 
 /**
  * Parser for aclItem arrays
@@ -127,10 +124,8 @@ final class JdbcPrivilege {
             return privileges;
         }
 
-        PrivilegesContext ctx = AntlrParser.makeBasicParser(PrivilegesParser.class, aclArrayAsString, "jdbc privileges")
-                .privileges();
-
-        for (PrivilegeContext acl : ctx.acls) {
+        var ctx = AntlrParser.createPrivilegesParser(aclArrayAsString).privileges();
+        for (var acl : ctx.acls) {
             String grantor;
             String grantee = "";
             if (acl.qgrantor != null) {
