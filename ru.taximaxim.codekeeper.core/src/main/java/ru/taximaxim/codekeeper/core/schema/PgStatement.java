@@ -396,7 +396,7 @@ public abstract class PgStatement implements IStatement, IHashable {
     public abstract void getCreationSQL(SQLScript script);
 
     public String getSQL(boolean isFormatted, ISettings settings) {
-        SQLScript script = new SQLScript(settings.copy());
+        SQLScript script = new SQLScript(settings);
         getCreationSQL(script);
         String sql = script.getFullScript();
         if (!isFormatted || !settings.isAutoFormatObjectCode()) {

@@ -118,7 +118,7 @@ public class PgDiff {
         }
 
         if (settings.getTimeZone() != null) {
-            script.addStatement("SET TIMEZONE TO " + PgDiffUtils.quoteString(settings.getTimeZone()),
+            script.addStatement("SET TIMEZONE TO " + PgDiffUtils.quoteString(settings.getTimeZone()), //$NON-NLS-1$
                     SQLActionType.BEGIN);
         }
 
@@ -127,14 +127,14 @@ public class PgDiff {
         }
 
         if (settings.isAddTransaction()) {
-            script.addStatement("START TRANSACTION", SQLActionType.BEGIN);
+            script.addStatement("START TRANSACTION", SQLActionType.BEGIN); //$NON-NLS-1$
         }
 
         script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN); //$NON-NLS-1$
         ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
 
         if (settings.isAddTransaction()) {
-            script.addStatement("COMMIT TRANSACTION", SQLActionType.END);
+            script.addStatement("COMMIT TRANSACTION", SQLActionType.END); //$NON-NLS-1$
         }
 
         for (String postFilePath : settings.getPostFilePath()) {
@@ -179,7 +179,7 @@ public class PgDiff {
         ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
 
         if (settings.isAddTransaction()) {
-            script.addStatement("COMMIT", SQLActionType.END);
+            script.addStatement("COMMIT", SQLActionType.END); //$NON-NLS-1$
         }
 
         return script.getFullScript();
@@ -193,7 +193,7 @@ public class PgDiff {
     }
 
     protected List<TreeElement> getSelectedElements(TreeElement root, IgnoreList ignoreList) {
-        return new TreeFlattener(settings)
+        return new TreeFlattener()
                 .onlySelected()
                 .useIgnoreList(ignoreList)
                 .onlyTypes(settings.getAllowedTypes())

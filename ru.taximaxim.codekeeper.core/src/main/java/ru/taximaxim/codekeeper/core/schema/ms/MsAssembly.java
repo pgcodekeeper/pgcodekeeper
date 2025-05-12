@@ -60,7 +60,7 @@ public final class MsAssembly extends PgStatement {
      * Returns assembly definition without full binaries
      */
     public String getPreview(ISettings settings) {
-        SQLScript script = new SQLScript(settings.copy());
+        SQLScript script = new SQLScript(settings);
         getAssemblyFullSQL(true, script);
         return script.getFullScript();
     }

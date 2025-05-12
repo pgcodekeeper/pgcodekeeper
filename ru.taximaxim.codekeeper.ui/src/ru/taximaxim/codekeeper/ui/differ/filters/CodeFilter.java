@@ -52,7 +52,7 @@ public final class CodeFilter extends AbstractFilter {
     }
 
     private String getScript(PgStatement st, ISettings settings) {
-        SQLScript script = new SQLScript(settings.copy());
+        SQLScript script = new SQLScript(settings);
         st.getCreationSQL(script);
         return script.getFullScript();
     }

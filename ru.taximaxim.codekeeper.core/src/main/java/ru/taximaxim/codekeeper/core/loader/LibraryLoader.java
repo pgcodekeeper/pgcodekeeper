@@ -187,8 +187,6 @@ public final class LibraryLoader extends DatabaseLoader {
         return getLibrary(dir.toString(), settings, isIgnorePriv);
     }
 
-
-
     private void readStatementsFromDirectory(Path f, AbstractDatabase db, ISettings settings)
             throws IOException, InterruptedException {
         try (Stream<Path> stream = Files.list(f)) {

@@ -137,8 +137,8 @@ public final class DiffPaneViewer extends Composite {
         }
     }
 
-    private String getSql(TreeElement el, boolean project, boolean format) {
-        String elSql = getElementSql(el, project, format);
+    private String getSql(TreeElement el, boolean isProject, boolean format) {
+        String elSql = getElementSql(el, isProject, format);
         if (elSql == null || availableElements == null || !el.hasChildren() || !el.isContainer()
                 || store.getBoolean(PG_EDIT_PREF.SHOW_FULL_CODE)) {
             return elSql;
@@ -147,7 +147,7 @@ public final class DiffPaneViewer extends Composite {
         StringBuilder sb = new StringBuilder(elSql);
         for (TreeElement child : el.getChildren()) {
             if (availableElements.contains(child)) {
-                String childSql = getElementSql(child, project, format);
+                String childSql = getElementSql(child, isProject, format);
                 if (childSql != null) {
                     sb.append(UIConsts._NL).append(UIConsts._NL).append(childSql);
                 }

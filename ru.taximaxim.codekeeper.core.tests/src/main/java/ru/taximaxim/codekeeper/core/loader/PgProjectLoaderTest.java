@@ -89,7 +89,7 @@ class PgProjectLoaderTest {
             IgnoreParser ignoreParser = new IgnoreParser(ignoreList);
             ignoreParser.parse(listFile);
 
-            List<TreeElement> selected = new TreeFlattener(settings)
+            List<TreeElement> selected = new TreeFlattener()
                     .onlySelected()
                     .useIgnoreList(ignoreList)
                     .onlyTypes(settings.getAllowedTypes())

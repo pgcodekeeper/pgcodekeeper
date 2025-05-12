@@ -58,8 +58,8 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class CommitDialog extends TrayDialog {
 
@@ -129,7 +129,7 @@ public final class CommitDialog extends TrayDialog {
         dtvTop.setLayoutData(gd);
 
         dtvTop.setAutoExpand(true);
-        List<TreeElement> result = new TreeFlattener(settings).onlySelected()
+        List<TreeElement> result = new TreeFlattener().onlySelected()
                 .flatten(diffTree);
         dtvTop.setInputCollection(result, dbProject, dbRemote, Collections.emptySet());
 
@@ -309,7 +309,7 @@ public final class CommitDialog extends TrayDialog {
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
 
             try {
-                Collection<TreeElement> checked = new TreeFlattener(new UISettings(proj.getProject(), null))
+                Collection<TreeElement> checked = new TreeFlattener()
                         .onlySelected()
                         .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
                         .flatten(diffTree);

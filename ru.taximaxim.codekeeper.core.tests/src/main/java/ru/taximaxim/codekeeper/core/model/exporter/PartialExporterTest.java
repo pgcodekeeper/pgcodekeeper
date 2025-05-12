@@ -140,7 +140,7 @@ public class PartialExporterTest {
 
             // get new db with selected changes
             info.setUserSelection(tree);
-            Collection<TreeElement> list = new TreeFlattener(settings)
+            Collection<TreeElement> list = new TreeFlattener()
                     .onlySelected()
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(tree);

@@ -73,7 +73,7 @@ public abstract class AbstractPgTable extends AbstractTable {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
 
-        SQLScript temp = new SQLScript(script.getSettings().copy());
+        SQLScript temp = new SQLScript(script.getSettings());
 
         appendName(sbSQL, script.getSettings());
         appendColumns(sbSQL, temp);

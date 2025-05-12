@@ -139,8 +139,8 @@ import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.ContainerFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
@@ -876,7 +876,7 @@ public class DiffTableViewer extends Composite {
         } else {
             AbstractDatabase source = dbProject.getDbObject();
             AbstractDatabase target = dbRemote.getDbObject();
-            selected = new TreeFlattener(settings)
+            selected = new TreeFlattener()
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
                     .flatten(diffTree);

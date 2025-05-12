@@ -28,7 +28,6 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject.AddStatus;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class TreeFlattener {
 
@@ -41,14 +40,9 @@ public final class TreeFlattener {
     private IgnoreList ignoreList;
     private String[] dbNames;
     private Collection<DbObjType> onlyTypes;
-    private final ISettings settings;
 
     private final List<TreeElement> result = new ArrayList<>();
     private final Deque<TreeElement> addSubtreeRoots = new ArrayDeque<>();
-
-    public TreeFlattener(ISettings settings) {
-        this.settings = settings;
-    }
 
     /**
      * Sets {@link #onlySelected} setting true.
