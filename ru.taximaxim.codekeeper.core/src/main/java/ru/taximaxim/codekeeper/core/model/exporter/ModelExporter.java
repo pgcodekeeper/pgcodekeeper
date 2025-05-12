@@ -24,13 +24,13 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.text.MessageFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -43,12 +43,13 @@ import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
 import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 /**
  * Exports AbstractDatabase model as a directory tree with sql files with objects' code as leaves.<br>
@@ -65,7 +66,7 @@ public class ModelExporter {
     private static final Logger LOG = LoggerFactory.getLogger(ModelExporter.class);
 
     public static final String GROUP_DELIMITER =
-            "\n\n--------------------------------------------------------------------------------\n\n";
+            "\n\n--------------------------------------------------------------------------------\n\n"; //$NON-NLS-1$
 
     /**
      * Objects of the export directory
@@ -130,23 +131,22 @@ public class ModelExporter {
         Map<Path, StringBuilder> dumps = new HashMap<>();
         newDb.getDescendants().sorted(ExportTableOrder.INSTANCE).forEach(st -> dumpStatement(st, dumps));
 
-        for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
-            dumpSQL(dump.getValue(), dump.getKey());
-        }
-
-        writeProjVersion(outDir.resolve(Consts.FILENAME_WORKING_DIR_MARKER));
+        writeDumps(dumps);
     }
 
     private void createOutDir() throws IOException {
+        LOG.info(Messages.ModelExporter_log_create_dirs);
         if (Files.exists(outDir)) {
             if (!Files.isDirectory(outDir)) {
+                LOG.error(Messages.ModelExporter_log_create_dir_err_no_dir, outDir);
                 throw new NotDirectoryException(outDir.toString());
             }
 
             for (String subdirName : WorkDirs.getDirectoryNames(databaseType)) {
                 if (Files.exists(outDir.resolve(subdirName))) {
-                    throw new DirectoryException(
-                            MessageFormat.format("Output directory already contains {0} directory.", subdirName));
+                    String msg = Messages.ModelExporter_log_create_dir_err_contains_dir;
+                    LOG.error(msg, subdirName);
+                    throw new DirectoryException(MessageFormat.format(msg, subdirName));
                 }
             }
         } else {
@@ -156,11 +156,13 @@ public class ModelExporter {
 
     public void exportPartial() throws IOException, PgCodekeeperException {
         if (oldDb == null) {
-            throw new PgCodekeeperException("Old database should not be null for partial export.");
+            String msg = Messages.ModelExporter_log_old_database_not_null;
+            LOG.error(msg);
+            throw new PgCodekeeperException(msg);
         }
         if (Files.notExists(outDir) || !Files.isDirectory(outDir)) {
             throw new DirectoryException(MessageFormat.format(
-                    "Output directory does not exist: {0}",
+                    Messages.ModelExporter_log_output_dir_no_exist_err,
                     outDir.toAbsolutePath()));
         }
 
@@ -199,12 +201,30 @@ public class ModelExporter {
         }
 
         Map<Path, StringBuilder> dumps = new HashMap<>();
-        list.stream()
-        .filter(st -> paths.contains(getRelativeFilePath(st)))
+        list.stream().filter(st -> paths.contains(getRelativeFilePath(st)))
         .sorted(ExportTableOrder.INSTANCE)
         .forEach(st -> dumpStatement(st, dumps));
 
-        for (Entry<Path, StringBuilder> dump : dumps.entrySet()) {
+        writeDumps(dumps);
+    }
+
+    public void exportProject() throws IOException {
+        createOutDir();
+
+        List<PgStatement> list = new ArrayList<>();
+        changeList.stream().filter(el -> el.getType() != DbObjType.DATABASE)
+        .forEach(el -> list.add(el.getPgStatement(newDb)));
+
+        Map<Path, StringBuilder> dumps = new HashMap<>();
+        list.stream()
+        .sorted(ExportTableOrder.INSTANCE)
+        .forEach(st -> dumpStatement(st, dumps));
+
+        writeDumps(dumps);
+    }
+
+    private void writeDumps(Map<Path, StringBuilder> dumps) throws IOException {
+        for (var dump : dumps.entrySet()) {
             dumpSQL(dump.getValue(), dump.getKey());
         }
 
@@ -246,7 +266,7 @@ public class ModelExporter {
         Path toDelete = outDir.resolve(getRelativeFilePath(st));
 
         if (Files.deleteIfExists(toDelete)) {
-            LOG.info("Deleted file {} for object {} {}", toDelete, st.getStatementType(), st.getName());
+            LOG.info(Messages.ModelExporter_log_delete_file, toDelete, st.getStatementType(), st.getName());
         }
     }
 
@@ -272,7 +292,7 @@ public class ModelExporter {
         if (st.isSubElement()) {
             st = st.getParent();
         }
-        Path path = WorkDirs.getRelativeFolderPath(st, Paths.get(""));
+        Path path = WorkDirs.getRelativeFolderPath(st, Paths.get("")); //$NON-NLS-1$
 
         String fileName = getExportedFilenameSql(getExportedFilename(st));
         if (st.getDbType() == DatabaseType.MS && st instanceof ISearchPath sp) {
@@ -286,9 +306,9 @@ public class ModelExporter {
 /**
  * Sets fixed order for table subelements export as historically defined by DiffTree.create().
  */
-class ExportTableOrder implements Comparator<PgStatement> {
+final class ExportTableOrder implements Comparator<PgStatement> {
 
-    public static final ExportTableOrder INSTANCE = new ExportTableOrder();
+    static final ExportTableOrder INSTANCE = new ExportTableOrder();
 
     @Override
     public int compare(PgStatement o1, PgStatement o2) {

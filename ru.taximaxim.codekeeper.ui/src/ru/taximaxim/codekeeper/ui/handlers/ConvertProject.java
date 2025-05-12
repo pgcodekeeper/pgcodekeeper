@@ -47,19 +47,19 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class ConvertProject extends AbstractHandler {
+public final class ConvertProject extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
         Object obj = selection.getFirstElement();
 
-        if (!(obj instanceof IProject)) {
+        if (!(obj instanceof IProject project)) {
             return null;
         }
 
-        IProject project = (IProject) obj;
         Shell shell = HandlerUtil.getActiveShell(event);
 
         var dialog = new ConvertProjectDialog(shell);
@@ -74,7 +74,7 @@ public class ConvertProject extends AbstractHandler {
         try {
             if (createMarker(shell, Paths.get(project.getLocationURI()), dbType)) {
                 IProjectDescription description = project.getDescription();
-                description.setNatureIds(OpenProjectUtils.getProjectNatures(dbType));
+                description.setNatureIds(ProjectUtils.getProjectNatures(dbType));
                 project.setDescription(description, null);
             }
         } catch (CoreException | IOException e) {

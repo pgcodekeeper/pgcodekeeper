@@ -24,7 +24,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.provider.Arguments;
 
 @TestInstance(Lifecycle.PER_CLASS)
-class TimePgDataTest extends AbstractPgTimeDateDataTest<TimePgData, LocalTime> {
+final class TimePgDataTest extends AbstractPgTimeDateDataTest<TimeData, LocalTime> {
 
     public TimePgDataTest() {
         super(LocalTime.of(0, 0), LocalTime.of(0, 1), LocalTime.of(5, 30));
@@ -32,16 +32,16 @@ class TimePgDataTest extends AbstractPgTimeDateDataTest<TimePgData, LocalTime> {
 
     @BeforeEach
     void setUp() {
-        data = new TimePgData();
+        data = new TimeData();
         setDefaultValues();
     }
 
     @Override
     protected Stream<Arguments> generateAsStringTestData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, "'00:00'"),
-          Arguments.of(PgDataGenerator.INCREMENT, "'00:00'")
-        );
+                Arguments.of(DataGenerator.CONSTANT, "'00:00'"),
+                Arguments.of(DataGenerator.INCREMENT, "'00:00'")
+                );
     }
 
     @Override

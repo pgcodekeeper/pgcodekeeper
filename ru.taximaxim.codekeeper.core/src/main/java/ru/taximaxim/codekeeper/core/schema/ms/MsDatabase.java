@@ -55,9 +55,9 @@ public final class MsDatabase extends AbstractDatabase {
     public PgStatement getChild(String name, DbObjType type) {
         return switch (type) {
             case SCHEMA -> getSchema(name);
-            case ASSEMBLY -> assemblies.get(name);
-            case ROLE -> roles.get(name);
-            case USER -> users.get(name);
+            case ASSEMBLY -> getAssembly(name);
+            case ROLE -> getRole(name);
+            case USER -> getUser(name);
             default -> null;
         };
     }
@@ -92,7 +92,7 @@ public final class MsDatabase extends AbstractDatabase {
      * @return found assembly or null
      */
     public MsAssembly getAssembly(final String name) {
-        return assemblies.get(name);
+        return getChildByName(assemblies, name);
     }
 
     /**
@@ -104,7 +104,7 @@ public final class MsDatabase extends AbstractDatabase {
      * @return found role or null
      */
     public MsRole getRole(final String name) {
-        return roles.get(name);
+        return getChildByName(roles, name);
     }
 
     /**
@@ -116,7 +116,7 @@ public final class MsDatabase extends AbstractDatabase {
      * @return found user or null
      */
     public MsUser getUser(final String name) {
-        return users.get(name);
+        return getChildByName(users, name);
     }
 
     /**
@@ -196,5 +196,4 @@ public final class MsDatabase extends AbstractDatabase {
         var cont = s.getStatementContainer(gc.table);
         return cont != null ? cont.getChild(gc.column, type) : null;
     }
-
 }

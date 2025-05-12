@@ -41,6 +41,8 @@ import org.jgrapht.event.VertexTraversalEvent;
 import org.jgrapht.graph.DefaultEdge;
 import org.jgrapht.graph.SimpleDirectedGraph;
 import org.jgrapht.traverse.DepthFirstIterator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
@@ -48,6 +50,7 @@ import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -60,6 +63,8 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 
 public final class InsertWriter {
+
+    private static final Logger LOG = LoggerFactory.getLogger(InsertWriter.class);
 
     private static final String GEOM_FROM_TEXT_MS_FUNC = "{0}::STGeomFromText(''{1}'', 4326)";
     private static final String GEOM_FROM_TEXT_PG_FUNC = "ST_GeomFromText(''{0}'', 4326)";
@@ -247,6 +252,7 @@ public final class InsertWriter {
             var filter = map.get(FILTER_KEY).toString();
 
             var select = generateSelect(name, filter);
+            LOG.info(select);
 
             // check this select was queried
             if (selects.containsKey(select)) {
@@ -267,6 +273,12 @@ public final class InsertWriter {
                     tempData.add(getData(values, name, parent));
                 }
             }
+
+            var rowCount = tempData.size();
+            if (1_000 == rowCount) {
+                throw new IllegalArgumentException(Messages.InsertWriter_select_size_error_message);
+            }
+            LOG.info(Messages.InsertWriter_select_size_info_message, rowCount);
 
             // store data to cache
             selects.put(select, tempData);
@@ -310,6 +322,9 @@ public final class InsertWriter {
     private String generateSelect(String name, String filter) {
         var sb = new StringBuilder();
         sb.append("SELECT ");
+        if (DatabaseType.MS == dbType) {
+            sb.append("TOP 1000 ");
+        }
         for (var col : cols.get(name)) {
             var colName = col.getName();
             var colType = col.getType();
@@ -325,7 +340,11 @@ public final class InsertWriter {
             sb.append(", ");
         }
         sb.setLength(sb.length() - 2);
-        sb.append(" FROM ").append(name).append(" WHERE ").append(filter).append(';');
+        sb.append("\nFROM ").append(name).append("\nWHERE ").append(filter);
+        if (DatabaseType.PG == dbType) {
+            sb.append("\nLIMIT 1000");
+        }
+        sb.append(';');
         return sb.toString();
     }
 

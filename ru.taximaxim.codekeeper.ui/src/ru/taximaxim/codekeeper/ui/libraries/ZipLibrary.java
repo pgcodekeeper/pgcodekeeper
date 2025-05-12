@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import org.eclipse.swt.graphics.Image;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 

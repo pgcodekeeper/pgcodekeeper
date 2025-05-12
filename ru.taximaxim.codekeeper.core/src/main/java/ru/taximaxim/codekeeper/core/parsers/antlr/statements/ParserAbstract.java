@@ -139,7 +139,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
     }
 
     public static String getFullCtxText(Token start, Token end) {
-        if (start.getStartIndex() > end.getStopIndex()) {
+        if (start.getStartIndex() > end.getStopIndex()) { // safe to use code point methods
             // broken ctx
             return "";
         }

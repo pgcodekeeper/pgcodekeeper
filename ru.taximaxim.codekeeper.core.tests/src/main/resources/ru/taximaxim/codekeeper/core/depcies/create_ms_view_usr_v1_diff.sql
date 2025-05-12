@@ -1,0 +1,15 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[Ms table 2](
+	[Col1] [int] NULL
+) ON [PRIMARY]
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE VIEW [dbo].[v1] as select * from [dbo].[ms table 2]
+GO

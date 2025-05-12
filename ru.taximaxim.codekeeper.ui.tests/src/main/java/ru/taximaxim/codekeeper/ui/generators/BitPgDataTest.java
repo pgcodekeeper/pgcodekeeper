@@ -16,37 +16,37 @@
 package ru.taximaxim.codekeeper.ui.generators;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.verify;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.mockito.MockitoAnnotations;
-import org.mockito.Spy;
 
-class BitPgDataTest {
-    @Spy
-    BitPgData data;
+final class BitPgDataTest {
+
+    BitData data;
+    private String constant = "B'01'";
+    private static final String VALUE_REGEX = "B'[01]+'";
 
     @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    void setData() {
+        data = new BitData(DataType.BIT, constant);
     }
 
     @Test
     void testGenerateValueConstant() {
-        data.setStart("B'01'");
-        data.setGenerator(PgDataGenerator.CONSTANT);
+        data.setStart(constant);
+        data.setGenerator(DataGenerator.CONSTANT);
 
         String result = data.generateValue();
 
-        assertEquals("B'01'", result);
+        assertEquals(constant, result);
     }
 
     @Test
     void testGenerateValueIncrement() {
-        data.setGenerator(PgDataGenerator.INCREMENT);
+        data.setGenerator(DataGenerator.INCREMENT);
 
         String result = data.generateValue();
 
@@ -55,7 +55,7 @@ class BitPgDataTest {
 
     @Test
     void testGenerateValueDefault() {
-        data.setGenerator(PgDataGenerator.ANY);
+        data.setGenerator(DataGenerator.ANY);
 
         String result = data.generateValue();
 
@@ -64,11 +64,13 @@ class BitPgDataTest {
 
     @Test
     void testGenerateValueRandom() {
-        data.setGenerator(PgDataGenerator.RANDOM);
+        data.setGenerator(DataGenerator.RANDOM);
         data.setNotNull(true);
         data.generateValue();
 
-        verify(data).generateRandom();
+        String result = data.generateValue();
+
+        assertTrue(result.matches(VALUE_REGEX));
     }
 
     @ParameterizedTest
@@ -84,4 +86,5 @@ class BitPgDataTest {
 
         assertEquals(expected, result);
     }
+
 }

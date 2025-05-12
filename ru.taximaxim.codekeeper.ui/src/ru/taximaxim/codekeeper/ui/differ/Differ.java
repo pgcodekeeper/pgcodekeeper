@@ -153,20 +153,20 @@ public class Differ implements IRunnableWithProgress {
             // forceUnixNewLines has no effect on diff operaiton, just pass true
             PgDiffArguments args =
                     DbSource.getPgDiffArgs(Consts.UTF_8, timezone, true, dbType, proj, oneTimePrefs);
-            diffDirect = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
+            diffDirect = new PgDiff(args).diff(
                     root,
                     sourceDbFull, targetDbFull,
-                    additionalDepciesSource, additionalDepciesTarget);
+                    additionalDepciesSource, additionalDepciesTarget, null);
 
             if (needTwoWay) {
                 Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
                 + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                diffReverse = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
+                diffReverse = new PgDiff(args).diff(
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
-                        additionalDepciesTarget, additionalDepciesSource);
+                        additionalDepciesTarget, additionalDepciesSource, null);
             }
         } catch (IOException e) {
             throw new InvocationTargetException(e, e.getLocalizedMessage());

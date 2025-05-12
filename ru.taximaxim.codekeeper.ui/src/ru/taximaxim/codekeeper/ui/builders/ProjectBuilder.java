@@ -31,10 +31,9 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator;
 
 public class ProjectBuilder extends IncrementalProjectBuilder {
@@ -43,8 +42,8 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
     protected IProject[] build(int kind, Map<String, String> args,
             IProgressMonitor monitor) throws CoreException {
         IProject proj = getProject();
-        if (!OpenProjectUtils.isPgCodeKeeperProject(proj) ||
-                !OpenProjectUtils.checkVersion(proj, new StringBuilder())) {
+        if (!ProjectUtils.isPgCodeKeeperProject(proj) ||
+                !ProjectUtils.checkVersion(proj, new StringBuilder())) {
             return null;
         }
 
@@ -55,7 +54,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             case IncrementalProjectBuilder.AUTO_BUILD:
             case IncrementalProjectBuilder.INCREMENTAL_BUILD:
                 IResourceDelta delta = getDelta(proj);
-                buildIncrement(delta, parser, monitor, OpenProjectUtils.getDatabaseType(proj));
+                buildIncrement(delta, parser, monitor, ProjectUtils.getDatabaseType(proj));
                 break;
 
             case IncrementalProjectBuilder.FULL_BUILD:
@@ -90,7 +89,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (UIProjectLoader.isInProject(d, dbType)) {
+            if (ProjectUtils.isInProject(d, dbType)) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     int kind = d.getKind();

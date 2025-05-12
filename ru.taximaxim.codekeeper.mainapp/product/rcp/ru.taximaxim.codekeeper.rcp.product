@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.rcp.product" id="ru.taximaxim.codekeeper.mainapp.product" application="org.eclipse.ui.ide.workbench" version="10.9.0.qualifier" useFeatures="true" includeLaunchers="true">
+<product name="pgCodeKeeper" uid="ru.taximaxim.codekeeper.rcp.product" id="ru.taximaxim.codekeeper.mainapp.product" application="org.eclipse.ui.ide.workbench" version="10.12.0.qualifier" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=1.8
+      <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
+      <vmArgs>-Dosgi.requiredJavaVersion=17
 -XX:+UseG1GC
 -Xms512m
 -Xmx2048m
@@ -231,7 +232,7 @@
    </configurations>
 
    <repositories>
-      <repository location="https://download.eclipse.org/releases/latest/" enabled="true" />
+      <repository location="https://download.eclipse.org/releases/2024-12/" enabled="true" />
       <repository location="https://pgcodekeeper.org/update/" enabled="true" />
       <repository location="https://download.eclipse.org/egit/updates/" enabled="true" />
    </repositories>

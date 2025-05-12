@@ -9,15 +9,47 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added rows count limit and logging in `insert` mode.
 - Added the ability to change the state of the cloned parent triggers in partition tables.
 
 ### Changed
 
 ### Fixed
 
-- Fixed parser errors for PostgreSQL.
-
 ### Removed
+
+## [10.12.0] - 2025-04-15
+
+### Added
+
+- Added pgCodeKeeper build for Mac OS.
+- The ability to use a custom logback.xml configuration file for logging in the CLI version has been added. Additionally, logging of main operations has been added to the log file.
+
+### Fixed
+
+- Fixed a bug with the case of names of objects in MS SQL.
+- Fixed the error of incorrect reading of privileges with user names from the database.
+- Fixed loading of a scheme from a directory in the diff wizard.
+
+## [10.11.0] - 2025-04-01
+
+### Added
+
+- Added the ability to generate test table data for MS SQL and ClickHouse.
+
+### Changed
+
+- Changed code generation when adding new privileges in PostgreSQL.
+
+## [10.10.0] - 2025-03-18
+
+### Added
+
+- The ability to save a project using ignore lists has been added in the CLI version in `--parse` mode.
+
+### Fixed
+
+- Fixed parser errors for PostgreSQL.
 
 ## [10.9.0] - 2025-03-04
 
@@ -2215,7 +2247,10 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...HEAD
+[10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
+[10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
+[10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0
 [10.9.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.8.0...v10.9.0
 [10.8.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.1...v10.8.0
 [10.7.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.7.0...v10.7.1

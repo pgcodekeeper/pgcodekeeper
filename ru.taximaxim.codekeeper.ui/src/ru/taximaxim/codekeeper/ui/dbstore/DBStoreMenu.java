@@ -39,12 +39,10 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class DBStoreMenu {
-
-    private static final int MAX_FILES_HISTORY = 10;
+public final class DBStoreMenu {
 
     private final boolean useFileSources;
     private final boolean useDirSources;
@@ -69,9 +67,10 @@ public class DBStoreMenu {
         if (useDirSources) {
             // load projects in ctor for now, Workspace listener and dynamic list may be added later
             IProject[] projs = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-            for (int i = 0; i < MAX_FILES_HISTORY && i < projs.length; ++i) {
-                if (OpenProjectUtils.isPgCodeKeeperProject(projs[i])) {
-                    this.projects.add(projs[i].getLocation().toFile());
+            for (var proj : projs) {
+                if (ProjectUtils.isPgCodeKeeperProject(proj)
+                        && ProjectUtils.getDatabaseType(proj) == dbType) {
+                    projects.add(proj.getLocation().toFile());
                 }
             }
         }
@@ -151,9 +150,9 @@ public class DBStoreMenu {
 
                 @Override
                 public void run() {
-                    File dumpFile = AbstractStorePicker.chooseDbSource(prefStore, shell, false);
-                    if (dumpFile != null) {
-                        notifyListeners(dumpFile);
+                    File dir = AbstractStorePicker.chooseDbSource(prefStore, shell, true);
+                    if (dir != null) {
+                        notifyListeners(dir);
                     }
                 }
             });

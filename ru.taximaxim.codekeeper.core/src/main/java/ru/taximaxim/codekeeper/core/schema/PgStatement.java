@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -84,6 +85,10 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     public boolean canDrop() {
         return true;
+    }
+
+    public boolean isSubElement() {
+        return false;
     }
 
     public boolean isOwned() {
@@ -292,8 +297,22 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected void alterPrivileges(PgStatement newObj, SQLScript script) {
-        // first drop (revoke) missing grants
         Set<PgPrivilege> newPrivileges = newObj.privileges;
+
+        // if new object has all privileges from old object and if it doesn't have
+        // new revokes, then we can just grant difference between new and old privileges
+        if (getDbType() == DatabaseType.PG && newPrivileges.containsAll(privileges)
+                && Objects.equals(owner, newObj.owner)) {
+            Set<PgPrivilege> diff = new LinkedHashSet<>(newPrivileges);
+            diff.removeAll(privileges);
+            boolean isGrantOnly = diff.stream().noneMatch(PgPrivilege::isRevoke);
+            if (isGrantOnly) {
+                PgPrivilege.appendPrivileges(diff, script);
+                return;
+            }
+        }
+
+        // first drop (revoke) missing grants
         for (PgPrivilege privilege : privileges) {
             if (!privilege.isRevoke() && !newPrivileges.contains(privilege)) {
                 script.addStatement(privilege.getDropSQL());
@@ -675,13 +694,18 @@ public abstract class PgStatement implements IStatement, IHashable {
     }
 
     protected <T extends PgStatement> void addUnique(Map<String, T> map, T newSt) {
-        PgStatement found = map.putIfAbsent(newSt.getName(), newSt);
+        PgStatement found = map.putIfAbsent(getNameInCorrectCase(newSt.getName()), newSt);
         assertUnique(found, newSt);
         newSt.setParent(this);
         resetHash();
     }
 
-    public boolean isSubElement() {
-        return false;
+    protected <T extends PgStatement> T getChildByName(Map<String, T> map, String name) {
+        String lowerCaseName = getNameInCorrectCase(name);
+        return map.get(lowerCaseName);
+    }
+
+    private String getNameInCorrectCase(String name) {
+        return DatabaseType.MS == getDbType() ? name.toLowerCase(Locale.ROOT) : name;
     }
 }

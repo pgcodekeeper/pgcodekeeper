@@ -27,10 +27,10 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_actions_commonContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
@@ -127,7 +127,7 @@ public class VerificationFunction implements IVerification {
         }
 
         Pair<String, Token> pair = PgParserAbstract.unquoteQuotedString(definitionCtx);
-        SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, pair.getFirst(), fileName, errors);
+        var parser = AntlrParser.createSQLParser(pair.getFirst(), fileName, errors);
 
         ParserRuleContext contex;
         if ("SQL".equalsIgnoreCase(language)) { //$NON-NLS-1$
@@ -146,8 +146,7 @@ public class VerificationFunction implements IVerification {
     private void verifyIndents() {
         Function_bodyContext body = ctx.function_body();
         if (body != null) {
-            SQLParser parser = AntlrParser.makeBasicParser(SQLParser.class, ParserAbstract.getFullCtxText(createCtx),
-                    fileName, errors);
+            var parser = AntlrParser.createSQLParser(ParserAbstract.getFullCtxText(createCtx), fileName, errors);
             parser.sql();
             CommonTokenStream tokenStream = (CommonTokenStream) parser.getTokenStream();
 
@@ -181,7 +180,7 @@ public class VerificationFunction implements IVerification {
     }
 
     private void addError(String msg, Token token) {
-        addError(msg, token.getLine(), token.getCharPositionInLine());
+        addError(msg, token.getLine(), ((CodeUnitToken) token).getCodeUnitPositionInLine());
     }
 
     private void addError(String msg, int line, int position) {

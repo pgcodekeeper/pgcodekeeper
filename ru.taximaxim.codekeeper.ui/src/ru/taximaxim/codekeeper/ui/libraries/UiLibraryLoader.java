@@ -32,9 +32,9 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
 import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class UiLibraryLoader {

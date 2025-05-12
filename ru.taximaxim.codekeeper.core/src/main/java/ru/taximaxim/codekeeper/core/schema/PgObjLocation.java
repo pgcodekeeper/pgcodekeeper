@@ -14,19 +14,16 @@
  * limitations under the License.
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
-
-import java.util.List;
 import java.util.Objects;
 
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
 
 import ru.taximaxim.codekeeper.core.ContextLocation;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg.PgParserAbstract;
 
 public class PgObjLocation extends ContextLocation {
@@ -167,8 +164,8 @@ public class PgObjLocation extends ContextLocation {
         if (objName.indexOf('(') == -1) {
             return objName;
         }
-        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, objName, "function signature");
-        List<ParserRuleContext> ids = PgParserAbstract.getIdentifiers(p.function_args_parser().schema_qualified_name());
+        var p = AntlrParser.createSQLParser(objName, "function signature", null);
+        var ids = PgParserAbstract.getIdentifiers(p.function_args_parser().schema_qualified_name());
         return QNameParser.getFirstName(ids);
     }
 
@@ -303,13 +300,13 @@ public class PgObjLocation extends ContextLocation {
 
         public PgObjLocation build() {
             if (ctx != null) {
-                Token start = ctx.getStart();
-                int offset = start.getStartIndex();
+                CodeUnitToken start = (CodeUnitToken)ctx.getStart();
+                int startOffset = start.getCodeUnitStart();
                 int line = start.getLine();
-                int position = start.getCharPositionInLine();
-                Token stop = (endCtx != null ? endCtx : ctx).getStop();
-                int length =  stop.getStopIndex() - offset + 1;
-                return new PgObjLocation(filePath, offset, line, position,
+                int position = start.getCodeUnitPositionInLine();
+                CodeUnitToken stop = (CodeUnitToken)(endCtx != null ? endCtx : ctx).getStop();
+                int length =  stop.getCodeUnitStop() - startOffset + 1;
+                return new PgObjLocation(filePath, startOffset, line, position,
                         object, action, sql, alias, length, locationType);
             }
 

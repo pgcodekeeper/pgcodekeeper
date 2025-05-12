@@ -27,11 +27,9 @@ import java.util.Queue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.fileutils.InputStreamProvider;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.ChSqlContextProcessor;
@@ -57,6 +55,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 
 /**
  * Loads PostgreSQL dump into classes.
@@ -140,20 +139,12 @@ public class PgDumpLoader extends DatabaseLoader {
 
     public AbstractDatabase loadAsync(AbstractDatabase d, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
-        AbstractSchema schema;
-        switch (args.getDbType()) {
-        case MS:
-            schema = new MsSchema(Consts.DBO);
-            break;
-        case PG:
-            schema = new PgSchema(Consts.PUBLIC);
-            break;
-        case CH:
-            schema = new ChSchema(Consts.CH_DEFAULT_DB);
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
-        }
+        AbstractSchema schema = switch (args.getDbType()) {
+        case MS -> new MsSchema(Consts.DBO);
+        case PG -> new PgSchema(Consts.PUBLIC);
+        case CH -> new ChSchema(Consts.CH_DEFAULT_DB);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
+        };
         d.addSchema(schema);
         PgObjLocation loc = new PgObjLocation.Builder()
                 .setObject(new GenericColumn(schema.getName(), DbObjType.SCHEMA))

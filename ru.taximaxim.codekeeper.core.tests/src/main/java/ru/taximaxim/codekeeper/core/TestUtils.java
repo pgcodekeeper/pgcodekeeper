@@ -73,20 +73,12 @@ public final class TestUtils {
         PgDiffArguments args = new PgDiffArguments();
         args.setDbType(dbType);
         AbstractDatabase db = DatabaseLoader.createDb(args);
-        AbstractSchema schema;
-        switch (dbType) {
-        case PG:
-            schema = new PgSchema(Consts.PUBLIC);
-            break;
-        case MS:
-            schema = new MsSchema(Consts.DBO);
-            break;
-        case CH:
-            schema = new ChSchema(Consts.CH_DEFAULT_DB);
-            break;
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        AbstractSchema schema = switch (dbType) {
+        case PG -> new PgSchema(Consts.PUBLIC);
+        case MS -> new MsSchema(Consts.DBO);
+        case CH -> new ChSchema(Consts.CH_DEFAULT_DB);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        };
         db.addSchema(schema);
         db.setDefaultSchema(schema.getName());
         PgObjLocation loc = new PgObjLocation.Builder()
@@ -123,6 +115,14 @@ public final class TestUtils {
             HIDE REGEX 'ignore.*'""";
         Files.write(dir.resolve(".pgcodekeeperignoreschema"), rule.getBytes(StandardCharsets.UTF_8));
     }
+
+    public static void createIgnoreListFile(Path dir) throws IOException {
+        String rule = """
+            SHOW ALL
+            HIDE REGEX 'people.*'""";
+        Files.write(dir.resolve(".pgcodekeeperignore"), rule.getBytes(StandardCharsets.UTF_8));
+    }
+
 
     public static Path getPathToResource(String resourceName, Class<?> clazz) throws URISyntaxException, IOException {
         URL url = clazz.getResource(resourceName);
@@ -198,8 +198,7 @@ public final class TestUtils {
 
         TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
         tree.setAllChecked();
-        String script = new PgDiff(args).diffDatabaseSchemasAdditionalDepcies(
-                tree, oldDbFull, newDbFull, null, null);
+        String script = new PgDiff(args).diff(tree, oldDbFull, newDbFull, null, null, null);
 
         TestUtils.compareResult(script, userSelTemplate, clazz);
     }

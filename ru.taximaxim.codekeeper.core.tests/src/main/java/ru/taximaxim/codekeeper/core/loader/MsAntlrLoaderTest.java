@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
-import ru.taximaxim.codekeeper.core.fileutils.TempDir;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
@@ -46,6 +45,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
  * Tests for PgDiffLoader class.

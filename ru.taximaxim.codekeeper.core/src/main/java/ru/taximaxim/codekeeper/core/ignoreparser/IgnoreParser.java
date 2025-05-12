@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.ignoreparser;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
@@ -27,7 +25,7 @@ import org.antlr.v4.runtime.RuleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.Consts;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IIgnoreList;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
@@ -41,7 +39,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.Rul
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.Show_ruleContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.IgnoreListParser.WhiteContext;
 
-public class IgnoreParser {
+public final class IgnoreParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(IgnoreParser.class);
 
@@ -52,21 +50,20 @@ public class IgnoreParser {
     }
 
     public IgnoreParser parse(Path listFile) throws IOException {
-        return parse(Files.newInputStream(listFile), listFile.toString());
-    }
+        String parsedObjectName = listFile.toString();
+        LOG.info(Messages.IgnoreParser_log_load_ignored_list, parsedObjectName);
+        var parser = AntlrParser.createIgnoreListParser(listFile);
 
-    public IgnoreParser parse(InputStream stream, String parsedObjectName) throws IOException {
-        IgnoreListParser parser = AntlrParser.makeBasicParser(
-                IgnoreListParser.class, stream, Consts.UTF_8, parsedObjectName);
         try {
             parse(parser);
         } catch (Exception ex) {
-            LOG.error("Error while analyzing parser tree for IgnoreList file: " + parsedObjectName, ex);
+            LOG.error(Messages.IgnoreParser_log_ignor_list_analyzing_err + parsedObjectName, ex);
         }
         return this;
     }
 
     private void parse(IgnoreListParser parser) {
+        LOG.info(Messages.IgnoreParser_log_ignor_list_parser_tree);
         Rule_listContext rules = parser.compileUnit().rule_list();
         WhiteContext white = rules.white();
         if (white != null) {

@@ -24,7 +24,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.provider.Arguments;
 
 @TestInstance(Lifecycle.PER_CLASS)
-class TimestampPgDataTest extends AbstractPgTimeDateDataTest<TimestampPgData, Instant> {
+final class TimestampPgDataTest extends AbstractPgTimeDateDataTest<TimestampData, Instant> {
 
     public TimestampPgDataTest() {
         super(Instant.ofEpochMilli(0), Instant.ofEpochMilli(1000), Instant.ofEpochMilli(100000));
@@ -32,25 +32,25 @@ class TimestampPgDataTest extends AbstractPgTimeDateDataTest<TimestampPgData, In
 
     @BeforeEach
     void setUp() {
-        data = new TimestampPgData();
+        data = new TimestampData();
         setDefaultValues();
     }
 
     @Override
     protected Stream<Arguments> generateAsStringTestData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, "'1970-01-01T00:00:00Z'"),
-          Arguments.of(PgDataGenerator.INCREMENT, "'1970-01-01T00:00:00Z'"),
-          Arguments.of(PgDataGenerator.ANY, "any value")
-        );
+                Arguments.of(DataGenerator.CONSTANT, "'1970-01-01T00:00:00Z'"),
+                Arguments.of(DataGenerator.INCREMENT, "'1970-01-01T00:00:00Z'"),
+                Arguments.of(DataGenerator.ANY, "any value")
+                );
     }
 
     @Override
     protected Stream<Arguments> generateGetMaxValuesTestData() {
         return Stream.of(
-          Arguments.of(start, end, 101),
-          Arguments.of(start, Instant.ofEpochMilli(999999999999999999L), Integer.MAX_VALUE)
-        );
+                Arguments.of(start, end, 101),
+                Arguments.of(start, Instant.ofEpochMilli(999999999999999999L), Integer.MAX_VALUE)
+                );
     }
 
     @Override

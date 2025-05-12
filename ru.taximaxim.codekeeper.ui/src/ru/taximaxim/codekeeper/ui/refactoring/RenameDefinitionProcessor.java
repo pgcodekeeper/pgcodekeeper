@@ -37,15 +37,15 @@ import org.eclipse.text.edits.ReplaceEdit;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
-import ru.taximaxim.codekeeper.ui.fileutils.FileUtilsUi;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class RenameDefinitionProcessor extends RenameProcessor {
 
@@ -60,7 +60,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
     public RenameDefinitionProcessor(PgObjLocation selection) {
         this.selection = selection;
         this.file = FileUtilsUi.getFileForLocation(selection);
-        this.dbType = file != null ? OpenProjectUtils.getDatabaseType(file.getProject()) : DatabaseType.PG;
+        this.dbType = file != null ? ProjectUtils.getDatabaseType(file.getProject()) : DatabaseType.PG;
     }
 
     public void setNewName(String newName) {

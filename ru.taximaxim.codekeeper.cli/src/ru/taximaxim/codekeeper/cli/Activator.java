@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.cli;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
@@ -54,6 +55,16 @@ public class Activator implements BundleActivator {
             JoranConfigurator jc = new JoranConfigurator();
             jc.setContext(loggerContext);
             loggerContext.reset();
+
+            // read vm property
+            String path = System.getProperty("logging.config"); //$NON-NLS-1$
+            if (path != null) {
+                File file = new File(path);
+                if (file.exists()) {
+                    jc.doConfigure(file);
+                    return;
+                }
+            }
 
             URL logbackConfigFileUrl = FileLocator.find(bundle, new Path("logback.xml"), null); //$NON-NLS-1$
             jc.doConfigure(logbackConfigFileUrl.openStream());

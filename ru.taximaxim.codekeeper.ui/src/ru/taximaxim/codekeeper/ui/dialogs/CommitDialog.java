@@ -55,11 +55,11 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
-import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
-public class CommitDialog extends TrayDialog {
+public final class CommitDialog extends TrayDialog {
 
     private final IPreferenceStore prefs;
     private final boolean egitCommitAvailable;

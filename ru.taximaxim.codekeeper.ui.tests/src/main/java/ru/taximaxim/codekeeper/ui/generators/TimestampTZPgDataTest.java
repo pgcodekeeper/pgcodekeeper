@@ -24,7 +24,7 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.provider.Arguments;
 
 @TestInstance(Lifecycle.PER_CLASS)
-class TimestampTZPgDataTest extends AbstractPgTimeDateDataTest<TimestampTZPgData, ZonedDateTime> {
+final class TimestampTZPgDataTest extends AbstractPgTimeDateDataTest<TimestampTZPgData, ZonedDateTime> {
 
     public TimestampTZPgDataTest() {
         super(ZonedDateTime.parse("1970-01-01T00:00:00Z"),
@@ -41,18 +41,18 @@ class TimestampTZPgDataTest extends AbstractPgTimeDateDataTest<TimestampTZPgData
     @Override
     protected Stream<Arguments> generateAsStringTestData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, "'1970-01-01T00:00Z'"),
-          Arguments.of(PgDataGenerator.INCREMENT, "'1970-01-01T00:00Z'"),
-          Arguments.of(PgDataGenerator.ANY, "any value")
-        );
+                Arguments.of(DataGenerator.CONSTANT, "'1970-01-01T00:00Z'"),
+                Arguments.of(DataGenerator.INCREMENT, "'1970-01-01T00:00Z'"),
+                Arguments.of(DataGenerator.ANY, "any value")
+                );
     }
 
     @Override
     protected Stream<Arguments> generateGetMaxValuesTestData() {
         return Stream.of(
-          Arguments.of(start, end, 28800001),
-          Arguments.of(start, ZonedDateTime.parse("2070-01-01T00:00:00Z"), Integer.MAX_VALUE)
-        );
+                Arguments.of(start, end, 28800001),
+                Arguments.of(start, ZonedDateTime.parse("2070-01-01T00:00:00Z"), Integer.MAX_VALUE)
+                );
     }
 
     @Override

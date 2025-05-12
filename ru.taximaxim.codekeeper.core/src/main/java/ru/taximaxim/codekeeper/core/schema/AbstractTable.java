@@ -108,7 +108,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     @Override
     public AbstractConstraint getConstraint(final String name) {
-        return constraints.get(name);
+        return getChildByName(constraints, name);
     }
 
     /**

@@ -468,7 +468,7 @@ public final class MsTable extends AbstractTable implements ISimpleOptionContain
     @Override
     public PgStatement getChild(String name, DbObjType type) {
         if (DbObjType.STATISTICS == type) {
-            return statistics.get(name);
+            return getChildByName(statistics, name);
         }
         return super.getChild(name, type);
     }

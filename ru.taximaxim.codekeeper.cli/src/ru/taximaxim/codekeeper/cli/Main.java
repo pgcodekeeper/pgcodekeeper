@@ -28,30 +28,26 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.kohsuke.args4j.CmdLineException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.cli.localizations.Messages;
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.core.NotAllowedObjectException;
 import ru.taximaxim.codekeeper.core.PgCodekeeperException;
 import ru.taximaxim.codekeeper.core.PgDiff;
 import ru.taximaxim.codekeeper.core.UnixPrintWriter;
-import ru.taximaxim.codekeeper.core.fileutils.FileUtils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.TokenLoader;
 import ru.taximaxim.codekeeper.core.loader.UrlJdbcConnector;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.model.graph.InsertWriter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 /**
  * Compares two PostgreSQL dumps and outputs information about differences in
@@ -60,6 +56,8 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
  * @author fordfrog
  */
 public final class Main {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Main.class);
 
     /**
      * @return success value
@@ -91,18 +89,17 @@ public final class Main {
                 return diff(writer, arguments);
             }
         } catch (CmdLineException | NotAllowedObjectException ex) {
-            writeMessage(ex.getLocalizedMessage());
+            writeError(ex.getLocalizedMessage());
             return false;
         } catch (Exception e) {
             if (arguments.isDebug()) {
+                LOG.error(Messages.Main_log_running_error, e);
                 e.printStackTrace(System.err);
             } else {
-                writeMessage(e.getLocalizedMessage());
-                writeMessage(Messages.Main_show_stacktrace);
+                writeError(e.getLocalizedMessage());
+                writeError(Messages.Main_show_stacktrace);
             }
 
-            Status error = new Status(IStatus.ERROR, Consts.PLUGIN_ID, "pgCodeKeeper error", e); //$NON-NLS-1$
-            Platform.getLog(Activator.getContext().getBundle()).log(error);
             return false;
         }
     }
@@ -113,25 +110,26 @@ public final class Main {
             PgDiff diff = new PgDiff(arguments);
             String text;
             try {
+                LOG.info(Messages.Main_log_create_script);
                 text = diff.createDiff();
             } catch (PgCodekeeperException ex) {
-                diff.getErrors().forEach(Main::writeMessage);
+                printError(diff);
                 return false;
             }
 
             ScriptParser parser = new ScriptParser("CLI", text, arguments.getDbType()); //$NON-NLS-1$
 
             if (arguments.isSafeMode()) {
-                Set<DangerStatement> dangerTypes =
-                        parser.getDangerDdl(arguments.getAllowedDangers());
+                var dangerTypes = parser.getDangerDdl(arguments.getAllowedDangers());
 
                 if (!dangerTypes.isEmpty()) {
-                    String msg = MessageFormat.format(Messages.Main_danger_statements,
-                            dangerTypes.stream().map(DangerStatement::name)
-                            .collect(Collectors.joining(", "))); //$NON-NLS-1$
+                    String dangerStmt = dangerTypes.stream().map(DangerStatement::name)
+                            .collect(Collectors.joining(", ")); //$NON-NLS-1$
+                    LOG.warn(Messages.Main_log_contains_dangerous_statements, dangerStmt);
+                    String msg = MessageFormat.format(Messages.Main_danger_statements, dangerStmt);
                     writer.println(msg);
                     if (encodedWriter != null) {
-                        encodedWriter.println("-- " + msg);
+                        encodedWriter.println("-- " + msg); //$NON-NLS-1$
                     }
                     return false;
                 }
@@ -146,35 +144,40 @@ public final class Main {
                 if (url == null) {
                     url = arguments.getOldSrc();
                 }
+
+                LOG.info(Messages.Main_log_apply_migration_script);
                 new JdbcRunner().runBatches(new UrlJdbcConnector(url), parser.batch(), null);
             } else if (encodedWriter == null) {
                 writer.println(text);
             }
         }
 
+        LOG.info(Messages.Main_log_succes_finish);
         return true;
     }
 
     private static PrintWriter getDiffWriter(CliArgs arguments)
             throws FileNotFoundException, UnsupportedEncodingException {
         String outFile = arguments.getOutputTarget();
-        return outFile == null ? null : new UnixPrintWriter(
-                outFile, arguments.getOutCharsetName());
+        return outFile == null ? null : new UnixPrintWriter(outFile, arguments.getOutCharsetName());
     }
 
     private static boolean parse(CliArgs arguments) throws IOException, InterruptedException, PgCodekeeperException {
         PgDiffCli diff = new PgDiffCli(arguments);
         try {
             if (arguments.isProjUpdate()) {
+                LOG.info(Messages.Main_log_start_update_proj);
                 diff.updateProject();
             } else {
-                new ModelExporter(Paths.get(arguments.getOutputTarget()), diff.loadNewDatabase(),
-                        arguments.getDbType(), arguments.getOutCharsetName()).exportFull();
+                LOG.info(Messages.Main_log_start_export_proj);
+                diff.exportProject();
             }
         } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(Main::writeMessage);
+            diff.getErrors().forEach(Main::writeError);
             return false;
         }
+
+        LOG.info(Messages.Main_log_succes_finish);
         return true;
     }
 
@@ -185,10 +188,11 @@ public final class Main {
         try {
             db = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(Main::writeMessage);
+            printError(diff);
             return false;
         }
 
+        LOG.info(Messages.Main_log_start_insert_data);
         var script = InsertWriter.write(db, arguments, arguments.getInsertName(), arguments.getInsertFilter());
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
@@ -197,26 +201,28 @@ public final class Main {
             }
             String url = arguments.getRunOnDb();
             if (url != null) {
+                LOG.info(Messages.Main_log_run_insert_data);
                 new JdbcRunner().runBatches(new UrlJdbcConnector(url),
                         new ScriptParser("CLI", script, arguments.getDbType()).batch(), null); //$NON-NLS-1$
             } else if (pw == null) {
                 writer.println(script);
             }
         }
+
+        LOG.info(Messages.Main_log_succes_finish);
         return true;
     }
 
-    private static boolean graph(PrintWriter writer, CliArgs arguments)
-            throws IOException, InterruptedException {
+    private static boolean graph(PrintWriter writer, CliArgs arguments) throws IOException, InterruptedException {
         PgDiff diff = new PgDiff(arguments);
         AbstractDatabase d;
         try {
             d = diff.loadNewDatabaseWithLibraries();
         } catch (PgCodekeeperException ex) {
-            diff.getErrors().forEach(Main::writeMessage);
+            printError(diff);
             return false;
         }
-
+        LOG.info(Messages.Main_log_build_graph_deps);
         List<String> deps = DepcyFinder.byPatterns(arguments.getGraphDepth(), arguments.isGraphReverse(),
                 arguments.getGraphFilterTypes(), arguments.isGraphInvertFilter(), d, arguments.getGraphNames());
 
@@ -226,18 +232,21 @@ public final class Main {
                 w.println(dep);
             }
         }
+
+        LOG.info(Messages.Main_log_succes_finish);
         return true;
     }
 
     private static boolean verify(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException {
         Path path = Paths.get(arguments.getVerifyRuleSetPath());
+        LOG.info(Messages.Main_log_start_code_verify);
         List<Object> errors = TokenLoader.verify(arguments, path, arguments.getVerifySources());
         if (!errors.isEmpty()) {
             errors.forEach(writer::println);
             return false;
         }
-
+        LOG.info(Messages.Main_log_finish_code_verify);
         return true;
     }
 
@@ -248,8 +257,22 @@ public final class Main {
         writeMessage(Messages.Main_cach_clear);
     }
 
+    private static void printError(PgDiff diff) {
+        for (var err : diff.getErrors()) {
+            writeError(err);
+        }
+    }
+
     private static void writeMessage(Object message) {
-        System.err.println(message);
+        String msg = message.toString();
+        LOG.info(msg);
+        System.out.println(msg);
+    }
+
+    private static void writeError(Object message) {
+        String msg = message.toString();
+        LOG.error(msg);
+        System.err.println(msg);
     }
 
     private Main() {

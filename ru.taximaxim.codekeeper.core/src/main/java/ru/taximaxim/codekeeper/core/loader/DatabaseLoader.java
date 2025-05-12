@@ -23,8 +23,8 @@ import java.util.Queue;
 
 import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -49,16 +49,12 @@ public abstract class DatabaseLoader {
     }
 
     public static AbstractDatabase createDb(PgDiffArguments arguments) {
-        switch (arguments.getDbType()) {
-        case CH:
-            return new ChDatabase(arguments);
-        case MS:
-            return new MsDatabase(arguments);
-        case PG:
-            return new PgDatabase(arguments);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
-        }
+        return switch (arguments.getDbType()) {
+            case CH -> new ChDatabase(arguments);
+            case MS -> new MsDatabase(arguments);
+            case PG -> new PgDatabase(arguments);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+        };
     }
 
     /**
@@ -81,7 +77,7 @@ public abstract class DatabaseLoader {
     }
 
     protected void finishLoaders() throws InterruptedException, IOException {
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
         DatabaseLoader l;
         while ((l = launchedLoaders.poll()) != null) {
             finishLoader(l);

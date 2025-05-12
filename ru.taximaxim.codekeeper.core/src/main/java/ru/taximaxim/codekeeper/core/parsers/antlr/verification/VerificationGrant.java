@@ -19,6 +19,7 @@ import java.util.List;
 
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Role_name_with_groupContext;
@@ -58,7 +59,8 @@ public final class VerificationGrant implements IVerification {
             String role = user.getText();
             if (deniedUsers.contains(role)) {
                 AntlrError err = new AntlrError(user.getStart(), fileName, ruleCtx.getStop().getLine(),
-                        ruleCtx.getStart().getCharPositionInLine(), Messages.VerificationGrant_denied_grant + role,
+                        ((CodeUnitToken) ruleCtx.getStart()).getCodeUnitPositionInLine(),
+                        Messages.VerificationGrant_denied_grant + role,
                         ErrorTypes.VERIFICATIONERROR);
                 errors.add(err);
             }

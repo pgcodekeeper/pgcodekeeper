@@ -27,7 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-public abstract class AbstractPgTimeDateDataTest<T extends PgData<R>, R extends Comparable<? super R>> {
+public abstract class AbstractPgTimeDateDataTest<T extends DbData<R>, R extends Comparable<? super R>> {
 
     private static final String INVALID = "INVALID STRING";
 
@@ -53,9 +53,9 @@ public abstract class AbstractPgTimeDateDataTest<T extends PgData<R>, R extends 
 
     protected Stream<Arguments> generateValueTestData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, start),
-          Arguments.of(PgDataGenerator.ANY, null)
-        );
+                Arguments.of(DataGenerator.CONSTANT, start),
+                Arguments.of(DataGenerator.ANY, null)
+                );
     }
 
     protected Stream<Arguments> generateValueIncrementTestData() {
@@ -72,7 +72,7 @@ public abstract class AbstractPgTimeDateDataTest<T extends PgData<R>, R extends 
 
     @ParameterizedTest
     @MethodSource("generateValueTestData")
-    void testGenerateValue(PgDataGenerator generator, R expected) {
+    void testGenerateValue(DataGenerator generator, R expected) {
         data.setGenerator(generator);
 
         R result = data.generateValue();
@@ -83,7 +83,7 @@ public abstract class AbstractPgTimeDateDataTest<T extends PgData<R>, R extends 
     @ParameterizedTest
     @MethodSource("generateValueIncrementTestData")
     void testGenerateValueIncrement(R beforeIncrement, R afterIncrement) {
-        data.setGenerator(PgDataGenerator.INCREMENT);
+        data.setGenerator(DataGenerator.INCREMENT);
 
         R firstResult = data.generateValue();
         R secondResult = data.generateValue();
@@ -94,7 +94,7 @@ public abstract class AbstractPgTimeDateDataTest<T extends PgData<R>, R extends 
 
     @Test
     void testGenerateValueRandom() {
-        data.setGenerator(PgDataGenerator.RANDOM);
+        data.setGenerator(DataGenerator.RANDOM);
 
         R result = data.generateValue();
 
@@ -104,7 +104,7 @@ public abstract class AbstractPgTimeDateDataTest<T extends PgData<R>, R extends 
 
     @ParameterizedTest
     @MethodSource("generateAsStringTestData")
-    void testGenerateAsString(PgDataGenerator generator, String expected) {
+    void testGenerateAsString(DataGenerator generator, String expected) {
         data.setGenerator(generator);
 
         String result = data.generateAsString();

@@ -24,8 +24,8 @@ import org.eclipse.ui.IWorkbench;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
-import ru.taximaxim.codekeeper.ui.handlers.OpenProjectUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class MockDataWizard extends Wizard implements INewWizard {
 
@@ -39,7 +39,7 @@ public class MockDataWizard extends Wizard implements INewWizard {
         setDefaultPageImageDescriptor(Activator.getRegisteredDescriptor(ProjectIcon.APP_WIZ));
         Object element = selection.getFirstElement();
         if (element instanceof IResource res) {
-            dbType = OpenProjectUtils.getDatabaseType(res.getProject());
+            dbType = ProjectUtils.getDatabaseType(res.getProject());
         }
     }
 

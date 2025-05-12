@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IStartup;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -49,9 +48,7 @@ public class ParserCacheCleaner implements IStartup {
                 long cleaningInterval = TimeUnit.MINUTES
                         .toMillis(mainPrefs.getInt(PREF.PARSER_CACHE_CLEANING_INTERVAL));
                 if (cleaningInterval != 0) {
-                    AntlrParser.checkToClean(DatabaseType.PG, cleaningInterval);
-                    AntlrParser.checkToClean(DatabaseType.MS, cleaningInterval);
-                    AntlrParser.checkToClean(DatabaseType.CH, cleaningInterval);
+                    AntlrParser.checkToClean(cleaningInterval);
                 }
             }
         });

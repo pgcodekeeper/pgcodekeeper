@@ -2,9 +2,14 @@ lexer grammar CHLexer;
 
 options {
     caseInsensitive = true;
+    superClass = CodeUnitLexer;
 }
 
-@header {package ru.taximaxim.codekeeper.core.parsers.antlr.generated;}
+@header {
+package ru.taximaxim.codekeeper.core.parsers.antlr.generated;
+
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitLexer;
+}
 
 // NOTE: don't forget to add new keywords to the parser rule "keyword"!
 
@@ -426,7 +431,7 @@ NUMBER
     ;
 
 // It's important that quote-symbol is a single character.
-STRING_LITERAL: QUOTE_SINGLE ( ~([\\']) | (BACKSLASH .) | (QUOTE_SINGLE QUOTE_SINGLE) )* QUOTE_SINGLE;
+STRING_LITERAL: QUOTE_SINGLE ( ~([\\']) | (BACKSLASH .) | (QUOTE_SINGLE QUOTE_SINGLE) )* QUOTE_SINGLE {calculateOffset();};
 BINARY_LITERAL: 'X' QUOTE_SINGLE HEX_DIGIT* QUOTE_SINGLE;
 // DOLLAR_LITERAL: '$' IDENTIFIER? '$' (DOLLAR_LITERAL |.)*? '$' IDENTIFIER? '$';
 
@@ -480,7 +485,7 @@ LINE_COMMENT: '--' ~[\r\n]* -> channel(HIDDEN);
 
 SPACE: ' ' -> channel(HIDDEN);
 WHITESPACE: [\u000B\u000C] -> channel(HIDDEN);
-NEW_LINE : [\n\r] -> channel(HIDDEN);
+NEW_LINE : [\n\r] {resetLineOffset();} -> channel(HIDDEN);
 TAB : '\t' -> channel(HIDDEN);
 
 /* Quoted Identifiers
@@ -488,29 +493,9 @@ TAB : '\t' -> channel(HIDDEN);
 * These are divided into four separate tokens, allowing distinction of valid quoted identifiers from invalid quoted
 * identifiers without sacrificing the ability of the lexer to reliably recover from lexical errors in the input.
 */
-DOUBLE_QUOTED_IDENTIFIER
-    : UNTERMINATED_DOUBLE_QUOTED_IDENTIFIER '"'
-    // unquote so that we may always call getText() and not worry about quotes
-        {
-            String __tx = getText();
-            setText(__tx.substring(1, __tx.length() - 1).replace("\"\"", "\""));
-        }
-    ;
-
-BACK_QUOTED_IDENTIFIER
-    : UNTERMINATED_BACK_QUOTED_IDENTIFIER '`'
-    // unquote so that we may always call getText() and not worry about quotes
-        {
-            String __tx = getText();
-            setText(__tx.substring(1, __tx.length() - 1).replace("``", "`"));
-        }
-    ;
+DOUBLE_QUOTED_IDENTIFIER: UNTERMINATED_DOUBLE_QUOTED_IDENTIFIER '"' {removeQuotes("\"\"", "\"");};
+BACK_QUOTED_IDENTIFIER: UNTERMINATED_BACK_QUOTED_IDENTIFIER '`' {removeQuotes("``", "`");};
 
 // This is a quoted identifier which only contains valid characters but is not terminated
-fragment UNTERMINATED_BACK_QUOTED_IDENTIFIER
-    : '`' ( '``' | ~[\u0000`] )*
-    ;
-
-fragment UNTERMINATED_DOUBLE_QUOTED_IDENTIFIER
-    : '"' ( '""' | ~[\u0000"] )*
-    ;
+fragment UNTERMINATED_BACK_QUOTED_IDENTIFIER: '`' ( '``' | ~[\u0000`] )*;
+fragment UNTERMINATED_DOUBLE_QUOTED_IDENTIFIER: '"' ( '""' | ~[\u0000"] )*;

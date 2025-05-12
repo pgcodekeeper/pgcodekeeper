@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -59,7 +60,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      */
     @Override
     public AbstractFunction getFunction(final String signature) {
-        return functions.get(signature);
+        return getChildByName(functions, signature);
     }
 
     /**
@@ -67,8 +68,14 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      */
     @Override
     public IRelation getRelation(String name) {
-        return getRelations().filter(rel -> rel.getName().equals(name))
-                .findAny().orElse(null);
+        IRelation result = getTable(name);
+        if (result == null) {
+            result = getView(name);
+        }
+        if (result == null) {
+            result = getSequence(name);
+        }
+        return result;
     }
 
     /**
@@ -109,33 +116,25 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     @Override
     public PgStatement getChild(String name, DbObjType type) {
-        switch (type) {
-        case FUNCTION:
-        case PROCEDURE:
-        case AGGREGATE:
+        return switch (type) {
+        case FUNCTION, PROCEDURE, AGGREGATE -> {
             final String signature = name;
-            AbstractFunction func = functions.get(signature);
-            return func != null && func.getStatementType() == type ? func : null;
-        case SEQUENCE:
-            return sequences.get(name);
-        case TYPE:
-            return types.get(name);
-        case TABLE:
-            return tables.get(name);
-        case VIEW:
-            return views.get(name);
-        default:
-            return null;
+            AbstractFunction func = getFunction(signature);
+            yield func != null && func.getStatementType() == type ? func : null;
         }
+        case SEQUENCE -> getSequence(name);
+        case TYPE ->  getType(name);
+        case TABLE -> getTable(name);
+        case VIEW -> getView(name);
+        default -> null;
+        };
     }
 
     @Override
     public void addChild(IStatement st) {
         DbObjType type = st.getStatementType();
         switch (type) {
-        case AGGREGATE:
-        case FUNCTION:
-        case PROCEDURE:
+        case AGGREGATE, FUNCTION, PROCEDURE:
             addFunction((AbstractFunction) st);
             break;
         case SEQUENCE:
@@ -163,7 +162,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found sequence or null if no such sequence has been found
      */
     public AbstractSequence getSequence(final String name) {
-        return sequences.get(name);
+        return getChildByName(sequences, name);
     }
 
 
@@ -176,7 +175,6 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
         return Collections.unmodifiableCollection(sequences.values());
     }
 
-
     /**
      * Finds table according to specified table {@code name}.
      *
@@ -185,7 +183,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found table or null if no such table has been found
      */
     public AbstractTable getTable(final String name) {
-        return tables.get(name);
+        return getChildByName(tables, name);
     }
 
     /**
@@ -205,7 +203,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found view or null if no such view has been found
      */
     public AbstractView getView(final String name) {
-        return views.get(name);
+        return getChildByName(views, name);
     }
 
     /**
@@ -221,8 +219,8 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return child-containing element with matching name (either TABLE or VIEW)
      */
     public PgStatementContainer getStatementContainer(String name) {
-        PgStatementContainer container = tables.get(name);
-        return container == null ? views.get(name) : container;
+        PgStatementContainer container = getTable(name);
+        return container == null ? getView(name) : container;
     }
 
     public Stream<PgStatementContainer> getStatementContainers() {
@@ -231,16 +229,16 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
 
     public AbstractIndex getIndexByName(String indexName) {
         return getStatementContainers()
-                .flatMap(c -> c.getIndexes().stream())
-                .filter(s -> s.getName().equals(indexName))
-                .findAny().orElse(null);
+            .map(c -> c.getIndex(indexName))
+            .filter(Objects::nonNull)
+            .findAny().orElse(null);
     }
 
     public AbstractConstraint getConstraintByName(String constraintName) {
         return getStatementContainers()
-                .flatMap(c -> c.getConstraints().stream())
-                .filter(s -> s.getName().equals(constraintName))
-                .findAny().orElse(null);
+            .map(c -> c.getConstraint(constraintName))
+            .filter(Objects::nonNull)
+            .findAny().orElse(null);
     }
 
     /**
@@ -251,7 +249,7 @@ public abstract class AbstractSchema extends PgStatement implements ISchema {
      * @return found type or null if no such type has been found
      */
     public AbstractType getType(final String name) {
-        return types.get(name);
+        return getChildByName(types, name);
     }
 
     public void addFunction(final AbstractFunction function) {

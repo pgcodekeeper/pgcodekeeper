@@ -26,6 +26,7 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Additional_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Arguments_listContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Assign_stmtContext;
@@ -78,8 +79,7 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-
-public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
+public final class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
 
     private static final Logger LOG = LoggerFactory.getLogger(Function.class);
 
@@ -177,7 +177,7 @@ public class Function extends AbstractExprWithNmspc<Plpgsql_functionContext> {
                 type = pair.getSecond();
             } else {
                 type = TypesSetManually.UNKNOWN;
-                LOG.warn("Variable not found: {}", variable);
+                LOG.warn(Messages.Function_log_variable_not_found, variable);
             }
 
             addNamespaceVariable(new Pair<>(alias, type));

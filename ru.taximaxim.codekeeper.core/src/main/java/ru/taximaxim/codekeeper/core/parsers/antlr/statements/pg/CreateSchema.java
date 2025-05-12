@@ -23,7 +23,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameC
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 
-public class CreateSchema extends PgParserAbstract {
+public final class CreateSchema extends PgParserAbstract {
 
     private final Create_schema_statementContext ctx;
 
@@ -44,7 +44,7 @@ public class CreateSchema extends PgParserAbstract {
         User_nameContext user = ctx.user_name();
         IdentifierContext userName = user == null ? null : user.identifier();
         if (userName != null && !db.getArguments().isIgnorePrivileges()
-                && (!nameCtx.getText().equals(Consts.PUBLIC) || !"postgres".equals(userName.getText()))) {
+                && (!Consts.PUBLIC.equals(nameCtx.getText()) || !"postgres".equals(userName.getText()))) {
             schema.setOwner(userName.getText());
         }
     }

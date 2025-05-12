@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatParseTreeListener;
 import ru.taximaxim.codekeeper.core.formatter.IndentDirection;
 import ru.taximaxim.codekeeper.core.formatter.StatementFormatter;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Select_stmtContext;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -39,7 +40,7 @@ public class ChStatementFormatter extends StatementFormatter {
         super(start, stop, 0, 0, config);
         this.tokens = analyzeDefinition(selectStmtCtx, tokenStream);
         if (!tokens.isEmpty()) {
-            lastTokenOffset = tokens.get(0).getStartIndex();
+            lastTokenOffset = ((CodeUnitToken) tokens.get(0)).getCodeUnitStart();
         }
     }
 

@@ -12,19 +12,114 @@
 
     <groupId>ru.taximaxim.codeKeeper</groupId>
     <artifactId>ru.taximaxim.codekeeper.rcp.product</artifactId>
-    <version>10.9.0-SNAPSHOT</version>
+    <version>10.12.0-SNAPSHOT</version>
     <packaging>eclipse-repository</packaging>
 
     <repositories>
         <repository>
             <id>eclipse-p2-repo</id>
-            <url>https://download.eclipse.org/releases/latest/</url>
+            <url>https://download.eclipse.org/releases/2024-12/</url>
             <layout>p2</layout>
         </repository>
     </repositories>
 
+    <properties>
+        <mac.jre.base>https://github.com/adoptium/temurin17-binaries/releases/download</mac.jre.base>
+        <mac.jre.x86>${mac.jre.base}/jdk-17.0.14%2B7/OpenJDK17U-jre_x64_mac_hotspot_17.0.14_7.tar.gz</mac.jre.x86>
+        <mac.jre.aarch64>${mac.jre.base}/jdk-17.0.14%2B7/OpenJDK17U-jre_aarch64_mac_hotspot_17.0.14_7.tar.gz</mac.jre.aarch64>
+        <mac.folder>${project.build.directory}/products/ru.taximaxim.codekeeper.rcp.product/macosx/cocoa</mac.folder>
+    </properties>
+
+    <profiles>
+        <profile>
+            <id>code-sign</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <!-- Signing an application with a key from github actions -->
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <version>1.2.1</version>
+                        <executions>
+                            <execution>
+                                <id>exec</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>codesign</executable>
+                                    <arguments>
+                                        <argument>--deep</argument>
+                                        <argument>--force</argument>
+                                        <argument>--verify</argument>
+                                        <argument>--verbose</argument>
+                                        <argument>--sign</argument>
+                                        <argument>TAXTELECOM LLC</argument>
+                                        <argument>${mac.folder}/aarch64/pgCodeKeeper.app</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>exec2</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>codesign</executable>
+                                    <arguments>
+                                        <argument>--deep</argument>
+                                        <argument>--force</argument>
+                                        <argument>--verify</argument>
+                                        <argument>--verbose</argument>
+                                        <argument>--sign</argument>
+                                        <argument>TAXTELECOM LLC</argument>
+                                        <argument>${mac.folder}/x86_64/pgCodeKeeper.app</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.googlecode.maven-download-plugin</groupId>
+                <artifactId>download-maven-plugin</artifactId>
+                <version>1.13.0</version>
+                <executions>
+                    <execution>
+                        <id>download-x86</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${mac.jre.x86}</url>
+                            <outputDirectory>${mac.folder}</outputDirectory>
+                            <outputFileName>x64.tar.gz</outputFileName>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>download-aarch64</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>wget</goal>
+                        </goals>
+                        <configuration>
+                            <url>${mac.jre.aarch64}</url>
+                            <outputDirectory>${mac.folder}</outputDirectory>
+                            <outputFileName>aarch64.tar.gz</outputFileName>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>target-platform-configuration</artifactId>
@@ -41,7 +136,6 @@
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
                         </environment>
-                        <!-- -
                         <environment>
                             <os>macosx</os>
                             <ws>cocoa</ws>
@@ -52,10 +146,10 @@
                             <ws>cocoa</ws>
                             <arch>x86_64</arch>
                         </environment>
-                        <!- -->
                     </environments>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-p2-director-plugin</artifactId>
@@ -69,11 +163,9 @@
                     <products>
                         <product>
                             <id>ru.taximaxim.codekeeper.rcp.product</id>
-                            <!-- -
-                             <rootFolders>
-                                 <macosx>Pgcodekeeper.app</macosx>
-                             </rootFolders>
-                             <!- -->
+                            <rootFolders>
+                                <macosx>Pgcodekeeper.app</macosx>
+                            </rootFolders>
                             <archiveFileName>pgCodeKeeper-${unqualifiedVersion}</archiveFileName>
                         </product>
                     </products>
@@ -81,9 +173,52 @@
                 <executions>
                     <execution>
                         <id>materialize-products</id>
+                        <phase>prepare-package</phase>
                         <goals>
                             <goal>materialize-products</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>archive-products</id>
+                        <phase>verify</phase>
+                        <goals>
                             <goal>archive-products</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <id>prepare</id>
+                        <phase>prepare-package</phase>
+                        <configuration>
+                            <tasks>
+                                <gunzip src="${mac.folder}/aarch64.tar.gz"
+                                        dest="${mac.folder}/aarch64.tar"/>
+                                <untar src="${mac.folder}/aarch64.tar"
+                                       dest="${mac.folder}/jre_aarch64/"
+                                       compression="none"/>
+                                <copy todir="${mac.folder}/aarch64/Pgcodekeeper.app/Contents/Eclipse/jre">
+                                      <fileset dir="${mac.folder}/jre_aarch64/jdk-17.0.14+7-jre"/>
+                                </copy>
+
+                                <gunzip src="${mac.folder}/x64.tar.gz"
+                                        dest="${mac.folder}/x64.tar"/>
+                                <untar src="${mac.folder}/x64.tar"
+                                       dest="${mac.folder}/jre_x64_mac/"
+                                       compression="none"/>
+                                <copy todir="${mac.folder}/x86_64/Pgcodekeeper.app/Contents/Eclipse/jre">
+                                      <fileset dir="${mac.folder}/jre_x64_mac/jdk-17.0.14+7-jre"/>
+                                </copy>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>

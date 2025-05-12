@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
@@ -45,18 +46,20 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
-import ru.taximaxim.codekeeper.ui.fileutils.UIProjectUpdater;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
-public class NormalizeProject extends AbstractHandler {
+public final class NormalizeProject extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final Shell shell = HandlerUtil.getActiveShell(event);
-        final PgDbProject proj = OpenProjectUtils.getProject(event);
+        ISelection sel = HandlerUtil.getActiveMenuSelection(event);
+        PgDbProject proj = PgDbProject.getProject(sel);
 
-        if (!OpenProjectUtils.checkVersionAndWarn(proj.getProject(), shell, false)) {
+        Shell shell = HandlerUtil.getActiveShell(event);
+        if (!ProjectUtils.checkVersionAndWarn(proj.getProject(), shell, false)) {
             return null;
         }
 

@@ -179,7 +179,7 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
             return getDefaultSchema();
         }
 
-        return schemas.get(name);
+        return getChildByName(schemas, name);
     }
 
     @Override

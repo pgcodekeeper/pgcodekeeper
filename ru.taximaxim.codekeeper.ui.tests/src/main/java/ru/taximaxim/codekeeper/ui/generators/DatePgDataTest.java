@@ -24,24 +24,24 @@ import org.junit.jupiter.api.TestInstance.Lifecycle;
 import org.junit.jupiter.params.provider.Arguments;
 
 @TestInstance(Lifecycle.PER_CLASS)
-class DatePgDataTest extends AbstractPgTimeDateDataTest<DatePgData, LocalDate>{
+final class DatePgDataTest extends AbstractPgTimeDateDataTest<DateData, LocalDate>{
     public DatePgDataTest() {
         super(LocalDate.ofEpochDay(0), LocalDate.ofEpochDay(1), LocalDate.of(2070, 1, 1));
     }
 
     @BeforeEach
     void setUp() {
-        data = new DatePgData();
+        data = new DateData();
         setDefaultValues();
     }
 
     @Override
     protected Stream<Arguments> generateAsStringTestData() {
         return Stream.of(
-                Arguments.of(PgDataGenerator.CONSTANT, "'1970-01-01'"),
-                Arguments.of(PgDataGenerator.INCREMENT, "'1970-01-01'"),
-                Arguments.of(PgDataGenerator.ANY, "any value")
-              );
+                Arguments.of(DataGenerator.CONSTANT, "'1970-01-01'"),
+                Arguments.of(DataGenerator.INCREMENT, "'1970-01-01'"),
+                Arguments.of(DataGenerator.ANY, "any value")
+                );
     }
 
     @Override
@@ -49,7 +49,7 @@ class DatePgDataTest extends AbstractPgTimeDateDataTest<DatePgData, LocalDate>{
         return Stream.of(
                 Arguments.of(start, end, 36526),
                 Arguments.of(start, LocalDate.ofEpochDay(9999999999L), Integer.MAX_VALUE)
-              );
+                );
     }
 
     @Override

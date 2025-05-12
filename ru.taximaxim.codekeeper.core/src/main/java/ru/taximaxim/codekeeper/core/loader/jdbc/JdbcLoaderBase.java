@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -44,10 +45,12 @@ import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
 import ru.taximaxim.codekeeper.core.loader.ms.SupportedMsVersion;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.MonitorCancelledRuntimeException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
@@ -153,11 +156,13 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
 
     public void setCurrentObject(GenericColumn currentObject) {
         this.currentObject = currentObject;
+        debug(Messages.JdbcLoaderBase_log_current_obj, currentObject);
     }
 
     public void setCurrentOperation(String operation) {
         currentObject = null;
         currentOperation = operation;
+        debug("{}", currentOperation);
     }
 
     public boolean checkIgnoreSchemaList(String schemaName) {
@@ -194,7 +199,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             return;
         }
         cachedRolesNamesByOid = new HashMap<>();
-        setCurrentOperation("roles query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_get_roles);
         try (ResultSet res = runner.runScript(statement, "SELECT oid::bigint, rolname FROM pg_catalog.pg_roles")) {
             while (res.next()) {
                 cachedRolesNamesByOid.put(res.getLong("oid"), res.getString("rolname"));
@@ -350,7 +355,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
             order = "U";
             break;
         default:
-            throw new IllegalStateException(type + " doesn't support privileges!");
+            throw new IllegalStateException(type + Messages.JdbcLoaderBase_log_not_support_privil);
         }
         if (stType == null) {
             stType = st.getStatementType().name();
@@ -482,7 +487,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
 
     protected void queryTypesForCache() throws SQLException, InterruptedException {
         cachedTypesByOid = new HashMap<>();
-        setCurrentOperation("type cache query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_get_list_system_types);
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_TYPES_FOR_CACHE_ALL)) {
             while (res.next()) {
                 long oid = res.getLong("oid");
@@ -495,48 +500,52 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     }
 
     protected void queryCheckPgVersion() throws SQLException, InterruptedException {
-        setCurrentOperation("PostrgreSQL version checking query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_reading_pg_version);
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_PG_VERSION)) {
             version = res.next() ? res.getInt(1) : SupportedPgVersion.VERSION_9_4.getVersion();
+            debug(Messages.JdbcLoaderBase_log_load_version, version);
         }
     }
 
     protected void queryCheckMsVersion() throws SQLException, InterruptedException {
-        setCurrentOperation("MS SQL version checking query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_reading_ms_version);
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_MS_VERSION)) {
             version = res.next() ? res.getInt(1) : SupportedMsVersion.VERSION_12.getVersion();
+            debug(Messages.JdbcLoaderBase_log_load_version, version);
         }
     }
 
     protected void queryCheckLastSysOid() throws SQLException, InterruptedException {
-        setCurrentOperation("last system oid checking query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_get_last_oid);
         if (SupportedPgVersion.VERSION_15.isLE(getVersion())) {
             lastSysOid = FIRST_NORMAL_OBJECT_ID - 1L;
         } else {
-            try (ResultSet res = runner.runScript(statement,
-                    JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
+            try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_LAST_SYS_OID)) {
                 lastSysOid = res.next() ? res.getLong(1) : 10_000;
             }
         }
+        debug(Messages.JdbcLoaderBase_log_get_last_system_obj_oid, lastSysOid);
     }
 
     protected void setupMonitorWork() throws SQLException, InterruptedException {
-        setCurrentOperation("object count query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_get_obj_count);
         try (ResultSet resCount = runner.runScript(statement, JdbcQueries.QUERY_TOTAL_OBJECTS_COUNT)) {
-            monitor.setWorkRemaining(resCount.next() ? resCount.getInt(1) : DEFAULT_OBJECTS_COUNT);
+            int count = resCount.next() ? resCount.getInt(1) : DEFAULT_OBJECTS_COUNT;
+            monitor.setWorkRemaining(count);
+            debug(Messages.JdbcLoaderBase_log_get_total_obj_count, count);
         }
     }
 
     protected void queryCheckExtension() throws SQLException, InterruptedException {
-        setCurrentOperation("check pg_dbo_timestamp extension");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_check_extension);
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_TIMESTAMPS)) {
             while (res.next()) {
                 String extVersion = res.getString("extversion");
                 if (!extVersion.startsWith(Consts.EXTENSION_VERSION)) {
-                    LOG.info("pg_dbo_timestamps: old version of extension is used: {}, current version: {}",
+                    LOG.info(Messages.JdbcLoaderBase_log_old_version_used,
                             extVersion, Consts.EXTENSION_VERSION);
                 } else if (res.getBoolean("disabled")) {
-                    LOG.info("pg_dbo_timestamps: event trigger is disabled");
+                    LOG.info(Messages.JdbcLoaderBase_log_event_trigger_disabled);
                 } else {
                     extensionSchema = res.getString("nspname");
                 }
@@ -544,38 +553,42 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         }
     }
 
-    public <T> void submitAntlrTask(String sql,
-            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false, SQLParser.class);
+    public <T> void submitAntlrTask(String sql, Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, SQLParser> createFunction =
+                (list, location) -> AntlrParser.createSQLParser(sql, location, list);
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    public <T> void submitPlpgsqlTask(String sql,
-            Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, true, SQLParser.class);
+    public <T> void submitPlpgsqlTask(String sql, Function<SQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, SQLParser> createFunction = (list, location) -> {
+            var parser = AntlrParser.createSQLParser(sql, location, list);
+            AntlrUtils.removeIntoStatements(parser);
+            return parser;
+        };
+
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    public <T> void submitMsAntlrTask(String sql,
-            Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false, TSQLParser.class);
+    public <T> void submitMsAntlrTask(String sql, Function<TSQLParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, TSQLParser> createFunction =
+                (list, location) -> AntlrParser.createTSQLParser(sql, location, list);
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    public <T> void submitChAntlrTask(String sql,
-            Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
-        submitAntlrTask(sql, parserCtxReader, finalizer, false, CHParser.class);
+    public <T> void submitChAntlrTask(String sql, Function<CHParser, T> parserCtxReader, Consumer<T> finalizer) {
+        BiFunction<List<Object>, String, CHParser> createFunction =
+                (list, location) -> AntlrParser.createCHParser(sql, location, list);
+        submitAntlrTask(createFunction, parserCtxReader, finalizer);
     }
 
-    private <T, P extends Parser> void submitAntlrTask(String sql,
-            Function<P, T> parserCtxReader, Consumer<T> finalizer,
-            boolean removeInto, Class<P> parserClass) {
+    private <T, P extends Parser> void submitAntlrTask(BiFunction<List<Object>, String, P> parserCreateFunction,
+            Function<P, T> parserCtxReader, Consumer<T> finalizer) {
         String location = getCurrentLocation();
         GenericColumn object = this.currentObject;
         List<Object> list = new ArrayList<>();
-        AntlrParser.submitAntlrTask(antlrTasks, () -> {
+        AntlrTaskManager.submit(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(monitor);
-            P p = AntlrParser.makeBasicParser(parserClass, sql, location, list);
-            if (removeInto) {
-                AntlrUtils.removeIntoStatements(p);
-            }
+            P p = parserCreateFunction.apply(list, location);
             return parserCtxReader.apply(p);
         }, t -> {
             errors.addAll(list);
@@ -588,17 +601,24 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     }
 
     protected void queryCheckGreenplumDb() throws SQLException, InterruptedException {
-        setCurrentOperation("greenplum checking query");
+        setCurrentOperation(Messages.JdbcLoaderBase_log_check_gp_db);
         try (ResultSet res = runner.runScript(statement, JdbcQueries.QUERY_CHECK_GREENPLUM)) {
             if (res.next()) {
                 isGreenplumDb = res.getString(1).contains(Consts.GREENPLUM);
             }
         }
+        debug(Messages.JdbcLoaderBase_log_get_result_gp, isGreenplumDb);
     }
 
     @Override
     protected void finishLoaders() throws InterruptedException, IOException {
-        setCurrentOperation("finalizing antlr");
-        AntlrParser.finishAntlr(antlrTasks);
+        setCurrentOperation(Messages.JdbcLoaderBase_log_waiting_antlr_tasks);
+        AntlrTaskManager.finish(antlrTasks);
+    }
+
+    private void debug(String message, Object argument) {
+        if (LOG.isDebugEnabled()) {
+            LOG.debug(message, argument);
+        }
     }
 }

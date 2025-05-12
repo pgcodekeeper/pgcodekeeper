@@ -24,9 +24,6 @@ import java.util.stream.Collectors;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.PrivilegeContext;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.PrivilegesParser.PrivilegesContext;
 
 /**
  * Parser for aclItem arrays
@@ -127,28 +124,24 @@ final class JdbcPrivilege {
             return privileges;
         }
 
-        PrivilegesContext ctx = AntlrParser.makeBasicParser(PrivilegesParser.class, aclArrayAsString, "jdbc privileges")
-                .privileges();
-
-        for (PrivilegeContext acl : ctx.acls) {
+        var ctx = AntlrParser.createPrivilegesParser(aclArrayAsString).privileges();
+        for (var acl : ctx.acls) {
             String grantor;
             String grantee = "";
             if (acl.qgrantor != null) {
                 if (acl.qname != null) {
-                    grantee = acl.qname.getText();
+                    grantee = PgDiffUtils.getQuotedName(acl.qname.getText());
                 }
-                grantor = acl.qgrantor.getText();
+                grantor = PgDiffUtils.getQuotedName(acl.qgrantor.getText());
             } else {
                 if (acl.name != null) {
-                    grantee = acl.name.getText();
+                    grantee = PgDiffUtils.getQuotedName(acl.name.getText());
                 }
-                grantor = acl.grantor.getText();
+                grantor = PgDiffUtils.getQuotedName(acl.grantor.getText());
             }
-
             String grantsString = acl.priv.getText();
 
             Consumer<JdbcPrivilege> adder = grantee.equals(owner) ? p -> privileges.add(0, p) : privileges::add;
-            grantee = PgDiffUtils.getQuotedName(grantee);
 
             if (grantee.isEmpty()) {
                 grantee = "PUBLIC";

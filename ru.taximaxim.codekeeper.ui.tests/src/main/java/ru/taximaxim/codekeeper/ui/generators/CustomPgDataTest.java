@@ -25,26 +25,26 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-class CustomPgDataTest {
-    CustomPgData data;
+final class CustomPgDataTest {
+    CustomData data;
 
     private static Stream<Arguments> testData() {
         return Stream.of(
-          Arguments.of(PgDataGenerator.CONSTANT, null),
-          Arguments.of(PgDataGenerator.INCREMENT, null),
-          Arguments.of(PgDataGenerator.RANDOM, null),
-          Arguments.of(PgDataGenerator.ANY, "'data'")
-        );
+                Arguments.of(DataGenerator.CONSTANT, null),
+                Arguments.of(DataGenerator.INCREMENT, null),
+                Arguments.of(DataGenerator.RANDOM, null),
+                Arguments.of(DataGenerator.ANY, "'data'")
+                );
     }
 
     @BeforeEach
     void setUp() {
-        data = new CustomPgData();
+        data = new CustomData();
     }
 
     @ParameterizedTest
     @MethodSource("testData")
-    void testGenerateValueConstant(PgDataGenerator generator, String expected) {
+    void testGenerateValueConstant(DataGenerator generator, String expected) {
         data.setStart("'data'");
         data.setGenerator(generator);
 

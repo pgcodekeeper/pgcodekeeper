@@ -73,6 +73,10 @@ public class MsDiffUtils {
         return name.substring(1, name.length() - 1).replace("]]", "]");
     }
 
+    public static String getUnQuotedName(String name) {
+        return name.contains("[") ? name.substring(1, name.length()).replace("]", "") : name;
+    }
+
     private MsDiffUtils() {
     }
 }

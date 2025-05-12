@@ -62,7 +62,7 @@ public final class Utils {
                 oos.flush();
             }
         } catch (IOException e) {
-            LOG.debug("Error while serialize object!", e);
+            LOG.debug(Messages.Utils_log_err_serialize, e);
         }
     }
 
@@ -81,16 +81,16 @@ public final class Utils {
         try (ObjectInputStream oin = new ObjectInputStream(inputStream)) {
             return oin.readObject();
         } catch (ClassNotFoundException | IOException e) {
-            LOG.debug("Error while deserialize object!", e);
+            LOG.debug(Messages.Utils_log_err_deserialize, e);
         }
         return null;
     }
 
     public static Document readXml(Reader reader) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
-        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true); //$NON-NLS-1$
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false); //$NON-NLS-1$
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false); //$NON-NLS-1$
         Document doc = factory.newDocumentBuilder().parse(new InputSource(reader));
         doc.normalize();
         return doc;

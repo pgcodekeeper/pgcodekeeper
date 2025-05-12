@@ -161,3 +161,5 @@ Reference: action = CREATE ROLE, offset = 8998, line number = 159, charPositionI
 Reference: action = ALTER ROLE, offset = 9049, line number = 160, charPositionInLine = 0
 Reference: action = CREATE ROLE, offset = 9101, line number = 161, charPositionInLine = 0
 Reference: action = CREATE ROLE, offset = 9156, line number = 162, charPositionInLine = 0
+Reference: action = CREATE ROLE, offset = 9219, line number = 163, charPositionInLine = 0
+Reference: action = CREATE ROLE, offset = 9243, line number = 164, charPositionInLine = 0
