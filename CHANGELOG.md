@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug in processing rules from the ignore list.
+
 ### Removed
 
 ## [10.12.0] - 2025-04-15
