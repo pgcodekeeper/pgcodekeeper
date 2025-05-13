@@ -12,8 +12,6 @@ ALTER TABLE [dbo].[firms_test]
 	ALTER COLUMN [nameRus] NVARCHAR(80) NULL
 GO
 
--- DEPCY: This VIEW v_search_firms_test is a dependency of INDEX: [dbo].[v_search_firms_test].[PK_search_firms_test]
-
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON

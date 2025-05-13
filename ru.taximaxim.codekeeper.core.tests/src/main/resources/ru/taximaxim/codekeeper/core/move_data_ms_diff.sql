@@ -32,8 +32,6 @@ GO
 ALTER TABLE [dbo].[tbl_randomly_generated_part] DROP CONSTRAINT [DF__tbl__c6__2739D489]
 GO
 
--- DEPCY: This SEQUENCE seq2 is a dependency of COLUMN: [dbo].[table1].[c1]
-
 CREATE SEQUENCE [dbo].[seq2]
 	AS bigint
 	START WITH 555888

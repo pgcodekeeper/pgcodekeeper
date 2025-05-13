@@ -87,8 +87,6 @@ CREATE VIEW public.v AS
     1 AS qwerty
    FROM public.tbl;
 
--- DEPCY: This FUNCTION events_insert_trigger is a dependency of TRIGGER: public.tbl.events_insert
-
 CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$

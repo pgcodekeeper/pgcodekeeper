@@ -6,8 +6,6 @@ DROP FUNCTION public.add(public.typ_range, integer);
 
 DROP TYPE public.typ_range;
 
--- DEPCY: This TYPE typ_range is a dependency of FUNCTION: public.add(public.typ_range, integer)
-
 CREATE TYPE public.typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU"

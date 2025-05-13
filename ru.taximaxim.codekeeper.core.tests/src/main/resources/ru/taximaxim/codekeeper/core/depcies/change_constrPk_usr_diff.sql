@@ -8,8 +8,6 @@ ALTER TABLE public.test_fk_1
 ALTER TABLE public.test_t1
 	DROP CONSTRAINT test_t1_pkey;
 
--- DEPCY: This CONSTRAINT test_t1_pkey is a dependency of CONSTRAINT: public.test_fk_1.test_fk_1_col1_fkey
-
 ALTER TABLE public.test_t1
 	ADD CONSTRAINT test_t1_pkey PRIMARY KEY (id) WITH (fillfactor='10');
 
