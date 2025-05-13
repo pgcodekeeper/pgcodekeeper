@@ -108,3 +108,7 @@ Reference: Object = "ProjectTask" (TABLE), action = ALTER, offset = 13773, line 
 Reference: Object = "InsurancePolicy" (TABLE), action = ALTER, offset = 13861, line number = 516, charPositionInLine = 12
 Reference: action = CREATE EXTERNAL TABLE, offset = 14143, line number = 522, charPositionInLine = 0
 Reference: Object = "RestoreDbTable" (TABLE), action = CREATE, offset = 14438, line number = 528, charPositionInLine = 13
+Reference: Object = dbo (SCHEMA), action = null, offset = 14899, line number = 551, charPositionInLine = 13
+Reference: Object = dbo."""😎 🤙 😎 🤙!!""" (TABLE), action = CREATE, offset = 14905, line number = 551, charPositionInLine = 19
+Reference: Object = dbo (SCHEMA), action = null, offset = 15052, line number = 557, charPositionInLine = 13
+Reference: Object = dbo."""🙈 🙉 🙊 🙈 🙉 🙊""" (TABLE), action = CREATE, offset = 15058, line number = 557, charPositionInLine = 19

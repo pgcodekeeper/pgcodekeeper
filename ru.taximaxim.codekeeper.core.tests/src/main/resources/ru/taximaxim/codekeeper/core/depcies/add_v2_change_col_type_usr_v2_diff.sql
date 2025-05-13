@@ -10,8 +10,6 @@ ALTER TABLE public.t2
 ALTER TABLE public.t1
 	ALTER COLUMN c1 TYPE text USING c1::text; /* TYPE change - table: public.t1 original: integer new: text */
 
--- DEPCY: This VIEW v1 is a dependency of VIEW: public.v2
-
 CREATE VIEW public.v1 AS
 	SELECT t1.c1,
     t2.c2,

@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.formatter.ch;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 
@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.formatter.AbstractFormatter;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatItem;
 import ru.taximaxim.codekeeper.core.formatter.StatementFormatter;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Ddl_stmtContext;
@@ -42,13 +43,14 @@ public class ChFormatter extends AbstractFormatter {
     public List<FormatItem> getFormatItems() {
         List<FormatItem> changes = new ArrayList<>();
 
-        Lexer lexer = new CHLexer(new ANTLRInputStream(source));
+        Lexer lexer = new CHLexer(CharStreams.fromString(source));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         CHParser parser = new CHParser(tokenStream);
 
         var rootCtx = parser.ch_file();
         for (QueryContext queryCtx : rootCtx.query()) {
-            if (start <= queryCtx.stop.getStopIndex() || queryCtx.start.getStartIndex() < stop) {
+            if (start <= ((CodeUnitToken) queryCtx.stop).getCodeUnitStop()
+                    || ((CodeUnitToken) queryCtx.start).getCodeUnitStart() < stop) {
                 fillChanges(queryCtx.stmt(), tokenStream, changes);
             }
         }

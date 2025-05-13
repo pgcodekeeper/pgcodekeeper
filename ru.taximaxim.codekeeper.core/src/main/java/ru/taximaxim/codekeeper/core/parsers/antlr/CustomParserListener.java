@@ -87,7 +87,7 @@ public class CustomParserListener<T extends AbstractDatabase> {
         Token t = ex.getErrorToken();
         ErrorTypes errorType = ex instanceof MisplacedObjectException ? ErrorTypes.MISPLACEERROR : ErrorTypes.OTHER;
         AntlrError err = new AntlrError(t, filename, t.getLine(),
-                t.getCharPositionInLine(), ex.getMessage(), errorType);
+                ((CodeUnitToken) t).getCodeUnitPositionInLine(), ex.getMessage(), errorType);
         String errorMessage = err.toString();
         LOG.warn(errorMessage, ex);
         return err;
@@ -95,7 +95,8 @@ public class CustomParserListener<T extends AbstractDatabase> {
 
     private AntlrError handleParserContextException(Exception ex, String filename, ParserRuleContext ctx) {
         Token t = ctx.getStart();
-        AntlrError err = new AntlrError(t, filename, t.getLine(), t.getCharPositionInLine(),  ex.getMessage());
+        AntlrError err = new AntlrError(t, filename, t.getLine(), ((CodeUnitToken) t).getCodeUnitPositionInLine(),
+                ex.getMessage());
         String errorMessage = err.toString();
         if (ex instanceof ObjectCreationException) {
             LOG.warn(errorMessage, ex);

@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core.ignoreparser;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.Set;
@@ -27,7 +25,6 @@ import org.antlr.v4.runtime.RuleContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.IIgnoreList;
@@ -53,13 +50,10 @@ public final class IgnoreParser {
     }
 
     public IgnoreParser parse(Path listFile) throws IOException {
-        return parse(Files.newInputStream(listFile), listFile.toString());
-    }
-
-    public IgnoreParser parse(InputStream stream, String parsedObjectName) throws IOException {
+        String parsedObjectName = listFile.toString();
         LOG.info(Messages.IgnoreParser_log_load_ignored_list, parsedObjectName);
-        IgnoreListParser parser = AntlrParser.makeBasicParser(
-                IgnoreListParser.class, stream, Consts.UTF_8, parsedObjectName);
+        var parser = AntlrParser.createIgnoreListParser(listFile);
+
         try {
             parse(parser);
         } catch (Exception ex) {

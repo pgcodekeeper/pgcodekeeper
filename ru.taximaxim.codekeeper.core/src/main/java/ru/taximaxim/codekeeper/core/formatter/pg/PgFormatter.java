@@ -18,7 +18,7 @@ package ru.taximaxim.codekeeper.core.formatter.pg;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Token;
@@ -28,6 +28,7 @@ import ru.taximaxim.codekeeper.core.formatter.AbstractFormatter;
 import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
 import ru.taximaxim.codekeeper.core.formatter.FormatItem;
 import ru.taximaxim.codekeeper.core.formatter.StatementFormatter;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_function_statementContext;
@@ -51,13 +52,14 @@ public class PgFormatter extends AbstractFormatter {
     public List<FormatItem> getFormatItems() {
         List<FormatItem> changes = new ArrayList<>();
 
-        Lexer lexer = new SQLLexer(new ANTLRInputStream(source));
+        Lexer lexer = new SQLLexer(CharStreams.fromString(source));
         CommonTokenStream tokenStream = new CommonTokenStream(lexer);
         SQLParser parser = new SQLParser(tokenStream);
 
         SqlContext root = parser.sql();
         for (StatementContext st : root.statement()) {
-            if (start <= st.stop.getStopIndex() || st.start.getStartIndex() < stop) {
+            if (start <= ((CodeUnitToken) st.stop).getCodeUnitStop()
+                    || ((CodeUnitToken) st.start).getCodeUnitStart() < stop) {
                 fillChanges(st, tokenStream, changes);
             }
         }
@@ -105,7 +107,8 @@ public class PgFormatter extends AbstractFormatter {
             String definition = pair.getFirst();
             Token codeStart = pair.getSecond();
 
-            sf = new PgStatementFormatter(start, stop, definition, codeStart.getStartIndex(), language, config);
+            sf = new PgStatementFormatter(start, stop, definition, ((CodeUnitToken) codeStart).getCodeUnitStart(),
+                    language, config);
         }
 
         sf.format();

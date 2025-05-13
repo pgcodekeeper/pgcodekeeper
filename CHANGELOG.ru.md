@@ -15,6 +15,20 @@
 
 ### Удалено
 
+## [10.13.0] - 2025-05-13
+
+### Добавлено
+
+- Добавлено ограничение на количество строк и логирование в режиме `insert`.
+
+### Изменено
+
+- Удалена генерация лишних комментариев при пересоздании объектов в скрипте миграции.
+
+### Исправлено
+
+- Исправлена ошибка обработки правил из списка игнорирования.
+
 ## [10.12.0] - 2025-04-15
 
 ### Добавлено
@@ -2245,7 +2259,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...HEAD
+[10.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...v10.13.0
 [10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
 [10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
 [10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0

@@ -21,8 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AbstractAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.AggregateAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.OperatorAnalysisLauncher;
@@ -64,7 +64,7 @@ public final class FullAnalyze {
 
         for (AbstractAnalysisLauncher l : db.getAnalysisLaunchers()) {
             if (l != null) {
-                AntlrParser.submitAntlrTask(antlrTasks,
+                AntlrTaskManager.submit(antlrTasks,
                         () -> l.launchAnalyze(errors, meta),
                         deps -> {
                             l.getStmt().addAllDeps(deps);
@@ -73,7 +73,7 @@ public final class FullAnalyze {
             }
         }
         db.clearAnalysisLaunchers();
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
 
         for (PgObjLocation ref : refs) {
             db.addReference(ref.getFilePath(), ref);

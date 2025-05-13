@@ -34,7 +34,6 @@ import org.junit.jupiter.params.provider.ValueSource;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser;
 
 /**
  * Tests for MS SQL parser rules.
@@ -101,9 +100,7 @@ class MsParserTest {
         AtomicInteger ambiguity = new AtomicInteger();
 
         String sql = TestUtils.readResource(fileNameTemplate + FILES_POSTFIX.SQL, getClass());
-
-        TSQLParser parser = AntlrParser
-                .makeBasicParser(TSQLParser.class, sql, fileNameTemplate, errors);
+        var parser = AntlrParser.createTSQLParser(sql, fileNameTemplate, errors);
 
         parser.getInterpreter().setPredictionMode(PredictionMode.LL_EXACT_AMBIG_DETECTION);
         parser.addErrorListener(new BaseErrorListener() {

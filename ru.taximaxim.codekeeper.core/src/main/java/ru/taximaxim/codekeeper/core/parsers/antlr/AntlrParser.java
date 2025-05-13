@@ -17,36 +17,20 @@ package ru.taximaxim.codekeeper.core.parsers.antlr;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.RecognitionException;
-import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTreeListener;
-import org.antlr.v4.runtime.tree.TerminalNode;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DaemonThreadFactory;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -70,117 +54,114 @@ import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class AntlrParser {
 
-    private static final int POOL_SIZE = Integer.max(1,
-            Integer.getInteger(Consts.POOL_SIZE, Runtime.getRuntime().availableProcessors() - 1));
-
-    private static final ExecutorService ANTLR_POOL =
-            Executors.newFixedThreadPool(POOL_SIZE, new DaemonThreadFactory());
-
     private static volatile long pgParserLastStart;
     private static volatile long msParserLastStart;
     private static volatile long chParserLastStart;
 
-    public static int getPoolSize() {
-        return POOL_SIZE;
+    public static IgnoreListParser createIgnoreListParser(Path listFile) throws IOException {
+        String parsedObjectName = listFile.toString();
+        var stream = CharStreams.fromPath(listFile);
+        Lexer lexer = new IgnoreListLexer(stream);
+        IgnoreListParser parser = new IgnoreListParser(new CommonTokenStream(lexer));
+        addErrorListener(lexer, parser, parsedObjectName, null, 0, 0, 0);
+        return parser;
     }
 
-    /**
-     * Constructs a <code>parserClass</code> {@link Parser} object with the stream as the token source
-     * and {@link CustomAntlrErrorListener} as parser and lexer error listener.
-     */
-    public static <T extends Parser> T makeBasicParser(Class<T> parserClass,
-            InputStream stream, String charset, String parsedObjectName) throws IOException {
-        return makeBasicParser(
-                parserClass, new ANTLRInputStream(new InputStreamReader(stream, charset)),
-                parsedObjectName, null);
+    public static PrivilegesParser createPrivilegesParser(String aclArrayAsString) {
+        var stream = CharStreams.fromString(aclArrayAsString);
+        Lexer lexer = new PrivilegesLexer(stream);
+        PrivilegesParser parser = new PrivilegesParser(new CommonTokenStream(lexer));
+        addErrorListener(lexer, parser, "jdbc privileges", null, 0, 0, 0);
+        return parser;
     }
 
-    public static <T extends Parser> T makeBasicParser(Class<T> parserClass,
-            InputStream stream, String charset, String parsedObjectName,
+    public static SQLParser createSQLParser(String sql, String parsedObjectName, List<Object> errors) {
+        var stream = CharStreams.fromString(sql);
+        return createSQLParser(stream, parsedObjectName, errors, 0, 0, 0);
+    }
+
+    public static SQLParser createSQLParser(String sql, String parsedObjectName, List<Object> errors, Token start) {
+        var stream = CharStreams.fromString(sql);
+        CodeUnitToken cuCodeStart = (CodeUnitToken) start;
+        int offset = cuCodeStart.getCodeUnitStart();
+        int lineOffset = cuCodeStart.getLine() - 1;
+        int inLineOffset = cuCodeStart.getCodeUnitPositionInLine();
+        return createSQLParser(stream, parsedObjectName, errors, offset, lineOffset, inLineOffset);
+    }
+
+    public static SQLParser createSQLParser(InputStream is, String charset, String parsedObjectName,
             List<Object> errors) throws IOException {
-        return makeBasicParser(
-                parserClass, new ANTLRInputStream(new InputStreamReader(stream, charset)),
-                parsedObjectName, errors);
+        var stream = CharStreams.fromStream(is, Charset.forName(charset));
+        return createSQLParser(stream, parsedObjectName, errors, 0, 0, 0);
     }
 
-    /**
-     * Constructs a <code>parserClass</code> {@link Parser} object with the string as the token source
-     * and {@link CustomAntlrErrorListener} as parser and lexer error listener.
-     */
-    public static <T extends Parser> T makeBasicParser(Class<T> parserClass, String string,
-            String parsedObjectName) {
-        return makeBasicParser(parserClass, new ANTLRInputStream(string), parsedObjectName, null);
-    }
-
-    public static <T extends Parser> T makeBasicParser(Class<T> parserClass, String string,
-            String parsedObjectName, List<Object> errors) {
-        return makeBasicParser(parserClass, new ANTLRInputStream(string), parsedObjectName, errors);
-    }
-
-    private static <T extends Parser> T makeBasicParser(Class<T> parserClass,
-            ANTLRInputStream stream, String parsedObjectName, List<Object> errors) {
-        return makeBasicParser(parserClass, stream, parsedObjectName, errors, 0, 0, 0);
-    }
-
-    public static <T extends Parser> T makeBasicParser(Class<T> parserClass, String string,
-            String parsedObjectName, List<Object> errors, Token codeStart) {
-        int offset = codeStart.getStartIndex();
-        int lineOffset = codeStart.getLine() - 1;
-        int inLineOffset = codeStart.getCharPositionInLine();
-        return makeBasicParser(parserClass, new ANTLRInputStream(string),
-                parsedObjectName, errors, offset, lineOffset, inLineOffset);
-    }
-
-    private static <T extends Parser> T makeBasicParser(Class<T> parserClass,
-            ANTLRInputStream stream, String parsedObjectName, List<Object> errors,
+    private static SQLParser createSQLParser(CharStream stream, String parsedObjectName, List<Object> errors,
             int offset, int lineOffset, int inLineOffset) {
-        Lexer lexer;
-        Parser parser;
-        if (parserClass.isAssignableFrom(SQLParser.class)) {
-            lexer = new SQLLexer(stream);
-            parser = new SQLParser(new CommonTokenStream(lexer));
-            parser.setErrorHandler(new CustomSQLAntlrErrorStrategy());
-        } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
-            lexer = new TSQLLexer(stream);
-            parser = new TSQLParser(new CommonTokenStream(lexer));
-            parser.setErrorHandler(new CustomTSQLAntlrErrorStrategy());
-        } else if (parserClass.isAssignableFrom(CHParser.class)) {
-            lexer = new CHLexer(stream);
-            parser = new CHParser(new CommonTokenStream(lexer));
-            parser.setErrorHandler(new CustomChSQLAntlrErrorStrategy());
-        } else if (parserClass.isAssignableFrom(IgnoreListParser.class)) {
-            lexer = new IgnoreListLexer(stream);
-            parser = new IgnoreListParser(new CommonTokenStream(lexer));
-        } else if (parserClass.isAssignableFrom(PrivilegesParser.class)) {
-            lexer = new PrivilegesLexer(stream);
-            parser = new PrivilegesParser(new CommonTokenStream(lexer));
-        } else {
-            throw new IllegalArgumentException("Unknown parser class: " + parserClass);
-        }
+        SQLLexer lexer = new SQLLexer(stream);
+        SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
+        addErrorListener(lexer, parser, parsedObjectName, errors, offset, lineOffset, inLineOffset);
+        pgParserLastStart = System.currentTimeMillis();
+        return parser;
+    }
 
-        CustomAntlrErrorListener err = new CustomAntlrErrorListener(
-                parsedObjectName, errors, offset, lineOffset, inLineOffset);
+    public static TSQLParser createTSQLParser(String sql, String parsedObjectName, List<Object> errors) {
+        var stream = CharStreams.fromString(sql);
+        return createTSQLParser(stream, parsedObjectName, errors);
+    }
+
+    public static TSQLParser createTSQLParser(InputStream is, String charset, String parsedObjectName,
+            List<Object> errors) throws IOException {
+        var stream = CharStreams.fromStream(is, Charset.forName(charset));
+        return createTSQLParser(stream, parsedObjectName, errors);
+    }
+
+    private static TSQLParser createTSQLParser(CharStream stream, String parsedObjectName, List<Object> errors) {
+        TSQLLexer lexer = new TSQLLexer(stream);
+        TSQLParser parser = new TSQLParser(new CommonTokenStream(lexer));
+        addErrorListener(lexer, parser, parsedObjectName, errors, 0, 0, 0);
+        msParserLastStart = System.currentTimeMillis();
+        return parser;
+    }
+
+    public static CHParser createCHParser(String sql, String parsedObjectName, List<Object> errors) {
+        var stream = CharStreams.fromString(sql);
+        return createCHParser(stream, parsedObjectName, errors);
+    }
+
+    public static CHParser createCHParser(InputStream is, String charset, String parsedObjectName,
+            List<Object> errors) throws IOException {
+        var stream = CharStreams.fromStream(is, Charset.forName(charset));
+        return createCHParser(stream, parsedObjectName, errors);
+    }
+
+    private static CHParser createCHParser(CharStream stream, String parsedObjectName, List<Object> errors) {
+        Lexer lexer = new CHLexer(stream);
+        CHParser parser = new CHParser(new CommonTokenStream(lexer));
+        addErrorListener(lexer, parser, parsedObjectName, errors, 0, 0, 0);
+        chParserLastStart = System.currentTimeMillis();
+        return parser;
+    }
+
+    private static void addErrorListener(Lexer lexer, Parser parser, String parsedObjectName,
+            List<Object> errors, int offset, int lineOffset, int inLineOffset) {
+        var listener = new CustomAntlrErrorListener(parsedObjectName, errors, offset, lineOffset, inLineOffset);
         lexer.removeErrorListeners();
-        lexer.addErrorListener(err);
+        lexer.addErrorListener(listener);
         parser.removeErrorListeners();
-        parser.addErrorListener(err);
-
-        return parserClass.cast(parser);
+        parser.addErrorListener(listener);
     }
 
     public static void parseSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<Object> errors, IProgressMonitor mon, int monitoringLevel,
             SqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks) {
-        submitAntlrTask(antlrTasks, () -> {
+        AntlrTaskManager.submit(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(mon);
-            try(InputStream stream = inputStream.getStream()) {
-                SQLParser parser = makeBasicParser(SQLParser.class, stream,
-                        charsetName, parsedObjectName, errors);
+            try (InputStream stream = inputStream.getStream()) {
+                var parser = createSQLParser(stream, charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                saveTimeOfLastParserStart(SQLParser.class);
                 return new Pair<>(parser.sql(), (CommonTokenStream) parser.getTokenStream());
-            } catch (MonitorCancelledRuntimeException mcre){
+            } catch (MonitorCancelledRuntimeException mcre) {
                 throw new InterruptedException();
             }
         }, pair -> {
@@ -195,16 +176,14 @@ public final class AntlrParser {
     public static void parseTSqlStream(InputStreamProvider inputStream, String charsetName,
             String parsedObjectName, List<Object> errors, IProgressMonitor mon, int monitoringLevel,
             TSqlContextProcessor listener, Queue<AntlrTask<?>> antlrTasks) {
-        submitAntlrTask(antlrTasks, () -> {
+        AntlrTaskManager.submit(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(mon);
-            try(InputStream stream = inputStream.getStream()) {
-                TSQLParser parser = makeBasicParser(TSQLParser.class,
-                        stream, charsetName, parsedObjectName, errors);
+            try (InputStream stream = inputStream.getStream()) {
+                var parser = createTSQLParser(stream, charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                saveTimeOfLastParserStart(TSQLParser.class);
                 return new Pair<>((CommonTokenStream) parser.getInputStream(), parser.tsql_file());
-            } catch (MonitorCancelledRuntimeException mcre){
+            } catch (MonitorCancelledRuntimeException mcre) {
                 throw new InterruptedException();
             }
         }, pair -> {
@@ -219,13 +198,12 @@ public final class AntlrParser {
     public static void parseChSqlStream(InputStreamProvider inputStream, String charsetName, String parsedObjectName,
             List<Object> errors, IProgressMonitor mon, int monitoringLevel, ChSqlContextProcessor listener,
             Queue<AntlrTask<?>> antlrTasks) {
-        submitAntlrTask(antlrTasks, () -> {
+        AntlrTaskManager.submit(antlrTasks, () -> {
             PgDiffUtils.checkCancelled(mon);
             try (InputStream stream = inputStream.getStream()) {
-                CHParser parser = makeBasicParser(CHParser.class, stream, charsetName, parsedObjectName, errors);
+                var parser = createCHParser(stream, charsetName, parsedObjectName, errors);
                 parser.addParseListener(new CustomParseTreeListener(
                         monitoringLevel, mon == null ? new NullProgressMonitor() : mon));
-                saveTimeOfLastParserStart(CHParser.class);
                 return new Pair<>((CommonTokenStream) parser.getInputStream(), parser.ch_file());
             } catch (MonitorCancelledRuntimeException mcre) {
                 throw new InterruptedException();
@@ -237,100 +215,6 @@ public final class AntlrParser {
                 errors.add(CustomParserListener.handleUnresolvedReference(ex, parsedObjectName));
             }
         });
-    }
-
-    public static <T extends ParserRuleContext, P extends Parser>
-    T parseSqlString(Class<P> parserClass, Function<P, T> parserEntry, String sql,
-            String parsedObjectName, List<Object> errors) {
-        Future<T> f = submitAntlrTask(() -> parserEntry.apply(
-                makeBasicParser(parserClass, sql, parsedObjectName, errors)));
-        try {
-            saveTimeOfLastParserStart(parserClass);
-            return f.get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException(ex);
-        } catch (ExecutionException ex) {
-            throw new IllegalStateException(ex);
-        }
-    }
-
-    public static <T> Future<T> submitAntlrTask(Callable<T> task) {
-        return ANTLR_POOL.submit(task);
-    }
-
-    public static <T> void submitAntlrTask(Queue<AntlrTask<?>> antlrTasks,
-            Callable<T> task, Consumer<T> finalizer) {
-        Future<T> future = submitAntlrTask(task);
-        antlrTasks.add(new AntlrTask<>(future, finalizer));
-    }
-
-    public static void finishAntlr(Queue<AntlrTask<?>> antlrTasks)
-            throws InterruptedException, IOException {
-        AntlrTask<?> task;
-        try {
-            while ((task = antlrTasks.poll()) != null) {
-                task.finish();
-            }
-        } catch (ExecutionException ex) {
-            handleAntlrTaskException(ex);
-        } catch (MonitorCancelledRuntimeException ex) {
-            // finalizing parser listeners' cancellations will reach here
-            throw new InterruptedException();
-        }
-    }
-
-    /**
-     * Uwraps potential parser Interrupted and IO Exceptions from ExecutionException.<br>
-     * If non-standard parser exception is caught in the wrapper, it is rethrown
-     * as an IllegalStateException.
-     *
-     * @throws InterruptedException
-     * @throws IOException
-     * @throws IllegalStateException
-     */
-    public static void handleAntlrTaskException(ExecutionException ex)
-            throws InterruptedException, IOException {
-        Throwable t = ex.getCause();
-        if (t instanceof InterruptedException in) {
-            throw in;
-        }
-        if (t instanceof IOException io) {
-            throw io;
-        }
-
-        throw new IllegalStateException(ex);
-    }
-
-    public static void checkToClean(DatabaseType databaseType, long cleaningInterval) {
-        long lastParserStart = switch (databaseType) {
-        case CH -> chParserLastStart;
-        case MS -> msParserLastStart;
-        case PG -> pgParserLastStart;
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
-        };
-        if (lastParserStart != 0 && (cleaningInterval < System.currentTimeMillis() - lastParserStart)) {
-            cleanParserCache(databaseType);
-        }
-    }
-
-    private static void cleanParserCache(DatabaseType databaseType) {
-        Class<? extends Parser> parserClazz = switch (databaseType) {
-        case CH -> {
-            chParserLastStart = 0;
-            yield CHParser.class;
-        }
-        case MS -> {
-            msParserLastStart = 0;
-            yield TSQLParser.class;
-        }
-        case PG -> {
-            pgParserLastStart = 0;
-            yield SQLParser.class;
-        }
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
-        };
-        makeBasicParser(parserClazz, ";", "fake string to clean parser cache").getInterpreter().clearDFA();
     }
 
     public static void cleanCacheOfAllParsers() {
@@ -345,89 +229,42 @@ public final class AntlrParser {
         }
     }
 
-    private static void saveTimeOfLastParserStart(Class<?> parserClass) {
-        if (parserClass.isAssignableFrom(SQLParser.class)) {
-            pgParserLastStart = System.currentTimeMillis();
-        } else if (parserClass.isAssignableFrom(TSQLParser.class)) {
-            msParserLastStart = System.currentTimeMillis();
-        } else if (parserClass.isAssignableFrom(CHParser.class)) {
-            chParserLastStart = System.currentTimeMillis();
-        } else {
-            throw new IllegalArgumentException("Unknown parser class: " + parserClass);
+    public static void checkToClean(long cleaningInterval) {
+        checkToClean(cleaningInterval, chParserLastStart, DatabaseType.CH);
+        checkToClean(cleaningInterval, msParserLastStart, DatabaseType.MS);
+        checkToClean(cleaningInterval, pgParserLastStart, DatabaseType.PG);
+    }
+
+    private static void checkToClean(long cleaningInterval, long parserLastStart, DatabaseType dbType) {
+        if (parserLastStart != 0 && (cleaningInterval < System.currentTimeMillis() - parserLastStart)) {
+            cleanParserCache(dbType);
         }
+    }
+
+    private static void cleanParserCache(DatabaseType databaseType) {
+        String sql = ";";
+        String parsedObjectName = "fake string to clean parser cache";
+        Parser parser = switch (databaseType) {
+            case CH -> {
+                var chParser = createCHParser(sql, parsedObjectName, null);
+                chParserLastStart = 0;
+                yield chParser;
+            }
+            case MS -> {
+                var msParser = createTSQLParser(sql, parsedObjectName, null);
+                msParserLastStart = 0;
+                yield msParser;
+            }
+            case PG -> {
+                var pgParser = createSQLParser(sql, parsedObjectName, null);
+                pgParserLastStart = 0;
+                yield pgParser;
+            }
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + databaseType);
+        };
+        parser.getInterpreter().clearDFA();
     }
 
     private AntlrParser() {
-        // only static
-    }
-}
-
-class CustomParseTreeListener implements ParseTreeListener {
-    private final int monitoringLevel;
-    private final IProgressMonitor monitor;
-
-    public CustomParseTreeListener(int monitoringLevel, IProgressMonitor monitor){
-        this.monitoringLevel = monitoringLevel;
-        this.monitor = monitor;
-    }
-
-    @Override
-    public void visitTerminal(TerminalNode node) {
-        //no imp
-    }
-
-    @Override
-    public void visitErrorNode(ErrorNode node) {
-        //no imp
-    }
-
-    @Override
-    public void exitEveryRule(ParserRuleContext ctx) {
-        if (ctx.depth() <= monitoringLevel) {
-            monitor.worked(1);
-            try {
-                PgDiffUtils.checkCancelled(monitor);
-            } catch (InterruptedException e) {
-                throw new MonitorCancelledRuntimeException();
-            }
-        }
-    }
-
-    @Override
-    public void enterEveryRule(ParserRuleContext ctx) {
-        //no imp
-    }
-}
-
-class CustomAntlrErrorListener extends BaseErrorListener {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CustomAntlrErrorListener.class);
-
-    private final String parsedObjectName;
-    private final List<Object> errors;
-    private final int offset;
-    private final int lineOffset;
-    private final int inLineOffset;
-
-    public CustomAntlrErrorListener(String parsedObjectName, List<Object> errors,
-            int offset, int lineOffset, int inLineOffset) {
-        this.parsedObjectName = parsedObjectName;
-        this.errors = errors;
-        this.offset = offset;
-        this.lineOffset = lineOffset;
-        this.inLineOffset = inLineOffset;
-    }
-
-    @Override
-    public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
-            int line, int charPositionInLine, String msg, RecognitionException e) {
-        Token token = offendingSymbol instanceof Token t ? t : null;
-        AntlrError error = new AntlrError(token, parsedObjectName, line, charPositionInLine, msg)
-                .copyWithOffset(offset, lineOffset, inLineOffset);
-
-        LOG.warn("ANTLR Error:\n{}", error);
-        if (errors != null) {
-            errors.add(error);
-        }
     }
 }

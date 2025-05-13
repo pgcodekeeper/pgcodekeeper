@@ -21,8 +21,6 @@ CREATE VIEW s.v1 AS
 
 ALTER VIEW s.v1 OWNER TO levsha_aa;
 
--- DEPCY: This VIEW v2 is a dependency of VIEW: s.v3
-
 CREATE VIEW public.v2 AS
 	SELECT t1.id
    FROM public.t1;

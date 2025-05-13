@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -37,6 +37,7 @@ import ru.taximaxim.codekeeper.core.formatter.pg.PgFormatterUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
@@ -90,8 +91,9 @@ public class VerificationIndents implements IVerification {
 
     public VerificationIndents(Token codeStart, String functionDefinition, String language,
             String filename, List<Object> errors, VerificationProperties rules) {
-        this.defOffset = codeStart.getStartIndex();
-        this.lastTokenOffset = codeStart.getStartIndex();
+        CodeUnitToken cuCodeStart = (CodeUnitToken) codeStart;
+        this.defOffset = cuCodeStart.getCodeUnitStart();
+        this.lastTokenOffset = cuCodeStart.getCodeUnitStart();
         this.codeStart = codeStart;
         this.filename = filename;
         this.errors = errors;
@@ -108,7 +110,7 @@ public class VerificationIndents implements IVerification {
         this.rules = rules;
         this.tokens = analyzeDefinition(definition, tokenStream);
         if (!tokens.isEmpty()) {
-            lastTokenOffset = tokens.get(0).getStartIndex();
+            lastTokenOffset = ((CodeUnitToken) tokens.get(0)).getCodeUnitStart();
         }
     }
 
@@ -121,8 +123,9 @@ public class VerificationIndents implements IVerification {
         }
 
         for (Token t : tokens) {
-            int tokenStart = defOffset + t.getStartIndex();
-            int length = t.getStopIndex() - t.getStartIndex() + 1;
+            CodeUnitToken cuToken = (CodeUnitToken) t;
+            int tokenStart = defOffset + cuToken.getCodeUnitStart();
+            int length = cuToken.getCodeUnitStop() - cuToken.getCodeUnitStart() + 1;
             int type = t.getType();
 
             if (type == SQLLexer.NewLine) {
@@ -295,8 +298,8 @@ public class VerificationIndents implements IVerification {
 
     private void addError(Token t, String msg) {
         AntlrError err = new AntlrError(filename, t.getLine(),
-                t.getCharPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR)
-                .copyWithOffset(defOffset, codeStart.getLine() - 1, codeStart.getCharPositionInLine());
+                ((CodeUnitToken) t).getCodeUnitPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR)
+                .copyWithOffset(defOffset, codeStart.getLine() - 1, ((CodeUnitToken) codeStart).getCodeUnitPositionInLine());
         errors.add(err);
     }
 
@@ -306,7 +309,7 @@ public class VerificationIndents implements IVerification {
     }
 
     private List<? extends Token> analyzeDefinition(String definition, String language) {
-        Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
+        Lexer lexer = new SQLLexer(CharStreams.fromString(definition));
         CommonTokenStream stream = new CommonTokenStream(lexer);
         SQLParser parser = new SQLParser(stream);
 

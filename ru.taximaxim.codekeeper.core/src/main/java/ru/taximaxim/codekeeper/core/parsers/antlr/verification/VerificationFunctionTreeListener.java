@@ -25,6 +25,7 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Base_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Case_expressionContext;
@@ -105,8 +106,9 @@ public class VerificationFunctionTreeListener implements ParseTreeListener {
             if (tableCtx.TEMP() == null && tableCtx.TEMPORARY() == null) {
                 String msg = Messages.VerificationFunctionTreeListener_temp_table;
                 AntlrError err = new AntlrError(fileName, tableCtx.getStart().getLine(),
-                        tableCtx.getStart().getCharPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR)
-                        .copyWithOffset(token.getStartIndex(), token.getLine() - 1,token.getCharPositionInLine());
+                        ((CodeUnitToken) tableCtx.getStart()).getCodeUnitPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR)
+                        .copyWithOffset(((CodeUnitToken) token).getCodeUnitStart(),
+                                token.getLine() - 1, ((CodeUnitToken) token).getCodeUnitPositionInLine());
                 errors.add(err);
             }
             return;
@@ -129,9 +131,11 @@ public class VerificationFunctionTreeListener implements ParseTreeListener {
 
             if (id.QuotedIdentifier() != null) {
                 String msg = Messages.VerificationFunctionTreeListener_quotation_marks;
+                CodeUnitToken cuToken = (CodeUnitToken) token;
                 AntlrError err = new AntlrError(fileName, id.getStart().getLine(),
-                        id.getStart().getCharPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR)
-                        .copyWithOffset(token.getStartIndex(), token.getLine() - 1, token.getCharPositionInLine());
+                        ((CodeUnitToken) id.getStart()).getCodeUnitPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR)
+                        .copyWithOffset(cuToken.getCodeUnitStart(), cuToken.getLine() - 1,
+                                cuToken.getCodeUnitPositionInLine());
                 errors.add(err);
             }
         }
@@ -188,7 +192,7 @@ public class VerificationFunctionTreeListener implements ParseTreeListener {
     private void verifyCase(ParserRuleContext caseCtx) {
         String msg = Messages.VerificationFunctionTreeListener_case_block;
         AntlrError err = new AntlrError(fileName, caseCtx.getStop().getLine(),
-                caseCtx.getStart().getCharPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR);
+                ((CodeUnitToken) caseCtx.getStart()).getCodeUnitPositionInLine(), msg, ErrorTypes.VERIFICATIONERROR);
         errors.add(err);
     }
 }

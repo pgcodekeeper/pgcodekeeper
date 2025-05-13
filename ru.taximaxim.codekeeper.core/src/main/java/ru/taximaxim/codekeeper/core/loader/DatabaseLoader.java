@@ -22,8 +22,8 @@ import java.util.List;
 import java.util.Queue;
 
 import ru.taximaxim.codekeeper.core.localizations.Messages;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
+import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
@@ -77,7 +77,7 @@ public abstract class DatabaseLoader {
     }
 
     protected void finishLoaders() throws InterruptedException, IOException {
-        AntlrParser.finishAntlr(antlrTasks);
+        AntlrTaskManager.finish(antlrTasks);
         DatabaseLoader l;
         while ((l = launchedLoaders.poll()) != null) {
             finishLoader(l);

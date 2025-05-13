@@ -96,6 +96,10 @@ public final class Messages extends NLS {
 
     public static String IgnoreSchemaList_log_ignored_schema;
 
+    public static String InsertWriter_select_size_error_message;
+
+    public static String InsertWriter_select_size_info_message;
+
     public static String JdbcChLoader_log_connection_db;
 
     public static String JdbcLoader_log_read_db_objects;

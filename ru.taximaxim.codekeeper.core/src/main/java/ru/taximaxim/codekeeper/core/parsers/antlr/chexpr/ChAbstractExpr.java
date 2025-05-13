@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Alias_clauseContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Qualified_nameContext;
@@ -124,9 +125,9 @@ public abstract class ChAbstractExpr {
                     .setObject(depcy)
                     .setCtx(ctx)
                     .build();
-            if (start != null) {
-                loc = loc.copyWithOffset(start.getStartIndex(),
-                        start.getLine() - 1, start.getCharPositionInLine(), null);
+            if (start instanceof CodeUnitToken codeUnitStart) {
+                loc = loc.copyWithOffset(codeUnitStart.getCodeUnitStart(),
+                        codeUnitStart.getLine() - 1, codeUnitStart.getCodeUnitPositionInLine(), null);
             }
 
             depcies.add(loc);

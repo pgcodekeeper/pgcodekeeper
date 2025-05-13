@@ -73,7 +73,6 @@ public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
             var defType = typeExpr.table_column_property_expr();
             if (defType != null) {
-                col.setAutoIncremental(defType.AUTO_INCREMENT() != null);
                 if (defType.DEFAULT() != null) {
                     col.setDefaultType("DEFAULT");
                 } else if (defType.MATERIALIZED() != null) {

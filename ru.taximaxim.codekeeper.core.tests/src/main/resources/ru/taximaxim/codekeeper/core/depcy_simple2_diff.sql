@@ -6,8 +6,6 @@ DROP VIEW s.v3;
 
 DROP VIEW public.v2;
 
--- DEPCY: This VIEW v2 is a dependency of VIEW: s.v3
-
 CREATE VIEW public.v2 AS
 	SELECT t1.id,
     'qwe' AS c1

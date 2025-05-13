@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
+import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.formatter.FormatParseTreeListener;
 import ru.taximaxim.codekeeper.core.formatter.IndentDirection;
 import ru.taximaxim.codekeeper.core.formatter.StatementFormatter;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLLexer;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_bodyContext;
@@ -51,7 +52,7 @@ public class PgStatementFormatter extends StatementFormatter {
         super(start, stop, 0, 0, config);
         this.tokens = analyzeDefinition(definition, tokenStream);
         if (!tokens.isEmpty()) {
-            lastTokenOffset = tokens.get(0).getStartIndex();
+            lastTokenOffset = ((CodeUnitToken) tokens.get(0)).getCodeUnitStart();
         }
     }
 
@@ -61,7 +62,7 @@ public class PgStatementFormatter extends StatementFormatter {
     }
 
     private List<? extends Token> analyzeDefinition(String definition, String language) {
-        Lexer lexer = new SQLLexer(new ANTLRInputStream(definition));
+        Lexer lexer = new SQLLexer(CharStreams.fromString(definition));
         if (isLexerOnly()) {
             // fast-path when no parser is required for advanced structure detection
             return lexer.getAllTokens();

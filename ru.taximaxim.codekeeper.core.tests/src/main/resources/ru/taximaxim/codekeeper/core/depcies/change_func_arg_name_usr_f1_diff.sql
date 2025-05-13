@@ -6,8 +6,6 @@ DROP FUNCTION public.f2(j text);
 
 DROP FUNCTION public.f1(j text);
 
--- DEPCY: This FUNCTION f1 is a dependency of FUNCTION: public.f2(text)
-
 CREATE OR REPLACE FUNCTION public.f1(k text) RETURNS text
     LANGUAGE sql
     AS $$ SELECT 'oldtext'::text; $$;

@@ -34,9 +34,9 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Data_typeContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Function_args_parserContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Indirection_identifierContext;
@@ -177,9 +177,9 @@ public abstract class AbstractExpr {
                     .setObject(depcy)
                     .setCtx(ctx)
                     .build();
-            if (start != null) {
-                loc = loc.copyWithOffset(start.getStartIndex(),
-                        start.getLine() - 1, start.getCharPositionInLine(), null);
+            if (start instanceof CodeUnitToken codeUnitStart) {
+                loc = loc.copyWithOffset(codeUnitStart.getCodeUnitStart(),
+                        codeUnitStart.getLine() - 1, codeUnitStart.getCodeUnitPositionInLine(), null);
             }
 
             depcies.add(loc);
@@ -420,16 +420,16 @@ public abstract class AbstractExpr {
     }
 
     protected void addFunctionSigDepcy(String signature, Token start, DbObjType type) {
-        SQLParser p = AntlrParser.makeBasicParser(SQLParser.class, signature, "signature parser", null, start);
+        var parser = AntlrParser.createSQLParser(signature, "signature parser", null, start);
 
         List<ParserRuleContext> ids;
         UnaryOperator<String> fullNameOperator;
         if (type == DbObjType.OPERATOR) {
-            Operator_args_parserContext sig = p.operator_args_parser();
+            Operator_args_parserContext sig = parser.operator_args_parser();
             ids = PgParserAbstract.getIdentifiers(sig.operator_name());
             fullNameOperator = name -> PgParserAbstract.parseOperatorSignature(name, sig.operator_args());
         } else {
-            Function_args_parserContext sig = p.function_args_parser();
+            Function_args_parserContext sig = parser.function_args_parser();
             ids = PgParserAbstract.getIdentifiers(sig.schema_qualified_name());
             fullNameOperator = name -> PgParserAbstract.parseSignature(name, sig.function_args());
         }
