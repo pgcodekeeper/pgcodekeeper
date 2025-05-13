@@ -108,18 +108,12 @@ public abstract class AbstractPgTable extends AbstractTable {
         }
     }
 
-    private void addTriggerToScript(String triggerName, Map<String, String> newTriggers, SQLScript script) {
-        String newTriggerState;
-        if (newTriggers.containsKey(triggerName)) {
-            newTriggerState = newTriggers.get(triggerName);
-        } else {
-            // new table has implicit enabled trigger
-            newTriggerState = EnabledState.ENABLE.name();
+    private void addTriggerToScript(String tgName, Map<String, String> newTriggers, SQLScript script) {
+        if (newTriggers.containsKey(tgName)) {
+            String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newTriggers.get(tgName),
+                    tgName);
+            script.addStatement(changeTgState, SQLActionType.END);
         }
-        String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(),
-                newTriggerState, triggerName);
-
-        script.addStatement(changeTgState, SQLActionType.END);
     }
 
     private void appendTriggerStates(SQLScript script) {
