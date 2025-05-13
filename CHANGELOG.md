@@ -9,17 +9,25 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.13.0] - 2025-05-13
+
+### Added
+
 - Added rows count limit and logging in `insert` mode.
 
 ### Changed
 
-- Removed unnecessary comments when recreating objects in the migration script.
+- Removed generation of unnecessary comments when recreating objects in the migration script.
 
 ### Fixed
 
 - Fixed a bug in processing rules from the ignore list.
-
-### Removed
 
 ## [10.12.0] - 2025-04-15
 
@@ -2250,7 +2258,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...HEAD
+[10.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...v10.13.0
 [10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
 [10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
 [10.10.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.9.0...v10.10.0
