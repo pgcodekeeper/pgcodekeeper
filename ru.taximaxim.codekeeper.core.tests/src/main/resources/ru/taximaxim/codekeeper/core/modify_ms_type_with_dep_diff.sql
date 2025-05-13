@@ -14,8 +14,6 @@ GO
 DROP TYPE [dbo].[custom_type]
 GO
 
--- DEPCY: This TYPE custom_type is a dependency of FUNCTION: [dbo].[changed_function]
-
 CREATE TYPE [dbo].[custom_type] FROM [bit]
 GO
 

@@ -90,19 +90,20 @@ public final class DepcyResolver {
 
     private final Set<ActionContainer> actions = new LinkedHashSet<>();
     /**
-     * Хранит запущенные итерации по удалению объектов, используется для предотвращения циклического прохода по графу
+     * Хранит запущенные итерации по удалению объектов
      */
     private final Set<PgStatement> droppedObjects = new HashSet<>();
+    private final Set<PgStatement> triedToDrop = new HashSet<>();
+
     /**
-     * Хранит запущенные итерации по добавлению объектов, используется для предотвращения циклического прохода по графу
+     * Хранит запущенные итерации по добавлению объектов
      */
     private final Set<PgStatement> createdObjects = new HashSet<>();
 
     /**
-     * Stores the result of method appendAlterSQL. Key - Qualified name of
-     * {@link PgStatement}, value - {@link ObjectState}
+     * Stores the result of method appendAlterSQL. Key - {@link PgStatement}, value - {@link ObjectState}
      */
-    private final Map<String, ObjectState> states = new HashMap<>();
+    private final Map<PgStatement, ObjectState> states = new HashMap<>();
 
     private final Map<String, Boolean> recreatedObjs = new HashMap<>();
 
@@ -114,14 +115,14 @@ public final class DepcyResolver {
         this.toRefresh = toRefresh;
     }
 
-    private void fillObjects(List<DbObject> objects/* , PgStatement starter */) {
+    private void fillObjects(List<DbObject> objects, PgStatement starter) {
         for (DbObject obj : objects) {
             if (obj.newStatement() == null) {
-                addDropStatements(obj.oldStatement());
+                addDropStatements(obj.oldStatement(), starter);
             } else if (obj.oldStatement() == null) {
-                addCreateStatements(obj.newStatement());
+                addCreateStatements(obj.newStatement(), starter);
             } else {
-                addAlterStatements(obj.oldStatement(), obj.newStatement());
+                addAlterStatements(obj.oldStatement(), obj.newStatement(), starter);
             }
         }
     }
@@ -131,17 +132,20 @@ public final class DepcyResolver {
      * Объект существует в новой базе, но не существует в старой. Мы его создаем, а также добавляем для создания все
      * объекты, которые требуются для правильной работы создаваемого объекта.
      *
-     * @param statement
+     * @param newStatement
+     *            объект в новой базе данных
+     * @param starter
+     *            объект запустивший процесс
      */
-    private void addCreateStatements(PgStatement statement) {
-        if (!createdObjects.add(statement)) {
+    private void addCreateStatements(PgStatement newStatement, PgStatement starter) {
+        if (!createdObjects.add(newStatement)) {
             return;
         }
 
-        for (var dependency : GraphUtils.forward(newDepcyGraph, statement)) {
-            tryToCreate(dependency, statement);
+        for (var dependency : GraphUtils.forward(newDepcyGraph, newStatement)) {
+            tryToCreate(dependency, newStatement);
         }
-        tryToCreate(statement, null);
+        tryToCreate(newStatement, starter);
     }
 
     /**
@@ -149,19 +153,22 @@ public final class DepcyResolver {
      * Объекта не существует в новой базе, но существует в старой, мы его удаляем. И удаляем из старой базы все объекты,
      * которым этот объект требуется, т.к. они будут ошибочны, при отсутсвии этого объекта.
      *
-     * @param statement
-     *            объект для удаления из старой базы
+     * @param oldStatement
+     *            объект в старой базе данных
+     * @param starter
+     *            объект запустивший процесс
      */
-    private void addDropStatements(PgStatement statement) {
-        if (!droppedObjects.add(statement)) {
+    private void addDropStatements(PgStatement oldStatement, PgStatement starter) {
+        if (!droppedObjects.add(oldStatement)) {
             return;
         }
 
-        for (var dependent : GraphUtils.reverse(oldDepcyGraph, statement)) {
-            tryToDrop(dependent, statement);
+        for (var dependent : GraphUtils.reverse(oldDepcyGraph, oldStatement)) {
+            tryToDrop(dependent, oldStatement);
         }
-        tryToDrop(statement, null);
-        resolveCannotDrop(statement);
+
+        tryToDrop(oldStatement, starter);
+        resolveCannotDrop(oldStatement);
     }
 
     private void resolveCannotDrop(PgStatement oldStatement) {
@@ -172,37 +179,43 @@ public final class DepcyResolver {
         for (var dep : GraphUtils.forward(oldDepcyGraph, oldStatement)) {
             if (dep instanceof PgIndex) {
                 addToListWithoutDepcies(ObjectState.DROP, dep, oldStatement);
-                addDropStatements(dep);
+                addDropStatements(dep, oldStatement);
             }
         }
     }
 
     /**
      * Добавить выражение для изменения объекта
-     * @param oldObj исходный объект
-     * @param newObj новый объект
+     *
+     * @param oldStatement
+     *            исходный объект
+     * @param newStatement
+     *            новый объект
+     * @param starter
+     *            объект запустивший процесс
      */
-    private void addAlterStatements(PgStatement oldObjStat, PgStatement newObjStat) {
-        ObjectState state = getObjectState(oldObjStat, newObjStat);
+    private void addAlterStatements(PgStatement oldStatement, PgStatement newStatement,
+            PgStatement starter) {
+        ObjectState state = getObjectState(oldStatement, newStatement);
         if (state.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
-            addDropStatements(oldObjStat);
+            addDropStatements(oldStatement, starter);
             return;
         }
 
         // добавляем измененные объекты
         // пропускаем колонки таблиц из дроп листа
-        if (state == ObjectState.ALTER && !inDropsList(oldObjStat)
-                && (oldObjStat.getStatementType() != DbObjType.COLUMN || !inDropsList(oldObjStat.getParent()))) {
-            addToListWithoutDepcies(ObjectState.ALTER, oldObjStat, null);
+        if (state == ObjectState.ALTER && !inDropsList(oldStatement)
+                && (oldStatement.getStatementType() != DbObjType.COLUMN || !inDropsList(oldStatement.getParent()))) {
+            addToListWithoutDepcies(ObjectState.ALTER, oldStatement, starter);
         }
 
-        alterMsTableColumns(oldObjStat, newObjStat);
+        alterMsTableColumns(oldStatement, newStatement);
     }
 
-    private void alterMsTableColumns(PgStatement oldObjStat, PgStatement newObjStat) {
+    private void alterMsTableColumns(PgStatement oldStatement, PgStatement newStatement) {
         // if no depcies were triggered for a MsTable alter
         // check for column layout changes and refresh views
-        if (oldObjStat instanceof MsTable tOld && newObjStat instanceof MsTable tNew) {
+        if (oldStatement instanceof MsTable tOld && newStatement instanceof MsTable tNew) {
             List<AbstractColumn> cOld = tOld.getColumns();
             List<AbstractColumn> cNew = tNew.getColumns();
 
@@ -253,7 +266,7 @@ public final class DepcyResolver {
                 if (newSt != null) {
                     // add views to emit refreshes others are to block drop+create pairs for unchanged statements
                     fillRefresh(drop, newSt);
-                    addCreateStatements(newSt);
+                    addCreateStatements(newSt, null);
                 }
             }
         }
@@ -291,6 +304,10 @@ public final class DepcyResolver {
     }
 
     private void tryToDrop(PgStatement oldObj, PgStatement starter) {
+        if (!triedToDrop.add(oldObj)) {
+            return;
+        }
+
         // Изначально будем удалять объект
         ObjectState action = ObjectState.DROP;
         if (!oldObj.canDrop()) {
@@ -311,7 +328,7 @@ public final class DepcyResolver {
             if (action == ObjectState.ALTER_WITH_DEP) {
                 // не добавлять объект, если уже есть в списке
                 if (!createdObjects.contains(newObj)) {
-                    addCreateStatements(newObj);
+                    addCreateStatements(newObj, null);
                     addToListWithoutDepcies(action, oldObj, starter);
                 }
                 return;
@@ -330,7 +347,7 @@ public final class DepcyResolver {
             if (newTable == null || getRecreatedObj(oldTable, (AbstractTable) newTable)) {
                 // случай, если дроп зависимости тянет колонку, которую мы не пишем
                 // потому что дропается таблица - дропаем таблицу
-                addDropStatements(oldTable);
+                addDropStatements(oldTable, oldObj);
                 return;
             }
 
@@ -491,7 +508,7 @@ public final class DepcyResolver {
         // always create if droppped before
         if (inDropsList(newObj)) {
             createColumnDependencies(newObj);
-            addToListWithoutDepcies(action, newObj, starter);
+            addToListWithoutDepcies(action, newObj, null);
             return;
         }
 
@@ -517,7 +534,7 @@ public final class DepcyResolver {
 
             // в случае изменения объекта с зависимостями
             if (action.in(ObjectState.RECREATE, ObjectState.ALTER_WITH_DEP)) {
-                addDropStatements(oldObj);
+                addDropStatements(oldObj, starter);
                 if (action == ObjectState.ALTER_WITH_DEP) {
                     // add alter for old object
                     addToListWithoutDepcies(action, oldObj, starter);
@@ -539,7 +556,7 @@ public final class DepcyResolver {
             if (ownedBy != null && oldDb.getStatement(ownedBy) == null) {
                 PgStatement col = newDb.getStatement(ownedBy);
                 if (col != null) {
-                    addCreateStatements(col);
+                    addCreateStatements(col, newObj);
                 }
             }
         }
@@ -551,14 +568,13 @@ public final class DepcyResolver {
         if (newObj.getStatementType() == DbObjType.TABLE) {
             // create column dependencies before table
             for (AbstractColumn col : ((AbstractTable) newObj).getColumns()) {
-                addCreateStatements(col);
+                addCreateStatements(col, null);
             }
         }
     }
 
     private ObjectState getObjectState(PgStatement oldSt, PgStatement newSt) {
-        return states.computeIfAbsent(oldSt.getQualifiedName(),
-                x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
+        return states.computeIfAbsent(oldSt, x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
     }
 
     private Boolean getRecreatedObj(AbstractTable oldTable, AbstractTable newTable) {
@@ -572,7 +588,7 @@ public final class DepcyResolver {
         DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, toRefresh);
         depRes.oldDepcyGraph.addCustomDepcies(additionalDepciesSource);
         depRes.newDepcyGraph.addCustomDepcies(additionalDepciesTarget);
-        depRes.fillObjects(dbObjects/* , null */);
+        depRes.fillObjects(dbObjects, null);
         depRes.recreateDrops();
         depRes.removeExtraActions();
 

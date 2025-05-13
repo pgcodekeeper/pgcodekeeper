@@ -50,8 +50,6 @@ ALTER TABLE public.t1
 
 DROP VIEW public.v3;
 
--- DEPCY: This VIEW v2 is a dependency of VIEW: public.v8
-
 CREATE VIEW public.v2 AS
 	SELECT t2.c1,
     t2.c2,
@@ -59,8 +57,6 @@ CREATE VIEW public.v2 AS
    FROM public.t2;
 
 ALTER VIEW public.v2 OWNER TO galiev_mr;
-
--- DEPCY: This VIEW v6 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v6 AS
 	SELECT v2.c1,
@@ -71,8 +67,6 @@ CREATE VIEW public.v6 AS
 
 ALTER VIEW public.v6 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW v7 is a dependency of VIEW: public.v8
-
 CREATE VIEW public.v7 AS
 	SELECT v2.c1,
     v6.c2
@@ -80,8 +74,6 @@ CREATE VIEW public.v7 AS
     public.v6;
 
 ALTER VIEW public.v7 OWNER TO galiev_mr;
-
--- DEPCY: This VIEW v3 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v3 AS
 	SELECT t1.c1,
@@ -92,8 +84,6 @@ CREATE VIEW public.v3 AS
 
 ALTER VIEW public.v3 OWNER TO galiev_mr;
 
--- DEPCY: This VIEW v1 is a dependency of VIEW: public.v8
-
 CREATE VIEW public.v1 AS
 	SELECT t1.c1,
     t1.c2,
@@ -102,8 +92,6 @@ CREATE VIEW public.v1 AS
    FROM public.t1;
 
 ALTER VIEW public.v1 OWNER TO galiev_mr;
-
--- DEPCY: This VIEW v4 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v4 AS
 	SELECT v1.c1,
@@ -114,8 +102,6 @@ CREATE VIEW public.v4 AS
     public.t1;
 
 ALTER VIEW public.v4 OWNER TO galiev_mr;
-
--- DEPCY: This VIEW v5 is a dependency of VIEW: public.v8
 
 CREATE VIEW public.v5 AS
 	SELECT v2.c1,

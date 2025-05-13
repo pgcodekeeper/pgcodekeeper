@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Removed unnecessary comments when recreating objects in the migration script.
+
 ### Fixed
 
 ### Removed

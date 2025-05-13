@@ -11,15 +11,11 @@ ALTER TABLE ONLY public.t1
 
 DROP TYPE public.ty1;
 
--- DEPCY: This TYPE ty1 is a dependency of VIEW: public.v1
-
 CREATE TYPE public.ty1 AS ENUM (
 	'a'
 );
 
 ALTER TYPE public.ty1 OWNER TO botov_av;
-
--- DEPCY: This COLUMN c1 is a dependency of VIEW: public.v1
 
 ALTER TABLE public.t1
 	ADD COLUMN c1 public.ty1;

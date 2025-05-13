@@ -6,8 +6,6 @@ DROP VIEW public.v2;
 
 DROP FUNCTION public.f(p integer);
 
--- DEPCY: This FUNCTION f is a dependency of VIEW: public.v2
-
 CREATE OR REPLACE FUNCTION public.f(p integer) RETURNS numeric
     LANGUAGE plpgsql
     AS $_$begin return $1; end;$_$;

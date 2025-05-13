@@ -15,24 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.model.graph;
 
-import java.util.Objects;
-
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 
-public record DbObject(String qname, PgStatement oldStatement, PgStatement newStatement) {
-
-    @Override
-    public int hashCode() {
-        return qname.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        return obj instanceof DbObject other
-                && Objects.equals(qname, other.qname);
-    }
+public record DbObject(PgStatement oldStatement, PgStatement newStatement) {
 }

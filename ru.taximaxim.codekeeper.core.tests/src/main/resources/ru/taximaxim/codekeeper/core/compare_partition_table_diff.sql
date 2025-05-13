@@ -84,8 +84,6 @@ FOR VALUES FROM ('1') TO ('100');
 
 ALTER TABLE public.towns OWNER TO khazieva_gr;
 
--- DEPCY: This TABLE cities_cd is a dependency of TABLE: public.cities_cd_10_to_103
-
 CREATE TABLE public.cities_cd PARTITION OF public.cities
 FOR VALUES IN ('c', 'd')
 PARTITION BY RANGE (c3);
@@ -101,8 +99,6 @@ CREATE TABLE public.cities_cd_10_to_102 PARTITION OF public.cities_cd
 FOR VALUES FROM ('1') TO ('10');
 
 ALTER TABLE public.cities_cd_10_to_102 OWNER TO khazieva_gr;
-
--- DEPCY: This TABLE cities_cd_10_to_100 is a dependency of TABLE: public.cities57
 
 CREATE TABLE public.cities_cd_10_to_100 PARTITION OF public.cities_cd
 FOR VALUES FROM ('1') TO ('100')
