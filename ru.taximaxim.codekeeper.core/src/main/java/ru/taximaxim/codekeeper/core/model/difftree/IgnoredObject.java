@@ -138,7 +138,9 @@ public class IgnoredObject {
     }
 
     boolean hasSameMatchingCondition(IgnoredObject rule) {
-        return Objects.equals(name, rule.name) && Objects.equals(dbRegexStr, rule.dbRegexStr);
+        return Objects.equals(name, rule.name)
+                && Objects.equals(dbRegexStr, rule.dbRegexStr)
+                && Objects.equals(objTypes, rule.objTypes);
     }
 
     public AddStatus getAddStatus() {

@@ -19,8 +19,6 @@ GO
 EXEC sys.sp_refreshsqlmodule '[dbo].[v1]'
 GO
 
--- DEPCY: This VIEW v2 is a dependency of VIEW: [dbo].[v3]
-
 SET QUOTED_IDENTIFIER ON
 GO
 SET ANSI_NULLS ON

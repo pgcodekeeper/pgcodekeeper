@@ -17,8 +17,6 @@ ALTER TABLE public.a
 ALTER TABLE ONLY public.a
 	ALTER COLUMN description SET DEFAULT 555777;
 
--- DEPCY: This COLUMN description is a dependency of COLUMN: public.a2.description
-
 ALTER TABLE ONLY public.a1
 	ALTER COLUMN description SET DEFAULT 555777;
 

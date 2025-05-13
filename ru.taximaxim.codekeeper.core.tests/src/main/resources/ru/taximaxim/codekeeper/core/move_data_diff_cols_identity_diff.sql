@@ -68,8 +68,6 @@ $_$;
 
 DROP TABLE public.tbl_randomly_generated_part;
 
--- DEPCY: This FUNCTION events_insert_trigger is a dependency of TRIGGER: public.tbl.events_insert
-
 CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql
     AS $$

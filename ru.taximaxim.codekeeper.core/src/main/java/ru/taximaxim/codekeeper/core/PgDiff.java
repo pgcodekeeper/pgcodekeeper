@@ -384,7 +384,7 @@ public class PgDiff {
                 newStatement = st.getPgStatement(newDbFull);
                 break;
             }
-            objects.add(new DbObject(st.getQualifiedName(), oldStatement, newStatement));
+            objects.add(new DbObject(oldStatement, newStatement));
         }
         return DepcyResolver.resolve(oldDbFull, newDbFull,
                 additionalDepciesSource, additionalDepciesTarget, toRefresh, objects);

@@ -52,8 +52,6 @@ DROP INDEX public.tbl_idx;
 
 ALTER TABLE public.tbl RENAME TO tbl_randomly_generated_part;
 
--- DEPCY: This SEQUENCE cities2_city_id_seq is a dependency of COLUMN: public.cities2.city_id
-
 DROP SEQUENCE public.cities2_city_id_seq;
 
 CREATE SEQUENCE public.cities2_city_id_seq
@@ -103,8 +101,6 @@ CREATE VIEW public.v AS
     tbl.altitude,
     1 AS qwerty
    FROM public.tbl;
-
--- DEPCY: This FUNCTION events_insert_trigger is a dependency of TRIGGER: public.tbl.events_insert
 
 CREATE OR REPLACE FUNCTION public.events_insert_trigger() RETURNS trigger
     LANGUAGE plpgsql

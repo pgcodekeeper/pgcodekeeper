@@ -7,8 +7,6 @@ ALTER TABLE ONLY public.distributors
 
 DROP TYPE public.typ_range;
 
--- DEPCY: This TYPE typ_range is a dependency of COLUMN: public.distributors.did
-
 CREATE TYPE public.typ_range AS RANGE (
 	subtype = character varying,
 	collation = pg_catalog."ru_RU"

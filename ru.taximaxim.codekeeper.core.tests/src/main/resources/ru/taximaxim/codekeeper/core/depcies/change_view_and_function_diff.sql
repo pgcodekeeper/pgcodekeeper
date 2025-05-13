@@ -4,8 +4,6 @@ DROP FUNCTION public.function_contract(_id integer);
 
 DROP VIEW public.v1;
 
--- DEPCY: This VIEW v1 is a dependency of FUNCTION: public.function_contract(integer)
-
 CREATE VIEW public.v1 AS
 	SELECT t1.c1,
 	t1.c2 as col1,

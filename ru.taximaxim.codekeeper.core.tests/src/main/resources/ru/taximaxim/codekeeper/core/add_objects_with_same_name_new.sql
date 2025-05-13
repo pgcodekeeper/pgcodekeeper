@@ -1,0 +1,3 @@
+CREATE SCHEMA postgis;
+
+CREATE EXTENSION postgis SCHEMA postgis;

@@ -13,13 +13,13 @@ DROP TEXT SEARCH TEMPLATE public.first_template;
 CREATE TEXT SEARCH TEMPLATE public.second_template (
 	LEXIZE = dsnowball_lexize );
 
--- DEPCY: This FTS_DICTIONARY first_dictionary is a dependency of FTS_CONFIGURATION: public.first_configuration
-
 CREATE TEXT SEARCH DICTIONARY public.first_dictionary (
 	TEMPLATE = public.second_template,
 	language = 'english' );
 
 ALTER TEXT SEARCH DICTIONARY public.first_dictionary OWNER TO galiev_mr;
+
+-- DEPCY: This FTS_PARSER first_parser depends on the FTS_CONFIGURATION: public.first_configuration
 
 DROP TEXT SEARCH PARSER public.first_parser;
 
