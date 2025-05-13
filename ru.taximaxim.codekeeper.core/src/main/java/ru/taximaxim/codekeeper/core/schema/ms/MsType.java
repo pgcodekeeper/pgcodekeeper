@@ -47,11 +47,8 @@ public final class MsType extends AbstractType implements IStatementContainer {
     private final List<String> constraints = new ArrayList<>();
     private final List<String> indices = new ArrayList<>();
 
-    private final boolean isConcurrentlyMode;
-
-    public MsType(String name, boolean isConcurrentlyMode) {
+    public MsType(String name) {
         super(name);
-        this.isConcurrentlyMode = isConcurrentlyMode;
     }
 
     @Override
@@ -111,7 +108,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
 
     @Override
     protected AbstractType getTypeCopy() {
-        MsType copy = new MsType(name, isConcurrentlyMode);
+        MsType copy = new MsType(name);
         copy.setNotNull(isNotNull);
         copy.setMemoryOptimized(isMemoryOptimized);
         copy.setBaseType(baseType);
@@ -174,7 +171,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
         var type = stmt.getStatementType();
         switch (type) {
         case INDEX:
-            indices.add(((MsIndex) stmt).getDefinition(true, false, isConcurrentlyMode));
+            indices.add(((MsIndex) stmt).getDefinition(true, false, false));
             break;
         case CONSTRAINT:
             constraints.add(((IConstraint) stmt).getDefinition());

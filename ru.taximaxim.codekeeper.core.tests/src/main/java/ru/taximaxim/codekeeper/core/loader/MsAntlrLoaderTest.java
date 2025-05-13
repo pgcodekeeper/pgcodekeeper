@@ -553,7 +553,7 @@ class MsAntlrLoaderTest {
         AbstractDatabase d = TestUtils.createDumpDB(DatabaseType.MS);
         AbstractSchema schema = d.getDefaultSchema();
 
-        MsType type = new MsType("testtt", false);
+        MsType type = new MsType("testtt");
         MsColumn col = new MsColumn("a");
         col.setType(INT);
         type.addChild(col);
