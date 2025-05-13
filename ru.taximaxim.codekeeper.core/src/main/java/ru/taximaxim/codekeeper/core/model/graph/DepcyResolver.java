@@ -578,11 +578,11 @@ public final class DepcyResolver {
     }
 
     private ObjectState getObjectState(PgStatement oldSt, PgStatement newSt) {
-        return states.computeIfAbsent(oldSt, x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
+        return states.computeIfAbsent(oldSt, x -> oldSt.appendAlterSQL(newSt, new SQLScript(settings)));
     }
 
     private Boolean getRecreatedObj(AbstractTable oldTable, AbstractTable newTable) {
-        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(), x -> oldTable.isRecreated(newTable));
+        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(), x -> oldTable.isRecreated(newTable, settings));
     }
 
     public static Set<ActionContainer> resolve(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
