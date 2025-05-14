@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -159,7 +160,7 @@ public final class AlterTable extends TableAbstract {
             }
 
             if (tablAction.TRIGGER() != null) {
-                createTrigger(tabl, tablAction);
+                createTrigger(tabl, tablAction, ids);
             }
 
             if (tablAction.RULE() != null) {
@@ -302,7 +303,7 @@ public final class AlterTable extends TableAbstract {
         }
     }
 
-    private void createTrigger(AbstractPgTable tabl, Table_actionContext tablAction) {
+    private void createTrigger(AbstractPgTable tabl, Table_actionContext tablAction, List<ParserRuleContext> ids) {
         var triggerNameCtx = tablAction.trigger_name;
         if (triggerNameCtx == null) {
             return;
@@ -332,6 +333,9 @@ public final class AlterTable extends TableAbstract {
                     triggerNameCtx);
             trigger.setTriggerState(triggerState);
         }
+        var idsCopy = new ArrayList<>(ids);
+        idsCopy.add(triggerNameCtx);
+        addObjReference(idsCopy, DbObjType.TRIGGER, null);
     }
 
     private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {
