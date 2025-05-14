@@ -347,7 +347,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         return !inherits.isEmpty();
     }
 
-    public void putTriggerState(String triggerName, EnabledState state) {
+    public void putTriggerState(String triggerName, TriggerState state) {
         triggerStates.put(triggerName, state.getValue());
     }
 

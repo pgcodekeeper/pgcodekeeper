@@ -15,7 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
-public enum EnabledState {
+public enum TriggerState {
     ENABLE("ENABLE"),
     ENABLE_ALWAYS("ENABLE ALWAYS"),
     ENABLE_REPLICA("ENABLE REPLICA"),
@@ -27,7 +27,7 @@ public enum EnabledState {
         return value;
     }
 
-    private EnabledState(String value) {
+    private TriggerState(String value) {
         this.value = value;
     }
 }

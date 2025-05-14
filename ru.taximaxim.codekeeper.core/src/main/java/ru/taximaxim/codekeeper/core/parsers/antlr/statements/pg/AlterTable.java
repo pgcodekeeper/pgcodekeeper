@@ -65,7 +65,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
-import ru.taximaxim.codekeeper.core.schema.pg.EnabledState;
+import ru.taximaxim.codekeeper.core.schema.pg.TriggerState;
 
 public final class AlterTable extends TableAbstract {
 
@@ -201,8 +201,7 @@ public final class AlterTable extends TableAbstract {
                 if (constr instanceof PgConstraintPk pk) {
                     doSafe(PgConstraintPk::setClustered, pk, true);
                 } else if (!isRefMode()) {
-                    throw new UnresolvedReferenceException(Messages.Constraint_WarningMismatchedConstraintTypeForClusterOn,
-                            indexNameCtx.getStop());
+                    throw new IllegalArgumentException(Messages.Constraint_WarningMismatchedConstraintTypeForClusterOn);
                 }
             } else {
                 AbstractIndex index = getSafe(PgStatementContainer::getIndex, cont, indexName);
@@ -311,23 +310,23 @@ public final class AlterTable extends TableAbstract {
             return;
         }
 
-        EnabledState triggerState = null;
+        TriggerState triggerState = null;
         if (tablAction.DISABLE() != null) {
-            triggerState = EnabledState.DISABLE;
+            triggerState = TriggerState.DISABLE;
         } else if (tablAction.ENABLE() != null) {
             if (tablAction.REPLICA() != null) {
-                triggerState = EnabledState.ENABLE_REPLICA;
+                triggerState = TriggerState.ENABLE_REPLICA;
             } else if (tablAction.ALWAYS() != null) {
-                triggerState = EnabledState.ENABLE_ALWAYS;
+                triggerState = TriggerState.ENABLE_ALWAYS;
             } else {
-                triggerState = EnabledState.ENABLE;
+                triggerState = TriggerState.ENABLE;
             }
         }
 
         String triggerName = triggerNameCtx.getText();
         if (tabl.getTrigger(triggerName) == null) {
             if (!tabl.hasInherits()) {
-                throw new IllegalStateException(Messages.AlterTriggerError);
+                throw new UnresolvedReferenceException(Messages.AlterTriggerError, triggerNameCtx.getStop());
             }
             tabl.putTriggerState(triggerName, triggerState);
         } else {

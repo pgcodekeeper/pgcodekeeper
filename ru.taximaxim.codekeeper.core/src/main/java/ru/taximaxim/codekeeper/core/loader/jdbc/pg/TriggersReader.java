@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
-import ru.taximaxim.codekeeper.core.schema.pg.EnabledState;
+import ru.taximaxim.codekeeper.core.schema.pg.TriggerState;
 
 public final class TriggersReader extends JdbcReader {
 
@@ -47,7 +47,7 @@ public final class TriggersReader extends JdbcReader {
     private static final int TRIGGER_TYPE_INSTEAD   = 1 << 6;
     // SONAR-ON
 
-    private static final String ZERO = "0";
+    private static final String NO_PARENT = "0";
 
     public TriggersReader(JdbcLoaderBase loader) {
         super(loader);
@@ -65,7 +65,7 @@ public final class TriggersReader extends JdbcReader {
         String triggerName = res.getString("tgname");
         String tgEnabled = res.getString("tgenabled");
 
-        if (!ZERO.equals(res.getString("tgparentid")) && c instanceof AbstractPgTable table) {
+        if (!NO_PARENT.equals(res.getString("tgparentid")) && c instanceof AbstractPgTable table) {
             table.putTriggerState(triggerName, readEnabledState(tgEnabled, true));
             return;
         }
@@ -172,13 +172,13 @@ public final class TriggersReader extends JdbcReader {
         c.addTrigger(t);
     }
 
-    private EnabledState readEnabledState(String tgEnabled, boolean isChild) {
+    private TriggerState readEnabledState(String tgEnabled, boolean isChild) {
         return switch (tgEnabled) {
-            case "f", "D" -> EnabledState.DISABLE;
-            case "t", "O" -> isChild ? EnabledState.ENABLE : null;
-            case "R" -> EnabledState.ENABLE_REPLICA;
-            case "A" -> EnabledState.ENABLE_ALWAYS;
-            default -> EnabledState.ENABLE;
+            case "f", "D" -> TriggerState.DISABLE;
+            case "t", "O" -> isChild ? TriggerState.ENABLE : null;
+            case "R" -> TriggerState.ENABLE_REPLICA;
+            case "A" -> TriggerState.ENABLE_ALWAYS;
+            default -> TriggerState.ENABLE;
         };
     }
 
