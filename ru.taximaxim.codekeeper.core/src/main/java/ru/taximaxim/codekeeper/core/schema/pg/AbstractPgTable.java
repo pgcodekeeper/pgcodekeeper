@@ -101,7 +101,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         var newTriggers = newTable.triggerStates;
         if (!triggerStates.equals(newTriggers)) {
             newTriggers.entrySet().stream()
-                .filter(tr -> !tr.getValue().equals(triggerStates.get(tr.getKey())))
+                .filter(tr -> !Objects.equals(tr.getValue(), triggerStates.get(tr.getKey())))
                 .forEach(tr -> addTriggerToScript(tr, script));
         }
     }
