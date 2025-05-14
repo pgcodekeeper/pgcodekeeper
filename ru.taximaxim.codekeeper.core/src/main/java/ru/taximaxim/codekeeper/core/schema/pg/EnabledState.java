@@ -27,15 +27,6 @@ public enum EnabledState {
         return value;
     }
 
-    public static String getOpposite(String state) {
-        if (state.equals(ENABLE.value)){
-            return DISABLE.value;
-        } else if (state.equals(DISABLE.value)) {
-            return ENABLE.value;
-        }
-        return "";
-    }
-
     private EnabledState(String value) {
         this.value = value;
     }

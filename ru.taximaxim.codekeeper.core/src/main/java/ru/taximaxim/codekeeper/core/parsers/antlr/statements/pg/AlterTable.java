@@ -27,6 +27,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_partition_gpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_table_statementContext;
@@ -200,7 +201,8 @@ public final class AlterTable extends TableAbstract {
                 if (constr instanceof PgConstraintPk pk) {
                     doSafe(PgConstraintPk::setClustered, pk, true);
                 } else if (!isRefMode()) {
-                    throw new IllegalArgumentException(Messages.Constraint_WarningMismatchedConstraintTypeForClusterOn);
+                    throw new UnresolvedReferenceException(Messages.Constraint_WarningMismatchedConstraintTypeForClusterOn,
+                            indexNameCtx.getStop());
                 }
             } else {
                 AbstractIndex index = getSafe(PgStatementContainer::getIndex, cont, indexName);

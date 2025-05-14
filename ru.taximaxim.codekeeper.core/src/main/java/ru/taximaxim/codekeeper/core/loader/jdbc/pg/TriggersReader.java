@@ -47,6 +47,8 @@ public final class TriggersReader extends JdbcReader {
     private static final int TRIGGER_TYPE_INSTEAD   = 1 << 6;
     // SONAR-ON
 
+    private static final String ZERO = "0";
+
     public TriggersReader(JdbcLoaderBase loader) {
         super(loader);
     }
@@ -63,7 +65,7 @@ public final class TriggersReader extends JdbcReader {
         String triggerName = res.getString("tgname");
         String tgEnabled = res.getString("tgenabled");
 
-        if (!res.getString("tgparentid").equals("0") && c instanceof AbstractPgTable table) {
+        if (!ZERO.equals(res.getString("tgparentid")) && c instanceof AbstractPgTable table) {
             table.putTriggerState(triggerName, readEnabledState(tgEnabled, true));
             return;
         }
@@ -171,15 +173,13 @@ public final class TriggersReader extends JdbcReader {
     }
 
     private EnabledState readEnabledState(String tgEnabled, boolean isChild) {
-        EnabledState state = null;
-        state = switch (tgEnabled) {
-        case "f", "D" -> EnabledState.DISABLE;
-        case "t", "O" -> isChild ? EnabledState.ENABLE : null;
-        case "R" -> EnabledState.ENABLE_REPLICA;
-        case "A" -> EnabledState.ENABLE_ALWAYS;
-        default -> EnabledState.ENABLE;
+        return switch (tgEnabled) {
+            case "f", "D" -> EnabledState.DISABLE;
+            case "t", "O" -> isChild ? EnabledState.ENABLE : null;
+            case "R" -> EnabledState.ENABLE_REPLICA;
+            case "A" -> EnabledState.ENABLE_ALWAYS;
+            default -> EnabledState.ENABLE;
         };
-        return state;
     }
 
     @Override

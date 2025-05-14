@@ -18,12 +18,10 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -99,28 +97,24 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendComments(script);
     }
 
-    private void appendTriggerStates(AbstractPgTable newTable, SQLScript script) {
+    private void compareTriggerStates(AbstractPgTable newTable, SQLScript script) {
         var newTriggers = newTable.triggerStates;
-        if (!triggerStates.equals(newTable.triggerStates)) {
-            Set<String> triggerNames = new HashSet<>(triggerStates.keySet());
-            triggerNames.addAll(newTriggers.keySet());
-            triggerNames.forEach(tr -> addTriggerToScript(tr, newTriggers, script));
-        }
-    }
-
-    private void addTriggerToScript(String tgName, Map<String, String> newTriggers, SQLScript script) {
-        if (newTriggers.containsKey(tgName)) {
-            String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), newTriggers.get(tgName),
-                    tgName);
-            script.addStatement(changeTgState, SQLActionType.END);
+        if (!triggerStates.equals(newTriggers)) {
+            newTriggers.entrySet().stream()
+                .filter(tr -> !tr.getValue().equals(triggerStates.get(tr.getKey())))
+                .forEach(tr -> addTriggerToScript(tr, script));
         }
     }
 
     private void appendTriggerStates(SQLScript script) {
         for (var state : triggerStates.entrySet()) {
-            String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), state.getValue(), state.getKey());
-            script.addStatement(changeTgState, SQLActionType.END);
+            addTriggerToScript(state, script);
         }
+    }
+
+    private void addTriggerToScript(Entry<String, String> tg, SQLScript script) {
+        String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), tg.getValue(), tg.getKey());
+        script.addStatement(changeTgState, SQLActionType.END);
     }
 
     @Override
@@ -238,7 +232,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendAlterOwner(newTable, script);
         compareTableOptions(newTable, script);
         alterPrivileges(newTable, script);
-        appendTriggerStates(newTable, script);
+        compareTriggerStates(newTable, script);
         appendAlterComments(newTable, script);
 
         return getObjectState(script, startSize);
