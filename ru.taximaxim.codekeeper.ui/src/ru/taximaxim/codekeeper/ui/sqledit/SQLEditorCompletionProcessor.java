@@ -17,8 +17,10 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
@@ -38,6 +40,7 @@ import org.eclipse.swt.graphics.Image;
 
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
 import ru.taximaxim.codekeeper.core.sql.Keyword;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -45,6 +48,11 @@ import ru.taximaxim.codekeeper.ui.copiedclasses.CompletionProposal;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
+
+    private static final char DELIMITER = '.';
+
+    private static final Set<DbObjType> VALID_TYPES = Set.of(DbObjType.SCHEMA, DbObjType.TABLE, DbObjType.VIEW,
+            DbObjType.FUNCTION, DbObjType.PROCEDURE, DbObjType.AGGREGATE, DbObjType.DICTIONARY, DbObjType.TYPE);
 
     protected final SQLEditor editor;
     private final ContentAssistant assistant;
@@ -72,8 +80,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
     }
 
     @Override
-    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer,
-            int offset) {
+    public ICompletionProposal[] computeCompletionProposals(ITextViewer viewer, int offset) {
         String part;
         try {
             part = viewer.getDocument().get(0, offset);
@@ -81,18 +88,15 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
             Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", ex); //$NON-NLS-1$
             return null;
         }
-        int nonid = offset - 1;
-        while (nonid > 0 && PgDiffUtils.isValidIdChar(part.charAt(nonid))) {
-            --nonid;
-        }
-        String typedText = part.substring(nonid + 1, offset).toUpperCase(Locale.ROOT);
+
+        List<String> splittedText = getCursorText(part, offset);
 
         ICompletionProposal[] res;
         if (repetition % 2 == 0) {
-            res = getKeys(offset, typedText);
+            res = getKeys(offset, splittedText);
             assistant.setStatusMessage(tmplMsg);
         } else {
-            res = getTmpls(viewer, offset, typedText);
+            res = getTmpls(viewer, offset, splittedText.get(0));
             assistant.setStatusMessage(keyMsg);
         }
 
@@ -101,74 +105,120 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         return res;
     }
 
+    private List<String> getCursorText(String part, int offset) {
+        List<String> result = new ArrayList<>();
+        int cursor = offset - 1;
+        int last = offset;
+        while (cursor > 0) {
+            char currentChar = part.charAt(cursor);
+            if (DELIMITER == currentChar) {
+                result.add(part.substring(cursor + 1, last).toUpperCase(Locale.ROOT));
+                last = cursor;
+            } else if (!PgDiffUtils.isValidIdChar(currentChar)) {
+                break;
+            }
+            cursor--;
+        }
+
+        result.add(part.substring(0 != cursor ? cursor + 1 : cursor, last).toUpperCase(Locale.ROOT));
+        return result;
+    }
+
     private ICompletionProposal[] getTmpls(ITextViewer viewer, int offset, String text) {
         if (text.isEmpty()) {
             return new SQLEditorTemplateAssistProcessor().getAllTemplates(viewer, offset)
                     .toArray(new ICompletionProposal[0]);
-        } else {
-            ICompletionProposal[] templates = new SQLEditorTemplateAssistProcessor()
-                    .computeCompletionProposals(viewer, offset);
-            return templates != null ? templates : new ICompletionProposal[0];
         }
+
+        var templates = new SQLEditorTemplateAssistProcessor().computeCompletionProposals(viewer, offset);
+        return templates != null ? templates : new ICompletionProposal[0];
     }
 
-    private ICompletionProposal[] getKeys(int offset, String text) {
+    private ICompletionProposal[] getKeys(int offset, List<String> splittedText) {
         List<ICompletionProposal> result = new ArrayList<>();
-        List<ICompletionProposal> partResult = new ArrayList<>();
+        int size = splittedText.size();
+        String secondName = size > 1 ? splittedText.get(1) : null;
+        String lastName = splittedText.get(0);
 
-        editor.getParser().getAllObjDefinitions()
-        .filter(o -> text.isEmpty() || o.getName().toUpperCase(Locale.ROOT).contains(text))
-        .filter(
-                o -> o.getStatementType() != DbObjType.SEQUENCE
-                && o.getStatementType() != DbObjType.INDEX
-                && o.getStatementType() != DbObjType.CAST
-                && o.getStatementType() != null)
-        .filter(o -> o.getFilePath() != null)
-        .sorted((o1, o2) -> o1.getFilePath().compareTo(o2.getFilePath()))
-        .forEach(obj -> {
-            Image img = Activator.getDbObjImage(obj.getStatementType());
-            String displayText = obj.getName();
-            if (!obj.getComment().isEmpty()) {
-                displayText += " - " + obj.getComment(); //$NON-NLS-1$
-            }
-            IContextInformation info = new ContextInformation(
-                    obj.getName(), obj.getComment());
-            if (!text.isEmpty()) {
-                result.add(new SqlEditorKeywordProposal(obj.getName(), offset - text.length(),
-                        text.length(), obj.getObjLength(), img, displayText, info,
-                        obj.getName()));
-            } else {
-                result.add(new SqlEditorKeywordProposal(obj.getName(), offset, 0,
-                        obj.getObjLength(), img, displayText, info, obj.getName()));
-            }
-        });
+        if (size < 3) {
+            editor.getParser().getAllObjDefinitions()
+            .filter(d -> checkDefinition(d, lastName, secondName))
+            .sorted(ProposalComparator.INSTANCE)
+            .map(obj -> getProposal(offset, lastName, obj))
+            .forEach(result::add);
+        } else {
+            // TODO add logic to autocompletion the columns
+        }
 
         // Keywords
-        if (text.isEmpty()) {
-            keywords.forEach(k -> result.add(new SqlEditorKeywordProposal(k, offset, 0, k.length())));
-        } else {
-            for (String keyword : keywords) {
-                int location = keyword.indexOf(text);
-                if (location != -1) {
-                    CompletionProposal proposal = new SqlEditorKeywordProposal(keyword,
-                            offset - text.length(), text.length(), keyword.length());
-                    if (location  == 0) {
-                        result.add(proposal);
-                    } else {
-                        partResult.add(proposal);
+        if (1 == size) {
+            if (lastName.isEmpty()) {
+                keywords.forEach(k -> result.add(new SqlEditorKeywordProposal(k, offset, 0, k.length())));
+            } else {
+                List<ICompletionProposal> partResult = new ArrayList<>();
+                for (String keyword : keywords) {
+                    int location = keyword.indexOf(lastName);
+                    if (location != -1) {
+                        CompletionProposal proposal = new SqlEditorKeywordProposal(keyword,
+                                offset - lastName.length(), lastName.length(), keyword.length());
+                        if (location == 0) {
+                            result.add(proposal);
+                        } else {
+                            partResult.add(proposal);
+                        }
                     }
                 }
-            }
 
-            result.addAll(partResult);
+                result.addAll(partResult);
+            }
         }
 
         return result.toArray(new ICompletionProposal[result.size()]);
     }
 
+    private SqlEditorKeywordProposal getProposal(int offset, String text, MetaStatement obj) {
+        Image img = Activator.getDbObjImage(obj.getStatementType());
+        String displayText = obj.getName();
+        if (!obj.getComment().isEmpty()) {
+            displayText += " - " + obj.getComment(); //$NON-NLS-1$
+        }
+        IContextInformation info = new ContextInformation(obj.getName(), obj.getComment());
+
+        int replacementOffset;
+        int replacementLength;
+        if (!text.isEmpty()) {
+            replacementOffset = offset - text.length();
+            replacementLength = text.length();
+        } else {
+            replacementOffset = offset;
+            replacementLength = 0;
+        }
+
+        return new SqlEditorKeywordProposal(obj.getName(), replacementOffset, replacementLength,
+                obj.getObjLength(), img, displayText, info, obj.getName());
+    }
+
+    private boolean checkDefinition(MetaStatement definition, String text, String parentName) {
+        if (definition.getFilePath() == null || !VALID_TYPES.contains(definition.getStatementType())) {
+            return false;
+        }
+
+        var difName = definition.getName();
+
+        if (!text.isEmpty() && !difName.toUpperCase(Locale.ROOT).contains(text)) {
+            return false;
+        }
+
+        if (parentName != null && (difName.equalsIgnoreCase(parentName)
+                || !definition.getGenericColumn().schema.equalsIgnoreCase(parentName))) {
+            return false;
+        }
+
+        return true;
+    }
+
     @Override
-    public IContextInformation[] computeContextInformation(ITextViewer viewer,
-            int offset) {
+    public IContextInformation[] computeContextInformation(ITextViewer viewer, int offset) {
         return null;
     }
 
@@ -283,6 +333,33 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         @Override
         public final void apply(IDocument document) {
             // not called anymore
+        }
+    }
+
+    private static final class ProposalComparator implements Comparator<MetaStatement> {
+
+        static final ProposalComparator INSTANCE = new ProposalComparator();
+
+        @Override
+        public int compare(MetaStatement o1, MetaStatement o2) {
+            int result = Integer.compare(getRank(o1), getRank(o2));
+            if (result != 0) {
+                return result;
+            }
+
+            return o1.getFilePath().compareTo(o2.getFilePath());
+        }
+
+        private int getRank(MetaStatement el) {
+            return switch (el.getStatementType()) {
+            case SCHEMA -> 0;
+            case TABLE -> 1;
+            case VIEW -> 2;
+            default -> 3;
+            };
+        }
+
+        private ProposalComparator() {
         }
     }
 }
