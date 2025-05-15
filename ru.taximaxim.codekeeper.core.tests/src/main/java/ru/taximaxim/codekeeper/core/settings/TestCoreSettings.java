@@ -110,6 +110,10 @@ public final class TestCoreSettings implements ISettings {
         return isIgnorePriv;
     }
 
+    public void setIgnorePrivileges(boolean isIgnorePriv) {
+        this.isIgnorePriv = isIgnorePriv;
+    }
+
     @Override
     public boolean isIgnoreColumnOrder() {
         return false;
@@ -168,6 +172,10 @@ public final class TestCoreSettings implements ISettings {
         return inCharsetName;
     }
 
+    public void setInCharsetName(String inCharsetName) {
+        this.inCharsetName = inCharsetName;
+    }
+
     @Override
     public String getTimeZone() {
         return null;
@@ -197,18 +205,7 @@ public final class TestCoreSettings implements ISettings {
         this.isAddTransaction = isAddTransaction;
     }
 
-    @Override
-    public void setIgnorePrivileges(boolean isIgnorePriv) {
-        this.isIgnorePriv = isIgnorePriv;
-    }
-
-    @Override
-    public void setInCharsetName(String charset) {
-        this.inCharsetName = charset;
-    }
-
-    @Override
-    public ISettings copy() {
+    private TestCoreSettings copy() {
         var settings = new TestCoreSettings();
         settings.dbType = dbType;
         settings.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
@@ -221,4 +218,17 @@ public final class TestCoreSettings implements ISettings {
         return settings;
     }
 
+    @Override
+    public ISettings copy(boolean isIgnorePriv) {
+        var settings = copy();
+        settings.isIgnorePriv = isIgnorePriv;
+        return settings;
+    }
+
+    @Override
+    public ISettings copy(String inCharsetName) {
+        var settings = copy();
+        settings.inCharsetName = inCharsetName;
+        return settings;
+    }
 }

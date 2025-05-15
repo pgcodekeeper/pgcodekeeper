@@ -97,9 +97,11 @@ public final class LibraryLoader extends DatabaseLoader {
             return createDb(settings);
         }
 
-        ISettings copySettings = settings.copy();
-        if (!copySettings.isIgnorePrivileges()) {
-            copySettings.setIgnorePrivileges(isIgnorePriv);
+        ISettings copySettings;
+        if (!settings.isIgnorePrivileges()) {
+            copySettings = settings.copy(isIgnorePriv);
+        } else {
+            copySettings = settings;
         }
 
         switch (PgLibrarySource.getSource(path)) {

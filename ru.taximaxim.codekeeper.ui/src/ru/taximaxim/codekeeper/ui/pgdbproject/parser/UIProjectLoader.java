@@ -211,8 +211,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
     private void loadFile(IFile file, IProgressMonitor monitor, AbstractDatabase db)
             throws CoreException, InterruptedException {
-        ISettings copySettings = settings.copy();
-        copySettings.setInCharsetName(file.getCharset());
+        ISettings copySettings = settings.copy(file.getCharset());
 
         PgUIDumpLoader loader = new PgUIDumpLoader(file, copySettings, monitor);
         if (isOverrideMode) {

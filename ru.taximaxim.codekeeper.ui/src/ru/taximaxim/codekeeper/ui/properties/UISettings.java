@@ -21,12 +21,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 
@@ -48,9 +48,8 @@ import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 public final class UISettings implements ISettings {
 
     private String timeZone;
-    private String inCharsetName;
+    private String inCharsetName = Consts.UTF_8;
     private boolean keepNewlines;
-    private boolean isIgnorePriv;
     private boolean isEnableProjPrefRoot;
     private boolean isEnableProjPrefDbUpdate;
     private IEclipsePreferences projPS;
@@ -63,16 +62,20 @@ public final class UISettings implements ISettings {
     public UISettings(IProject project, Map<String, Boolean> oneTimePS, DatabaseType dbType) {
         this.project = project;
         this.oneTimePS = oneTimePS;
-        this.isIgnorePriv = getBooleanOfRootPref(PREF.NO_PRIVILEGES);
         if (project != null) {
             this.projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
             this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
             this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
             this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
             this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+        }
+
+        if (dbType != null) {
+            this.dbType = dbType;
+        } else if (project != null) {
             this.dbType = ProjectUtils.getDatabaseType(project);
         } else {
-            this.dbType = dbType != null ? dbType : DatabaseType.PG;
+            this.dbType = DatabaseType.PG;
         }
     }
 
@@ -132,7 +135,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isIgnorePrivileges() {
-        return isIgnorePriv;
+        return getBooleanOfRootPref(PREF.NO_PRIVILEGES);
     }
 
     @Override
@@ -177,18 +180,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public String getInCharsetName() {
-        if (inCharsetName != null) {
-            return inCharsetName;
-        }
-
-        try {
-            if (project != null) {
-                return project.getDefaultCharset(true);
-            }
-        } catch (CoreException e) {
-            // We're just trying, so if we can't it's not a big deal.
-        }
-        return Consts.UTF_8;
+        return inCharsetName;
     }
 
     @Override
@@ -227,22 +219,26 @@ public final class UISettings implements ISettings {
         return addPathsIfExists(FILE.POST_DIR, FILE.POST_SCRIPT);
     }
 
+    private Map<String, Boolean> createTempSettings() {
+        Map<String, Boolean> temp = new HashMap<>();
+        if (null != oneTimePS) {
+            temp.putAll(oneTimePS);
+        }
+        return temp;
+    }
+    
     @Override
-    public void setInCharsetName(String inCharsetName) {
-        this.inCharsetName = inCharsetName;
+    public ISettings copy(boolean isIgnorePriv) {
+        var tempSettings = createTempSettings();
+        tempSettings.put(PREF.NO_PRIVILEGES, isIgnorePriv);
+        return new UISettings(project, tempSettings, dbType);
     }
 
     @Override
-    public void setIgnorePrivileges(boolean isIgnorePriv) {
-        this.isIgnorePriv = isIgnorePriv;
-    }
-
-    @Override
-    public ISettings copy() {
-        var sets = new UISettings(project, oneTimePS);
-        sets.setIgnorePrivileges(isIgnorePriv);
-        sets.setInCharsetName(inCharsetName);
-        return sets;
+    public ISettings copy(String inCharsetName) {
+        var tempSettings = new UISettings(project, createTempSettings(), dbType);
+        tempSettings.inCharsetName = inCharsetName;
+        return tempSettings;
     }
 
     public boolean isUseGlobalIgnoreList() {

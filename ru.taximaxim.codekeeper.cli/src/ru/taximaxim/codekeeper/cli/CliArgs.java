@@ -423,11 +423,6 @@ public class CliArgs implements ISettings {
         return inCharsetName;
     }
 
-    @Override
-    public void setInCharsetName(String inCharsetName) {
-        this.inCharsetName = inCharsetName;
-    }
-
     public String getOutCharsetName() {
         return outCharsetName;
     }
@@ -450,11 +445,6 @@ public class CliArgs implements ISettings {
     @Override
     public boolean isIgnorePrivileges() {
         return ignorePrivileges;
-    }
-
-    @Override
-    public void setIgnorePrivileges(boolean ignorePrivilleges) {
-        this.ignorePrivileges = ignorePrivilleges;
     }
 
     @Override
@@ -572,8 +562,7 @@ public class CliArgs implements ISettings {
         return oldSrcFormat;
     }
 
-    @Override
-    public ISettings copy() {
+    private CliArgs copy() {
         var args = new CliArgs();
         args.addTransaction = addTransaction;
         args.allowedDangers = allowedDangers;
@@ -636,6 +625,18 @@ public class CliArgs implements ISettings {
         args.verifyRuleSetPath = verifyRuleSetPath;
         args.verifySources = verifySources;
         return args;
+    }
+
+    @Override
+    public ISettings copy(boolean isIgnorePriv) {
+        var args = copy();
+        args.ignorePrivileges = isIgnorePriv;
+        return args;
+    }
+
+    @Override
+    public ISettings copy(String inCharsetName) {
+        throw new UnsupportedOperationException();
     }
 
     /**
