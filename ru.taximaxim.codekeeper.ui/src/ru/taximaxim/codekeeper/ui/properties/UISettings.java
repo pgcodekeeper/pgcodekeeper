@@ -49,26 +49,20 @@ public final class UISettings implements ISettings {
 
     private String timeZone;
     private String inCharsetName;
-    private DatabaseType dbType = DatabaseType.PG;
     private boolean keepNewlines;
     private boolean isIgnorePriv;
     private boolean isEnableProjPrefRoot;
     private boolean isEnableProjPrefDbUpdate;
-    private IProject project;
-
-    private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
     private IEclipsePreferences projPS;
+
+    private final IProject project;
     private final Map<String, Boolean> oneTimePS;
+    private final DatabaseType dbType;
+    private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
 
-    public UISettings(IProject project, Map<String, Boolean> oneTimesPS, DatabaseType dbType) {
-        this(project, oneTimesPS);
-        this.dbType = dbType;
-    }
-
-    public UISettings(IProject project, Map<String, Boolean> oneTimePS) {
+    public UISettings(IProject project, Map<String, Boolean> oneTimePS, DatabaseType dbType) {
         this.project = project;
         this.oneTimePS = oneTimePS;
-        this.dbType = DatabaseType.PG;
         this.isIgnorePriv = getBooleanOfRootPref(PREF.NO_PRIVILEGES);
         if (project != null) {
             this.projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
@@ -76,16 +70,19 @@ public final class UISettings implements ISettings {
             this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
             this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
             this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+            this.dbType = ProjectUtils.getDatabaseType(project);
+        } else {
+            this.dbType = dbType != null ? dbType : DatabaseType.PG;
         }
+    }
+
+    public UISettings(IProject project, Map<String, Boolean> oneTimePS) {
+        this(project, oneTimePS, null);
     }
 
     @Override
     public DatabaseType getDbType() {
-        try {
-            return ProjectUtils.getDatabaseType(project);
-        } catch (Exception e) {
-            return dbType;
-        }
+        return dbType;
     }
 
     @Override
