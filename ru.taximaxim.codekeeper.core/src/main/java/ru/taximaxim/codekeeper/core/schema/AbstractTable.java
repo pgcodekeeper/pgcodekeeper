@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -186,12 +185,6 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         }
 
         return false;
-    }
-
-    @Override
-    public boolean compare(PgStatement obj, ISettings settings) {
-        return compare(obj) &&
-                (!settings.isIgnoreColumnOrder() || PgDiffUtils.setlikeEquals(columns, ((AbstractTable) obj).columns));
     }
 
     @Override

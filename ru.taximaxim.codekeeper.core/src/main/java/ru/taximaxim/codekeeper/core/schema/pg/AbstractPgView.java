@@ -109,10 +109,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
 
     private void appendChildrenComments(SQLScript script) {
         for (final Entry<String, String> columnComment : columnComments.entrySet()) {
-            StringBuilder sql = new StringBuilder();
-            sql.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+            script.addCommentStatement(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                     PgDiffUtils.getQuotedName(columnComment.getKey()), columnComment.getValue()));
-            script.addStatement(sql.toString(), getCommentsOrder(script));
         }
     }
 
@@ -164,10 +162,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
 
             String oldValue = columnComments.get(newColumn);
             if (!Objects.equals(oldValue, newValue)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                script.addCommentStatement(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                         PgDiffUtils.getQuotedName(newColumn), newValue));
-                script.addStatement(sb.toString(), getCommentsOrder(script));
             }
         }
 
@@ -175,10 +171,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
             String oldColumn = columnComment.getKey();
 
             if (!newView.columnComments.containsKey(oldColumn)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                script.addCommentStatement(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                         PgDiffUtils.getQuotedName(oldColumn), "NULL"));
-                script.addStatement(sb.toString(), getCommentsOrder(script));
             }
         }
     }

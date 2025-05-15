@@ -40,6 +40,10 @@ public final class SQLScript {
         this.settings = settings;
     }
 
+    public void addCommentStatement(String sb) {
+        addStatement(sb.toString(), settings.isCommentsToEnd() ? SQLActionType.POST : SQLActionType.MID);
+    }
+
     public void addStatement(StringBuilder sb) {
         addStatement(sb.toString());
     }

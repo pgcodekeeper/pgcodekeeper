@@ -111,6 +111,7 @@ public abstract class AbstractPgTable extends AbstractTable {
      * CREATE [ [ GLOBAL | LOCAL ] { TEMPORARY | TEMP } | UNLOGGED | FOREIGN ] TABLE [ IF NOT EXISTS ] table_name
      *
      * @param sbSQL - StringBuilder for statement
+     * @param settings - {@link ISettings} stores settings for correct script generation
      */
     protected abstract void appendName(StringBuilder sbSQl, ISettings settings);
 

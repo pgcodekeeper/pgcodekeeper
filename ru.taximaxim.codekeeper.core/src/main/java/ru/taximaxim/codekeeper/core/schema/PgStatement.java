@@ -39,7 +39,6 @@ import ru.taximaxim.codekeeper.core.hashers.JavaHasher;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.exception.ObjectCreationException;
-import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
@@ -209,11 +208,7 @@ public abstract class PgStatement implements IStatement, IHashable {
         appendFullName(sb);
         sb.append(" IS ")
         .append(checkComments() ? comment : "NULL");
-        script.addStatement(sb.toString(), getCommentsOrder(script));
-    }
-
-    protected SQLActionType getCommentsOrder(SQLScript script) {
-        return script.getSettings().isCommentsToEnd() ? SQLActionType.POST : SQLActionType.MID;
+        script.addCommentStatement(sb.toString());
     }
 
     protected void appendAlterOwner(PgStatement newObj, SQLScript script) {
@@ -484,10 +479,6 @@ public abstract class PgStatement implements IStatement, IHashable {
                 && Objects.equals(owner, obj.owner)
                 && Objects.equals(comment, obj.comment)
                 && privileges.equals(obj.privileges);
-    }
-
-    public boolean compare(PgStatement obj, ISettings settings) {
-        return compare(obj);
     }
 
     protected final void copyBaseFields(PgStatement copy) {

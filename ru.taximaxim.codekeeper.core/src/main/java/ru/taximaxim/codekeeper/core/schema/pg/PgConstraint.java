@@ -158,7 +158,7 @@ public abstract class PgConstraint extends AbstractConstraint {
             sb.append("DOMAIN ");
         }
         sb.append(parent.getQualifiedName()).append(" IS ").append(checkComments() ? comment : "NULL");
-        script.addStatement(sb.toString(), getCommentsOrder(script));
+        script.addCommentStatement(sb.toString());
     }
 
     @Override
