@@ -204,6 +204,8 @@ public final class Messages extends NLS {
 
     public static String Storage_WarningUnableToDetermineStorageType;
 
+    public static String AlterTriggerError;
+
     public static String VerificationFunction_body_start;
 
     public static String VerificationFunction_function_length;
