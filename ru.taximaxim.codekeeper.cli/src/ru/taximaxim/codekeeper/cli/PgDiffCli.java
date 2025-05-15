@@ -231,7 +231,7 @@ public final class PgDiffCli extends PgDiff {
 
     private void assertErrors() throws PgCodekeeperException {
         if (!errors.isEmpty() && !arguments.isIgnoreErrors()) {
-            throw new PgCodekeeperException("Error while load database"); //$NON-NLS-1$
+            throw new PgCodekeeperException(Messages.PgDiffCli_error_while_load_database);
         }
     }
 }

@@ -97,17 +97,17 @@ public final class LibraryLoader extends DatabaseLoader {
             return createDb(settings);
         }
 
-        ISettings sets = settings.copy();
-        if (!sets.isIgnorePrivileges()) {
-            sets.setIgnorePrivileges(isIgnorePriv);
+        ISettings copySettings = settings.copy();
+        if (!copySettings.isIgnorePrivileges()) {
+            copySettings.setIgnorePrivileges(isIgnorePriv);
         }
 
         switch (PgLibrarySource.getSource(path)) {
         case JDBC:
-            return loadJdbc(sets, path);
+            return loadJdbc(copySettings, path);
         case URL:
             try {
-                return loadURI(new URI(path), sets, isIgnorePriv);
+                return loadURI(new URI(path), copySettings, isIgnorePriv);
             } catch (URISyntaxException ex) {
                 // shouldn't happen, already checked by getSource
                 // not URI, try to folder or file
@@ -128,28 +128,28 @@ public final class LibraryLoader extends DatabaseLoader {
 
         if (Files.isDirectory(p)) {
             if (Files.exists(p.resolve(Consts.FILENAME_WORKING_DIR_MARKER))) {
-                AbstractDatabase db = new ProjectLoader(p.toString(), sets, errors).load();
+                AbstractDatabase db = new ProjectLoader(p.toString(), copySettings, errors).load();
 
                 if (loadNested) {
                     new LibraryLoader(db, metaPath, errors, loadedLibs).loadXml(
-                            new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), sets);
+                            new DependenciesXmlStore(p.resolve(DependenciesXmlStore.FILE_NAME)), copySettings);
                 }
 
                 return db;
             }
 
-            AbstractDatabase db = createDb(sets);
-            readStatementsFromDirectory(p, db, sets);
+            AbstractDatabase db = createDb(copySettings);
+            readStatementsFromDirectory(p, db, copySettings);
             finishLoaders();
             return db;
         }
 
         if (FileUtils.isZipFile(p)) {
-            return loadZip(p, sets, isIgnorePriv);
+            return loadZip(p, copySettings, isIgnorePriv);
         }
 
-        AbstractDatabase db = createDb(sets);
-        PgDumpLoader loader = new PgDumpLoader(Paths.get(path), sets);
+        AbstractDatabase db = createDb(copySettings);
+        PgDumpLoader loader = new PgDumpLoader(Paths.get(path), copySettings);
         loader.loadAsync(db, antlrTasks);
         launchedLoaders.add(loader);
         finishLoaders();

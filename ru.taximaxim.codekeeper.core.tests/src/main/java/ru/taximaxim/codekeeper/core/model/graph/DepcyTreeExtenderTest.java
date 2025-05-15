@@ -83,7 +83,7 @@ class DepcyTreeExtenderTest {
 
         TreeElement tree = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         predefined.setUserSelection(tree);
-        DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree, settings);
+        DepcyTreeExtender dte = new DepcyTreeExtender(dbSource, dbTarget, tree);
         Set<TreeElement> depcy = dte.getDepcies();
         Set<TreeElement> depcyPredefined = predefined.getDepcySet(dbSource, dbTarget, tree);
         Assertions.assertEquals(depcyPredefined, depcy, "List of dependencies is not as expected");

@@ -121,7 +121,6 @@ import ru.taximaxim.codekeeper.core.model.graph.DepcyTreeExtender;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgOverride;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -201,8 +200,6 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
 
-    private ISettings settings;
-
     public IProject getProject() {
         return proj.getProject();
     }
@@ -227,7 +224,6 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         setPartName(in.getName());
 
         proj = new PgDbProject(in.getProject());
-        settings = new UISettings(getProject(), oneTimePrefs);
         sp = new ProjectEditorSelectionProvider(getProject());
         dbType = ProjectUtils.getDatabaseType(getProject());
 
@@ -916,7 +912,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         TreeElement treeCopy = diffTree.getCopy();
         Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(
-                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy, settings).getDepcies();
+                dbProject.getDbObject(), dbRemote.getDbObject(), treeCopy).getDepcies();
 
         Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
         // display commit dialog

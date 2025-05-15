@@ -120,6 +120,7 @@ public class Messages extends NLS {
 
     public static String DatabaseType_unsupported_type;
 
+    public static String PgDiffCli_error_while_load_database;
     public static String PgDiffCli_log_load_ignored_obj;
     public static String PgDiffCli_log_load_new_db;
     public static String PgDiffCli_log_load_new_db_lib;
