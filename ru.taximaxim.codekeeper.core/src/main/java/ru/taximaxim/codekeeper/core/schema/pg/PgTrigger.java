@@ -37,7 +37,7 @@ public final class PgTrigger extends AbstractTrigger {
 
     private String function;
     private String refTableName;
-    private String enabledState;
+    private TriggerState triggerState;
     /**
      * Whether the trigger should be fired BEFORE, AFTER or INSTEAD_OF action. Default is
      * before.
@@ -170,8 +170,8 @@ public final class PgTrigger extends AbstractTrigger {
         sbSQL.append(function);
         script.addStatement(sbSQL);
 
-        if (enabledState != null) {
-            addAlterTable(enabledState, this, script);
+        if (triggerState != null) {
+            addAlterTable(triggerState, this, script);
         }
         appendComments(script);
     }
@@ -183,24 +183,24 @@ public final class PgTrigger extends AbstractTrigger {
         if (!compareUnalterable(newTrg)) {
             return ObjectState.RECREATE;
         }
-        String newEnabledState = newTrg.enabledState;
-        if (!Objects.equals(enabledState, newEnabledState)) {
-            if (newEnabledState == null) {
-                newEnabledState = "ENABLE";
+        TriggerState newTriggerState = newTrg.triggerState;
+        if (!Objects.equals(triggerState, newTriggerState)) {
+            if (newTriggerState == null) {
+                newTriggerState = TriggerState.ENABLE;
             }
-            addAlterTable(newEnabledState, newTrg, script);
+            addAlterTable(newTriggerState, newTrg, script);
         }
         appendAlterComments(newTrg, script);
 
         return getObjectState(script, startSize);
     }
 
-    private void addAlterTable(String enabledState, PgTrigger trigger, SQLScript script) {
+    private void addAlterTable(TriggerState enabledState, PgTrigger trigger, SQLScript script) {
         StringBuilder sql = new StringBuilder();
         sql.append(ALTER_TABLE)
         .append(parent.getQualifiedName())
         .append(' ')
-        .append(enabledState)
+        .append(enabledState.getValue())
         .append(" TRIGGER ")
         .append(PgDiffUtils.getQuotedName(trigger.name));
         script.addStatement(sql);
@@ -288,8 +288,8 @@ public final class PgTrigger extends AbstractTrigger {
         resetHash();
     }
 
-    public void setEnabledState(String enabledState) {
-        this.enabledState = enabledState;
+    public void setTriggerState(TriggerState triggerState) {
+        this.triggerState = triggerState;
         resetHash();
     }
 
@@ -300,7 +300,7 @@ public final class PgTrigger extends AbstractTrigger {
         }
         if (obj instanceof PgTrigger trigger && super.compare(obj)) {
             return compareUnalterable(trigger)
-                    && Objects.equals(enabledState, trigger.enabledState);
+                    && triggerState == trigger.triggerState;
         }
         return false;
     }
@@ -339,7 +339,7 @@ public final class PgTrigger extends AbstractTrigger {
         hasher.put(refTableName);
         hasher.put(newTable);
         hasher.put(oldTable);
-        hasher.put(enabledState);
+        hasher.put(triggerState);
     }
 
     @Override
@@ -359,7 +359,7 @@ public final class PgTrigger extends AbstractTrigger {
         trigger.setNewTable(newTable);
         trigger.setOldTable(oldTable);
         trigger.updateColumns.addAll(updateColumns);
-        trigger.setEnabledState(enabledState);
+        trigger.setTriggerState(triggerState);
         return trigger;
     }
 }

@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to change the state of the cloned parent triggers in partition tables.
+
 ### Changed
+
+- Improved code completion functionality.
 
 ### Fixed
 

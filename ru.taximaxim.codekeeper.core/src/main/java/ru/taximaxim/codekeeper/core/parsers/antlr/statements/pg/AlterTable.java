@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrUtils;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
+import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceException;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.VexAnalysisLauncher;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_partition_gpContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Alter_table_statementContext;
@@ -63,6 +65,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
+import ru.taximaxim.codekeeper.core.schema.pg.TriggerState;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class AlterTable extends TableAbstract {
@@ -160,7 +163,7 @@ public final class AlterTable extends TableAbstract {
             }
 
             if (tablAction.TRIGGER() != null) {
-                createTrigger(tabl, tablAction);
+                createTrigger(tabl, tablAction, ids);
             }
 
             if (tablAction.RULE() != null) {
@@ -303,24 +306,39 @@ public final class AlterTable extends TableAbstract {
         }
     }
 
-    private void createTrigger(AbstractPgTable tabl, Table_actionContext tablAction) {
-        if (tablAction.trigger_name == null) {
+    private void createTrigger(AbstractPgTable tabl, Table_actionContext tablAction, List<ParserRuleContext> ids) {
+        var triggerNameCtx = tablAction.trigger_name;
+        if (triggerNameCtx == null) {
             return;
         }
 
-        PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
-                tablAction.trigger_name);
-        if (trigger != null) {
-            if (tablAction.DISABLE() != null) {
-                trigger.setEnabledState("DISABLE");
-            } else if (tablAction.ENABLE() != null) {
-                if (tablAction.REPLICA() != null) {
-                    trigger.setEnabledState("ENABLE REPLICA");
-                } else if (tablAction.ALWAYS() != null) {
-                    trigger.setEnabledState("ENABLE ALWAYS");
-                }
+        TriggerState triggerState = null;
+        if (tablAction.DISABLE() != null) {
+            triggerState = TriggerState.DISABLE;
+        } else if (tablAction.ENABLE() != null) {
+            if (tablAction.REPLICA() != null) {
+                triggerState = TriggerState.ENABLE_REPLICA;
+            } else if (tablAction.ALWAYS() != null) {
+                triggerState = TriggerState.ENABLE_ALWAYS;
+            } else {
+                triggerState = TriggerState.ENABLE;
             }
         }
+
+        String triggerName = triggerNameCtx.getText();
+        if (tabl.getTrigger(triggerName) == null) {
+            if (!tabl.hasInherits()) {
+                throw new UnresolvedReferenceException(Messages.AlterTriggerError, triggerNameCtx.getStop());
+            }
+            tabl.putTriggerState(triggerName, triggerState);
+        } else {
+            PgTrigger trigger = (PgTrigger) getSafe(PgStatementContainer::getTrigger, tabl,
+                    triggerNameCtx);
+            trigger.setTriggerState(triggerState);
+        }
+        var idsCopy = new ArrayList<>(ids);
+        idsCopy.add(triggerNameCtx);
+        addObjReference(idsCopy, DbObjType.TRIGGER, null);
     }
 
     private void createRule(AbstractPgTable tabl, Table_actionContext tablAction) {

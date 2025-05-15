@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,6 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.Inherits;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.script.SQLActionType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
@@ -60,10 +62,14 @@ public abstract class AbstractPgTable extends AbstractTable {
             END
             $_$""";
 
+    private static final String CHANGE_TRIGGER_STATE =
+            "ALTER TABLE %1$s %2$s TRIGGER %3$s";
+
     private static final Logger LOG = LoggerFactory.getLogger(AbstractPgTable.class);
 
     protected boolean hasOids;
     protected final List<Inherits> inherits = new ArrayList<>();
+    private Map<String, String> triggerStates = new HashMap<>();
 
     protected AbstractPgTable(String name) {
         super(name);
@@ -88,7 +94,28 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendPrivileges(script);
         appendColumnsPriliges(script);
         appendColumnsStatistics(script);
+        appendTriggerStates(script);
         appendComments(script);
+    }
+
+    private void compareTriggerStates(AbstractPgTable newTable, SQLScript script) {
+        var newTriggers = newTable.triggerStates;
+        if (!triggerStates.equals(newTriggers)) {
+            newTriggers.entrySet().stream()
+                .filter(tr -> !Objects.equals(tr.getValue(), triggerStates.get(tr.getKey())))
+                .forEach(tr -> addTriggerToScript(tr, script));
+        }
+    }
+
+    private void appendTriggerStates(SQLScript script) {
+        for (var state : triggerStates.entrySet()) {
+            addTriggerToScript(state, script);
+        }
+    }
+
+    private void addTriggerToScript(Entry<String, String> tg, SQLScript script) {
+        String changeTgState = CHANGE_TRIGGER_STATE.formatted(getQualifiedName(), tg.getValue(), tg.getKey());
+        script.addStatement(changeTgState, SQLActionType.END);
     }
 
     @Override
@@ -207,6 +234,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         appendAlterOwner(newTable, script);
         compareTableOptions(newTable, script);
         alterPrivileges(newTable, script);
+        compareTriggerStates(newTable, script);
         appendAlterComments(newTable, script);
 
         return getObjectState(script, startSize);
@@ -315,6 +343,14 @@ public abstract class AbstractPgTable extends AbstractTable {
      */
     public List<Inherits> getInherits() {
         return Collections.unmodifiableList(inherits);
+    }
+
+    public boolean hasInherits() {
+        return !inherits.isEmpty();
+    }
+
+    public void putTriggerState(String triggerName, TriggerState state) {
+        triggerStates.put(triggerName, state.getValue());
     }
 
     public void setHasOids(final boolean hasOids) {
@@ -451,7 +487,8 @@ public abstract class AbstractPgTable extends AbstractTable {
             return true;
         } else if (obj instanceof AbstractPgTable table && super.compare(obj)) {
             return hasOids == table.hasOids
-                    && inherits.equals(table.inherits);
+                    && inherits.equals(table.inherits)
+                    && triggerStates.equals(table.triggerStates);
         }
         return false;
     }
@@ -461,6 +498,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         super.computeHash(hasher);
         hasher.putOrdered(inherits);
         hasher.put(hasOids);
+        hasher.put(triggerStates);
     }
 
     @Override
@@ -468,6 +506,7 @@ public abstract class AbstractPgTable extends AbstractTable {
         AbstractPgTable copy = (AbstractPgTable) super.shallowCopy();
         copy.inherits.addAll(inherits);
         copy.setHasOids(hasOids);
+        copy.triggerStates.putAll(triggerStates);
         return copy;
     }
 
