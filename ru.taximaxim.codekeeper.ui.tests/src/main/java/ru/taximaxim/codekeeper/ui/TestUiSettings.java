@@ -161,12 +161,12 @@ public final class TestUiSettings implements ISettings {
     }
 
     @Override
-    public ISettings copy(boolean isIgnorePriv) {
+    public ISettings createTempSettings(boolean isIgnorePriv) {
         return copy();
     }
 
     @Override
-    public ISettings copy(String inCharsetName) {
+    public ISettings createTempSettings(String inCharsetName) {
         return copy();
     }
 }

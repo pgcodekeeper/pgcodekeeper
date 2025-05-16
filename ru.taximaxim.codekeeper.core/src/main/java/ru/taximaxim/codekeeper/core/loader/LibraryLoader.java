@@ -99,7 +99,7 @@ public final class LibraryLoader extends DatabaseLoader {
 
         ISettings copySettings;
         if (!settings.isIgnorePrivileges()) {
-            copySettings = settings.copy(isIgnorePriv);
+            copySettings = settings.createTempSettings(isIgnorePriv);
         } else {
             copySettings = settings;
         }

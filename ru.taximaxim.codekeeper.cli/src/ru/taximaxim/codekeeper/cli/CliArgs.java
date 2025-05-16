@@ -628,14 +628,14 @@ public class CliArgs implements ISettings {
     }
 
     @Override
-    public ISettings copy(boolean isIgnorePriv) {
+    public ISettings createTempSettings(boolean isIgnorePriv) {
         var args = copy();
         args.ignorePrivileges = isIgnorePriv;
         return args;
     }
 
     @Override
-    public ISettings copy(String inCharsetName) {
+    public ISettings createTempSettings(String inCharsetName) {
         throw new UnsupportedOperationException();
     }
 

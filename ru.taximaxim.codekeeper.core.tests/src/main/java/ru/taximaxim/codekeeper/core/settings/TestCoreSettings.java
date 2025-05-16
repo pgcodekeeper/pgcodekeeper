@@ -219,14 +219,14 @@ public final class TestCoreSettings implements ISettings {
     }
 
     @Override
-    public ISettings copy(boolean isIgnorePriv) {
+    public ISettings createTempSettings(boolean isIgnorePriv) {
         var settings = copy();
         settings.isIgnorePriv = isIgnorePriv;
         return settings;
     }
 
     @Override
-    public ISettings copy(String inCharsetName) {
+    public ISettings createTempSettings(String inCharsetName) {
         var settings = copy();
         settings.inCharsetName = inCharsetName;
         return settings;

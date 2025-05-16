@@ -219,7 +219,7 @@ public final class UISettings implements ISettings {
         return addPathsIfExists(FILE.POST_DIR, FILE.POST_SCRIPT);
     }
 
-    private Map<String, Boolean> createTempSettings() {
+    private Map<String, Boolean> createTempPrefs() {
         Map<String, Boolean> temp = new HashMap<>();
         if (null != oneTimePS) {
             temp.putAll(oneTimePS);
@@ -228,15 +228,15 @@ public final class UISettings implements ISettings {
     }
     
     @Override
-    public ISettings copy(boolean isIgnorePriv) {
-        var tempSettings = createTempSettings();
+    public ISettings createTempSettings(boolean isIgnorePriv) {
+        var tempSettings = createTempPrefs();
         tempSettings.put(PREF.NO_PRIVILEGES, isIgnorePriv);
         return new UISettings(project, tempSettings, dbType);
     }
 
     @Override
-    public ISettings copy(String inCharsetName) {
-        var tempSettings = new UISettings(project, createTempSettings(), dbType);
+    public ISettings createTempSettings(String inCharsetName) {
+        var tempSettings = new UISettings(project, createTempPrefs(), dbType);
         tempSettings.inCharsetName = inCharsetName;
         return tempSettings;
     }
