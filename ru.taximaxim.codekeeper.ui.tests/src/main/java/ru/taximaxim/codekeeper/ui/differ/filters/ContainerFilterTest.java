@@ -37,7 +37,7 @@ class ContainerFilterTest extends AbstractFilterTest{
         whenElementWithName(RIGHT);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(true, result);
     }
@@ -47,7 +47,7 @@ class ContainerFilterTest extends AbstractFilterTest{
         whenElementWithName(INVALID);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -57,7 +57,7 @@ class ContainerFilterTest extends AbstractFilterTest{
         whenElementIsSchemaWithName(RIGHT);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(true, result);
     }
@@ -67,7 +67,7 @@ class ContainerFilterTest extends AbstractFilterTest{
         whenElementIsSchemaWithName(INVALID);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -76,7 +76,7 @@ class ContainerFilterTest extends AbstractFilterTest{
     void testElementNameIsEmpty() {
         whenElementWithName("");
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }

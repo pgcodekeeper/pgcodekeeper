@@ -26,13 +26,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Update_statementContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class UpdateMsStatement extends MsParserAbstract {
+public final class UpdateMsStatement extends MsParserAbstract {
 
     private final Update_statementContext ctx;
 
-    public UpdateMsStatement(Update_statementContext ctx, MsDatabase db) {
-        super(db);
+    public UpdateMsStatement(Update_statementContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

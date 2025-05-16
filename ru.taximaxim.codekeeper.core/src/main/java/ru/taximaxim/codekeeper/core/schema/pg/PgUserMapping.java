@@ -94,7 +94,7 @@ public final class PgUserMapping extends PgStatement implements PgForeignOptionC
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE USER MAPPING ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append("FOR ").append(getQualifiedName());
         if (!options.isEmpty()) {
             sb.append(' ');

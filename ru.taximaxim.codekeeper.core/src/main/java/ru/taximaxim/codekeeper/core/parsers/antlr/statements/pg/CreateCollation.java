@@ -25,13 +25,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Collation_
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Create_collation_statementContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgCollation;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateCollation extends PgParserAbstract {
+public final class CreateCollation extends PgParserAbstract {
 
     private final Create_collation_statementContext ctx;
 
-    public CreateCollation(Create_collation_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateCollation(Create_collation_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

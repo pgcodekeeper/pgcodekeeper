@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.loader.pg.SupportedPgVersion;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -41,8 +40,6 @@ import ru.taximaxim.codekeeper.core.script.SQLScript;
  * Stores database information.
  */
 public abstract class AbstractDatabase extends PgStatement implements IDatabase {
-
-    protected PgDiffArguments arguments;
 
     private SupportedPgVersion version;
 
@@ -60,17 +57,12 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
     // (used for launch analyze and getting dependencies).
     private final ArrayList<AbstractAnalysisLauncher> analysisLaunchers = new ArrayList<>();
 
-    protected AbstractDatabase(PgDiffArguments arguments) {
+    protected AbstractDatabase() {
         super("DB_name_placeholder");
-        this.arguments = arguments;
     }
 
     public List<PgOverride> getOverrides() {
         return overrides;
-    }
-
-    protected AbstractDatabase() {
-        this(new PgDiffArguments());
     }
 
     @Override
@@ -78,17 +70,9 @@ public abstract class AbstractDatabase extends PgStatement implements IDatabase 
         return DbObjType.DATABASE;
     }
 
-    public void setArguments(PgDiffArguments arguments) {
-        this.arguments = arguments;
-    }
-
     @Override
     public AbstractDatabase getDatabase() {
         return this;
-    }
-
-    public final PgDiffArguments getArguments() {
-        return arguments;
     }
 
     public SupportedPgVersion getVersion() {

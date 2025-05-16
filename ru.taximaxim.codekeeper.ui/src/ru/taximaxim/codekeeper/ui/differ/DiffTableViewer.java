@@ -119,6 +119,7 @@ import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.model.graph.DepcyFinder;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.AggregatingListener;
@@ -138,8 +139,8 @@ import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.ContainerFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.UserFilter;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 import ru.taximaxim.codekeeper.ui.xmlstore.ListXmlStore;
 
 /**
@@ -194,6 +195,7 @@ public class DiffTableViewer extends Composite {
     private DbSource dbProject;
     private DbSource dbRemote;
     private DatabaseType dbType;
+    private final ISettings settings;
 
     private boolean isApplyToProj = true;
 
@@ -213,17 +215,18 @@ public class DiffTableViewer extends Composite {
         return Collections.unmodifiableCollection(elements);
     }
 
-    public DiffTableViewer(Composite parent, boolean viewOnly, DatabaseType databaseType) {
-        this(parent, viewOnly, null, null, databaseType);
+    public DiffTableViewer(Composite parent, boolean viewOnly, DatabaseType databaseType, ISettings settings) {
+        this(parent, viewOnly, null, null, databaseType, settings);
     }
 
     public DiffTableViewer(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
-            DatabaseType databaseType) {
+            DatabaseType databaseType, ISettings settings) {
         super(parent, SWT.NONE);
         this.viewOnly = viewOnly;
         this.lineManager = lineManager;
         this.location = location;
         this.dbType = databaseType;
+        this.settings = settings;
         showGitUser = location != null
                 && Activator.getDefault().getPreferenceStore().getBoolean(PG_EDIT_PREF.SHOW_GIT_USER)
                 && GitUserReader.checkRepo(location);
@@ -511,7 +514,7 @@ public class DiffTableViewer extends Composite {
                 PgStatement project = el.getSide() == DiffSide.RIGHT ? null
                         : el.getPgStatement(dbProject.getDbObject());
                 CompareAction.openCompareEditor(new CompareInput(el.getName(),
-                        el.getType(), remote, project));
+                        el.getType(), remote, project, settings));
             }
         });
 
@@ -552,7 +555,7 @@ public class DiffTableViewer extends Composite {
 
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {
-            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, source.getArguments().getDbType()); //$NON-NLS-1$
+            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, settings.getDbType()); //$NON-NLS-1$
         } catch (IOException | CoreException ex) {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_creating_graph, ex);
         }
@@ -1506,17 +1509,17 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            if (!gitUserFilter.isEmpty() && !gitUserFilter.checkElement(el, elementInfoMap, null, null)) {
+            if (!gitUserFilter.isEmpty() && !gitUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
                 return false;
             }
 
-            if (!dbUserFilter.isEmpty() && !dbUserFilter.checkElement(el, elementInfoMap, null, null)) {
+            if (!dbUserFilter.isEmpty() && !dbUserFilter.checkElement(el, elementInfoMap, null, null, settings)) {
                 return false;
             }
 
-            if (!containerFilter.isEmpty() && !containerFilter.checkElement(el, null, null, null)
+            if (!containerFilter.isEmpty() && !containerFilter.checkElement(el, null, null, null, settings)
                     && (!isContainer || el.getChildren().stream()
-                            .noneMatch(e -> containerFilter.checkElement(e, null, null, null)))) {
+                            .noneMatch(e -> containerFilter.checkElement(e, null, null, null, settings)))) {
                 return false;
             }
 
@@ -1524,8 +1527,8 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            return (codeFilter.isEmpty() || codeFilter.checkElement(el,
-                    elementInfoMap, dbProject.getDbObject(), dbRemote.getDbObject()));
+            return (codeFilter.isEmpty() || codeFilter.checkElement(el, elementInfoMap, dbProject.getDbObject(),
+                    dbRemote.getDbObject(), settings));
         }
 
         private boolean checkType(TreeElement el, boolean isSubElement) {
@@ -1618,5 +1621,9 @@ public class DiffTableViewer extends Composite {
 
             return false;
         }
+    }
+
+    public DatabaseType getDbType() {
+        return dbType;
     }
 }

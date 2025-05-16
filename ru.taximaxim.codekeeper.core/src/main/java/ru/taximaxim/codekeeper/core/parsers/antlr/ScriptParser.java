@@ -30,12 +30,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.DangerStatement;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class ScriptParser {
 
@@ -46,15 +45,13 @@ public final class ScriptParser {
     private final List<Object> errors;
     private final Set<DangerStatement> dangerStatements;
 
-    public ScriptParser(String name, String script, DatabaseType dbType)
+    public ScriptParser(String name, String script, ISettings settings)
             throws IOException, InterruptedException {
         this.script = script;
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
         LOG.info(Messages.ScriptParser_log_load_dump);
         PgDumpLoader loader = new PgDumpLoader(
                 () -> new ByteArrayInputStream(script.getBytes(StandardCharsets.UTF_8)),
-                name, args, new NullProgressMonitor(), 0);
+                name, settings, new NullProgressMonitor(), 0);
         loader.setMode(ParserListenerMode.SCRIPT);
         // script mode collects only references
         batches = new ArrayList<>(loader.load().getObjReferences(name));

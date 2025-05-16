@@ -110,7 +110,7 @@ public final class ChDictionary extends PgStatement implements IRelation {
     public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE DICTIONARY ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(getQualifiedName());
         appendColumns(sb);
         if (pk != null) {

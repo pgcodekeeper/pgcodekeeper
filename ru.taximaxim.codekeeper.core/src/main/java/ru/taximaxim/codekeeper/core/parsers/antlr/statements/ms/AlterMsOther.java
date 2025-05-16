@@ -26,13 +26,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Schema_alterContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsOther extends MsParserAbstract {
+public final class AlterMsOther extends MsParserAbstract {
 
     private final Schema_alterContext ctx;
 
-    public AlterMsOther(Schema_alterContext ctx, MsDatabase db) {
-        super(db);
+    public AlterMsOther(Schema_alterContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

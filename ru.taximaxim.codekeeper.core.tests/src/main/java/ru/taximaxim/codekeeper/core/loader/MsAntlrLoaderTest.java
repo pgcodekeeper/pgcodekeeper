@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -45,6 +44,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
@@ -76,11 +76,11 @@ class MsAntlrLoaderTest {
 
     void loadSchema(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(ENCODING);
-        args.setKeepNewlines(true);
-        args.setDbType(DatabaseType.MS);
-        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
+        var settings = new TestCoreSettings();
+        settings.setInCharsetName(ENCODING);
+        settings.setKeepNewlines(true);
+        settings.setDbType(DatabaseType.MS);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, settings);
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -91,22 +91,18 @@ class MsAntlrLoaderTest {
 
     void exportFullDb(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(ENCODING);
-        args.setKeepNewlines(true);
-        args.setDbType(DatabaseType.MS);
-        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, args);
+        var settings = new TestCoreSettings();
+        settings.setInCharsetName(ENCODING);
+        settings.setKeepNewlines(true);
+        settings.setDbType(DatabaseType.MS);
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, MsAntlrLoaderTest.class, settings);
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.MS, ENCODING, settings).exportFull();
 
-            args = new PgDiffArguments();
-            args.setInCharsetName(ENCODING);
-            args.setKeepNewlines(true);
-            args.setDbType(DatabaseType.MS);
-            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), settings).loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +

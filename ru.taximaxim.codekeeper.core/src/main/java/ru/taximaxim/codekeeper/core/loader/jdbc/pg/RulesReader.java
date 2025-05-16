@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 
-public class RulesReader extends JdbcReader {
+public final class RulesReader extends JdbcReader {
 
     public RulesReader(JdbcLoaderBase loader) {
         super(loader);
@@ -87,7 +87,7 @@ public class RulesReader extends JdbcReader {
         loader.submitAntlrTask(command, p -> p.sql().statement(0)
                 .schema_statement().schema_create().create_rewrite_statement(),
                 ctx -> CreateRule.setConditionAndAddCommands(ctx, r,
-                        schema.getDatabase(), loader.getCurrentLocation()));
+                        schema.getDatabase(), loader.getCurrentLocation(), loader.getSettings()));
 
         loader.setAuthor(r, res);
         loader.setComment(r, res);

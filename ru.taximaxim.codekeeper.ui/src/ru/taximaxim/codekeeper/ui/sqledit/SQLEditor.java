@@ -131,6 +131,7 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
@@ -525,7 +526,8 @@ implements IResourceChangeListener, ITextErrorReporter {
             IDocument document = getDocumentProvider().getDocument(in);
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             String name = Paths.get(uriInput.getURI()).toString();
-            parser.fillRefsFromInputStream(stream, name, dbType, monitor);
+            IProject project = res != null ? res.getProject() : null;
+            parser.fillRefsFromInputStream(stream, name, monitor, project);
         }
     }
 
@@ -633,7 +635,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         IRunnableWithProgress runnable = monitor -> {
             try {
                 ScriptParser scriptParser = new ScriptParser(
-                        getEditorInput().getName(), textRetrieved, dbInfo.getDbType());
+                        getEditorInput().getName(), textRetrieved, new UISettings(null, null, dbInfo.getDbType()));
                 String error = scriptParser.getErrorMessage();
                 if (error != null) {
                     UiProgressReporter.writeSingleError(error);

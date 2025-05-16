@@ -66,6 +66,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgRule;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.TriggerState;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class AlterTable extends TableAbstract {
 
@@ -73,8 +74,9 @@ public final class AlterTable extends TableAbstract {
     private final String tablespace;
     private final CommonTokenStream stream;
 
-    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
-        super(db, stream);
+    public AlterTable(Alter_table_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream,
+            ISettings settings) {
+        super(db, stream, settings);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.stream = stream;

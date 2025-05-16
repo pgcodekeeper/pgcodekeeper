@@ -23,6 +23,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.utils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public final class UIProjectUpdater extends ProjectUpdater {
 
@@ -35,6 +36,6 @@ public final class UIProjectUpdater extends ProjectUpdater {
             boolean overridesOnly) throws CoreException {
         super(dbNew, dbOld, changedObjects,
                 ProjectUtils.getDatabaseType(proj.getProject()), proj.getProjectCharset(),
-                proj.getPathToProject(), overridesOnly);
+                proj.getPathToProject(), overridesOnly, new UISettings(proj.getProject(), null));
     }
 }

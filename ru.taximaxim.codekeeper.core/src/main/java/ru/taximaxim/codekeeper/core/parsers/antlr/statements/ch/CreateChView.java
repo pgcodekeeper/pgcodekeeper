@@ -37,14 +37,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_schem
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChView;
 import ru.taximaxim.codekeeper.core.schema.ch.ChView.ChViewType;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChView extends ChParserAbstract {
+public final class CreateChView extends ChParserAbstract {
 
     private Create_view_stmtContext ctx;
     private CommonTokenStream stream;
 
-    public CreateChView(Create_view_stmtContext ctx, ChDatabase db, CommonTokenStream stream) {
-        super(db);
+    public CreateChView(Create_view_stmtContext ctx, ChDatabase db, CommonTokenStream stream, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.stream = stream;
     }

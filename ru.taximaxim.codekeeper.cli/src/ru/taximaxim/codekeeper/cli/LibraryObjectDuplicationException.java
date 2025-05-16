@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.core.parsers.antlr.exception;
+package ru.taximaxim.codekeeper.cli;
 
 import java.text.MessageFormat;
 import java.util.Collection;

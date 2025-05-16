@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
  * @author botov_av
  *
  */
-public class DepcyTreeExtender {
+public final class DepcyTreeExtender {
 
     private final AbstractDatabase dbSource;
     private final AbstractDatabase dbTarget;
@@ -75,7 +75,7 @@ public class DepcyTreeExtender {
                 newEditDepcy.addAll(depRes.getCreateDepcies(markedToCreate));
             }
         }
-        fillTreeDepcies(treeDepcyNewEdit , newEditDepcy);
+        fillTreeDepcies(treeDepcyNewEdit, newEditDepcy);
     }
 
     /**

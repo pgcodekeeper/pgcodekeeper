@@ -27,13 +27,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Tokens_non
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateSequence extends PgParserAbstract {
+public final class CreateSequence extends PgParserAbstract {
 
     private final Create_sequence_statementContext ctx;
 
-    public CreateSequence(Create_sequence_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateSequence(Create_sequence_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

@@ -171,7 +171,7 @@ public final class MsType extends AbstractType implements IStatementContainer {
         var type = stmt.getStatementType();
         switch (type) {
         case INDEX:
-            indices.add(((MsIndex) stmt).getDefinition(true, false));
+            indices.add(((MsIndex) stmt).getDefinition(true, false, false));
             break;
         case CONSTRAINT:
             constraints.add(((IConstraint) stmt).getDefinition());

@@ -43,6 +43,8 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 public final class TestUtils {
 
@@ -55,24 +57,24 @@ public final class TestUtils {
     public static final String RESOURCE_MS_DUMP = "testing_ms_dump.sql";
     public static final List<String> IGNORED_SCHEMAS_LIST = List.of("worker", "country", "ignore1", "ignore4vrw");
 
-    public static AbstractDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args)
+    public static AbstractDatabase loadTestDump(String resource, Class<?> c, ISettings settings)
             throws IOException, InterruptedException {
-        return loadTestDump(resource, c, args, true);
+        return loadTestDump(resource, c, settings, true);
     }
 
-    public static AbstractDatabase loadTestDump(String resource, Class<?> c, PgDiffArguments args, boolean analysis)
+    public static AbstractDatabase loadTestDump(String resource, Class<?> c, ISettings settings, boolean analysis)
             throws IOException, InterruptedException {
         PgDumpLoader loader = new PgDumpLoader(() -> c.getResourceAsStream(resource),
-                "test/" + c.getName() + '/' + resource, args);
+                "test/" + c.getName() + '/' + resource, settings);
         AbstractDatabase db = analysis ? loader.loadAndAnalyze() : loader.load();
         Assertions.assertEquals("[]", loader.getErrors().toString(), "Test resource caused loader errors!");
         return db;
     }
 
     public static AbstractDatabase createDumpDB(DatabaseType dbType) {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
-        AbstractDatabase db = DatabaseLoader.createDb(args);
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
+        AbstractDatabase db = DatabaseLoader.createDb(settings);
         AbstractSchema schema = switch (dbType) {
         case PG -> new PgSchema(Consts.PUBLIC);
         case MS -> new MsSchema(Consts.DBO);
@@ -88,9 +90,9 @@ public final class TestUtils {
         return db;
     }
 
-    public static void runDiffSame(AbstractDatabase db, String template, PgDiffArguments args)
+    public static void runDiffSame(AbstractDatabase db, String template, ISettings settings)
             throws IOException, InterruptedException {
-        String script = new PgDiff(args).diff(db, db, null);
+        String script = new PgDiff(settings).diff(db, db, null);
         Assertions.assertEquals("", script.trim(), "File name template: " + template);
     }
 
@@ -130,27 +132,27 @@ public final class TestUtils {
     }
 
     static void runDiff(String fileNameTemplate, DatabaseType dbType, Class<?> clazz) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
-        String script = getScript(fileNameTemplate, args, clazz);
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
+        String script = getScript(fileNameTemplate, settings, clazz);
         TestUtils.compareResult(script, fileNameTemplate, clazz);
     }
 
-    static String getScript(String fileNameTemplate, PgDiffArguments args, Class<?> clazz)
+    static String getScript(String fileNameTemplate, TestCoreSettings settings, Class<?> clazz)
             throws IOException, InterruptedException {
-        return getScript(fileNameTemplate, args, clazz, false);
+        return getScript(fileNameTemplate, settings, clazz, false);
     }
 
-    static String getScript(String fileNameTemplate, PgDiffArguments args, Class<?> clazz, boolean needTransaction)
+    static String getScript(String fileNameTemplate, TestCoreSettings settings, Class<?> clazz, boolean needTransaction)
             throws IOException, InterruptedException {
-        AbstractDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
-        TestUtils.runDiffSame(dbOld, fileNameTemplate, args);
+        AbstractDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
+        TestUtils.runDiffSame(dbOld, fileNameTemplate, settings);
 
-        AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
-        TestUtils.runDiffSame(dbNew, fileNameTemplate, args);
+        AbstractDatabase dbNew = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
+        TestUtils.runDiffSame(dbNew, fileNameTemplate, settings);
 
-        args.setAddTransaction(needTransaction);
-        return new PgDiff(args).diff(dbOld, dbNew, null);
+        settings.setAddTransaction(needTransaction);
+        return new PgDiff(settings).diff(dbOld, dbNew, null);
     }
 
     /**
@@ -170,35 +172,35 @@ public final class TestUtils {
         AbstractDatabase newDatabase;
         AbstractDatabase oldDbFull;
         AbstractDatabase newDbFull;
-        PgDiffArguments args = new PgDiffArguments();
-        args.setDbType(dbType);
-        args.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
+        var settings = new TestCoreSettings();
+        settings.setDbType(dbType);
+        settings.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
 
         String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
         if (userSelTemplate.equals(dbTemplate)) {
             oldDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
+                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
             newDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
+                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
             oldDbFull = oldDatabase;
             newDbFull = newDatabase;
         } else {
             oldDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args, false);
+                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings, false);
             newDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, args, false);
+                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings, false);
             oldDbFull = TestUtils.loadTestDump(
-                    dbTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, args);
+                    dbTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
             newDbFull = TestUtils.loadTestDump(
-                    dbTemplate + FILES_POSTFIX.NEW_SQL, clazz, args);
+                    dbTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
         }
 
-        TestUtils.runDiffSame(oldDbFull, dbTemplate, args);
-        TestUtils.runDiffSame(newDbFull, dbTemplate, args);
+        TestUtils.runDiffSame(oldDbFull, dbTemplate, settings);
+        TestUtils.runDiffSame(newDbFull, dbTemplate, settings);
 
-        TreeElement tree = DiffTree.create(oldDatabase, newDatabase, null);
+        TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
         tree.setAllChecked();
-        String script = new PgDiff(args).diff(tree, oldDbFull, newDbFull, null, null, null);
+        String script = new PgDiff(settings).diff(tree, oldDbFull, newDbFull, null, null, null);
 
         TestUtils.compareResult(script, userSelTemplate, clazz);
     }

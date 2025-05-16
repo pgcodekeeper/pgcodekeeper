@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.exception.UnresolvedReferenceE
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ParserAbstract;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class CustomParserListener<T extends AbstractDatabase> {
 
@@ -44,15 +45,17 @@ public class CustomParserListener<T extends AbstractDatabase> {
     protected final ParserListenerMode mode;
     protected final String filename;
     protected final List<Object> errors;
+    protected final ISettings settings;
     private final IProgressMonitor monitor;
 
     public CustomParserListener(T database, String filename,
-            ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor) {
+            ParserListenerMode mode, List<Object> errors, IProgressMonitor monitor, ISettings settings) {
         this.db = database;
         this.errors = errors;
         this.monitor = monitor;
         this.filename = filename;
         this.mode = mode;
+        this.settings = settings;
     }
 
     /**

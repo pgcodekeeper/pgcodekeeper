@@ -48,8 +48,9 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateTable extends TableAbstract {
+public final class CreateTable extends TableAbstract {
     private final Create_table_statementContext ctx;
     private final String tablespace;
     private final String accessMethod;
@@ -58,8 +59,8 @@ public class CreateTable extends TableAbstract {
 
 
     public CreateTable(Create_table_statementContext ctx, PgDatabase db,
-            String tablespace, String accessMethod, String oids, CommonTokenStream stream) {
-        super(db, stream);
+            String tablespace, String accessMethod, String oids, CommonTokenStream stream, ISettings settings) {
+        super(db, stream, settings);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.accessMethod = accessMethod;

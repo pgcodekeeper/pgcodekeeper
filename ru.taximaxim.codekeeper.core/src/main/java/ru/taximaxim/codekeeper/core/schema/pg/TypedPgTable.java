@@ -22,6 +22,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Typed table object
@@ -80,7 +81,7 @@ public final class TypedPgTable extends AbstractRegularTable {
     }
 
     @Override
-    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
+    protected boolean isColumnsOrderChanged(AbstractTable newTable, ISettings settings) {
         return false;
     }
 

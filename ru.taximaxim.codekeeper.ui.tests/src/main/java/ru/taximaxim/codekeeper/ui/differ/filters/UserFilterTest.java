@@ -67,7 +67,7 @@ class UserFilterTest extends AbstractFilterTest {
         whenGetterReturns(RIGHT);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(true, result);
     }
@@ -78,7 +78,7 @@ class UserFilterTest extends AbstractFilterTest {
         whenGetterReturns(INVALID);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }
@@ -91,7 +91,7 @@ class UserFilterTest extends AbstractFilterTest {
         whenGetterReturns(INVALID, getterReturnedValue);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(excepted, result);
     }
@@ -104,14 +104,14 @@ class UserFilterTest extends AbstractFilterTest {
         whenGetterReturns(INVALID, getterReturnedValue);
         whenSearchPatternIs(RIGHT);
 
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(excepted, result);
     }
 
     @Test
     void testElementNotInElementMetaInfoMap() {
-        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote);
+        boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
 
         assertEquals(false, result);
     }

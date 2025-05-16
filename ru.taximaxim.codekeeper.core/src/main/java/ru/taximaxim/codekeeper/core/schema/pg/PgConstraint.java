@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractConstraint;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class PgConstraint extends AbstractConstraint {
 
@@ -65,7 +66,7 @@ public abstract class PgConstraint extends AbstractConstraint {
             sbSQL.append(" INITIALLY DEFERRED");
         }
 
-        boolean generateNotValid = isGenerateNotValid();
+        boolean generateNotValid = isGenerateNotValid(script.getSettings());
 
         if (isNotValid || generateNotValid) {
             sbSQL.append(" NOT VALID");
@@ -82,7 +83,7 @@ public abstract class PgConstraint extends AbstractConstraint {
 
         appendExtraOptions(sbSQL);
 
-        if (getDatabaseArguments().isGenerateExistDoBlock()) {
+        if (script.getSettings().isGenerateExistDoBlock()) {
             StringBuilder sb = new StringBuilder();
             PgDiffUtils.appendSqlWrappedInDo(sb, sbSQL, getErrorCode());
             script.addStatement(sb);
@@ -93,8 +94,8 @@ public abstract class PgConstraint extends AbstractConstraint {
         appendComments(script);
     }
 
-    protected boolean isGenerateNotValid() {
-        if (!getDatabaseArguments().isConstraintNotValid()) {
+    protected boolean isGenerateNotValid(ISettings settings) {
+        if (!settings.isConstraintNotValid()) {
             return false;
         }
         if (parent instanceof PartitionPgTable) {
@@ -157,7 +158,7 @@ public abstract class PgConstraint extends AbstractConstraint {
             sb.append("DOMAIN ");
         }
         sb.append(parent.getQualifiedName()).append(" IS ").append(checkComments() ? comment : "NULL");
-        script.addStatement(sb.toString(), getCommentsOrder());
+        script.addCommentStatement(sb.toString());
     }
 
     @Override

@@ -24,13 +24,13 @@ import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 class MsProjectLoaderTest {
@@ -39,13 +39,13 @@ class MsProjectLoaderTest {
     void testProjectLoaderWithIgnoredSchemas() throws IOException, InterruptedException {
         try (TempDir tempDir = new TempDir("ignore-schemas test project")) {
             Path dir = tempDir.get();
-            PgDiffArguments args = new PgDiffArguments();
-            args.setDbType(DatabaseType.MS);
+            var settings = new TestCoreSettings();
+            settings.setDbType(DatabaseType.MS);
 
             AbstractDatabase msDbDump = TestUtils.loadTestDump(
-                    TestUtils.RESOURCE_MS_DUMP, TestUtils.class, args);
+                    TestUtils.RESOURCE_MS_DUMP, TestUtils.class, settings);
 
-            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, msDbDump, DatabaseType.MS, Consts.UTF_8, settings).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");
@@ -55,7 +55,7 @@ class MsProjectLoaderTest {
             IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
             ignoreParser.parse(listFile);
 
-            AbstractDatabase loader = new ProjectLoader(dir.toString(), args, SubMonitor.convert(null), null,
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), settings, SubMonitor.convert(null), null,
                     ignoreSchemaList).load();
 
             for (AbstractSchema dbSchema : loader.getSchemas()) {

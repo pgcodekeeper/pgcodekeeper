@@ -28,8 +28,9 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Create_or
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsView extends BatchContextProcessor {
+public final class CreateMsView extends BatchContextProcessor {
 
     private final Create_or_alter_viewContext ctx;
 
@@ -37,16 +38,16 @@ public class CreateMsView extends BatchContextProcessor {
     private final boolean quotedIdentifier;
 
     public CreateMsView(Batch_statementContext ctx, MsDatabase db,
-            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db, ctx, stream);
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream, ISettings settings) {
+        super(db, ctx, stream, settings);
         this.ctx = ctx.batch_statement_body().create_or_alter_view();
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;
     }
 
     public CreateMsView(Create_or_alter_viewContext ctx, MsDatabase db,
-            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream) {
-        super(db, ctx.getParent(), stream);
+            boolean ansiNulls, boolean quotedIdentifier, CommonTokenStream stream, ISettings settings) {
+        super(db, ctx.getParent(), stream, settings);
         this.ctx = ctx;
         this.ansiNulls = ansiNulls;
         this.quotedIdentifier = quotedIdentifier;

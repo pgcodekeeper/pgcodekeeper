@@ -24,15 +24,16 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Policy_actionContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChPolicy;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChPolicy extends ChParserAbstract {
+public final class CreateChPolicy extends ChParserAbstract {
 
     private static final String POLICY_NAME = "{0} ON {1}";
 
     private Create_policy_stmtContext ctx;
 
-    public CreateChPolicy(Create_policy_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public CreateChPolicy(Create_policy_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

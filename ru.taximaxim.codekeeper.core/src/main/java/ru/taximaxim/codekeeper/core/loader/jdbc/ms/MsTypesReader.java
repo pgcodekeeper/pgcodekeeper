@@ -37,7 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 
-public class MsTypesReader extends JdbcReader {
+public final class MsTypesReader extends JdbcReader {
 
     public MsTypesReader(JdbcLoaderBase loader) {
         super(loader);

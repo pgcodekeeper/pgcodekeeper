@@ -187,16 +187,15 @@ implements IExecutableExtension, INewWizard {
         DbInfo dbinfo = pageDb.getDbInfo();
         File dump;
 
-        boolean forceUnixNewlines = props.getPrefs().getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
         String charset = props.getProjectCharset();
         String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
         if (!pageDb.isInit()) {
             src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
         } else if (dbinfo != null) {
-            src = DbSource.fromDbInfo(dbinfo, forceUnixNewlines, charset, timezone, props.getProject());
+            src = DbSource.fromDbInfo(dbinfo, charset, timezone, props.getProject());
         } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(forceUnixNewlines, dump, charset, pageDb.getDbType(), props.getProject());
+            src = DbSource.fromFile(dump, props.getProject());
         } else {
             // should be prevented by page completion state
             throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);

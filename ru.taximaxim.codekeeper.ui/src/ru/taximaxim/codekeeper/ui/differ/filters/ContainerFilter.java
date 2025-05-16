@@ -20,6 +20,7 @@ import java.util.Map;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 /**
@@ -28,11 +29,11 @@ import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
  * @since 4.2.0.
  * @author galiev_mr
  */
-public class ContainerFilter extends AbstractFilter {
+public final class ContainerFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            AbstractDatabase dbProject, AbstractDatabase dbRemote) {
+            AbstractDatabase dbProject, AbstractDatabase dbRemote, ISettings settings) {
 
         String container = el.getContainerQName();
         if (!container.isEmpty()) {

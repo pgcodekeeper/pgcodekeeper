@@ -28,7 +28,7 @@ import org.eclipse.swt.widgets.Shell;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class ManualDepciesDialog extends TrayDialog {
+public final class ManualDepciesDialog extends TrayDialog {
 
     private final List<Entry<PgStatement, PgStatement>> depciesSource;
     private final List<Entry<PgStatement, PgStatement>> depciesTarget;
@@ -75,10 +75,8 @@ public class ManualDepciesDialog extends TrayDialog {
     protected Control createDialogArea(Composite parent) {
         Composite area = (Composite) super.createDialogArea(parent);
 
-        depcyGroupSource = new ManualDepciesGroup(area, SWT.NONE,
-                depciesSource, objectsSource, groupSourceName);
-        depcyGroupTarget = new ManualDepciesGroup(area, SWT.NONE,
-                depciesTarget, objectsTarget, groupTargetName);
+        depcyGroupSource = new ManualDepciesGroup(area, SWT.NONE, depciesSource, objectsSource, groupSourceName);
+        depcyGroupTarget = new ManualDepciesGroup(area, SWT.NONE, depciesTarget, objectsTarget, groupTargetName);
         return area;
     }
 

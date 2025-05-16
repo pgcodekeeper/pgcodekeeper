@@ -52,7 +52,7 @@ public final class PgSequence extends AbstractSequence {
             sbSQL.append("UNLOGGED ");
         }
         sbSQL.append("SEQUENCE ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(getQualifiedName());
 
         if (!BIGINT.equals(dataType)) {

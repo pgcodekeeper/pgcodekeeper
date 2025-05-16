@@ -51,6 +51,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.TypedPgTable;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /*
  * implementation notes:
@@ -107,12 +108,15 @@ public final class DepcyResolver {
 
     private final Map<String, Boolean> recreatedObjs = new HashMap<>();
 
-    private DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, Set<PgStatement> toRefresh) {
+    private final ISettings settings;
+
+    public DepcyResolver(AbstractDatabase oldDatabase, AbstractDatabase newDatabase, ISettings settings, Set<PgStatement> toRefresh) {
         this.oldDb = oldDatabase;
         this.newDb = newDatabase;
         this.oldDepcyGraph = new DepcyGraph(oldDatabase);
         this.newDepcyGraph = new DepcyGraph(newDatabase);
         this.toRefresh = toRefresh;
+        this.settings = settings;
     }
 
     private void fillObjects(List<DbObject> objects, PgStatement starter) {
@@ -574,18 +578,18 @@ public final class DepcyResolver {
     }
 
     private ObjectState getObjectState(PgStatement oldSt, PgStatement newSt) {
-        return states.computeIfAbsent(oldSt, x -> oldSt.appendAlterSQL(newSt, new SQLScript(oldSt.getDbType())));
+        return states.computeIfAbsent(oldSt, x -> oldSt.appendAlterSQL(newSt, new SQLScript(settings)));
     }
 
     private Boolean getRecreatedObj(AbstractTable oldTable, AbstractTable newTable) {
-        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(), x -> oldTable.isRecreated(newTable));
+        return recreatedObjs.computeIfAbsent(oldTable.getQualifiedName(), x -> oldTable.isRecreated(newTable, settings));
     }
 
     public static Set<ActionContainer> resolve(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
             List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
             List<Entry<PgStatement, PgStatement>> additionalDepciesTarget,
-            Set<PgStatement> toRefresh, List<DbObject> dbObjects) {
-        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, toRefresh);
+            Set<PgStatement> toRefresh, List<DbObject> dbObjects, ISettings settings) {
+        DepcyResolver depRes = new DepcyResolver(oldDbFull, newDbFull, settings, toRefresh);
         depRes.oldDepcyGraph.addCustomDepcies(additionalDepciesSource);
         depRes.newDepcyGraph.addCustomDepcies(additionalDepciesTarget);
         depRes.fillObjects(dbObjects, null);

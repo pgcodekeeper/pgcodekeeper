@@ -20,13 +20,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Create_data
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Engine_exprContext;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateChSchema extends ChParserAbstract {
+public final class CreateChSchema extends ChParserAbstract {
 
     private final Create_database_stmtContext ctx;
 
-    public CreateChSchema(Create_database_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public CreateChSchema(Create_database_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

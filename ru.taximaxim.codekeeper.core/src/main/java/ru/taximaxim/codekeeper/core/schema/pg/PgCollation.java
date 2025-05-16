@@ -76,7 +76,7 @@ public final class PgCollation extends PgStatement implements ISearchPath {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE COLLATION ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(getQualifiedName());
         sbSQL.append(" (");
         if (Objects.equals(lcCollate, lcCtype)) {

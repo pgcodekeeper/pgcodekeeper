@@ -43,15 +43,16 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateMsTable extends MsTableAbstract {
+public final class CreateMsTable extends MsTableAbstract {
 
     private final Create_tableContext ctx;
 
     private final boolean ansiNulls;
 
-    public CreateMsTable(Create_tableContext ctx, MsDatabase db, boolean ansiNulls) {
-        super(db);
+    public CreateMsTable(Create_tableContext ctx, MsDatabase db, boolean ansiNulls, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.ansiNulls = ansiNulls;
     }

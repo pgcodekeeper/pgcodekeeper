@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.WorkDirs;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
@@ -49,37 +48,38 @@ import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public class ProjectLoader extends DatabaseLoader {
 
+    protected ISettings settings;
     private final String dirPath;
-    protected final PgDiffArguments arguments;
     protected final IProgressMonitor monitor;
     private final IgnoreSchemaList ignoreSchemaList;
     protected final Map<PgStatement, StatementOverride> overrides = new LinkedHashMap<>();
 
     protected boolean isOverrideMode;
 
-    public ProjectLoader(String dirPath, PgDiffArguments arguments) {
-        this(dirPath, arguments, null, new ArrayList<>(), null);
+    public ProjectLoader(String dirPath, ISettings settings) {
+        this(dirPath, settings, null, new ArrayList<>(), null);
     }
 
-    public ProjectLoader(String dirPath, PgDiffArguments arguments, List<Object> errors) {
-        this(dirPath, arguments, null, errors, null);
+    public ProjectLoader(String dirPath, ISettings settings, List<Object> errors) {
+        this(dirPath, settings, null, errors, null);
     }
 
-    public ProjectLoader(String dirPath, PgDiffArguments arguments,
+    public ProjectLoader(String dirPath, ISettings settings,
             IProgressMonitor monitor, List<Object> errors, IgnoreSchemaList ignoreSchemaList) {
         super(errors);
         this.dirPath = dirPath;
-        this.arguments = arguments;
+        this.settings = settings;
         this.monitor = monitor;
         this.ignoreSchemaList = ignoreSchemaList;
     }
 
     @Override
     public AbstractDatabase load() throws InterruptedException, IOException {
-        AbstractDatabase db = createDb(arguments);
+        AbstractDatabase db = createDb(settings);
 
         Path dir = Paths.get(dirPath);
         loadDbStructure(dir, db);
@@ -88,7 +88,7 @@ public class ProjectLoader extends DatabaseLoader {
 
     public void loadOverrides(AbstractDatabase db) throws InterruptedException, IOException {
         Path dir = Paths.get(dirPath, WorkDirs.OVERRIDES);
-        if (arguments.isIgnorePrivileges() || !Files.isDirectory(dir)) {
+        if (settings.isIgnorePrivileges() || !Files.isDirectory(dir)) {
             return;
         }
         isOverrideMode = true;
@@ -101,7 +101,7 @@ public class ProjectLoader extends DatabaseLoader {
     }
 
     private void loadDbStructure(Path dir, AbstractDatabase db) throws InterruptedException, IOException {
-        switch (arguments.getDbType()) {
+        switch (settings.getDbType()) {
         case MS:
             loadMsStructure(dir, db);
             break;
@@ -112,7 +112,7 @@ public class ProjectLoader extends DatabaseLoader {
             loadChStructure(dir, db);
             break;
         default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         }
         finishLoaders();
     }
@@ -212,7 +212,7 @@ public class ProjectLoader extends DatabaseLoader {
                 .filter(f -> filterFile(f, checkFilename))
                 .sorted()) {
             for (Path f : PgDiffUtils.sIter(files)) {
-                PgDumpLoader loader = new PgDumpLoader(f, arguments, monitor);
+                PgDumpLoader loader = new PgDumpLoader(f, settings, monitor);
                 if (isOverrideMode) {
                     loader.setOverridesMap(overrides);
                 }

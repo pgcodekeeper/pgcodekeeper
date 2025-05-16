@@ -23,13 +23,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Delete_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class DeleteMsStatement extends MsParserAbstract {
+public final class DeleteMsStatement extends MsParserAbstract {
 
     private final Delete_statementContext ctx;
 
-    public DeleteMsStatement(Delete_statementContext ctx, MsDatabase db) {
-        super(db);
+    public DeleteMsStatement(Delete_statementContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

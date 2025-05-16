@@ -32,13 +32,14 @@ import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsIndex;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class CreateMsIndex extends MsParserAbstract {
 
     private final Create_indexContext ctx;
 
-    public CreateMsIndex(Create_indexContext ctx, MsDatabase db) {
-        super(db);
+    public CreateMsIndex(Create_indexContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

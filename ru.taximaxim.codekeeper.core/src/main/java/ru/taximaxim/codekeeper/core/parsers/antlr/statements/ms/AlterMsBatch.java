@@ -28,13 +28,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.IdContext
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class AlterMsBatch extends BatchContextProcessor {
+public final class AlterMsBatch extends BatchContextProcessor {
 
     private final Batch_statement_bodyContext ctx;
 
-    public AlterMsBatch(Batch_statement_bodyContext ctx, MsDatabase db, CommonTokenStream stream) {
-        super(db, ctx, stream);
+    public AlterMsBatch(Batch_statement_bodyContext ctx, MsDatabase db, CommonTokenStream stream, ISettings settings) {
+        super(db, ctx, stream, settings);
         this.ctx = ctx;
     }
 

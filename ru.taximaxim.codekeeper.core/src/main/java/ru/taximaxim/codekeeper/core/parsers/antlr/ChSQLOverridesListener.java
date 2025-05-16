@@ -30,14 +30,15 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.GrantChPrivilege
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementOverride;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class ChSQLOverridesListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
+public final class ChSQLOverridesListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
 
     private Map<PgStatement, StatementOverride> overrides;
 
     public ChSQLOverridesListener(ChDatabase database, String filename, ParserListenerMode mode, List<Object> errors,
-            IProgressMonitor monitor, Map<PgStatement, StatementOverride> overrides) {
-        super(database, filename, mode, errors, monitor);
+            IProgressMonitor monitor, Map<PgStatement, StatementOverride> overrides, ISettings settings) {
+        super(database, filename, mode, errors, monitor, settings);
         this.overrides = overrides;
     }
 
@@ -56,7 +57,7 @@ public class ChSQLOverridesListener extends CustomParserListener<ChDatabase> imp
 
         Privilegy_stmtContext privilStmt = ddlStmt.privilegy_stmt();
         if (privilStmt != null) {
-            safeParseStatement(new GrantChPrivilege(privilStmt, db, overrides), ddlStmt);
+            safeParseStatement(new GrantChPrivilege(privilStmt, db, overrides, settings), ddlStmt);
         }
     }
 }

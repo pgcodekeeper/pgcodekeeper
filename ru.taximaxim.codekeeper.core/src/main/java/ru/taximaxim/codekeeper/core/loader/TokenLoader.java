@@ -17,9 +17,9 @@ package ru.taximaxim.codekeeper.core.loader;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.NoSuchFileException;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
@@ -28,23 +28,23 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrContextProcessor.SqlContextProcessor;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationParserListener;
 import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationProperties;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 
 public final class TokenLoader extends DatabaseLoader {
 
-    private final PgDiffArguments args;
+    private final ISettings settings;
     private final VerificationProperties rules;
     private static final Logger LOG = LoggerFactory.getLogger(TokenLoader.class);
 
-    private TokenLoader(PgDiffArguments args, VerificationProperties rules) {
-        this.args = args;
+    private TokenLoader(ISettings settings, VerificationProperties rules) {
+        this.settings = settings;
         this.rules = rules;
     }
 
@@ -53,12 +53,12 @@ public final class TokenLoader extends DatabaseLoader {
         throw new IllegalStateException("Unsupported operation");
     }
 
-    public static List<Object> verify(PgDiffArguments args, Path path, Collection<String> sources)
+    public static List<Object> verify(ISettings settings, Path path, Collection<String> sources)
             throws InterruptedException, IOException {
-        return verify(args, VerificationProperties.readProperties(path), sources);
+        return verify(settings, VerificationProperties.readProperties(path), sources);
     }
 
-    public static List<Object> verify(PgDiffArguments args, VerificationProperties rules, Collection<String> sources)
+    public static List<Object> verify(ISettings args, VerificationProperties rules, Collection<String> sources)
             throws InterruptedException, IOException {
         TokenLoader loader = new TokenLoader(args, rules);
 
@@ -96,7 +96,7 @@ public final class TokenLoader extends DatabaseLoader {
 
     private void processVerification(Path inputFile) throws InterruptedException, IOException {
         String fileName = inputFile.getFileName().toString();
-        var dbType = args.getDbType();
+        var dbType = settings.getDbType();
         SqlContextProcessor listener = switch (dbType) {
             case PG -> new VerificationParserListener(rules, fileName, errors);
             // TODO add other later
@@ -104,7 +104,7 @@ public final class TokenLoader extends DatabaseLoader {
         };
 
         InputStreamProvider input = () -> Files.newInputStream(inputFile);
-        AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputFile.toString(), errors,
+        AntlrParser.parseSqlStream(input, settings.getInCharsetName(), inputFile.toString(), errors,
                 new NullProgressMonitor(), 0, listener, antlrTasks);
         finishLoaders();
     }

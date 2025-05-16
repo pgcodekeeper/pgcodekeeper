@@ -31,6 +31,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class PgConstraintPk extends PgConstraint implements IConstraintPk, PgIndexParamContainer {
 
@@ -158,7 +159,7 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     }
 
     @Override
-    protected boolean isGenerateNotValid() {
+    protected boolean isGenerateNotValid(ISettings settings) {
         return false;
     }
 

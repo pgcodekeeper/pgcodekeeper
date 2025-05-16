@@ -25,13 +25,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_mappi
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.User_nameContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgUserMapping;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateUserMapping extends PgParserAbstract {
+public final class CreateUserMapping extends PgParserAbstract {
 
     private final Create_user_mapping_statementContext ctx;
 
-    public CreateUserMapping(Create_user_mapping_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateUserMapping(Create_user_mapping_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

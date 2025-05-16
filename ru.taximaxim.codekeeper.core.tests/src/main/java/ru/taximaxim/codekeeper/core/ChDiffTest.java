@@ -20,6 +20,8 @@ import java.io.IOException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+
 class ChDiffTest {
 
     @ParameterizedTest
@@ -75,10 +77,10 @@ class ChDiffTest {
             "ch_ignore_privillegies"
     })
     void testIgnorePrivillegies(String fileNameTemplate) throws IOException, InterruptedException {
-        PgDiffArguments args = new PgDiffArguments();
-        args.setIgnorePrivileges(true);
-        args.setDbType(DatabaseType.CH);
-        String script = TestUtils.getScript(fileNameTemplate, args, ChDiffTest.class);
+        var settings = new TestCoreSettings();
+        settings.setIgnorePrivileges(true);
+        settings.setDbType(DatabaseType.CH);
+        String script = TestUtils.getScript(fileNameTemplate, settings, ChDiffTest.class);
         TestUtils.compareResult(script, fileNameTemplate, ChDiffTest.class);
     }
 }

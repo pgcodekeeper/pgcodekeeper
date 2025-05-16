@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
@@ -54,9 +53,10 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
-import ru.taximaxim.codekeeper.core.utils.TempDir;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
  * Tests for PgDiffLoader class.
@@ -70,7 +70,6 @@ class PgAntlrLoaderTest {
     private static final String BOOLEAN = "boolean";
     private static final String CHARACTER_VARYING_40 = "character varying(40)";
     private static final String INTEGER = "integer";
-    private static final String ENCODING = Consts.UTF_8;
 
     void testDatabase(String fileName, AbstractDatabase d) throws IOException, InterruptedException {
         loadSchema(fileName, d);
@@ -79,10 +78,9 @@ class PgAntlrLoaderTest {
 
     void loadSchema(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(ENCODING);
-        args.setKeepNewlines(true);
-        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, args);
+        var settings = new TestCoreSettings();
+        settings.setKeepNewlines(true);
+        AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
 
         Assertions.assertEquals(dbPredefined, d, "PgDumpLoader: predefined object is not equal to file " + fileName);
 
@@ -93,21 +91,17 @@ class PgAntlrLoaderTest {
 
     void exportFullDb(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(ENCODING);
-        args.setKeepNewlines(true);
-        AbstractDatabase dbFromFile = TestUtils.loadTestDump(
-                fileName, PgAntlrLoaderTest.class, args);
+        var settings = new TestCoreSettings();
+        settings.setKeepNewlines(true);
+        AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
 
         Path exportDir = null;
         try (TempDir dir = new TempDir("pgCodekeeper-test-files")) {
             exportDir = dir.get();
-            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, ENCODING).exportFull();
+            new ModelExporter(exportDir, dbPredefined, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
 
-            args = new PgDiffArguments();
-            args.setInCharsetName(ENCODING);
-            args.setKeepNewlines(true);
-            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), args).loadAndAnalyze();
+            AbstractDatabase dbAfterExport = new ProjectLoader(exportDir.toString(), settings)
+                    .loadAndAnalyze();
 
             // check the same db similarity before and after export
             Assertions.assertEquals(dbPredefined, dbAfterExport, "Predefined object PgDB" + fileName +
@@ -860,7 +854,7 @@ class PgAntlrLoaderTest {
         schema.addView(view);
 
         view.setComment("'test view'");
-        view.addColumnComment(d.getArguments(), "id", "'view id col'");
+        view.addColumnComment(new TestCoreSettings(), "id", "'view id col'");
 
         view.setOwner("fordfrog");
 

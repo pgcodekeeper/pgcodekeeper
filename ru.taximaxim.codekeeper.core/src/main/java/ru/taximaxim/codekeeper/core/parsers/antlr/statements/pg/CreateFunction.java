@@ -57,6 +57,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgProcedure;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class CreateFunction extends PgParserAbstract {
@@ -69,8 +70,8 @@ public final class CreateFunction extends PgParserAbstract {
 
 
     public CreateFunction(Create_function_statementContext ctx, PgDatabase db,
-            List<Object> errors, Queue<AntlrTask<?>> antlrTasks) {
-        super(db);
+            List<Object> errors, Queue<AntlrTask<?>> antlrTasks, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.errors = errors;
         this.antlrTasks = antlrTasks;
@@ -156,7 +157,7 @@ public final class CreateFunction extends PgParserAbstract {
                     sb.append(PgDiffUtils.quoteStringDollar(definition));
                 }
 
-                function.setBody(db.getArguments(), sb.toString());
+                function.setBody(settings, sb.toString());
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(getFullCtxText(transform.data_type()));
@@ -180,7 +181,7 @@ public final class CreateFunction extends PgParserAbstract {
         if (body != null) {
             function.setInStatementBody(true);
             String bodyText = getFullCtxText(body);
-            function.setBody(db.getArguments(), bodyText);
+            function.setBody(settings, bodyText);
             if (language == null) {
                 language = "sql";
             }
@@ -290,7 +291,7 @@ public final class CreateFunction extends PgParserAbstract {
                     funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                                function, funcCtx, fileName, funcArgs);
+                                function, funcCtx, fileName, funcArgs, settings.isEnableFunctionBodiesDependencies());
                         launcher.setOffset(start);
                         db.addAnalysisLauncher(launcher);
                     });
@@ -304,7 +305,7 @@ public final class CreateFunction extends PgParserAbstract {
                     funcCtx -> {
                         errors.addAll(err);
                         FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                                function, funcCtx, fileName, funcArgs);
+                                function, funcCtx, fileName, funcArgs, settings.isEnableFunctionBodiesDependencies());
                         launcher.setOffset(start);
                         db.addAnalysisLauncher(launcher);
                     });
@@ -317,7 +318,7 @@ public final class CreateFunction extends PgParserAbstract {
         AntlrTaskManager.submit(antlrTasks, () -> body,
                 funcCtx -> {
                     FuncProcAnalysisLauncher launcher = new FuncProcAnalysisLauncher(
-                            function, funcCtx, fileName, funcArgs);
+                            function, funcCtx, fileName, funcArgs, settings.isEnableFunctionBodiesDependencies());
                     db.addAnalysisLauncher(launcher);
                 });
     }

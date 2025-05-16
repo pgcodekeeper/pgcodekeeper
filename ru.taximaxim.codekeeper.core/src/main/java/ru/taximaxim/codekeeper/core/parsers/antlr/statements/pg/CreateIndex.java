@@ -37,23 +37,25 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndex;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateIndex extends PgParserAbstract {
+public final class CreateIndex extends PgParserAbstract {
 
     private final Create_index_statementContext ctx;
     private final String tablespace;
     private final CommonTokenStream stream;
 
-    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream) {
-        super(db);
+    public CreateIndex(Create_index_statementContext ctx, PgDatabase db, String tablespace, CommonTokenStream stream,
+            ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
         this.tablespace = tablespace;
         this.stream = stream;
     }
 
     public static void parseIndex(Index_restContext rest, String tablespace, String schemaName, String tableName,
-            PgIndex ind, PgDatabase db, String location, CommonTokenStream stream) {
-        new CreateIndex(null, db, tablespace, stream).parseIndex(rest, schemaName, tableName, ind, location);
+            PgIndex ind, PgDatabase db, String location, CommonTokenStream stream, ISettings settings) {
+        new CreateIndex(null, db, tablespace, stream, settings).parseIndex(rest, schemaName, tableName, ind, location);
     }
 
     @Override

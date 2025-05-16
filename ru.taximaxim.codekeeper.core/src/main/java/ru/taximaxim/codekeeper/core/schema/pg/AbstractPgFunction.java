@@ -24,12 +24,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -269,8 +269,8 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     /**
      * Sets {@link #body} with newlines as requested in arguments.
      */
-    public void setBody(PgDiffArguments args, String body) {
-        setBody(args.isKeepNewlines() ? body : body.replace("\r", ""));
+    public void setBody(ISettings settings, String body) {
+        setBody(settings.isKeepNewlines() ? body : body.replace("\r", ""));
     }
 
     public void addTransform(String datatype) {

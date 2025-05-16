@@ -47,7 +47,7 @@ public final class PgStatistics extends AbstractStatistics {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sb = new StringBuilder();
         sb.append("CREATE STATISTICS ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(getQualifiedName());
         StatementUtils.appendCollection(sb, kinds, ", ", true);
         sb.append(" ON ");

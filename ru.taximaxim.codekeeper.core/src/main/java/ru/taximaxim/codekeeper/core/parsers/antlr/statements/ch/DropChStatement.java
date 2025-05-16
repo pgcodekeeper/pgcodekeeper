@@ -25,13 +25,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Drop_stmtContext;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class DropChStatement extends ChParserAbstract {
+public final class DropChStatement extends ChParserAbstract {
 
     private final Drop_stmtContext ctx;
 
-    public DropChStatement(Drop_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public DropChStatement(Drop_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

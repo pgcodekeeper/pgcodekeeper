@@ -41,8 +41,6 @@ public final class Messages extends NLS {
     public static String AbstractStatementReader_start;
 
     // common
-    public static String UnknownDBFormat;
-
     public static String Utils_log_err_deserialize;
 
     public static String Utils_log_err_serialize;
@@ -71,24 +69,6 @@ public final class Messages extends NLS {
     public static String ProjectUpdater_log_update_err_restore_proj;
 
     public static String ProjectUpdater_old_db_null;
-
-    public static String PgDiff_log_load_new_db;
-
-    public static String PgDiff_log_load_new_db_lib;
-
-    public static String PgDiff_log_lib_have_dupl;
-
-    public static String PgDiff_log_load_ignored_schemas;
-
-    public static String PgDiff_log_load_new_db_overrides;
-
-    public static String PgDiff_log_load_old_db;
-
-    public static String PgDiff_log_load_old_db_lib;
-
-    public static String PgDiff_log_load_old_db_overrides;
-
-    public static String PgDiff_log_start_db_analyze;
 
     public static String PgDiff_read_error;
 

@@ -27,13 +27,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.Table_eleme
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChTable;
 import ru.taximaxim.codekeeper.core.schema.ch.ChTableLog;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class CreateChTable extends ChParserAbstract {
 
     private Create_table_stmtContext ctx;
 
-    public CreateChTable(Create_table_stmtContext ctx, ChDatabase db) {
-        super(db);
+    public CreateChTable(Create_table_stmtContext ctx, ChDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

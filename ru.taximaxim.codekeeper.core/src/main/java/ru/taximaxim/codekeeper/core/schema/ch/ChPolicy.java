@@ -50,7 +50,7 @@ public final class ChPolicy extends AbstractPolicy {
         sbSQL.append(isCreate ? "CREATE" : "ALTER").append(" POLICY ");
 
         if (isCreate) {
-            appendIfNotExists(sbSQL);
+            appendIfNotExists(sbSQL, script.getSettings());
         }
 
         sbSQL.append(name);

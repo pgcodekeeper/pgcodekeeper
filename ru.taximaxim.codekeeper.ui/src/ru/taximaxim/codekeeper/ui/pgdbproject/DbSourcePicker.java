@@ -113,18 +113,15 @@ class DbSourcePicker extends Composite {
         File file;
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
-            return DbSource.fromDbInfo(dbInfo, forceUnixNewlines, getEncoding(),
-                    pageDiff.getTimezone(), null, oneTimePrefs);
+            return DbSource.fromDbInfo(dbInfo, getEncoding(), pageDiff.getTimezone(), null, oneTimePrefs);
         } else if ((file = storePicker.getPathOfFile()) != null) {
-            return DbSource.fromFile(forceUnixNewlines, file, getEncoding(),
-                    dbType, null, oneTimePrefs);
+            return DbSource.fromFile(file, null, oneTimePrefs);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
             PgDbProject project = getProjectFromDir(dir);
             if (project != null) {
                 return DbSource.fromProject(project, oneTimePrefs);
             } else {
-                return DbSource.fromDirTree(forceUnixNewlines, dir.getAbsolutePath(),
-                        getEncoding(), dbType, oneTimePrefs);
+                return DbSource.fromDirTree(dir.getAbsolutePath(), oneTimePrefs);
             }
         }
         return null;

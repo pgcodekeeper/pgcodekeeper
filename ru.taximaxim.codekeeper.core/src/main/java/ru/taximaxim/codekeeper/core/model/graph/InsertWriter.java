@@ -45,7 +45,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
@@ -61,6 +60,7 @@ import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 import ru.taximaxim.codekeeper.core.schema.ms.MsColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class InsertWriter {
 
@@ -106,8 +106,8 @@ public final class InsertWriter {
     private final Map<String, List<AbstractColumn>> cols = new HashMap<>();
     private final Graph<RowData, DefaultEdge> graph = new SimpleDirectedGraph<>(DefaultEdge.class);
 
-    private InsertWriter(AbstractDatabase d) {
-        this.dbType = d.getArguments().getDbType();
+    private InsertWriter(AbstractDatabase d, DatabaseType dbType) {
+        this.dbType = dbType;
         fillCollections(d);
     }
 
@@ -138,19 +138,19 @@ public final class InsertWriter {
      * Method for call from external classes to start the process of get all data
      * which will be need to transfer and create insert script.
      *
-     * @param db        - source-database schema
-     * @param arguments - database arguments
-     * @param name      - qualified table name which data need to transfer
-     * @param filter    - condition of WHERE for query select
+     * @param db       - source-database schema
+     * @param settings - {@link ISettings}
+     * @param name     - qualified table name which data need to transfer
+     * @param filter   - condition of WHERE for query select
      * @throws InterruptedException
      * @throws IOException
      * @throws SQLException
      */
-    public static String write(AbstractDatabase db, PgDiffArguments arguments, String name, String filter)
+    public static String write(AbstractDatabase db, ISettings settings, String name, String filter, String source)
             throws InterruptedException, IOException, SQLException {
         var sb = new StringBuilder();
-        var dbType = arguments.getDbType();
-        var isTransaction = arguments.isAddTransaction();
+        var dbType = settings.getDbType();
+        var isTransaction = settings.isAddTransaction();
         if (isTransaction) {
             switch (dbType) {
             case MS:
@@ -165,7 +165,7 @@ public final class InsertWriter {
         }
 
         String qName = getQualifiedName(name, db);
-        new InsertWriter(db).generateScript(arguments.getNewSrc(), qName, filter, sb);
+        new InsertWriter(db, dbType).generateScript(source, qName, filter, sb);
 
         if (isTransaction) {
             switch (dbType) {

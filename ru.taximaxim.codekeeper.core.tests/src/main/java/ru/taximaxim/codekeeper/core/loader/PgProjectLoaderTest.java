@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
@@ -36,6 +35,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 class PgProjectLoaderTest {
@@ -44,12 +44,11 @@ class PgProjectLoaderTest {
     void testProjectLoaderWithIgnoredSchemas() throws IOException, InterruptedException {
         try(TempDir tempDir = new TempDir("ignore-schemas-test-project")){
             Path dir = tempDir.get();
-            PgDiffArguments args = new PgDiffArguments();
+            var settings = new TestCoreSettings();
 
-            AbstractDatabase dbDump = TestUtils.loadTestDump(
-                    TestUtils.RESOURCE_DUMP, TestUtils.class, args);
+            AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
 
-            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8).exportFull();
+            new ModelExporter(dir, dbDump, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
 
             TestUtils.createIgnoredSchemaFile(dir);
             Path listFile = dir.resolve(".pgcodekeeperignoreschema");
@@ -59,7 +58,7 @@ class PgProjectLoaderTest {
             IgnoreParser ignoreParser = new IgnoreParser(ignoreSchemaList);
             ignoreParser.parse(listFile);
 
-            AbstractDatabase loader = new ProjectLoader(dir.toString(), args, SubMonitor.convert(null), null,
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), settings, SubMonitor.convert(null), null,
                     ignoreSchemaList).load();
 
             for (AbstractSchema dbSchema : loader.getSchemas()) {
@@ -77,10 +76,9 @@ class PgProjectLoaderTest {
     void testModelExporterWithIgnoredLists() throws IOException, InterruptedException {
         try(TempDir tempDir = new TempDir("new-project")){
             Path dir = tempDir.get();
-            PgDiffArguments args = new PgDiffArguments();
+            var settings = new TestCoreSettings();
 
-            AbstractDatabase dbDump = TestUtils.loadTestDump(
-                    TestUtils.RESOURCE_DUMP, TestUtils.class, args);
+            AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
             TreeElement root = DiffTree.create(dbDump, null, null);
             root.setAllChecked();
 
@@ -94,12 +92,13 @@ class PgProjectLoaderTest {
             List<TreeElement> selected = new TreeFlattener()
                     .onlySelected()
                     .useIgnoreList(ignoreList)
-                    .onlyTypes(args.getAllowedTypes())
+                    .onlyTypes(settings.getAllowedTypes())
                     .flatten(root);
 
-            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8).exportProject();
+            new ModelExporter(dir, dbDump, null, DatabaseType.PG, selected, Consts.UTF_8, settings)
+                    .exportProject();
 
-            AbstractDatabase loader = new ProjectLoader(dir.toString(), args).load();
+            AbstractDatabase loader = new ProjectLoader(dir.toString(), settings).load();
             var objects = loader.getDescendants().toList();
             var ignoredObj = "people";
             for (var st : objects) {

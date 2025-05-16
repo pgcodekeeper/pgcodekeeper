@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -50,10 +49,6 @@ public final class PgDatabase extends AbstractDatabase {
 
     public PgDatabase() {
         super();
-    }
-
-    public PgDatabase(PgDiffArguments arguments) {
-        super(arguments);
     }
 
     @Override
@@ -227,7 +222,7 @@ public final class PgDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        return new PgDatabase(arguments);
+        return new PgDatabase();
     }
 
     @Override

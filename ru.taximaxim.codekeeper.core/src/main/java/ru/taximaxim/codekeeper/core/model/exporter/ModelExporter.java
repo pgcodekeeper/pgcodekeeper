@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
 /**
@@ -98,6 +99,8 @@ public class ModelExporter {
      */
     private final DatabaseType databaseType;
 
+    protected final ISettings settings;
+
     /**
      * Creates a new ModelExporter object with set {@link #outDir} and {@link #newDb} and {@link #sqlEncoding}.
      *
@@ -108,18 +111,20 @@ public class ModelExporter {
      * @param sqlEncoding
      *            encoding
      */
-    public ModelExporter(Path outDir, AbstractDatabase db, DatabaseType databaseType, String sqlEncoding) {
-        this(outDir, db, null, databaseType, null, sqlEncoding);
+    public ModelExporter(Path outDir, AbstractDatabase db, DatabaseType databaseType, String sqlEncoding,
+            ISettings settings) {
+        this(outDir, db, null, databaseType, null, sqlEncoding, settings);
     }
 
     public ModelExporter(Path outDir, AbstractDatabase newDb, AbstractDatabase oldDb,
-            DatabaseType databaseType, Collection<TreeElement> changedObjects, String sqlEncoding) {
+            DatabaseType databaseType, Collection<TreeElement> changedObjects, String sqlEncoding, ISettings settings) {
         this.outDir = outDir;
         this.newDb = newDb;
         this.oldDb = oldDb;
         this.sqlEncoding = sqlEncoding;
         this.changeList = changedObjects;
         this.databaseType = databaseType;
+        this.settings = settings;
     }
 
     /**
@@ -256,7 +261,7 @@ public class ModelExporter {
     }
 
     protected String getDumpSql(PgStatement statement) {
-        return statement.getSQL(true);
+        return statement.getSQL(true, settings);
     }
 
     /**

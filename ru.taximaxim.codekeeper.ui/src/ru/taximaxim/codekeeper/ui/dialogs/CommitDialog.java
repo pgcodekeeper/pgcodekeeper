@@ -49,6 +49,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -57,6 +58,7 @@ import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class CommitDialog extends TrayDialog {
@@ -119,14 +121,16 @@ public final class CommitDialog extends TrayDialog {
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
         var dbType = dbProject.getDbObject().getDbType();
-        DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, dbType);
+        ISettings settings = new UISettings(proj.getProject(), null);
+        DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, dbType, settings);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;
         dtvTop.setLayoutData(gd);
 
         dtvTop.setAutoExpand(true);
-        List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
+        List<TreeElement> result = new TreeFlattener().onlySelected()
+                .flatten(diffTree);
         dtvTop.setInputCollection(result, dbProject, dbRemote, Collections.emptySet());
 
         Group gBottom = new Group(container, SWT.NONE);
@@ -136,7 +140,7 @@ public final class CommitDialog extends TrayDialog {
         gBottom.setLayoutData(gd);
         gBottom.setText(Messages.commitDialog_depcy_elements);
 
-        DiffTableViewer dtvBottom = new DiffTableViewer(gBottom, false, dbType);
+        DiffTableViewer dtvBottom = new DiffTableViewer(gBottom, false, dbType, settings);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
         gd.widthHint = 1000;

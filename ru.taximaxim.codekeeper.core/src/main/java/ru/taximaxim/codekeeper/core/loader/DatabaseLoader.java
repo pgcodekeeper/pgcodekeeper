@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTask;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
@@ -29,6 +28,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class DatabaseLoader {
 
@@ -48,12 +48,12 @@ public abstract class DatabaseLoader {
         return d;
     }
 
-    public static AbstractDatabase createDb(PgDiffArguments arguments) {
-        return switch (arguments.getDbType()) {
-            case CH -> new ChDatabase(arguments);
-            case MS -> new MsDatabase(arguments);
-            case PG -> new PgDatabase(arguments);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + arguments.getDbType());
+    public static AbstractDatabase createDb(ISettings settings) {
+        return switch (settings.getDbType()) {
+        case CH -> new ChDatabase();
+        case MS -> new MsDatabase();
+        case PG -> new PgDatabase();
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
     }
 

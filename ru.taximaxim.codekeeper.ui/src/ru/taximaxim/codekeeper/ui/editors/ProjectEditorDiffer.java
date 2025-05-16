@@ -158,6 +158,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
@@ -166,7 +167,7 @@ import ru.taximaxim.codekeeper.ui.views.DBPair;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
 
-public class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
+public final class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
@@ -246,7 +247,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IStatusLineManager manager = getEditorSite().getActionBars().getStatusLineManager();
 
         diffTable = new DiffTable(sashOuter, false, manager,
-                Paths.get(getProject().getLocationURI()));
+                Paths.get(getProject().getLocationURI()), proj.getProject());
 
         diffTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         diffTable.getViewer().addPostSelectionChangedListener(e -> {
@@ -265,7 +266,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         diffTable.getViewer().addPostSelectionChangedListener(
                 e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
 
-        diffPane = new DiffPaneViewer(sashOuter);
+        diffPane = new DiffPaneViewer(sashOuter, getProject());
 
         // notifications container
         // simplified for 1 static notification
@@ -480,23 +481,19 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         }
         IEclipsePreferences projProps = proj.getPrefs();
 
-        boolean forceUnixNewlines = projProps.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
-
         DbSource dbProject = DbSource.fromProject(proj, oneTimePrefs);
 
         TreeDiffer newDiffer;
 
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, forceUnixNewlines,
-                    charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
+            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
                     getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
-            DbSource dbRemote = DbSource.fromFile(forceUnixNewlines, file, charset,
-                    dbType, getProject(), oneTimePrefs);
+            DbSource dbRemote = DbSource.fromFile(file, getProject(), oneTimePrefs);
             newDiffer = new TreeDiffer(dbProject, dbRemote);
         }
 
@@ -709,8 +706,7 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
                 dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC),
-                ProjectUtils.getDatabaseType(getProject()), getProject(), oneTimePrefs);
+                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType);
         differ.setAdditionalDepciesSource(manualDepciesSource);
         differ.setAdditionalDepciesTarget(manualDepciesTarget);
 
@@ -1028,8 +1024,9 @@ public class ProjectEditorDiffer extends EditorPart implements IResourceChangeLi
         private ImageDescriptor imgDescrProj;
         private ImageDescriptor imgDescrDb;
 
-        public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location) {
-            super(parent, viewOnly, lineManager, location, dbType);
+        public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
+                IProject proj) {
+            super(parent, viewOnly, lineManager, location, dbType, new UISettings(proj, oneTimePrefs));
         }
 
         @Override

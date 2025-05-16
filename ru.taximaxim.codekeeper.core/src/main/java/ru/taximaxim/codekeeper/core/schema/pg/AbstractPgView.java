@@ -29,7 +29,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractView;
@@ -38,6 +37,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -67,7 +67,7 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
         final StringBuilder sbSQL = new StringBuilder(query.length() * 2);
 
         sbSQL.append("CREATE ").append(getTypeName()).append(' ');
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(getQualifiedName());
         appendColumnNames(sbSQL);
         appendOptions(sbSQL);
@@ -109,10 +109,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
 
     private void appendChildrenComments(SQLScript script) {
         for (final Entry<String, String> columnComment : columnComments.entrySet()) {
-            StringBuilder sql = new StringBuilder();
-            sql.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+            script.addCommentStatement(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                     PgDiffUtils.getQuotedName(columnComment.getKey()), columnComment.getValue()));
-            script.addStatement(sql.toString(), getCommentsOrder());
         }
     }
 
@@ -164,10 +162,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
 
             String oldValue = columnComments.get(newColumn);
             if (!Objects.equals(oldValue, newValue)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                script.addCommentStatement(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                         PgDiffUtils.getQuotedName(newColumn), newValue));
-                script.addStatement(sb.toString(), getCommentsOrder());
             }
         }
 
@@ -175,10 +171,8 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
             String oldColumn = columnComment.getKey();
 
             if (!newView.columnComments.containsKey(oldColumn)) {
-                StringBuilder sb = new StringBuilder();
-                sb.append(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
+                script.addCommentStatement(MessageFormat.format(COLUMN_COMMENT, getQualifiedName(),
                         PgDiffUtils.getQuotedName(oldColumn), "NULL"));
-                script.addStatement(sb.toString(), getCommentsOrder());
             }
         }
     }
@@ -233,12 +227,12 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
         resetHash();
     }
 
-    public void addColumnComment(PgDiffArguments args, String columnName, String comment) {
+    public void addColumnComment(ISettings settings, String columnName, String comment) {
         if (comment == null || comment.isEmpty()) {
             return;
         }
 
-        columnComments.put(columnName, args.isKeepNewlines() ? comment : comment.replace("\r", ""));
+        columnComments.put(columnName, settings.isKeepNewlines() ? comment : comment.replace("\r", ""));
         resetHash();
     }
 

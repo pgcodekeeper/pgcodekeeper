@@ -49,11 +49,12 @@ import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChEngine;
 import ru.taximaxim.codekeeper.core.schema.ch.ChIndex;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class ChParserAbstract extends ParserAbstract<ChDatabase> {
 
-    protected ChParserAbstract(ChDatabase db) {
-        super(db);
+    protected ChParserAbstract(ChDatabase db, ISettings settings) {
+        super(db, settings);
     }
 
     public static List<ParserRuleContext> getIdentifiers(Qualified_nameContext qNameCtx) {

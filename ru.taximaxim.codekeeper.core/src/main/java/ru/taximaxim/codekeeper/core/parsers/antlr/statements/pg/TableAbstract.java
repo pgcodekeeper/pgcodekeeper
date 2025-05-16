@@ -69,13 +69,14 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintPk;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgIndexParamContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSequence;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class TableAbstract extends PgParserAbstract {
 
     private final CommonTokenStream stream;
 
-    protected TableAbstract(PgDatabase db, CommonTokenStream stream) {
-        super(db);
+    protected TableAbstract(PgDatabase db, CommonTokenStream stream, ISettings settings) {
+        super(db, settings);
         this.stream = stream;
     }
 

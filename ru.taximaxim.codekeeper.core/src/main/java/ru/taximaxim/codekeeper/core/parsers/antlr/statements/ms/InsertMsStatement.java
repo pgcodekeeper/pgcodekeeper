@@ -23,13 +23,14 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Insert_statementContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Qualified_nameContext;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class InsertMsStatement extends MsParserAbstract {
+public final class InsertMsStatement extends MsParserAbstract {
 
     private final Insert_statementContext ctx;
 
-    public InsertMsStatement(Insert_statementContext ctx, MsDatabase db) {
-        super(db);
+    public InsertMsStatement(Insert_statementContext ctx, MsDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

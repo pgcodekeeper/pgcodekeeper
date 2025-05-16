@@ -21,7 +21,6 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.AbstractExprWithNmspc;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.Function;
@@ -36,7 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
-public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
+public final class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     /**
      * Contains pairs, each of which contains the name of the function argument
@@ -44,23 +43,27 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
      * Used to set up namespace for function body analysis.
      */
     private final List<Pair<String, GenericColumn>> funcArgs;
+    private final boolean isEnableFunctionBodiesDependencies;
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, SqlContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Function_bodyContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public FuncProcAnalysisLauncher(AbstractPgFunction stmt, Plpgsql_functionContext ctx,
-            String location, List<Pair<String, GenericColumn>> funcArgs) {
+            String location, List<Pair<String, GenericColumn>> funcArgs, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
         this.funcArgs = funcArgs;
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     @Override
@@ -91,8 +94,7 @@ public class FuncProcAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        PgDiffArguments args = stmt.getDatabaseArguments();
-        if (!args.isEnableFunctionBodiesDependencies()) {
+        if (!isEnableFunctionBodiesDependencies) {
             return EnumSet.of(DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
 

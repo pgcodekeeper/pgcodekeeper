@@ -43,20 +43,21 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.ChParserAbstract
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChDictionary;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChFunction;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChPolicy;
-import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.GrantChPrivilege;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChRole;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChSchema;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChTable;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChUser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.CreateChView;
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.DropChStatement;
+import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ch.GrantChPrivilege;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class CustomChSQLParserListener extends CustomParserListener<ChDatabase> implements ChSqlContextProcessor {
 
     public CustomChSQLParserListener(ChDatabase database, String filename, ParserListenerMode mode,
-            List<Object> errors, IProgressMonitor monitor) {
-        super(database, filename, mode, errors, monitor);
+            List<Object> errors, IProgressMonitor monitor, ISettings settings) {
+        super(database, filename, mode, errors, monitor, settings);
     }
 
     @Override
@@ -80,7 +81,7 @@ public final class CustomChSQLParserListener extends CustomParserListener<ChData
             } else if ((dropCtx = ddlStmt.drop_stmt()) != null) {
                 drop(dropCtx);
             } else if ((privilStmt = ddlStmt.privilegy_stmt()) != null) {
-                safeParseStatement(new GrantChPrivilege(privilStmt, db, null), ddlStmt);
+                safeParseStatement(new GrantChPrivilege(privilStmt, db, null, settings), ddlStmt);
             } else {
                 addToQueries(query, getAction(query));
             }
@@ -99,21 +100,21 @@ public final class CustomChSQLParserListener extends CustomParserListener<ChData
         Create_role_stmtContext createRole;
         Create_dictinary_stmtContext createDictionary;
         if ((createDatabase = ctx.create_database_stmt()) != null) {
-            p = new CreateChSchema(createDatabase, db);
+            p = new CreateChSchema(createDatabase, db, settings);
         } else if ((createTable = ctx.create_table_stmt()) != null) {
-            p = new CreateChTable(createTable, db);
+            p = new CreateChTable(createTable, db, settings);
         } else if ((createView = ctx.create_view_stmt()) != null) {
-            p = new CreateChView(createView, db, stream);
+            p = new CreateChView(createView, db, stream, settings);
         } else if ((createFunc = ctx.create_function_stmt()) != null) {
-            p = new CreateChFunction(createFunc, db);
+            p = new CreateChFunction(createFunc, db, settings);
         } else if ((createUser = ctx.create_user_stmt()) != null) {
-            p = new CreateChUser(createUser, db);
+            p = new CreateChUser(createUser, db, settings);
         } else if ((createRole = ctx.create_role_stmt()) != null) {
-            p = new CreateChRole(createRole, db);
+            p = new CreateChRole(createRole, db, settings);
         } else if (ctx.create_policy_stmt() != null) {
-            p = new CreateChPolicy(ctx.create_policy_stmt(), db);
+            p = new CreateChPolicy(ctx.create_policy_stmt(), db, settings);
         } else if ((createDictionary = ctx.create_dictinary_stmt()) != null) {
-            p = new CreateChDictionary(createDictionary, db);
+            p = new CreateChDictionary(createDictionary, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -131,7 +132,7 @@ public final class CustomChSQLParserListener extends CustomParserListener<ChData
                 || element.USER() != null
                 || element.ROLE() != null
                 || element.DICTIONARY() != null) {
-            p = new DropChStatement(ctx, db);
+            p = new DropChStatement(ctx, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -143,11 +144,11 @@ public final class CustomChSQLParserListener extends CustomParserListener<ChData
         ChParserAbstract p;
         Alter_table_stmtContext altertableCtx = ctx.alter_table_stmt();
         if (altertableCtx != null) {
-            p = new AlterChTable(altertableCtx, db);
+            p = new AlterChTable(altertableCtx, db, settings);
         } else if (ctx.alter_policy_stmt() != null
                 || ctx.alter_user_stmt() != null
                 || ctx.alter_role_stmt() != null) {
-            p = new AlterChOther(ctx, db);
+            p = new AlterChOther(ctx, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;

@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.ExpressionContext;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.TSQLParser.Select_statementContext;
@@ -33,26 +32,32 @@ import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.ms.AbstractMsFunction;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 
-public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
+public final class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
+
+    private final boolean isEnableFunctionBodiesDependencies;
 
     public MsFuncProcTrigAnalysisLauncher(AbstractMsFunction stmt,
-            Sql_clausesContext ctx, String location) {
+            Sql_clausesContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public MsFuncProcTrigAnalysisLauncher(AbstractMsFunction stmt,
-            Select_statementContext ctx, String location) {
+            Select_statementContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public MsFuncProcTrigAnalysisLauncher(AbstractMsFunction stmt,
-            ExpressionContext ctx, String location) {
+            ExpressionContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     public MsFuncProcTrigAnalysisLauncher(MsTrigger stmt,
-            Sql_clausesContext ctx, String location) {
+            Sql_clausesContext ctx, String location, boolean isEnableFunctionBodiesDependencies) {
         super(stmt, ctx, location);
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     @Override
@@ -76,8 +81,7 @@ public class MsFuncProcTrigAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        PgDiffArguments args = stmt.getDatabaseArguments();
-        if (!args.isEnableFunctionBodiesDependencies()) {
+        if (!isEnableFunctionBodiesDependencies) {
             return EnumSet.of(DbObjType.FUNCTION, DbObjType.PROCEDURE);
         }
 

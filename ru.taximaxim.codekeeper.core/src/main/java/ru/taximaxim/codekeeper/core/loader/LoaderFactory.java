@@ -18,35 +18,30 @@ package ru.taximaxim.codekeeper.core.loader;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.ch.JdbcChLoader;
 import ru.taximaxim.codekeeper.core.loader.ms.JdbcMsLoader;
 import ru.taximaxim.codekeeper.core.loader.pg.JdbcPgLoader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class LoaderFactory {
 
-    public static DatabaseLoader createJdbcLoader(PgDiffArguments arguments, String url,
+    public static DatabaseLoader createJdbcLoader(ISettings settings, String url,
             IgnoreSchemaList ignoreSchemaList) {
-        String timezone = arguments.getTimeZone() == null ? Consts.UTC : arguments.getTimeZone();
-        return createJdbcLoader(arguments, timezone, new UrlJdbcConnector(url), SubMonitor.convert(null),
+        String timezone = settings.getTimeZone() == null ? Consts.UTC : settings.getTimeZone();
+        return createJdbcLoader(settings, timezone, new UrlJdbcConnector(url), SubMonitor.convert(null),
                 ignoreSchemaList);
     }
 
-    public static DatabaseLoader createJdbcLoader(PgDiffArguments arguments, String timezone,
+    public static DatabaseLoader createJdbcLoader(ISettings settings, String timezone,
             AbstractJdbcConnector connnector, SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
-        var dbType = arguments.getDbType();
-        switch (dbType) {
-        case MS:
-            return new JdbcMsLoader(connnector, arguments, monitor, ignoreSchemaList);
-        case PG:
-            return new JdbcPgLoader(connnector, timezone, arguments, monitor, ignoreSchemaList);
-        case CH:
-            return new JdbcChLoader(connnector, arguments, monitor, ignoreSchemaList);
-        default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        }
+        return switch (settings.getDbType()) {
+        case MS -> new JdbcMsLoader(connnector, settings, monitor, ignoreSchemaList);
+        case PG -> new JdbcPgLoader(connnector, timezone, settings, monitor, ignoreSchemaList);
+        case CH -> new JdbcChLoader(connnector, settings, monitor, ignoreSchemaList);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
+        };
     }
 
     private LoaderFactory() {

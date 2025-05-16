@@ -107,7 +107,7 @@ public final class Main {
     private static boolean diff(PrintWriter writer, CliArgs arguments)
             throws InterruptedException, IOException, SQLException {
         try (PrintWriter encodedWriter = getDiffWriter(arguments)) {
-            PgDiff diff = new PgDiff(arguments);
+            var diff = new PgDiffCli(arguments);
             String text;
             try {
                 LOG.info(Messages.Main_log_create_script);
@@ -117,7 +117,7 @@ public final class Main {
                 return false;
             }
 
-            ScriptParser parser = new ScriptParser("CLI", text, arguments.getDbType()); //$NON-NLS-1$
+            ScriptParser parser = new ScriptParser("CLI", text, arguments); //$NON-NLS-1$
 
             if (arguments.isSafeMode()) {
                 var dangerTypes = parser.getDangerDdl(arguments.getAllowedDangers());
@@ -183,7 +183,7 @@ public final class Main {
 
     private static boolean insert(PrintWriter writer, CliArgs arguments)
             throws IOException, InterruptedException, SQLException {
-        PgDiff diff = new PgDiff(arguments);
+        var diff = new PgDiffCli(arguments);
         AbstractDatabase db;
         try {
             db = diff.loadNewDatabaseWithLibraries();
@@ -193,7 +193,8 @@ public final class Main {
         }
 
         LOG.info(Messages.Main_log_start_insert_data);
-        var script = InsertWriter.write(db, arguments, arguments.getInsertName(), arguments.getInsertFilter());
+        var script = InsertWriter.write(db, arguments, arguments.getInsertName(), arguments.getInsertFilter(),
+                arguments.getNewSrc());
 
         try (PrintWriter pw = getDiffWriter(arguments)) {
             if (pw != null) {
@@ -203,7 +204,7 @@ public final class Main {
             if (url != null) {
                 LOG.info(Messages.Main_log_run_insert_data);
                 new JdbcRunner().runBatches(new UrlJdbcConnector(url),
-                        new ScriptParser("CLI", script, arguments.getDbType()).batch(), null); //$NON-NLS-1$
+                        new ScriptParser("CLI", script, arguments).batch(), null); //$NON-NLS-1$
             } else if (pw == null) {
                 writer.println(script);
             }
@@ -214,7 +215,7 @@ public final class Main {
     }
 
     private static boolean graph(PrintWriter writer, CliArgs arguments) throws IOException, InterruptedException {
-        PgDiff diff = new PgDiff(arguments);
+        var diff = new PgDiffCli(arguments);
         AbstractDatabase d;
         try {
             d = diff.loadNewDatabaseWithLibraries();

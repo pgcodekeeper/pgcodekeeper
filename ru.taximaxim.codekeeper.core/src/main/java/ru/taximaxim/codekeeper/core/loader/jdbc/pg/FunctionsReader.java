@@ -49,12 +49,13 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.AggKinds;
 import ru.taximaxim.codekeeper.core.schema.pg.PgAggregate.ModifyType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgFunction;
 import ru.taximaxim.codekeeper.core.schema.pg.PgProcedure;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
  * Reads FUNCTIONs, PROCEDUREs and AGGREGATEs from JDBC.
  */
-public class FunctionsReader extends JdbcReader {
+public final class FunctionsReader extends JdbcReader {
 
     public FunctionsReader(JdbcLoaderBase loader) {
         super(loader);
@@ -262,18 +263,22 @@ public class FunctionsReader extends JdbcReader {
             body = probody;
         }
 
-        function.setBody(loader.getArgs(), body);
+        ISettings settings = loader.getSettings();
+        function.setBody(settings, body);
 
         // Parsing the function definition and adding its result context for analysis.
         if (function.isInStatementBody()) {
             loader.submitAntlrTask(body, SQLParser::function_body, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            settings.isEnableFunctionBodiesDependencies())));
         } else if (!"-".equals(definition) && "SQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitAntlrTask(definition, SQLParser::sql, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            settings.isEnableFunctionBodiesDependencies())));
         } else if (!"-".equals(definition) && "PLPGSQL".equalsIgnoreCase(function.getLanguage())) {
             loader.submitPlpgsqlTask(definition, SQLParser::plpgsql_function, ctx -> db.addAnalysisLauncher(
-                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes)));
+                    new FuncProcAnalysisLauncher(function, ctx, loader.getCurrentLocation(), argsQualTypes,
+                            settings.isEnableFunctionBodiesDependencies())));
         }
     }
 

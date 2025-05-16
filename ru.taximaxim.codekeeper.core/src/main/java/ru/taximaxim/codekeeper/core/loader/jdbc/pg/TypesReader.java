@@ -43,6 +43,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgConstraintCheck;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDomain;
 import ru.taximaxim.codekeeper.core.schema.pg.PgEnumType;
 import ru.taximaxim.codekeeper.core.schema.pg.PgRangeType;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class TypesReader extends JdbcReader {
 
@@ -118,6 +119,7 @@ public final class TypesReader extends JdbcReader {
             String[] condefs = getColArray(res, "dom_condefs");
             String[] concomments = getColArray(res, "dom_concomments");
 
+            ISettings settings = loader.getSettings();
             for (int i = 0; i < connames.length; ++i) {
                 String conName = connames[i];
                 var constrCheck = new PgConstraintCheck(conName);
@@ -126,12 +128,12 @@ public final class TypesReader extends JdbcReader {
                 loader.submitAntlrTask(ADD_CONSTRAINT + definition + ';',
                         p -> p.sql().statement(0).schema_statement().schema_alter()
                         .alter_domain_statement().dom_constraint,
-                        ctx -> CreateDomain.parseDomainConstraint(d, constrCheck, ctx,
-                                dataBase, loader.getCurrentLocation()));
+                        ctx -> CreateDomain.parseDomainConstraint(d, constrCheck, ctx, dataBase,
+                                loader.getCurrentLocation(), settings));
 
                 d.addConstraint(constrCheck);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
-                    constrCheck.setComment(loader.getArgs(), PgDiffUtils.quoteString(concomments[i]));
+                    constrCheck.setComment(settings, PgDiffUtils.quoteString(concomments[i]));
                 }
             }
         }
@@ -293,7 +295,7 @@ public final class TypesReader extends JdbcReader {
             }
             t.addAttr(a);
             if (attcomments[i] != null && !attcomments[i].isEmpty()) {
-                a.setComment(loader.getArgs(), PgDiffUtils.quoteString(attcomments[i]));
+                a.setComment(loader.getSettings(), PgDiffUtils.quoteString(attcomments[i]));
             }
         }
 

@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject.AddStatus;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 
-public class TreeFlattener {
+public final class TreeFlattener {
 
     private static final Logger LOG = LoggerFactory.getLogger(TreeFlattener.class);
 

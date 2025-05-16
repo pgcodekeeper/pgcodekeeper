@@ -27,12 +27,12 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 /**
  * An 'factory' that creates 'artificial' predefined objects
@@ -71,16 +71,15 @@ class DepcyTreeExtenderTest {
          * Index of the file that should be tested.
          */
 
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(Consts.UTF_8);
+        var settings = new TestCoreSettings();
 
         String fileName = "depcy_schema_" + fileIndex + ".sql";
         String targetFileName = "depcy_schema_new_" + fileIndex + ".sql";
 
         AbstractDatabase dbSource = TestUtils.loadTestDump(
-                fileName, DepcyTreeExtenderTest.class, args);
+                fileName, DepcyTreeExtenderTest.class, settings);
         AbstractDatabase dbTarget = TestUtils.loadTestDump(
-                targetFileName, DepcyTreeExtenderTest.class, args);
+                targetFileName, DepcyTreeExtenderTest.class, settings);
 
         TreeElement tree = new TreeElement("Database", DbObjType.DATABASE, DiffSide.BOTH);
         predefined.setUserSelection(tree);

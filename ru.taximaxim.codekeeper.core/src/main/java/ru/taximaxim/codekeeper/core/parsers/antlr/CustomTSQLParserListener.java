@@ -76,16 +76,17 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.MsParserAbstract
 import ru.taximaxim.codekeeper.core.parsers.antlr.statements.ms.UpdateMsStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CustomTSQLParserListener extends CustomParserListener<MsDatabase>
+public final class CustomTSQLParserListener extends CustomParserListener<MsDatabase>
 implements TSqlContextProcessor {
 
     private boolean ansiNulls = true;
     private boolean quotedIdentifier = true;
 
     public CustomTSQLParserListener(MsDatabase database, String filename, ParserListenerMode mode, List<Object> errors,
-            IProgressMonitor monitor) {
-        super(database, filename, mode, errors, monitor);
+            IProgressMonitor monitor, ISettings settings) {
+        super(database, filename, mode, errors, monitor, settings);
     }
 
     @Override
@@ -131,7 +132,7 @@ implements TSqlContextProcessor {
             } else if ((alter = ddl.schema_alter()) != null) {
                 alter(alter);
             } else if ((disable = ddl.enable_disable_trigger()) != null) {
-                safeParseStatement(new DisableMsTrigger(disable, db), disable);
+                safeParseStatement(new DisableMsTrigger(disable, db, settings), disable);
                 addToQueries(disable, getAction(disable));
             } else if ((drop = ddl.schema_drop()) != null) {
                 drop(drop);
@@ -143,11 +144,11 @@ implements TSqlContextProcessor {
             Insert_statementContext insert = dml.insert_statement();
             Delete_statementContext delete = dml.delete_statement();
             if (update != null) {
-                safeParseStatement(new UpdateMsStatement(update, db), update);
+                safeParseStatement(new UpdateMsStatement(update, db, settings), update);
             } else if (insert != null) {
-                safeParseStatement(new InsertMsStatement(insert, db), insert);
+                safeParseStatement(new InsertMsStatement(insert, db, settings), insert);
             } else if (delete != null) {
-                safeParseStatement(new DeleteMsStatement(delete, db), delete);
+                safeParseStatement(new DeleteMsStatement(delete, db, settings), delete);
             } else {
                 addToQueries(dml, getAction(dml));
             }
@@ -159,7 +160,7 @@ implements TSqlContextProcessor {
                 addToQueries(set, getAction(set));
             } else if ((security = ast.security_statement()) != null
                     && security.rule_common() != null) {
-                safeParseStatement(new GrantMsPrivilege(security.rule_common(), db), security);
+                safeParseStatement(new GrantMsPrivilege(security.rule_common(), db, settings), security);
             } else {
                 addToQueries(ast, getAction(ast));
             }
@@ -172,27 +173,27 @@ implements TSqlContextProcessor {
         Batch_statement_bodyContext body = ctx.batch_statement_body();
 
         if (ctx.ALTER() != null) {
-            safeParseStatement(new AlterMsBatch(body, db, stream), body);
+            safeParseStatement(new AlterMsBatch(body, db, stream, settings), body);
             return;
         }
 
         MsParserAbstract p;
 
         if (ctx.create_schema() != null) {
-            p = new CreateMsSchema(ctx.create_schema(), db);
+            p = new CreateMsSchema(ctx.create_schema(), db, settings);
         } else if (body.create_or_alter_procedure() != null) {
-            p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsProcedure(ctx, db, ansiNulls, quotedIdentifier, stream, settings);
         } else if (body.create_or_alter_function() != null) {
-            p = new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsFunction(ctx, db, ansiNulls, quotedIdentifier, stream, settings);
         } else if (body.create_or_alter_view() != null) {
-            p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsView(ctx, db, ansiNulls, quotedIdentifier, stream, settings);
         } else if (body.create_or_alter_trigger() != null) {
             Create_or_alter_triggerContext triggerCtx = body.create_or_alter_trigger();
             if (triggerCtx.SERVER() != null || triggerCtx.DATABASE() != null) {
                 addToQueries(ctx, "CREATE TRIGGER");
                 return;
             }
-            p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream);
+            p = new CreateMsTrigger(ctx, db, ansiNulls, quotedIdentifier, stream, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -205,21 +206,21 @@ implements TSqlContextProcessor {
     private void create(Schema_createContext ctx) {
         MsParserAbstract p;
         if (ctx.create_sequence() != null) {
-            p = new CreateMsSequence(ctx.create_sequence(), db);
+            p = new CreateMsSequence(ctx.create_sequence(), db, settings);
         } else if (ctx.create_index() != null) {
-            p = new CreateMsIndex(ctx.create_index(), db);
+            p = new CreateMsIndex(ctx.create_index(), db, settings);
         } else if (ctx.create_table() != null) {
-            p = new CreateMsTable(ctx.create_table(), db, ansiNulls);
+            p = new CreateMsTable(ctx.create_table(), db, ansiNulls, settings);
         } else if (ctx.create_assembly() != null) {
-            p = new CreateMsAssembly(ctx.create_assembly(), db);
+            p = new CreateMsAssembly(ctx.create_assembly(), db, settings);
         } else if (ctx.create_db_role() != null) {
-            p = new CreateMsRole(ctx.create_db_role(), db);
+            p = new CreateMsRole(ctx.create_db_role(), db, settings);
         } else if (ctx.create_user() != null) {
-            p = new CreateMsUser(ctx.create_user(), db);
+            p = new CreateMsUser(ctx.create_user(), db, settings);
         } else if (ctx.create_type() != null) {
-            p = new CreateMsType(ctx.create_type(), db);
+            p = new CreateMsType(ctx.create_type(), db, settings);
         } else if (ctx.create_statistics() != null) {
-            p = new CreateMsStatistics(ctx.create_statistics(), db);
+            p = new CreateMsStatistics(ctx.create_statistics(), db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -230,17 +231,17 @@ implements TSqlContextProcessor {
     private void alter(Schema_alterContext ctx) {
         MsParserAbstract p;
         if (ctx.alter_authorization() != null) {
-            p = new AlterMsAuthorization(ctx.alter_authorization(), db);
+            p = new AlterMsAuthorization(ctx.alter_authorization(), db, settings);
         } else if (ctx.alter_table() != null) {
-            p = new AlterMsTable(ctx.alter_table(), db);
+            p = new AlterMsTable(ctx.alter_table(), db, settings);
         } else if (ctx.alter_assembly() != null) {
-            p = new AlterMsAssembly(ctx.alter_assembly(), db);
+            p = new AlterMsAssembly(ctx.alter_assembly(), db, settings);
         } else if (ctx.alter_db_role() != null) {
-            p = new AlterMsRole(ctx.alter_db_role(), db);
+            p = new AlterMsRole(ctx.alter_db_role(), db, settings);
         } else if (ctx.alter_schema_sql() != null
                 || ctx.alter_user() != null
                 || ctx.alter_sequence() != null) {
-            p = new AlterMsOther(ctx, db);
+            p = new AlterMsOther(ctx, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;
@@ -253,7 +254,7 @@ implements TSqlContextProcessor {
         if (ctx.drop_assembly() != null
                 || ctx.drop_index() != null
                 || ctx.drop_statements() != null) {
-            p = new DropMsStatement(ctx, db);
+            p = new DropMsStatement(ctx, db, settings);
         } else {
             addToQueries(ctx, getAction(ctx));
             return;

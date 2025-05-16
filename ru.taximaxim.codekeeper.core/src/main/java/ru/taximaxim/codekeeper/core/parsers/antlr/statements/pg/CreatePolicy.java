@@ -33,13 +33,14 @@ import ru.taximaxim.codekeeper.core.schema.EventType;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgPolicy;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreatePolicy extends PgParserAbstract {
+public final class CreatePolicy extends PgParserAbstract {
 
     private final Create_policy_statementContext ctx;
 
-    public CreatePolicy(Create_policy_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreatePolicy(Create_policy_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

@@ -61,7 +61,7 @@ public class ChTable extends AbstractTable {
     public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append("CREATE TABLE ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(getQualifiedName()).append("\n(");
         appendTableBody(sb);
         if (isNotEmptyTable()) {
@@ -96,7 +96,7 @@ public class ChTable extends AbstractTable {
         int startSize = script.getSize();
         ChTable newTable = (ChTable) newCondition;
 
-        if (isRecreated(newTable)) {
+        if (isRecreated(newTable, script.getSettings())) {
             return ObjectState.RECREATE;
         }
 
@@ -141,7 +141,7 @@ public class ChTable extends AbstractTable {
         for (Entry<String, String> toAdd : toAdds.entrySet()) {
             StringBuilder sb = new StringBuilder();
             sb.append(getAlterTable(false)).append("\n\tADD PROJECTION ");
-            appendIfNotExists(sb);
+            appendIfNotExists(sb, script.getSettings());
             sb.append(toAdd.getKey()).append(' ').append(toAdd.getValue());
             script.addStatement(sb);
         }

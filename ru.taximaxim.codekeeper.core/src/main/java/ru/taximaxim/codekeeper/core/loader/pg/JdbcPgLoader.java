@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.JdbcQueries;
@@ -57,21 +56,22 @@ import ru.taximaxim.codekeeper.core.loader.jdbc.pg.ViewsReader;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class JdbcPgLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcPgLoader.class);
     private String timezone;
 
-    public JdbcPgLoader(AbstractJdbcConnector connector, String timezone, PgDiffArguments pgDiffArguments,
+    public JdbcPgLoader(AbstractJdbcConnector connector, String timezone, ISettings settings,
             SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
-        super(connector, monitor, pgDiffArguments, ignoreSchemaList);
+        super(connector, monitor, settings, ignoreSchemaList);
         this.timezone = timezone;
     }
 
     @Override
     public PgDatabase load() throws IOException, InterruptedException {
-        PgDatabase d = (PgDatabase) createDb(getArgs());
+        PgDatabase d = (PgDatabase) createDb(getSettings());
 
         LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
         setCurrentOperation(Messages.JdbcChLoader_log_connection_db);

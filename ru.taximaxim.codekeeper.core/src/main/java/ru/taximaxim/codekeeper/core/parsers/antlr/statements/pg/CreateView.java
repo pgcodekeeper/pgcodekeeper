@@ -37,8 +37,9 @@ import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.MaterializedPgView;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateView extends PgParserAbstract {
+public final class CreateView extends PgParserAbstract {
 
     private static final String RECURSIVE_PATTERN = """
         CREATE VIEW {0}
@@ -54,8 +55,8 @@ public class CreateView extends PgParserAbstract {
     private final CommonTokenStream stream;
 
     public CreateView(Create_view_statementContext context, PgDatabase db,
-            String tablespace, String accessMethod, CommonTokenStream stream) {
-        super(db);
+            String tablespace, String accessMethod, CommonTokenStream stream, ISettings settings) {
+        super(db, settings);
         this.context = context;
         this.tablespace = tablespace;
         this.accessMethod = accessMethod;

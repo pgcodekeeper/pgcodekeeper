@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
@@ -63,6 +62,7 @@ import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgPrivilege;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.pg.AbstractPgFunction;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 /**
  * Container for shared JdbcLoader state.
@@ -83,7 +83,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     private static final int FIRST_NORMAL_OBJECT_ID = 16384;
 
     private final SubMonitor monitor;
-    private final PgDiffArguments args;
+    private final ISettings settings;
     private final IgnoreSchemaList ignorelistSchema;
     protected final Map<Object, AbstractSchema> schemaIds = new HashMap<>();
     protected final AbstractJdbcConnector connector;
@@ -101,11 +101,11 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     protected Connection connection;
     protected Statement statement;
 
-    protected JdbcLoaderBase(AbstractJdbcConnector connector, SubMonitor monitor, PgDiffArguments args,
+    protected JdbcLoaderBase(AbstractJdbcConnector connector, SubMonitor monitor, ISettings settings,
             IgnoreSchemaList ignoreListSchema) {
         this.connector = connector;
         this.monitor = monitor;
-        this.args = args;
+        this.settings = settings;
         this.runner = new JdbcRunner(monitor);
         this.ignorelistSchema = ignoreListSchema;
     }
@@ -114,8 +114,8 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         return version;
     }
 
-    public PgDiffArguments getArgs() {
-        return args;
+    public ISettings getSettings() {
+        return settings;
     }
 
     public long getLastSysOid() {
@@ -195,7 +195,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     }
 
     protected void queryRoles() throws SQLException, InterruptedException {
-        if (args.isIgnorePrivileges()) {
+        if (settings.isIgnorePrivileges()) {
             return;
         }
         cachedRolesNamesByOid = new HashMap<>();
@@ -212,7 +212,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     }
 
     public String getRoleByOid(long oid) {
-        if (args.isIgnorePrivileges()) {
+        if (settings.isIgnorePrivileges()) {
             return null;
         }
         return oid == 0 ? "PUBLIC" : cachedRolesNamesByOid.get(oid);
@@ -221,18 +221,18 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     public final void setComment(PgStatement f, ResultSet res) throws SQLException {
         String comment = res.getString("description");
         if (comment != null && !comment.isEmpty()) {
-            f.setComment(args, PgDiffUtils.quoteString(comment));
+            f.setComment(settings, PgDiffUtils.quoteString(comment));
         }
     }
 
     public void setOwner(PgStatement statement, long ownerOid) {
-        if (!args.isIgnorePrivileges()) {
+        if (!settings.isIgnorePrivileges()) {
             statement.setOwner(getRoleByOid(ownerOid));
         }
     }
 
     public void setOwner(PgStatement st, String owner) {
-        if (!args.isIgnorePrivileges()) {
+        if (!settings.isIgnorePrivileges()) {
             st.setOwner(owner);
         }
     }
@@ -293,7 +293,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
      */
     private void setPrivileges(PgStatement st, String stSignature,
             String aclItemsArrayAsString, String owner, String columnId, String schemaName) {
-        if (aclItemsArrayAsString == null || args.isIgnorePrivileges()) {
+        if (aclItemsArrayAsString == null || settings.isIgnorePrivileges()) {
             return;
         }
         DbObjType type = st.getStatementType();
@@ -411,7 +411,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
     }
 
     public void setPrivileges(PgStatement st, List<XmlReader> privs) {
-        if (args.isIgnorePrivileges()) {
+        if (settings.isIgnorePrivileges()) {
             return;
         }
 

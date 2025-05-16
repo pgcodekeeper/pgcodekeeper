@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.chexpr.ChValueExpr;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.CHParser.ExprContext;
@@ -28,10 +27,14 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChFunction;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 
-public class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
+public final class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
 
-    public ChFuncAnalysisLauncher(ChFunction st, ExprContext ctx, String location) {
+    private final boolean isEnableFunctionBodiesDependencies;
+
+    public ChFuncAnalysisLauncher(ChFunction st, ExprContext ctx, String location,
+            boolean isEnableFunctionBodiesDependencies) {
         super(st, ctx, location);
+        this.isEnableFunctionBodiesDependencies = isEnableFunctionBodiesDependencies;
     }
 
     @Override
@@ -42,8 +45,7 @@ public class ChFuncAnalysisLauncher extends AbstractAnalysisLauncher {
 
     @Override
     protected EnumSet<DbObjType> getDisabledDepcies() {
-        PgDiffArguments args = stmt.getDatabaseArguments();
-        if (!args.isEnableFunctionBodiesDependencies()) {
+        if (!isEnableFunctionBodiesDependencies) {
             return EnumSet.of(DbObjType.FUNCTION);
         }
 

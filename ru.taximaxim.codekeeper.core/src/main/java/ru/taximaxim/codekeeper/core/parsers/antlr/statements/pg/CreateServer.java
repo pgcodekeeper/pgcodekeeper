@@ -25,13 +25,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Foreign_op
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.IdentifierContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgServer;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateServer extends PgParserAbstract {
+public final class CreateServer extends PgParserAbstract {
 
     private final Create_server_statementContext ctx;
 
-    public CreateServer(Create_server_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateServer(Create_server_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

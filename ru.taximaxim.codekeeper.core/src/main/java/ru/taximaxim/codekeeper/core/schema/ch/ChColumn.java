@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractColumn;
 import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class ChColumn extends AbstractColumn {
 
@@ -78,7 +79,7 @@ public final class ChColumn extends AbstractColumn {
     public void getCreationSQL(SQLScript script) {
         var sb = new StringBuilder();
         sb.append(getAlterTable(false)).append("\n\tADD COLUMN ");
-        appendIfNotExists(sb);
+        appendIfNotExists(sb, script.getSettings());
         sb.append(ChDiffUtils.quoteName(name));
 
         if (type != null) {
@@ -148,7 +149,7 @@ public final class ChColumn extends AbstractColumn {
             return;
         }
         StringBuilder sb = new StringBuilder();
-        appendAlterColumn(sb);
+        appendAlterColumn(sb, script.getSettings());
         sb.append(' ').append(newType);
         script.addStatement(sb);
     }
@@ -158,8 +159,9 @@ public final class ChColumn extends AbstractColumn {
                 && Objects.equals(defaultValue, newColumn.defaultValue)) {
             return;
         }
+        ISettings settings = script.getSettings();
         StringBuilder sb = new StringBuilder();
-        appendAlterColumn(sb);
+        appendAlterColumn(sb, settings);
         if (newColumn.defaultType != null) {
             sb.append(' ').append(newColumn.defaultType).append(' ').append(newColumn.defaultValue);
             script.addStatement(sb);
@@ -168,7 +170,7 @@ public final class ChColumn extends AbstractColumn {
             sb.append(" DEFAULT ").append("0");
             script.addStatement(sb);
             StringBuilder sbRemove = new StringBuilder();
-            appendAlterColumn(sbRemove);
+            appendAlterColumn(sbRemove, settings);
             sbRemove.append(" REMOVE").append(" DEFAULT");
             script.addStatement(sbRemove);
         } else {
@@ -182,7 +184,7 @@ public final class ChColumn extends AbstractColumn {
             return;
         }
         StringBuilder sb = new StringBuilder();
-        appendAlterColumn(sb);
+        appendAlterColumn(sb, script.getSettings());
         if (newCodecs.isEmpty()) {
             sb.append(" REMOVE CODEC");
         } else {
@@ -201,7 +203,7 @@ public final class ChColumn extends AbstractColumn {
             return;
         }
         StringBuilder sb = new StringBuilder();
-        appendAlterColumn(sb);
+        appendAlterColumn(sb, script.getSettings());
         if (newTtl == null) {
             sb.append(" REMOVE TTL");
         } else {
@@ -220,20 +222,20 @@ public final class ChColumn extends AbstractColumn {
             sb.append(" MODIFY COLUMN ").append(ChDiffUtils.quoteName(name)).append(" REMOVE COMMENT");
         } else {
             sb.append(" COMMENT COLUMN ");
-            appendIfExists(sb);
+            appendIfExists(sb, script.getSettings());
             sb.append(ChDiffUtils.quoteName(name)).append(' ').append(newComment);
         }
         script.addStatement(sb);
     }
 
-    private void appendAlterColumn(StringBuilder sb) {
+    private void appendAlterColumn(StringBuilder sb, ISettings settings) {
         sb.append(getAlterTable(false)).append(" MODIFY COLUMN ");
-        appendIfExists(sb);
+        appendIfExists(sb, settings);
         sb.append(ChDiffUtils.quoteName(name));
     }
 
-    private void appendIfExists(StringBuilder sb) {
-        if (getDatabaseArguments().isGenerateExists()) {
+    private void appendIfExists(StringBuilder sb, ISettings settings) {
+        if (settings.isGenerateExists()) {
             sb.append(IF_EXISTS);
         }
     }

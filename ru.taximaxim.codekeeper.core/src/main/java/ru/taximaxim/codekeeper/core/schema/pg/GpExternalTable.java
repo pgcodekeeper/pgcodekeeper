@@ -26,6 +26,7 @@ import ru.taximaxim.codekeeper.core.schema.IForeignTable;
 import ru.taximaxim.codekeeper.core.schema.IOptionContainer;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class GpExternalTable extends AbstractPgTable implements PgForeignOptionContainer, IForeignTable {
 
@@ -52,7 +53,7 @@ public final class GpExternalTable extends AbstractPgTable implements PgForeignO
     }
 
     @Override
-    protected void appendName(StringBuilder sbSQL) {
+    protected void appendName(StringBuilder sbSQL, ISettings settings) {
         sbSQL.append("CREATE ");
         if (isWritable) {
             sbSQL.append("WRITABLE ");

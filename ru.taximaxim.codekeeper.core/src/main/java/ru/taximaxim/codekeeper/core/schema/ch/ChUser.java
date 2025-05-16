@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
 
-public class ChUser extends PgStatement {
+public final class ChUser extends PgStatement {
 
     private static final String DEF_STORAGE = "local_directory";
     private static final String EXCEPT = " EXCEPT ";
@@ -67,7 +67,7 @@ public class ChUser extends PgStatement {
     public void getCreationSQL(SQLScript script) {
         final StringBuilder sbSQL = new StringBuilder();
         sbSQL.append("CREATE USER ");
-        appendIfNotExists(sbSQL);
+        appendIfNotExists(sbSQL, script.getSettings());
         sbSQL.append(ChDiffUtils.getQuotedName(name));
         if (!hosts.isEmpty()) {
             sbSQL.append(DELIM).append("HOST ").append(String.join(", ", hosts));

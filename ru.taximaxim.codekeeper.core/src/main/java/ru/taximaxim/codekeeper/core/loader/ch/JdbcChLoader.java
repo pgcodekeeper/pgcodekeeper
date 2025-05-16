@@ -25,7 +25,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
@@ -40,19 +39,20 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ch.ChDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class JdbcChLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcChLoader.class);
 
-    public JdbcChLoader(AbstractJdbcConnector connector, PgDiffArguments arguments, SubMonitor monitor,
+    public JdbcChLoader(AbstractJdbcConnector connector, ISettings settings, SubMonitor monitor,
             IgnoreSchemaList ignoreSchemaList) {
-        super(connector, monitor, arguments, ignoreSchemaList);
+        super(connector, monitor, settings, ignoreSchemaList);
     }
 
     @Override
     public AbstractDatabase load() throws IOException, InterruptedException {
-        ChDatabase d = (ChDatabase) createDb(getArgs());
+        ChDatabase d = (ChDatabase) createDb(getSettings());
 
         LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
         setCurrentOperation(Messages.JdbcChLoader_log_connection_db);
@@ -70,7 +70,7 @@ public final class JdbcChLoader extends JdbcLoaderBase {
             new ChPoliciesReader(this, d).read();
             new ChUsersReader(this, d).read();
             new ChRolesReader(this, d).read();
-            if (!getArgs().isIgnorePrivileges()) {
+            if (!getSettings().isIgnorePrivileges()) {
                 new ChPrivillegesReader(this, d).read();
             }
 

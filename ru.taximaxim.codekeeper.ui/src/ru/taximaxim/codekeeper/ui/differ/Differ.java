@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -30,21 +29,18 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 
-import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.PgDiff;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
-public class Differ implements IRunnableWithProgress {
+public final class Differ implements IRunnableWithProgress {
 
     private final AbstractDatabase sourceDbFull;
     private final AbstractDatabase targetDbFull;
@@ -86,8 +82,8 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj,
-            Map<String, Boolean> oneTimePrefs) {
+            boolean needTwoWay, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs,
+            DatabaseType dbType) {
         this.sourceDbFull = sourceDbFull;
         this.targetDbFull = targetDbFull;
         this.root = root;
@@ -99,8 +95,8 @@ public class Differ implements IRunnableWithProgress {
     }
 
     public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, DatabaseType dbType, IProject proj) {
-        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, dbType, proj, null);
+            boolean needTwoWay, String timezone, IProject proj) {
+        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, proj, null, null);
     }
 
     public Job getDifferJob() {
@@ -148,12 +144,9 @@ public class Differ implements IRunnableWithProgress {
         + " to: " + targetDbFull.getName()); //$NON-NLS-1$
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
-        try (Getter source = new Getter(sourceDbFull, proj, oneTimePrefs);
-                Getter target = new Getter(targetDbFull, proj, oneTimePrefs)) {
-            // forceUnixNewLines has no effect on diff operaiton, just pass true
-            PgDiffArguments args =
-                    DbSource.getPgDiffArgs(Consts.UTF_8, timezone, true, dbType, proj, oneTimePrefs);
-            diffDirect = new PgDiff(args).diff(
+        try {
+            UISettings settings = new UISettings(proj, oneTimePrefs, dbType);
+            diffDirect = new PgDiff(settings).diff(
                     root,
                     sourceDbFull, targetDbFull,
                     additionalDepciesSource, additionalDepciesTarget, null);
@@ -163,7 +156,7 @@ public class Differ implements IRunnableWithProgress {
                 + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
 
                 pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                diffReverse = new PgDiff(args).diff(
+                diffReverse = new PgDiff(settings).diff(
                         root.getRevertedCopy(),
                         targetDbFull, sourceDbFull,
                         additionalDepciesTarget, additionalDepciesSource, null);
@@ -174,35 +167,5 @@ public class Differ implements IRunnableWithProgress {
 
         PgDiffUtils.checkCancelled(pm);
         monitor.done();
-    }
-
-    // TODO костыль, сохраняет текущие аргументы, подменяет их новыми, при закрытии возвращает старые аргументы
-    private static final class Getter implements AutoCloseable {
-        private final Consumer<PgDiffArguments> consumer;
-        private final PgDiffArguments oldArgs;
-
-        public Getter(AbstractDatabase db, IProject proj, Map<String, Boolean> oneTimePrefs) {
-            oldArgs = db.getArguments();
-            consumer = (db::setArguments);
-            PgDiffArguments newArgs = oldArgs.copy();
-            // применить параметры для генерации кода ко всем БД
-            OverridablePrefs prefs = new OverridablePrefs(proj, oneTimePrefs);
-            newArgs.setConcurrentlyMode(
-                    prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY));
-            newArgs.setConstraintNotValid(
-                    prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID));
-            newArgs.setUsingTypeCastOff(
-                    !prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF));
-            newArgs.setGenerateExists(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXISTS));
-            newArgs.setGenerateExistDoBlock(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK));
-            newArgs.setCommentsToEnd(prefs.getBooleanOfDbUpdatePref(DB_UPDATE_PREF.COMMENTS_TO_END));
-
-            db.setArguments(newArgs);
-        }
-
-        @Override
-        public void close() {
-            consumer.accept(oldArgs);
-        }
     }
 }

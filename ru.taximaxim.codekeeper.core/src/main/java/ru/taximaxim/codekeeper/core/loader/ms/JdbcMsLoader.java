@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
 import ru.taximaxim.codekeeper.core.loader.jdbc.JdbcLoaderBase;
 import ru.taximaxim.codekeeper.core.loader.jdbc.ms.MsAssembliesReader;
@@ -44,19 +43,20 @@ import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class JdbcMsLoader extends JdbcLoaderBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(JdbcMsLoader.class);
 
-    public JdbcMsLoader(AbstractJdbcConnector connector, PgDiffArguments args,
+    public JdbcMsLoader(AbstractJdbcConnector connector, ISettings settings,
             SubMonitor monitor, IgnoreSchemaList ignoreSchemaList) {
-        super(connector, monitor, args, ignoreSchemaList);
+        super(connector, monitor, settings, ignoreSchemaList);
     }
 
     @Override
     public AbstractDatabase load() throws IOException, InterruptedException {
-        MsDatabase d = (MsDatabase) createDb(getArgs());
+        MsDatabase d = (MsDatabase) createDb(getSettings());
 
         LOG.info(Messages.JdbcLoader_log_reading_db_jdbc);
         setCurrentOperation(Messages.JdbcChLoader_log_connection_db);

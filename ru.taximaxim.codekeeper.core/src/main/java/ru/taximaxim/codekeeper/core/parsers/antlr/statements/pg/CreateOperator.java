@@ -32,13 +32,14 @@ import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Schema_qua
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgOperator;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateOperator extends PgParserAbstract {
+public final class CreateOperator extends PgParserAbstract {
 
     private final Create_operator_statementContext ctx;
 
-    public CreateOperator(Create_operator_statementContext ctx, PgDatabase db) {
-        super(db);
+    public CreateOperator(Create_operator_statementContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

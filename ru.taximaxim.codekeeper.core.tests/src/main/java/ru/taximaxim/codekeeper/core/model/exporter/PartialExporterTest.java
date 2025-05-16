@@ -37,12 +37,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
@@ -111,12 +111,10 @@ public class PartialExporterTest {
     static void initDiffTree() throws InterruptedException, IOException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
-        PgDiffArguments args = new PgDiffArguments();
-        args.setInCharsetName(Consts.UTF_8);
-        dbSource = TestUtils.loadTestDump(sourceFilename, PartialExporterTest.class, args, false);
-        args = new PgDiffArguments();
-        args.setInCharsetName(Consts.UTF_8);
-        dbTarget = TestUtils.loadTestDump(targetFilename, PartialExporterTest.class, args, false);
+        var settings = new TestCoreSettings();
+        settings.setInCharsetName(Consts.UTF_8);
+        dbSource = TestUtils.loadTestDump(sourceFilename, PartialExporterTest.class, settings, false);
+        dbTarget = TestUtils.loadTestDump(targetFilename, PartialExporterTest.class, settings, false);
 
         Assertions.assertNotNull(dbSource);
         Assertions.assertNotNull(dbTarget);
@@ -125,7 +123,7 @@ public class PartialExporterTest {
     @ParameterizedTest
     @MethodSource("generator")
     void testExportPartial(PartialExportInfo info) throws Exception {
-        TreeElement tree = DiffTree.create(dbSource, dbTarget, null);
+        TreeElement tree = DiffTree.create(dbSource, dbTarget);
         Path exportDirFull = null;
         Path exportDirPartial = null;
         try  (TempDir dirFull = new TempDir("pgCodekeeper-test-files");
@@ -133,10 +131,12 @@ public class PartialExporterTest {
             exportDirFull = dirFull.get();
             exportDirPartial = dirPartial.get();
 
+            var settings = new TestCoreSettings();
+
             // full export of source
-            new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8).exportFull();
+            new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
             // full export of source to target directory
-            new ModelExporter(exportDirPartial, dbSource, DatabaseType.PG, Consts.UTF_8).exportFull();
+            new ModelExporter(exportDirPartial, dbSource, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
 
             // get new db with selected changes
             info.setUserSelection(tree);
@@ -145,7 +145,7 @@ public class PartialExporterTest {
                     .onlyEdits(dbSource, dbTarget)
                     .flatten(tree);
             // apply partial changes to the full database
-            new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8)
+            new ModelExporter(exportDirPartial, dbTarget, dbSource, DatabaseType.PG, list, Consts.UTF_8, settings)
             .exportPartial();
 
             walkAndComare(exportDirFull, exportDirPartial, info);

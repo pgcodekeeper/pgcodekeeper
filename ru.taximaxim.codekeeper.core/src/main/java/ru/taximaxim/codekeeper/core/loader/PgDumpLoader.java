@@ -27,8 +27,8 @@ import java.util.Queue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+
 import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
@@ -55,6 +55,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 
 /**
@@ -66,7 +67,7 @@ public class PgDumpLoader extends DatabaseLoader {
 
     private final InputStreamProvider input;
     private final String inputObjectName;
-    private final PgDiffArguments args;
+    private final ISettings settings;
 
     private final IProgressMonitor monitor;
     private final int monitoringLevel;
@@ -83,10 +84,10 @@ public class PgDumpLoader extends DatabaseLoader {
     }
 
     public PgDumpLoader(InputStreamProvider input, String inputObjectName,
-            PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
+            ISettings settings, IProgressMonitor monitor, int monitoringLevel) {
         this.input = input;
         this.inputObjectName = inputObjectName;
-        this.args = args;
+        this.settings = settings;
         this.monitor = monitor;
         this.monitoringLevel = monitoringLevel;
     }
@@ -95,43 +96,43 @@ public class PgDumpLoader extends DatabaseLoader {
      * This constructor sets the monitoring level to the default of 1.
      */
     public PgDumpLoader(InputStreamProvider input, String inputObjectName,
-            PgDiffArguments args, IProgressMonitor monitor) {
-        this(input, inputObjectName, args, monitor, 1);
+            ISettings settings, IProgressMonitor monitor) {
+        this(input, inputObjectName, settings, monitor, 1);
     }
 
     /**
      * This constructor uses {@link NullProgressMonitor}.
      */
-    public PgDumpLoader(InputStreamProvider input, String inputObjectName, PgDiffArguments args) {
-        this(input, inputObjectName, args, new NullProgressMonitor(), 0);
+    public PgDumpLoader(InputStreamProvider input, String inputObjectName, ISettings settings) {
+        this(input, inputObjectName, settings, new NullProgressMonitor(), 0);
     }
 
     /**
      * This constructor creates {@link InputStreamProvider} using inputFile parameter.
      */
-    public PgDumpLoader(Path inputFile, PgDiffArguments args, IProgressMonitor monitor, int monitoringLevel) {
-        this(() -> Files.newInputStream(inputFile), inputFile.toString(), args, monitor, monitoringLevel);
+    public PgDumpLoader(Path inputFile, ISettings settings, IProgressMonitor monitor, int monitoringLevel) {
+        this(() -> Files.newInputStream(inputFile), inputFile.toString(), settings, monitor, monitoringLevel);
     }
 
     /**
      * @see #PgDumpLoader(Path, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStreamProvider, String, PgDiffArguments, IProgressMonitor, int)
      */
-    public PgDumpLoader(Path inputFile, PgDiffArguments args, IProgressMonitor monitor) {
-        this(inputFile, args, monitor, 1);
+    public PgDumpLoader(Path inputFile, ISettings settings, IProgressMonitor monitor) {
+        this(inputFile, settings, monitor, 1);
     }
 
     /**
      * @see #PgDumpLoader(Path, PgDiffArguments, IProgressMonitor, int)
      * @see #PgDumpLoader(InputStreamProvider, String, PgDiffArguments, IProgressMonitor, int)
      */
-    public PgDumpLoader(Path inputFile, PgDiffArguments args) {
-        this(inputFile, args, new NullProgressMonitor(), 0);
+    public PgDumpLoader(Path inputFile, ISettings settings) {
+        this(inputFile, settings, new NullProgressMonitor(), 0);
     }
 
     @Override
     public AbstractDatabase load() throws IOException, InterruptedException {
-        AbstractDatabase d = createDb(args);
+        AbstractDatabase d = createDb(settings);
         loadAsync(d, antlrTasks);
         finishLoaders();
         return d;
@@ -139,11 +140,11 @@ public class PgDumpLoader extends DatabaseLoader {
 
     public AbstractDatabase loadAsync(AbstractDatabase d, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
-        AbstractSchema schema = switch (args.getDbType()) {
+        AbstractSchema schema = switch (settings.getDbType()) {
         case MS -> new MsSchema(Consts.DBO);
         case PG -> new PgSchema(Consts.PUBLIC);
         case CH -> new ChSchema(Consts.CH_DEFAULT_DB);
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
         d.addSchema(schema);
         PgObjLocation loc = new PgObjLocation.Builder()
@@ -159,45 +160,46 @@ public class PgDumpLoader extends DatabaseLoader {
     public AbstractDatabase loadDatabase(AbstractDatabase intoDb, Queue<AntlrTask<?>> antlrTasks)
             throws InterruptedException {
         PgDiffUtils.checkCancelled(monitor);
-        switch (args.getDbType()) {
+        switch (settings.getDbType()) {
         case PG:
             SqlContextProcessor sqlListener;
             if (overrides != null) {
                 sqlListener = new SQLOverridesListener((PgDatabase) intoDb, inputObjectName, mode, errors, monitor,
-                        overrides);
+                        overrides, settings);
             } else {
                 sqlListener = new CustomSQLParserListener((PgDatabase) intoDb, inputObjectName, mode, errors,
-                        antlrTasks, monitor);
+                        antlrTasks, monitor, settings);
             }
 
-            AntlrParser.parseSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+            AntlrParser.parseSqlStream(input, settings.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, sqlListener, antlrTasks);
             break;
         case MS:
             TSqlContextProcessor tsqlListener;
             if (overrides != null) {
                 tsqlListener = new TSQLOverridesListener((MsDatabase) intoDb, inputObjectName, mode, errors, monitor,
-                        overrides);
+                        overrides, settings);
             } else {
-                tsqlListener = new CustomTSQLParserListener((MsDatabase) intoDb, inputObjectName, mode, errors, monitor);
+                tsqlListener = new CustomTSQLParserListener((MsDatabase) intoDb, inputObjectName, mode, errors, monitor,
+                        settings);
             }
-            AntlrParser.parseTSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+            AntlrParser.parseTSqlStream(input, settings.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, tsqlListener, antlrTasks);
             break;
         case CH:
             ChSqlContextProcessor chSqlListener;
             if (overrides != null) {
                 chSqlListener = new ChSQLOverridesListener((ChDatabase) intoDb, inputObjectName, mode, errors, monitor,
-                        overrides);
+                        overrides, settings);
             } else {
                 chSqlListener = new CustomChSQLParserListener((ChDatabase) intoDb, inputObjectName, mode, errors,
-                        monitor);
+                        monitor, settings);
             }
-            AntlrParser.parseChSqlStream(input, args.getInCharsetName(), inputObjectName, errors,
+            AntlrParser.parseChSqlStream(input, settings.getInCharsetName(), inputObjectName, errors,
                     monitor, monitoringLevel, chSqlListener, antlrTasks);
             break;
         default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + args.getDbType());
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + settings.getDbType());
         }
 
         return intoDb;

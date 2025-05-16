@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -121,8 +121,8 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         return Collections.unmodifiableCollection(constraints.values());
     }
 
-    protected boolean isColumnsOrderChanged(AbstractTable newTable) {
-        if (getDatabaseArguments().isIgnoreColumnOrder()) {
+    protected boolean isColumnsOrderChanged(AbstractTable newTable, ISettings settings) {
+        if (settings.isIgnoreColumnOrder()) {
             return false;
         }
 
@@ -135,8 +135,8 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         }
     }
 
-    public final boolean isRecreated(AbstractTable newTable) {
-        return isNeedRecreate(newTable) || isColumnsOrderChanged(newTable);
+    public final boolean isRecreated(AbstractTable newTable, ISettings settings) {
+        return isNeedRecreate(newTable) || isColumnsOrderChanged(newTable, settings);
     }
 
     protected abstract boolean isNeedRecreate(AbstractTable newTable);
@@ -179,14 +179,7 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
         }
 
         if (obj instanceof AbstractTable table && super.compare(obj)) {
-            boolean isColumnsEqual;
-            if (getDatabaseArguments().isIgnoreColumnOrder()) {
-                isColumnsEqual = PgDiffUtils.setlikeEquals(columns, table.columns);
-            } else {
-                isColumnsEqual = columns.equals(table.columns);
-            }
-
-            return isColumnsEqual
+            return columns.equals(table.columns)
                     && getClass().equals(table.getClass())
                     && options.equals(table.options);
         }
@@ -210,17 +203,13 @@ public abstract class AbstractTable extends PgStatementContainer implements IOpt
 
     @Override
     public void computeHash(Hasher hasher) {
-        if (getDatabaseArguments().isIgnoreColumnOrder()) {
-            hasher.putUnordered(columns);
-        } else {
-            hasher.putOrdered(columns);
-        }
+        hasher.putUnordered(columns);
         hasher.put(options);
     }
 
     @Override
     public AbstractTable shallowCopy() {
-        AbstractTable tableDst =  (AbstractTable) super.shallowCopy();
+        AbstractTable tableDst = (AbstractTable) super.shallowCopy();
         copyBaseFields(tableDst);
         for (AbstractColumn colSrc : columns) {
             tableDst.addColumn((AbstractColumn) colSrc.deepCopy());

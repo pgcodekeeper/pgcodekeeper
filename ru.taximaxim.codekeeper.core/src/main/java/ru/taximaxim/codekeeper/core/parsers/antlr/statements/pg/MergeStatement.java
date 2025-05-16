@@ -18,13 +18,14 @@ package ru.taximaxim.codekeeper.core.parsers.antlr.statements.pg;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.generated.SQLParser.Merge_stmt_for_psqlContext;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class MergeStatement extends PgParserAbstract {
+public final class MergeStatement extends PgParserAbstract {
 
     private final Merge_stmt_for_psqlContext ctx;
 
-    public MergeStatement(Merge_stmt_for_psqlContext ctx, PgDatabase db) {
-        super(db);
+    public MergeStatement(Merge_stmt_for_psqlContext ctx, PgDatabase db, ISettings settings) {
+        super(db, settings);
         this.ctx = ctx;
     }
 

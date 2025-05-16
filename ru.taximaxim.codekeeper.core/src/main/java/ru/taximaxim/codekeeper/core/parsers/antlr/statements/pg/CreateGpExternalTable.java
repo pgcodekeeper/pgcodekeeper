@@ -36,14 +36,15 @@ import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
 import ru.taximaxim.codekeeper.core.schema.AbstractTable;
 import ru.taximaxim.codekeeper.core.schema.pg.GpExternalTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class CreateGpExternalTable extends TableAbstract {
 
     private final Create_table_external_statementContext ctx;
 
     public CreateGpExternalTable(PgDatabase db, CommonTokenStream stream,
-            Create_table_external_statementContext ctx) {
-        super(db, stream);
+            Create_table_external_statementContext ctx, ISettings settings) {
+        super(db, stream, settings);
         this.ctx = ctx;
     }
 

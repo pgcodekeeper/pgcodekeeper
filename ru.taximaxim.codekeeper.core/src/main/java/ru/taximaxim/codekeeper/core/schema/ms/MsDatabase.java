@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffArguments;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
@@ -40,9 +39,6 @@ public final class MsDatabase extends AbstractDatabase {
     private final Map<String, MsRole> roles = new LinkedHashMap<>();
     private final Map<String, MsUser> users = new LinkedHashMap<>();
 
-    public MsDatabase(PgDiffArguments arguments) {
-        super(arguments);
-    }
     @Override
     protected void fillChildrenList(List<Collection<? extends PgStatement>> l) {
         super.fillChildrenList(l);
@@ -183,7 +179,7 @@ public final class MsDatabase extends AbstractDatabase {
 
     @Override
     protected AbstractDatabase getDatabaseCopy() {
-        return new MsDatabase(arguments);
+        return new MsDatabase();
     }
 
     @Override

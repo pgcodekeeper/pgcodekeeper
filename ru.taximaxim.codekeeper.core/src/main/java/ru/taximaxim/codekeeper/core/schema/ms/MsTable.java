@@ -86,7 +86,7 @@ public final class MsTable extends AbstractTable implements ISimpleOptionContain
         int startSize = script.getSize();
         MsTable newTable = (MsTable) newCondition;
 
-        if (isRecreated(newTable)) {
+        if (isRecreated(newTable, script.getSettings())) {
             return ObjectState.RECREATE;
         }
 

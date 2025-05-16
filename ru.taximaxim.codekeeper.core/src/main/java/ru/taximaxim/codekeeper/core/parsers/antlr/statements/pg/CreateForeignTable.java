@@ -41,13 +41,15 @@ import ru.taximaxim.codekeeper.core.schema.pg.PartitionForeignPgTable;
 import ru.taximaxim.codekeeper.core.schema.pg.PgColumn;
 import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.core.schema.pg.SimpleForeignPgTable;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
-public class CreateForeignTable extends TableAbstract {
+public final class CreateForeignTable extends TableAbstract {
 
     private final Create_foreign_table_statementContext ctx;
 
-    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db, CommonTokenStream stream) {
-        super(db, stream);
+    public CreateForeignTable(Create_foreign_table_statementContext ctx, PgDatabase db, CommonTokenStream stream,
+            ISettings settings) {
+        super(db, stream, settings);
         this.ctx = ctx;
     }
 
