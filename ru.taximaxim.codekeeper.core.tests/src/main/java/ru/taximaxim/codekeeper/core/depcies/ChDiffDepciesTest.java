@@ -16,39 +16,58 @@
 package ru.taximaxim.codekeeper.core.depcies;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 class ChDiffDepciesTest {
 
+    private static Stream<Arguments> provideSelectedObjects() {
+        return Stream.of(
+                // test FUNCTION depcy
+                Arguments.of("add_func_f1", "usr_function_1", Map.of("function_1", DbObjType.FUNCTION)),
+                // test TABLE depcy
+                Arguments.of("add_func_test_qual", "usr_test_qual", Map.of("test_qual", DbObjType.FUNCTION)),
+                // test VIEW depcy
+                Arguments.of("add_func_func_1", "usr_func_1", Map.of("func_1", DbObjType.FUNCTION)),
+                // test scenario where user drop column. user choice TABLE
+                Arguments.of("ch_policy_deps_change_table", "usr_t2",
+                        Map.of("default-t2", DbObjType.TABLE, "pol1 ON default.t2", DbObjType.POLICY)),
+                // test scenario where added USER with ROLE dep
+                Arguments.of("ch_add_user_timon", "usr_timon", Map.of("timon", DbObjType.USER)),
+                // test scenario where user change TABLE. VIEW dependency from TABLE. user
+                // choice TABLE
+                Arguments.of("ch_view_deps_change_table", "usr_t1", Map.of("default-t1_1", DbObjType.TABLE)),
+                // test scenario where user remove COLUMN in TABLE. VIEW dependency from TABLE.
+                // user choice TABLE
+                Arguments.of("ch_view_deps_change_table", "usr_t3", Map.of("default-t3", DbObjType.TABLE)),
+                // test scenario where user change TABLE. MATERIALIZED VIEW dependency from
+                // TABLE. user choice TABLE
+                Arguments.of("ch_view_deps_change_table", "usr_t4", Map.of("default-t4", DbObjType.TABLE)),
+                // test scenario where user remove COLUMN in TABLE. MATERIALIZED VIEW dependency
+                // from TABLE. user choice TABLE
+                Arguments.of("ch_mat_view_deps_change_table", "usr_t1", Map.of("default-t1_1", DbObjType.TABLE)),
+                // test scenario where user remove COLUMN in TABLE. VIEW dependency from TABLE.
+                // user choice TABLE
+                Arguments.of("ch_mat_view_deps_change_table", "usr_t3", Map.of("default-t3", DbObjType.TABLE))
+                );
+    }
+
     @ParameterizedTest
-    @ValueSource(strings = {
-            // test FUNCTION depcy
-            "add_func_f1_usr_func_f2",
-            // test TABLE depcy
-            "add_func_test_qual_usr_t2",
-            // test VIEW depcy
-            "add_func_func_1_usr_v1",
-            // test scenario where user drop column. user choice TABLE
-            "ch_policy_deps_change_table_usr_t",
-            // test scenario where added USER with ROLE dep
-            "ch_add_user_timon_usr_timon",
-            // test scenario where user change TABLE. VIEW dependency from TABLE. user choice TABLE
-            "ch_view_deps_change_table_usr_t1",
-            // test scenario where user remove COLUMN in TABLE. VIEW dependency from TABLE. user choice TABLE
-            "ch_view_deps_change_table_usr_t3",
-            // test scenario where user change TABLE. MATERIALIZED VIEW dependency from TABLE. user choice TABLE
-            "ch_mat_view_deps_change_table_usr_t1",
-            // test scenario where user remove COLUMN in TABLE. MATERIALIZED VIEW dependency from TABLE. user choice TABLE
-            "ch_mat_view_deps_change_table_usr_t3",
-            // test scenario where user remove COLUMN in TABLE. VIEW dependency from TABLE. user choice TABLE
-            "ch_view_deps_change_table_usr_t4",
-    })
-    void testDepcy(final String userSelTemplate) throws IOException, InterruptedException {
-        TestUtils.testDepcy(userSelTemplate, true, DatabaseType.CH, getClass());
+    @MethodSource("provideSelectedObjects")
+    void testDepcy(final String dbTemplate, String userTemplateName, Map<String, DbObjType> selectedObjs)
+            throws IOException, InterruptedException {
+        var settings = new TestCoreSettings();
+        settings.setDbType(DatabaseType.CH);
+        settings.setEnableFunctionBodiesDependencies(true);
+        TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), settings);
     }
 }

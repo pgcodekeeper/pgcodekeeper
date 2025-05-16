@@ -16,13 +16,18 @@
 package ru.taximaxim.codekeeper.core.depcies;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.TestUtils;
+import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 /**
  * Тестирует сравнение БД с неполным выбором различающихся объектов
@@ -30,43 +35,59 @@ import ru.taximaxim.codekeeper.core.TestUtils;
  */
 class MsDiffDepciesTest {
 
-    @ParameterizedTest
-    @ValueSource(strings = {
-            "empty_usr",
-            // t1 <- v1 <- v2 <- v3 <- v4
-            // changed: t1, v1, v2, v4
-            // user: t1
-            "change_ms_table_usr_t1",
-            // пользователь изменил constraintPk
-            // пользователь выбрал только таблицу с измененным constraintPk
-            "change_ms_constrPk_usr",
-            // changed: t1, stat1, stat2
-            // user: t1
-            "change_ms_table_with_stat_usr",
-            "drop_ms_sys_ver_table_usr_hist_t1",
-            // Test case where in table name in wrong case
-            "create_ms_view_usr_v1"
-    })
-    void testDepcy(String userSelTemplate) throws IOException, InterruptedException {
-        testDepcy(userSelTemplate, false);
+    private static Stream<Arguments> provideSelectedObjects() {
+        return Stream.of(
+                Arguments.of("empty", null, Collections.emptyMap()),
+                // t1 <- v1 <- v2 <- v3 <- v4
+                // changed: t1, v1, v2, v4
+                // user: t1
+                Arguments.of("change_ms_table", "usr_t1", Map.of("dbo-t1", DbObjType.TABLE)),
+                // пользователь изменил constraintPk
+                // пользователь выбрал только таблицу с измененным constraintPk
+                Arguments.of("change_ms_constrPk", "usr_pkey",
+                        Map.of("dbo-Employee-Employee_EmployeeID_pkey", DbObjType.CONSTRAINT)),
+                // changed: t1, stat1, stat2
+                // user: t1
+                Arguments.of("change_ms_table_with_stat", "usr_t1", Map.of("dbo-t1", DbObjType.TABLE)),
+                Arguments.of("drop_ms_sys_ver_table", "usr_hist_t1", Map.of("dbo-hist_t1", DbObjType.TABLE)),
+                // Test case where in table name in wrong case
+                Arguments.of("create_ms_view", "usr_v1", Map.of("dbo-v1", DbObjType.VIEW))
+        );
     }
 
     @ParameterizedTest
-    @CsvSource({
-        // f1 <- f2
-        // added: f1, f2
-        // user: f2
-        "add_ms_func_exec_usr_f2, true",
-        // p1 <- f2
-        // added: p1, f2
-        // user: f2
-        "add_ms_proc_exec_usr_f2, true",
-        // f1 <- f2 <- f3
-        // changed: f1, f2, f3
-        // user: f2
-        "change_ms_func_arg_usr_f2, true",
-    })
-    void testDepcy(String userSelTemplate, Boolean isEnableDepcies) throws IOException, InterruptedException {
-        TestUtils.testDepcy(userSelTemplate, isEnableDepcies, DatabaseType.MS, getClass());
+    @MethodSource("provideSelectedObjects")
+    void testDepcy(final String dbTemplate, String userTemplateName, Map<String, DbObjType> selectedObjs)
+            throws IOException, InterruptedException {
+        var settings = new TestCoreSettings();
+        settings.setDbType(DatabaseType.MS);
+        TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), settings);
+    }
+
+    private static Stream<Arguments> provideSelectedObjectsWithFunctionBody() {
+        return Stream.of(
+                // f1 <- f2
+                // added: f1, f2
+                // user: f2
+                Arguments.of("add_ms_func_exec", "usr_f2", Map.of("dbo-f2", DbObjType.FUNCTION)),
+                // p1 <- f2
+                // added: p1, f2
+                // user: f2
+                Arguments.of("add_ms_proc_exec", "usr_f2", Map.of("dbo-f2", DbObjType.FUNCTION)),
+                // f1 <- f2 <- f3
+                // changed: f1, f2, f3
+                // user: f2
+                Arguments.of("change_ms_func_arg", "usr_f2", Map.of("dbo-f2", DbObjType.FUNCTION))
+                );
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideSelectedObjectsWithFunctionBody")
+    void testDepcyWithFunctionBody(final String dbTemplate, String userTemplateName,
+            Map<String, DbObjType> selectedObjs) throws IOException, InterruptedException {
+        var settings = new TestCoreSettings();
+        settings.setDbType(DatabaseType.MS);
+        settings.setEnableFunctionBodiesDependencies(true);
+        TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), settings);
     }
 }
