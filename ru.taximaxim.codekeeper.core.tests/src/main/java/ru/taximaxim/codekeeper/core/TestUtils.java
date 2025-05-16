@@ -23,8 +23,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.URIUtil;
@@ -125,7 +127,6 @@ public final class TestUtils {
         Files.write(dir.resolve(".pgcodekeeperignore"), rule.getBytes(StandardCharsets.UTF_8));
     }
 
-
     public static Path getPathToResource(String resourceName, Class<?> clazz) throws URISyntaxException, IOException {
         URL url = clazz.getResource(resourceName);
         return Paths.get(URIUtil.toURI("file".equals(url.getProtocol()) ? url : FileLocator.toFileURL(url)));
@@ -155,54 +156,50 @@ public final class TestUtils {
         return new PgDiff(settings).diff(dbOld, dbNew, null);
     }
 
-    /**
-     * Diff test with partial selection, required 5 file: <br>
-     *  - file_name_original.sql - old database state <br>
-     *  - file_name_new.sql - new database state<br>
-     *  - file_name_usr_sel_original.sql - old selected objects state<br>
-     *  - file_name_usr_sel_new.sql - new selected objects state<br>
-     *  - file_name_usr_sel_diff.sql - expected diff script<br>
-     * <br>
-     * file_name_usr_sel = userSelTemplate
-     */
-    public static void testDepcy(String userSelTemplate, boolean isEnableFunctionBodiesDependencies,
-            DatabaseType dbType, Class<?> clazz)
-                    throws IOException, InterruptedException {
-        AbstractDatabase oldDatabase;
-        AbstractDatabase newDatabase;
-        AbstractDatabase oldDbFull;
-        AbstractDatabase newDbFull;
-        var settings = new TestCoreSettings();
-        settings.setDbType(dbType);
-        settings.setEnableFunctionBodiesDependencies(isEnableFunctionBodiesDependencies);
-
-        String dbTemplate = userSelTemplate.replaceAll("_usr.*", "");
-        if (userSelTemplate.equals(dbTemplate)) {
-            oldDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
-            newDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
-            oldDbFull = oldDatabase;
-            newDbFull = newDatabase;
-        } else {
-            oldDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings, false);
-            newDatabase = TestUtils.loadTestDump(
-                    userSelTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings, false);
-            oldDbFull = TestUtils.loadTestDump(
-                    dbTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
-            newDbFull = TestUtils.loadTestDump(
-                    dbTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
-        }
+    public static void testDepcy(String dbTemplate, String userTemplateName, Map<String, DbObjType> selectedObjs,
+            Class<?> clazz, ISettings settings) throws IOException, InterruptedException {
+        AbstractDatabase oldDbFull = TestUtils.loadTestDump(dbTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
+        AbstractDatabase newDbFull = TestUtils.loadTestDump(dbTemplate + FILES_POSTFIX.NEW_SQL, clazz, settings);
 
         TestUtils.runDiffSame(oldDbFull, dbTemplate, settings);
         TestUtils.runDiffSame(newDbFull, dbTemplate, settings);
 
-        TreeElement tree = DiffTree.create(oldDatabase, newDatabase);
-        tree.setAllChecked();
-        String script = new PgDiff(settings).diff(tree, oldDbFull, newDbFull, null, null, null);
+        TreeElement tree = DiffTree.create(oldDbFull, newDbFull, null);
 
+        setSelected(selectedObjs, tree, oldDbFull, newDbFull);
+        String script = new PgDiff(settings).diff(tree, oldDbFull, newDbFull, null, null, null);
+        var userSelTemplate = null == userTemplateName ? dbTemplate : dbTemplate + "_" + userTemplateName;
         TestUtils.compareResult(script, userSelTemplate, clazz);
+    }
+
+    /**
+     * In this method we simulate user behavior where he selected some objects, all
+     * or noone.
+     * 
+     * @param selectedObjs - {@link Map} selected objects, where key - name of
+     *                     object, value - {@link DbObjType} of object. If is null
+     *                     user select all objects
+     * @param tree         - {@link TreeElement} after diff old and new database
+     *                     state
+     * @param oldDbFull    - old state of {@link AbstractDatabase}
+     * @param newDbFull    - new state of {@link AbstractDatabase}
+     */
+    private static void setSelected(Map<String, DbObjType> selectedObjs, TreeElement tree, AbstractDatabase oldDbFull,
+            AbstractDatabase newDbFull) {
+        if (null == selectedObjs) {
+            tree.setAllChecked();
+            return;
+        }
+
+        for (var sel : selectedObjs.entrySet()) {
+            String[] arr = Arrays.copyOf(sel.getKey().split("-"), 3);
+            var col = new GenericColumn(arr[0], arr[1], arr[2], sel.getValue());
+            var stmt = newDbFull.getStatement(col);
+            if (null == stmt) {
+                stmt = oldDbFull.getStatement(col);
+            }
+            tree.findElement(stmt).setSelected(true);
+        }
     }
 
     private TestUtils() {

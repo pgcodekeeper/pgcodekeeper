@@ -1,2 +1,0 @@
-CREATE USER timon
-	DEFAULT ROLE admin;

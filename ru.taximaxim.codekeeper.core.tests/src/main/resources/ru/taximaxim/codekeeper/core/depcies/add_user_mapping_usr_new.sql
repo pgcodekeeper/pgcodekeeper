@@ -1,1 +1,0 @@
-CREATE USER MAPPING FOR testuser SERVER myserver OPTIONS (username 'user1', password 'fff');
