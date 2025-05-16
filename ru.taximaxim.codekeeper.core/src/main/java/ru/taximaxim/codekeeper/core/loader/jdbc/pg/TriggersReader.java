@@ -65,7 +65,9 @@ public final class TriggersReader extends JdbcReader {
         String triggerName = res.getString("tgname");
         String tgEnabled = res.getString("tgenabled");
 
-        if (!NO_PARENT.equals(res.getString("tgparentid")) && c instanceof AbstractPgTable table) {
+        if (c instanceof AbstractPgTable table
+                && SupportedPgVersion.VERSION_15.isLE(loader.getVersion())
+                && !NO_PARENT.equals(res.getString("tgparentid"))) {
             table.putTriggerState(triggerName, readEnabledState(tgEnabled, true));
             return;
         }
