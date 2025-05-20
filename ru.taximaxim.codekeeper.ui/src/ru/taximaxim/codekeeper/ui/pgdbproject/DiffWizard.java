@@ -104,8 +104,8 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void handlePageChanging(PageChangingEvent e) {
         if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-            DbSource dbSource = pageDiff.getDbSource();
-            DbSource dbTarget = pageDiff.getDbTarget();
+            DbSource dbSource = pageDiff.getDbTarget();
+            DbSource dbTarget = pageDiff.getDbSource();
             TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
 
             try {
@@ -167,8 +167,8 @@ final class PageDiff extends WizardPage implements Listener {
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
 
-    private DbSourcePicker dbSource;
     private DbSourcePicker dbTarget;
+    private DbSourcePicker dbSource;
     private ComboViewer cmbDbType;
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
@@ -183,12 +183,12 @@ final class PageDiff extends WizardPage implements Listener {
         setDescription(Messages.diffwizard_diffpage_select);
     }
 
-    public DbSource getDbSource() {
-        return dbSource.getDbSource(getSelectedDbType(), getOneTimePrefs());
-    }
-
     public DbSource getDbTarget() {
         return dbTarget.getDbSource(getSelectedDbType(), getOneTimePrefs());
+    }
+
+    public DbSource getDbSource() {
+        return dbSource.getDbSource(getSelectedDbType(), getOneTimePrefs());
     }
 
     public IgnoreList getIgnoreList() {
@@ -253,8 +253,8 @@ final class PageDiff extends WizardPage implements Listener {
         cmbDbType.addSelectionChangedListener(e -> {
             StructuredSelection sel = (StructuredSelection) e.getSelection();
             DatabaseType selDbType = (DatabaseType) sel.getFirstElement();
-            dbSource.filter(selDbType);
             dbTarget.filter(selDbType);
+            dbSource.filter(selDbType);
             getWizard().getContainer().updateButtons();
             getWizard().getContainer().updateMessage();
         });
@@ -289,7 +289,7 @@ final class PageDiff extends WizardPage implements Listener {
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 Messages.DbUpdatePrefPage_script_add_transaction, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.ApplyCustomDialog_constraint_not_valid, container, mainPrefs::getBoolean));
+                Messages.DbUpdatePrefPage_print_index_with_concurrently, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
                 Messages.DbUpdatePrefPage_script_from_selected_objs, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
@@ -303,7 +303,7 @@ final class PageDiff extends WizardPage implements Listener {
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
                 Messages.dbUpdatePrefPage_switch_on_off_using, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                Messages.dbUpdatePrefPage_check_function_bodies, container, mainPrefs::getBoolean));
+                Messages.ApplyCustomDialog_constraint_not_valid, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
                 Messages.DbUpdatePrefPage_generate_exist_do_block, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
@@ -312,7 +312,7 @@ final class PageDiff extends WizardPage implements Listener {
         fieldEditorStore.setVisible(false);
 
         if (proj != null) {
-            dbTarget.setDbStore(proj.getProject().getLocation().toFile());
+            dbSource.setDbStore(proj.getProject().getLocation().toFile());
         }
 
         setControl(container);
@@ -347,7 +347,7 @@ final class PageDiff extends WizardPage implements Listener {
             err = Messages.diffwizard_diffpage_target_warning;
         } else if (getTimezone().isEmpty()) {
             err = Messages.DiffWizard_select_db_tz;
-        } else if (getDbType(dbSource) != getDbType(dbTarget)) {
+        } else if (getDbType(dbTarget) != getDbType(dbSource)) {
             err = Messages.DiffWizard_different_types;
         }
 
@@ -367,8 +367,8 @@ final class PageDiff extends WizardPage implements Listener {
 
     @Override
     public void dispose() {
-        dbSource.dispose();
         dbTarget.dispose();
+        dbSource.dispose();
         super.dispose();
     }
 }
@@ -384,8 +384,8 @@ final class PagePartial extends WizardPage {
         this.treeDiffer = treeDiffer;
         DbSource source = treeDiffer.getDbSource();
         DbSource target = treeDiffer.getDbTarget();
-        lblSource.setText(source.getOrigin());
-        lblTarget.setText(target.getOrigin());
+        lblSource.setText(target.getOrigin());
+        lblTarget.setText(source.getOrigin());
         lblSource.getParent().layout();
         diffTable.setInput(source, target, treeDiffer.getDiffTree(), ignoreList);
         diffTable.setDbType(dbType);
