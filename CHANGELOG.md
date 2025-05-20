@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - Improved code completion functionality.
+- Fixed the names of options in the `Diff wizard`.
 
 ### Fixed
 
