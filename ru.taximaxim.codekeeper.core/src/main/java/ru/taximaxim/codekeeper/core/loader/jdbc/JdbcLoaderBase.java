@@ -472,7 +472,7 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         sb.append(quoteName ? MsDiffUtils.quoteName(dataType) : dataType);
 
         if ("varbinary".equals(dataType) || "nvarchar".equals(dataType)
-                || "varchar".equals(dataType)) {
+                || "varchar".equals(dataType) || "nchar".equals(dataType)) {
             if (size == -1) {
                 sb.append(" (max)");
             } else {
