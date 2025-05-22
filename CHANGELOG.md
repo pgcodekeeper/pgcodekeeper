@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed ignoring the length of a column with the nchar type in the source DB in MS SQL.
+
 ### Removed
 
 ## [10.13.0] - 2025-05-13
