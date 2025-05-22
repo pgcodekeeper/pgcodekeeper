@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.schema.pg;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -142,6 +143,10 @@ public final class PgCompositeType extends AbstractType {
             }
         }
         return null;
+    }
+
+    public List<AbstractColumn> getAttrs() {
+        return Collections.unmodifiableList(attrs);
     }
 
     public void addAttr(AbstractColumn attr) {

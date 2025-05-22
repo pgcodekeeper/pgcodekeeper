@@ -82,3 +82,11 @@ Schema: public
     RelationColumns : 
      num1 - integer
      text1 - text
+
+  View: testview
+    RelationColumns : 
+     c1 - public.inventory_item
+     c2 - public.test_composite1
+     c3 - public.test_composite
+     c4 - public.complex
+     c5 - double precision

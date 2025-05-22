@@ -60,14 +60,17 @@ public final class MetaContainer {
      */
     private final Map<String, Map<String, List<IConstraint>>> constraints = new LinkedHashMap<>();
 
+    /**
+     * PostgreSQL composite types grouped by schema name
+     */
+    private final Map<String, Map<String, MetaCompositeType>> pgCompositeTypes = new LinkedHashMap<>();
+
     public void addStatement(IStatement st) {
         switch (st.getStatementType()) {
         case CAST:
             casts.add((ICast) st);
             break;
-        case FUNCTION:
-        case PROCEDURE:
-        case AGGREGATE:
+        case FUNCTION, PROCEDURE, AGGREGATE:
             if (st instanceof ChFunction f) {
                 chFunctions.put(f.getName(), f);
                 break;
@@ -79,10 +82,7 @@ public final class MetaContainer {
             IOperator op = (IOperator) st;
             operators.computeIfAbsent(op.getSchemaName(), e -> new LinkedHashMap<>()).put(op.getName(), op);
             break;
-        case TABLE:
-        case DICTIONARY:
-        case VIEW:
-        case SEQUENCE:
+        case TABLE, DICTIONARY, VIEW, SEQUENCE:
             IRelation rel = (IRelation) st;
             relations.computeIfAbsent(rel.getSchemaName(), e -> new LinkedHashMap<>()).put(rel.getName(), rel);
             break;
@@ -92,6 +92,11 @@ public final class MetaContainer {
             .computeIfAbsent(con.getSchemaName(), e -> new LinkedHashMap<>())
             .computeIfAbsent(con.getTableName(), e -> new ArrayList<>())
             .add(con);
+            break;
+        case TYPE:
+            if (st instanceof MetaCompositeType t) {
+                pgCompositeTypes.computeIfAbsent(t.getSchemaName(), e -> new LinkedHashMap<>()).put(t.getName(), t);
+            }
             break;
         default:
             break;
@@ -136,6 +141,10 @@ public final class MetaContainer {
 
     public IOperator findOperator(String schemaName, String operatorName) {
         return operators.getOrDefault(schemaName, Collections.emptyMap()).get(operatorName);
+    }
+
+    public MetaCompositeType findType(String schemaName, String typeName) {
+        return pgCompositeTypes.getOrDefault(schemaName, Collections.emptyMap()).get(typeName);
     }
 
     public Collection<IOperator> availableOperators(String schemaName) {

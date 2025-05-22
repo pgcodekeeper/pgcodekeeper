@@ -35,6 +35,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.schema.pg.PgCompositeType;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 public final class MetaUtils {
@@ -65,52 +66,51 @@ public final class MetaUtils {
     private static MetaStatement createMetaFromStatement(PgStatement st) {
         DbObjType type = st.getStatementType();
         PgObjLocation loc = getLocation(st, type);
-        MetaStatement meta;
-
-        switch (type) {
-        case CAST:
-            ICast cast = (ICast) st;
-            meta = new MetaCast(cast.getSource(), cast.getTarget(), cast.getContext(), loc);
-            break;
-        case OPERATOR:
-            IOperator operator = (IOperator) st;
-            MetaOperator oper = new MetaOperator(loc);
-            oper.setLeftArg(operator.getLeftArg());
-            oper.setRightArg(operator.getRightArg());
-            oper.setReturns(operator.getReturns());
-            meta = oper;
-            break;
-        case AGGREGATE:
-        case FUNCTION:
-        case PROCEDURE:
-            IFunction funcion = (IFunction) st;
-            MetaFunction func = new MetaFunction(loc, st.getBareName());
-            funcion.getReturnsColumns().forEach(func::addReturnsColumn);
-            funcion.getArguments().forEach(func::addArgument);
-            func.setReturns(funcion.getReturns());
-            meta = func;
-            break;
-        case CONSTRAINT:
-            MetaConstraint con = new MetaConstraint(loc);
-            con.setPrimaryKey(((IConstraint) st).isPrimaryKey());
-            ((IConstraint) st).getColumns().forEach(con::addColumn);
-            meta = con;
-            break;
-        case SEQUENCE:
-        case TABLE:
-        case DICTIONARY:
-        case VIEW:
-            MetaRelation rel = new MetaRelation(loc);
-            Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
-            if (columns != null) {
-                rel.addColumns(columns.toList());
+        MetaStatement meta = switch (type) {
+            case CAST -> {
+                ICast cast = (ICast) st;
+                yield new MetaCast(cast.getSource(), cast.getTarget(), cast.getContext(), loc);
             }
-            meta = rel;
-            break;
-        default:
-            meta = new MetaStatement(loc);
-            break;
-        }
+            case OPERATOR -> {
+                IOperator operator = (IOperator) st;
+                MetaOperator oper = new MetaOperator(loc);
+                oper.setLeftArg(operator.getLeftArg());
+                oper.setRightArg(operator.getRightArg());
+                oper.setReturns(operator.getReturns());
+                yield oper;
+            }
+            case AGGREGATE, FUNCTION, PROCEDURE -> {
+                IFunction funcion = (IFunction) st;
+                MetaFunction func = new MetaFunction(loc, st.getBareName());
+                funcion.getReturnsColumns().forEach(func::addReturnsColumn);
+                funcion.getArguments().forEach(func::addArgument);
+                func.setReturns(funcion.getReturns());
+                yield func;
+            }
+            case CONSTRAINT -> {
+                MetaConstraint con = new MetaConstraint(loc);
+                con.setPrimaryKey(((IConstraint) st).isPrimaryKey());
+                ((IConstraint) st).getColumns().forEach(con::addColumn);
+                yield con;
+            }
+            case SEQUENCE, TABLE, DICTIONARY, VIEW -> {
+                MetaRelation rel = new MetaRelation(loc);
+                Stream<Pair<String, String>> columns = ((IRelation) st).getRelationColumns();
+                if (columns != null) {
+                    rel.addColumns(columns.toList());
+                }
+                yield rel;
+            }
+            case TYPE -> {
+                if (st instanceof PgCompositeType compositeType) {
+                    MetaCompositeType composite = new MetaCompositeType(loc);
+                    compositeType.getAttrs().forEach(e -> composite.addAttr(e.getName(), e.getType()));
+                    yield composite;
+                }
+                yield new MetaStatement(loc);
+            }
+            default -> new MetaStatement(loc);
+        };
 
         String commnent = st.getComment();
         if (commnent != null) {
