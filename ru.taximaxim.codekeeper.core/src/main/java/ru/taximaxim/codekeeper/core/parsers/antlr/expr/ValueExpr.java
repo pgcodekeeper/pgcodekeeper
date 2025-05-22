@@ -25,7 +25,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -490,7 +489,21 @@ public final class ValueExpr extends AbstractExpr {
                     left.setSecond(stripBrackets(left.getSecond()));
                 }
             } else if (left != null) {
-                // indirection by id, unsupported
+                var compositeName = left.getSecond().split("\\.");
+
+                if (compositeName.length == 2) {
+                    var composite = findType(compositeName[0], compositeName[1]);
+                    if (composite != null) {
+                        var attrName = ind.col_label().getText();
+                        var type = composite.getAttrType(attrName);
+                        if (type != null) {
+                            left.setFirst(attrName);
+                            left.setSecond(type);
+                            continue;
+                        }
+                    }
+                }
+
                 left.setFirst(null);
                 left.setSecond(TypesSetManually.UNKNOWN);
             }

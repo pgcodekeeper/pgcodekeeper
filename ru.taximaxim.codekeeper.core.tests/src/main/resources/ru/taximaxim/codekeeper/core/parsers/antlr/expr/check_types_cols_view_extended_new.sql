@@ -209,3 +209,36 @@ CREATE VIEW public.testview6 AS
  SELECT (SELECT abs(a.b)) as num1,
     (SELECT lower(a.a)) as text1
    FROM (SELECT 'text' z, 2 x, 3 c) a(a, b, c);
+   
+CREATE TYPE public.complex AS (
+    r double precision,
+    i double precision
+);
+
+CREATE TYPE public.test_composite AS (
+    r public.complex
+);
+
+CREATE TYPE public.test_composite1 AS (
+    t public.test_composite
+);
+
+CREATE TYPE public.inventory_item AS (
+    name text,
+    supplier_id integer,
+    price numeric,
+    test public.test_composite1
+);
+
+CREATE TABLE public.on_hand (
+    count integer,
+    item public.inventory_item
+);
+
+CREATE VIEW public.testview AS
+ SELECT item as c1,
+   (item).test as c2,
+   (item).test.t as c3,
+   (item).test.t.r as c4,
+   (item).test.t.r.r AS c5
+   FROM public.on_hand;

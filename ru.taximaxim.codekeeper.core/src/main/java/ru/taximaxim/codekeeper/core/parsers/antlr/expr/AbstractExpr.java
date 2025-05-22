@@ -52,6 +52,7 @@ import ru.taximaxim.codekeeper.core.schema.IStatement;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
+import ru.taximaxim.codekeeper.core.schema.meta.MetaCompositeType;
 import ru.taximaxim.codekeeper.core.utils.ModPair;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
@@ -466,6 +467,10 @@ public abstract class AbstractExpr {
 
     protected IRelation findRelation(String schemaName, String relationName) {
         return meta.findRelation(getSchemaName(schemaName), relationName);
+    }
+
+    protected MetaCompositeType findType(String schemaName, String typeName) {
+        return meta.findType(getSchemaName(schemaName), typeName);
     }
 
     private String getSchemaName(String schemaName) {
