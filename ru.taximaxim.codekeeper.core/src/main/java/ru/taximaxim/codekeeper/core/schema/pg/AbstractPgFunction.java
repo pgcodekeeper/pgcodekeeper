@@ -419,7 +419,11 @@ public abstract class AbstractPgFunction extends AbstractFunction {
 
     @Override
     public String getQualifiedName() {
-        return parent.getQualifiedName() + '.' + getName();
+        if (qualifiedName == null) {
+            qualifiedName = parent.getQualifiedName() + '.' + getName();
+        }
+
+        return qualifiedName;
     }
 
     public class PgArgument extends Argument {

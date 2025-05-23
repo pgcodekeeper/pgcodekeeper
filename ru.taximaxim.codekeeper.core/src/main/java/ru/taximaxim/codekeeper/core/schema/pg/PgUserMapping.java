@@ -46,7 +46,11 @@ public final class PgUserMapping extends PgStatement implements PgForeignOptionC
 
     @Override
     public String getQualifiedName() {
-        return PgDiffUtils.getQuotedName(user) + " SERVER " + PgDiffUtils.getQuotedName(server);
+        if (qualifiedName == null) {
+            qualifiedName = PgDiffUtils.getQuotedName(user) + " SERVER " + PgDiffUtils.getQuotedName(server);
+        }
+
+        return qualifiedName;
     }
 
     @Override

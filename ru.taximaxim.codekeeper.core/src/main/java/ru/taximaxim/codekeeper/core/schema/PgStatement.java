@@ -68,6 +68,7 @@ public abstract class PgStatement implements IStatement, IHashable {
 
     // 0 means not calculated yet and/or hash has been reset
     private int hash;
+    protected String qualifiedName;
 
     protected PgStatement(String name) {
         this.name = name;
@@ -146,6 +147,7 @@ public abstract class PgStatement implements IStatement, IHashable {
                     + this.getClass() + " Name: " + this.getName());
         }
 
+        qualifiedName = null;
         this.parent = parent;
     }
 
@@ -657,16 +659,20 @@ public abstract class PgStatement implements IStatement, IHashable {
      */
     @Override
     public String getQualifiedName() {
-        UnaryOperator<String> quoter = Utils.getQuoter(getDbType());
-        StringBuilder sb = new StringBuilder(quoter.apply(name));
+        if (qualifiedName == null) {
+            UnaryOperator<String> quoter = Utils.getQuoter(getDbType());
+            StringBuilder sb = new StringBuilder(quoter.apply(name));
 
-        PgStatement par = this.parent;
-        while (par != null && !(par instanceof AbstractDatabase)) {
-            sb.insert(0, '.').insert(0, quoter.apply(par.name));
-            par = par.parent;
+            PgStatement par = this.parent;
+            while (par != null && !(par instanceof AbstractDatabase)) {
+                sb.insert(0, '.').insert(0, quoter.apply(par.name));
+                par = par.parent;
+            }
+
+            qualifiedName = sb.toString();
         }
 
-        return sb.toString();
+        return qualifiedName;
     }
 
 
