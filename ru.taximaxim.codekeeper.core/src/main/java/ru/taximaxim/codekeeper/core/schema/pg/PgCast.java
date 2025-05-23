@@ -87,7 +87,10 @@ public final class PgCast extends PgStatement implements ICast {
 
     @Override
     public String getQualifiedName() {
-        return '(' + source + " AS " + target + ')';
+        if (qualifiedName == null) {
+            qualifiedName = '(' + source + " AS " + target + ')';
+        }
+        return qualifiedName;
     }
 
     @Override

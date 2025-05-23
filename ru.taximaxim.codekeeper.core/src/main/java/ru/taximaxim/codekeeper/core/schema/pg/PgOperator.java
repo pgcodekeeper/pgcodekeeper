@@ -204,7 +204,11 @@ public final class PgOperator extends PgStatement implements IOperator, ISearchP
 
     @Override
     public String getQualifiedName() {
-        return parent.getQualifiedName() + '.' + getName();
+        if (qualifiedName == null) {
+            qualifiedName = parent.getQualifiedName() + '.' + getName();
+        }
+
+        return qualifiedName;
     }
 
     @Override

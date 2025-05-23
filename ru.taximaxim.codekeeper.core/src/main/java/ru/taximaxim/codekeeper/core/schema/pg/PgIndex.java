@@ -143,7 +143,10 @@ public final class PgIndex extends AbstractIndex {
 
     @Override
     public String getQualifiedName() {
-        return PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(name);
+        if (qualifiedName == null) {
+            qualifiedName = PgDiffUtils.getQuotedName(getSchemaName()) + '.' + PgDiffUtils.getQuotedName(name);
+        }
+        return qualifiedName;
     }
 
     @Override
