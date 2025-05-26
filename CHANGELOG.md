@@ -9,16 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added the ability to change the state of the cloned parent triggers in partition tables.
+- Added the ability to change the state of inherited triggers in partition tables.
 
 ### Changed
 
 - Improved code completion functionality.
-- Fixed the names of options in the `Diff wizard`.
 
 ### Fixed
 
-- Fixed ignoring the length of a column with the nchar type in the source DB in MS SQL.
+- Fixed text in `Diff wizard`.
+- Fixed reading of column length for char and nchar types in MS SQL database.
+- Fixed an error when analyzing a query in PostgreSQL.
 
 ### Removed
 
