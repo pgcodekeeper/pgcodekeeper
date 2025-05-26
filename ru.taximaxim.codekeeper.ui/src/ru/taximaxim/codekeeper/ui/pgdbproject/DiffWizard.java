@@ -104,9 +104,9 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void handlePageChanging(PageChangingEvent e) {
         if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-            DbSource dbSource = pageDiff.getDbTarget();
-            DbSource dbTarget = pageDiff.getDbSource();
-            TreeDiffer treediffer = new TreeDiffer(dbSource, dbTarget);
+            DbSource newDb = pageDiff.getNewDb();
+            DbSource oldDb = pageDiff.getOldDb();
+            TreeDiffer treediffer = new TreeDiffer(oldDb, newDb);
 
             try {
                 getContainer().run(true, true, treediffer);
@@ -140,10 +140,10 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            AbstractDatabase source = treediffer.getDbSource().getDbObject();
+            AbstractDatabase oldDb = treediffer.getOldDb().getDbObject();
 
-            Differ differ = new Differ(source, treediffer.getDbTarget().getDbObject(), treediffer.getDiffTree(), false,
-                    pageDiff.getTimezone(), null, pageDiff.getOneTimePrefs(), pagePartial.getDbType());
+            Differ differ = new Differ(oldDb, treediffer.getNewDb().getDbObject(), treediffer.getDiffTree(), pageDiff.getTimezone(),
+                    null, pageDiff.getOneTimePrefs(), pagePartial.getDbType());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(), "diff_wizard_result", //$NON-NLS-1$
@@ -167,8 +167,8 @@ final class PageDiff extends WizardPage implements Listener {
     private final IPreferenceStore mainPrefs;
     private final PgDbProject proj;
 
-    private DbSourcePicker dbTarget;
-    private DbSourcePicker dbSource;
+    private DbSourcePicker newDb;
+    private DbSourcePicker oldDb;
     private ComboViewer cmbDbType;
     private ComboViewer cmbTimezone;
     private CLabel lblWarnPosix;
@@ -183,12 +183,12 @@ final class PageDiff extends WizardPage implements Listener {
         setDescription(Messages.diffwizard_diffpage_select);
     }
 
-    public DbSource getDbTarget() {
-        return dbTarget.getDbSource(getSelectedDbType(), getOneTimePrefs());
+    public DbSource getNewDb() {
+        return newDb.getDbSource(getOneTimePrefs());
     }
 
-    public DbSource getDbSource() {
-        return dbSource.getDbSource(getSelectedDbType(), getOneTimePrefs());
+    public DbSource getOldDb() {
+        return oldDb.getDbSource(getOneTimePrefs());
     }
 
     public IgnoreList getIgnoreList() {
@@ -220,11 +220,11 @@ final class PageDiff extends WizardPage implements Listener {
         dbContainer.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         dbContainer.setLayout(new GridLayout(2, true));
 
-        dbSource = new DbSourcePicker(dbContainer, Messages.DiffWizard_source, this);
-        dbSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        newDb = new DbSourcePicker(dbContainer, Messages.DiffWizard_source, this);
+        newDb.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        dbTarget = new DbSourcePicker(dbContainer, Messages.DiffWizard_target, this);
-        dbTarget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        oldDb = new DbSourcePicker(dbContainer, Messages.DiffWizard_target, this);
+        oldDb.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         lblWarnPosix = new CLabel(container, SWT.NONE);
         lblWarnPosix.setImage(Activator.getEclipseImage(ISharedImages.IMG_OBJS_WARN_TSK));
@@ -253,8 +253,8 @@ final class PageDiff extends WizardPage implements Listener {
         cmbDbType.addSelectionChangedListener(e -> {
             StructuredSelection sel = (StructuredSelection) e.getSelection();
             DatabaseType selDbType = (DatabaseType) sel.getFirstElement();
-            dbTarget.filter(selDbType);
-            dbSource.filter(selDbType);
+            newDb.filter(selDbType);
+            oldDb.filter(selDbType);
             getWizard().getContainer().updateButtons();
             getWizard().getContainer().updateMessage();
         });
@@ -312,7 +312,7 @@ final class PageDiff extends WizardPage implements Listener {
         fieldEditorStore.setVisible(false);
 
         if (proj != null) {
-            dbSource.setDbStore(proj.getProject().getLocation().toFile());
+            newDb.setDbStore(proj.getProject().getLocation().toFile());
         }
 
         setControl(container);
@@ -341,13 +341,13 @@ final class PageDiff extends WizardPage implements Listener {
     public boolean isPageComplete() {
         String err = null;
 
-        if (getDbSource() == null) {
+        if (getNewDb() == null) {
             err = Messages.diffwizard_diffpage_source_warning;
-        } else if (getDbTarget() == null) {
+        } else if (getOldDb() == null) {
             err = Messages.diffwizard_diffpage_target_warning;
         } else if (getTimezone().isEmpty()) {
             err = Messages.DiffWizard_select_db_tz;
-        } else if (getDbType(dbTarget) != getDbType(dbSource)) {
+        } else if (getDbType(newDb) != getDbType(oldDb)) {
             err = Messages.DiffWizard_different_types;
         }
 
@@ -367,8 +367,8 @@ final class PageDiff extends WizardPage implements Listener {
 
     @Override
     public void dispose() {
-        dbTarget.dispose();
-        dbSource.dispose();
+        newDb.dispose();
+        oldDb.dispose();
         super.dispose();
     }
 }
@@ -376,18 +376,18 @@ final class PageDiff extends WizardPage implements Listener {
 final class PagePartial extends WizardPage {
 
     private TreeDiffer treeDiffer;
-    private Label lblSource;
-    private Label lblTarget;
+    private Label lblNewDb;
+    private Label lblOldDb;
     private DiffTableViewer diffTable;
 
     public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList, DatabaseType dbType) {
         this.treeDiffer = treeDiffer;
-        DbSource source = treeDiffer.getDbSource();
-        DbSource target = treeDiffer.getDbTarget();
-        lblSource.setText(target.getOrigin());
-        lblTarget.setText(source.getOrigin());
-        lblSource.getParent().layout();
-        diffTable.setInput(source, target, treeDiffer.getDiffTree(), ignoreList);
+        DbSource oldDb = treeDiffer.getOldDb();
+        DbSource newDb = treeDiffer.getNewDb();
+        lblNewDb.setText(newDb.getOrigin());
+        lblOldDb.setText(oldDb.getOrigin());
+        lblNewDb.getParent().layout();
+        diffTable.setInput(oldDb, newDb, treeDiffer.getDiffTree(), ignoreList);
         diffTable.setDbType(dbType);
     }
 
@@ -411,8 +411,8 @@ final class PagePartial extends WizardPage {
 
         new Label(container, SWT.NONE).setText(Messages.DiffWizard_source + ':');
         new Label(container, SWT.NONE).setText(Messages.DiffWizard_target + ':');
-        lblSource = new Label(container, SWT.WRAP);
-        lblTarget = new Label(container, SWT.WRAP);
+        lblNewDb = new Label(container, SWT.WRAP);
+        lblOldDb = new Label(container, SWT.WRAP);
 
         diffTable = new DiffTableViewer(container, false, null, new UISettings(null, null));
         diffTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));

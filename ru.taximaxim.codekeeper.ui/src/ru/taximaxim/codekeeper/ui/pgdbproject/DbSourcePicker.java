@@ -107,8 +107,7 @@ class DbSourcePicker extends Composite {
         return cmbEncoding.getCombo().getText();
     }
 
-    public DbSource getDbSource(DatabaseType dbType, Map<String, Boolean> oneTimePrefs) {
-        final boolean forceUnixNewlines = true; // true by default, check project if path is given
+    public DbSource getDbSource(Map<String, Boolean> oneTimePrefs) {
         DbInfo dbInfo;
         File file;
         File dir;

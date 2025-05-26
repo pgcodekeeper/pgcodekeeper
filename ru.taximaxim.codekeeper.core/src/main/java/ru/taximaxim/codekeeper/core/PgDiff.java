@@ -76,41 +76,41 @@ public class PgDiff {
         return Collections.unmodifiableList(errors);
     }
 
-    public String diff(AbstractDatabase oldDbFull, AbstractDatabase newDbFull, IgnoreList ignoreList)
+    public String diff(AbstractDatabase oldDb, AbstractDatabase newDb, IgnoreList ignoreList)
             throws InterruptedException, IOException {
-        TreeElement root = DiffTree.create(oldDbFull, newDbFull);
+        TreeElement root = DiffTree.create(oldDb, newDb);
         root.setAllChecked();
 
-        return diff(root, oldDbFull, newDbFull, null, null, ignoreList);
+        return diff(root, oldDb, newDb, null, null, ignoreList);
     }
 
     public String diff(TreeElement root,
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget, IgnoreList ignoreList) throws IOException {
+            AbstractDatabase oldDb, AbstractDatabase newDb,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesOldDb,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesNewDb, IgnoreList ignoreList) throws IOException {
         List<TreeElement> selected = getSelectedElements(root, ignoreList);
         if (selected.isEmpty()) {
             return EMPTY_SCRIPT;
         }
 
         Set<PgStatement> toRefresh = new LinkedHashSet<>();
-        var actions = resolveDependencies(selected, oldDbFull, newDbFull, additionalDepciesSource,
-                additionalDepciesTarget, toRefresh);
+        var actions = resolveDependencies(selected, oldDb, newDb, additionalDepciesOldDb,
+                additionalDepciesNewDb, toRefresh);
         if (actions.isEmpty()) {
             return EMPTY_SCRIPT;
         }
 
         return switch (settings.getDbType()) {
-            case MS -> getMsScript(actions, toRefresh, selected, oldDbFull, newDbFull);
-            case PG -> getPgScript(actions, toRefresh, selected, oldDbFull, newDbFull);
-            case CH -> getChScript(actions, toRefresh, selected, oldDbFull, newDbFull);
+            case MS -> getMsScript(actions, toRefresh, selected, oldDb, newDb);
+            case PG -> getPgScript(actions, toRefresh, selected, oldDb, newDb);
+            case CH -> getChScript(actions, toRefresh, selected, oldDb, newDb);
             default -> throw new IllegalArgumentException(
                 Messages.DatabaseType_unsupported_type + settings.getDbType());
         };
     }
 
     private String getPgScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull)
+            AbstractDatabase oldDb, AbstractDatabase newDb)
             throws IOException {
         SQLScript script = new SQLScript(settings);
         for (String preFilePath : settings.getPreFilePath()) {
@@ -131,7 +131,7 @@ public class PgDiff {
         }
 
         script.addStatement("SET search_path = pg_catalog", SQLActionType.BEGIN); //$NON-NLS-1$
-        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDb, newDb, selected);
 
         if (settings.isAddTransaction()) {
             script.addStatement("COMMIT TRANSACTION", SQLActionType.END); //$NON-NLS-1$
@@ -170,13 +170,13 @@ public class PgDiff {
     }
 
     private String getMsScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
+            AbstractDatabase oldDb, AbstractDatabase newDb) {
         SQLScript script = new SQLScript(settings);
         if (settings.isAddTransaction()) {
             script.addStatement("BEGIN TRANSACTION", SQLActionType.BEGIN); //$NON-NLS-1$
         }
 
-        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDb, newDb, selected);
 
         if (settings.isAddTransaction()) {
             script.addStatement("COMMIT", SQLActionType.END); //$NON-NLS-1$
@@ -186,9 +186,9 @@ public class PgDiff {
     }
 
     private String getChScript(Set<ActionContainer> actions, Set<PgStatement> toRefresh, List<TreeElement> selected,
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull) {
+            AbstractDatabase oldDb, AbstractDatabase newDb) {
         SQLScript script = new SQLScript(settings);
-        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDbFull, newDbFull, selected);
+        ActionsToScriptConverter.fillScript(script, actions, toRefresh, oldDb, newDb, selected);
         return script.getFullScript();
     }
 
@@ -201,11 +201,11 @@ public class PgDiff {
     }
 
     private Set<ActionContainer> resolveDependencies(List<TreeElement> selected,
-            AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesSource,
-            List<Entry<PgStatement, PgStatement>> additionalDepciesTarget, Set<PgStatement> toRefresh) {
+            AbstractDatabase oldDb, AbstractDatabase newDb,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesOldDb,
+            List<Entry<PgStatement, PgStatement>> additionalDepciesNewDb, Set<PgStatement> toRefresh) {
         //TODO----------КОСТЫЛЬ колонки добавляются как выбранные если выбрана таблица-----------
-        addColumnsAsElements(oldDbFull, newDbFull, selected);
+        addColumnsAsElements(oldDb, newDb, selected);
         // ---КОСТЫЛЬ-----------
 
         Collections.sort(selected, new CompareTree());
@@ -216,33 +216,33 @@ public class PgDiff {
             PgStatement newStatement = null;
             switch (st.getSide()) {
             case LEFT:
-                oldStatement = st.getPgStatement(oldDbFull);
+                oldStatement = st.getPgStatement(oldDb);
                 break;
             case BOTH:
-                oldStatement = st.getPgStatement(oldDbFull);
-                newStatement = st.getPgStatement(newDbFull);
+                oldStatement = st.getPgStatement(oldDb);
+                newStatement = st.getPgStatement(newDb);
                 break;
             case RIGHT:
-                newStatement = st.getPgStatement(newDbFull);
+                newStatement = st.getPgStatement(newDb);
                 break;
             }
             objects.add(new DbObject(oldStatement, newStatement));
         }
-        return DepcyResolver.resolve(oldDbFull, newDbFull,
-                additionalDepciesSource, additionalDepciesTarget, toRefresh, objects, settings);
+        return DepcyResolver.resolve(oldDb, newDb,
+                additionalDepciesOldDb, additionalDepciesNewDb, toRefresh, objects, settings);
     }
 
     /**
      * После реализации колонок как подэлементов таблицы выпилить метод!
      */
     @Deprecated
-    private void addColumnsAsElements(AbstractDatabase oldDbFull, AbstractDatabase newDbFull,
+    private void addColumnsAsElements(AbstractDatabase oldDb, AbstractDatabase newDb,
             List<TreeElement> selected) {
         List<TreeElement> tempColumns = new ArrayList<>();
         for (TreeElement el : selected) {
             if (el.getType() == DbObjType.TABLE && el.getSide() == DiffSide.BOTH) {
-                AbstractTable oldTbl = (AbstractTable) el.getPgStatement(oldDbFull);
-                AbstractTable newTbl = (AbstractTable) el.getPgStatement(newDbFull);
+                AbstractTable oldTbl = (AbstractTable) el.getPgStatement(oldDb);
+                AbstractTable newTbl = (AbstractTable) el.getPgStatement(newDb);
                 DiffTree.addColumns(oldTbl.getColumns(), newTbl.getColumns(), el, tempColumns);
             }
         }
