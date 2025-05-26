@@ -52,7 +52,7 @@ public final class CreateMsType extends MsParserAbstract {
         Type_definitionContext def = ctx.type_definition();
 
         if (def.FROM() != null) {
-            type.setBaseType(getFullCtxText(def.data_type()));
+            type.setBaseType(getType(def.data_type()));
             type.setNotNull(def.null_notnull() != null && def.null_notnull().NOT() != null);
         } else if (def.EXTERNAL() != null) {
             String assemblyName = def.assembly_name.getText();
@@ -94,8 +94,9 @@ public final class CreateMsType extends MsParserAbstract {
             MsColumn col = new MsColumn(colCtx.id().getText());
 
             if (colCtx.data_type() != null) {
-                col.setType(getFullCtxText(colCtx.data_type()));
-                addTypeDepcy(colCtx.data_type(), type);
+                var typeCtx = colCtx.data_type();
+                col.setType(getType(typeCtx));
+                addTypeDepcy(typeCtx, type);
             } else {
                 col.setExpression(getFullCtxTextWithCheckNewLines(colCtx.expression()));
             }

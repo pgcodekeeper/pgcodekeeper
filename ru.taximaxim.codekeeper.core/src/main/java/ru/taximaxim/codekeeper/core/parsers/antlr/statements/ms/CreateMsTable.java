@@ -156,7 +156,7 @@ public final class CreateMsTable extends MsTableAbstract {
         ExpressionContext expr;
         if ((dataType = colCtx.data_type()) != null) {
             addTypeDepcy(dataType, col);
-            col.setType(getFullCtxText(dataType));
+            col.setType(getType(dataType));
         } else if ((expr = colCtx.expression()) != null) {
             col.setExpression(getFullCtxTextWithCheckNewLines(expr));
             db.addAnalysisLauncher(new MsExpressionAnalysisLauncher(col, expr, fileName));
