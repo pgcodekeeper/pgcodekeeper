@@ -43,22 +43,22 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private static final int JOB_CHECK_MS = 20;
 
-    private final DbSource dbSource;
-    private final DbSource dbTarget;
+    private final DbSource oldDb;
+    private final DbSource newDb;
 
     private TreeElement diffTree;
 
     public Stream<Object> getErrors() {
-        return Stream.of(dbSource, dbTarget)
+        return Stream.of(oldDb, newDb)
                 .flatMap(s -> s == null ? Stream.empty() : s.getErrors().stream());
     }
 
-    public DbSource getDbSource() {
-        return dbSource;
+    public DbSource getOldDb() {
+        return oldDb;
     }
 
-    public DbSource getDbTarget() {
-        return dbTarget;
+    public DbSource getNewDb() {
+        return newDb;
     }
 
     public TreeElement getDiffTree() {
@@ -68,9 +68,9 @@ public class TreeDiffer implements IRunnableWithProgress {
         return diffTree;
     }
 
-    public TreeDiffer(DbSource dbSource, DbSource dbTarget) {
-        this.dbSource = dbSource;
-        this.dbTarget = dbTarget;
+    public TreeDiffer(DbSource oldDb, DbSource newDb) {
+        this.oldDb = oldDb;
+        this.newDb = newDb;
     }
 
     @Override
@@ -80,28 +80,28 @@ public class TreeDiffer implements IRunnableWithProgress {
                 Messages.diffPresentationPane_getting_changes_for_diff, 100); // 0
 
         SubMonitor jobMonitor = pm.newChild(80); // 80
-        DbSourceJob srcJob = new DbSourceJob(dbSource, jobMonitor);
-        DbSourceJob tgtJob = new DbSourceJob(dbTarget, jobMonitor);
-        srcJob.schedule();
-        tgtJob.schedule();
+        DbSourceJob oldDbJob = new DbSourceJob(oldDb, jobMonitor);
+        DbSourceJob newDbJob = new DbSourceJob(newDb, jobMonitor);
+        oldDbJob.schedule();
+        newDbJob.schedule();
         IStatus srcResult;
         IStatus tgtResult;
         do {
             Thread.sleep(JOB_CHECK_MS);
-            srcResult = srcJob.getResult();
-            tgtResult = tgtJob.getResult();
+            srcResult = oldDbJob.getResult();
+            tgtResult = newDbJob.getResult();
         } while (srcResult == null && tgtResult == null);
         if (srcResult != null) {
-            finishJobs(srcJob, tgtJob);
+            finishJobs(oldDbJob, newDbJob);
         } else {
-            finishJobs(tgtJob, srcJob);
+            finishJobs(newDbJob, oldDbJob);
         }
 
-        Log.log(Log.LOG_INFO, "Generating diff tree between src: " + dbSource.getOrigin() //$NON-NLS-1$
-        + " tgt: " + dbTarget.getOrigin()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Generating diff tree between oldDb: " + oldDb.getOrigin() //$NON-NLS-1$
+        + " newDb: " + newDb.getOrigin()); //$NON-NLS-1$
 
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(dbSource.getDbObject(), dbTarget.getDbObject(), pm);
+        diffTree = DiffTree.create(oldDb.getDbObject(), newDb.getDbObject(), pm);
         PgDiffUtils.checkCancelled(pm);
         monitor.done();
     }

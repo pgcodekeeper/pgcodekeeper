@@ -42,61 +42,57 @@ import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public final class Differ implements IRunnableWithProgress {
 
-    private final AbstractDatabase sourceDbFull;
-    private final AbstractDatabase targetDbFull;
+    private final AbstractDatabase oldDb;
+    private final AbstractDatabase newDb;
     private final TreeElement root;
-    private final boolean needTwoWay;
     private final String timezone;
     private final DatabaseType dbType;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
 
     private String diffDirect;
-    private String diffReverse;
 
-    private List<Entry<PgStatement, PgStatement>> additionalDepciesSource;
-    private List<Entry<PgStatement, PgStatement>> additionalDepciesTarget;
+    private List<Entry<PgStatement, PgStatement>> additionalDepciesOldDb;
+    private List<Entry<PgStatement, PgStatement>> additionalDepciesNewDb;
 
 
-    public void setAdditionalDepciesSource(
+    public void setAdditionalDepciesOldDb(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        this.additionalDepciesSource = additionalDepcies;
+        this.additionalDepciesOldDb = additionalDepcies;
     }
 
-    public void setAdditionalDepciesTarget(
+    public void setAdditionalDepciesNewDb(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        this.additionalDepciesTarget = additionalDepcies;
+        this.additionalDepciesNewDb = additionalDepcies;
     }
 
-    public void addAdditionalDepciesSource(
+    public void addAdditionalDepciesOldDb(
             List<Entry<PgStatement, PgStatement>> additionalDepcies) {
-        if (this.additionalDepciesSource == null) {
-            setAdditionalDepciesSource(additionalDepcies);
+        if (this.additionalDepciesOldDb == null) {
+            setAdditionalDepciesOldDb(additionalDepcies);
         } else {
-            this.additionalDepciesSource.addAll(additionalDepcies);
+            this.additionalDepciesOldDb.addAll(additionalDepcies);
         }
     }
 
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesSource() {
-        return additionalDepciesSource;
+    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesOldDb() {
+        return additionalDepciesOldDb;
     }
 
-    public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs,
-            DatabaseType dbType) {
-        this.sourceDbFull = sourceDbFull;
-        this.targetDbFull = targetDbFull;
+    public Differ(AbstractDatabase oldDb, AbstractDatabase newDb, TreeElement root,
+            String timezone, IProject proj, Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
+        this.oldDb = oldDb;
+        this.newDb = newDb;
         this.root = root;
-        this.needTwoWay = needTwoWay;
         this.timezone = timezone;
         this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
     }
 
-    public Differ(AbstractDatabase sourceDbFull, AbstractDatabase targetDbFull, TreeElement root,
-            boolean needTwoWay, String timezone, IProject proj) {
-        this(sourceDbFull, targetDbFull, root, needTwoWay, timezone, proj, null, null);
+    public Differ(AbstractDatabase oldDb, AbstractDatabase newDb, TreeElement root,
+            String timezone, IProject proj) {
+        this(oldDb, newDb, root, timezone, proj, null, null);
     }
 
     public Job getDifferJob() {
@@ -124,13 +120,6 @@ public final class Differ implements IRunnableWithProgress {
         return diffDirect;
     }
 
-    public String getDiffReverse() {
-        if (diffReverse == null) {
-            throw new IllegalStateException(Messages.runnable_has_not_finished);
-        }
-        return diffReverse;
-    }
-
     public String getTimezone() {
         return timezone;
     }
@@ -140,27 +129,16 @@ public final class Differ implements IRunnableWithProgress {
     InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
 
-        Log.log(Log.LOG_INFO, "Diff from: " + sourceDbFull.getName() //$NON-NLS-1$
-        + " to: " + targetDbFull.getName()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Diff from: " + oldDb.getName() //$NON-NLS-1$
+        + " to: " + newDb.getName()); //$NON-NLS-1$
 
         pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         try {
             UISettings settings = new UISettings(proj, oneTimePrefs, dbType);
             diffDirect = new PgDiff(settings).diff(
                     root,
-                    sourceDbFull, targetDbFull,
-                    additionalDepciesSource, additionalDepciesTarget, null);
-
-            if (needTwoWay) {
-                Log.log(Log.LOG_INFO, "Diff from: " + targetDbFull.getName() //$NON-NLS-1$
-                + " to: " + sourceDbFull.getName()); //$NON-NLS-1$
-
-                pm.newChild(25).subTask(Messages.differ_reverse_diff); // 100
-                diffReverse = new PgDiff(settings).diff(
-                        root.getRevertedCopy(),
-                        targetDbFull, sourceDbFull,
-                        additionalDepciesTarget, additionalDepciesSource, null);
-            }
+                    oldDb, newDb,
+                    additionalDepciesOldDb, additionalDepciesNewDb, null);
         } catch (IOException e) {
             throw new InvocationTargetException(e, e.getLocalizedMessage());
         }

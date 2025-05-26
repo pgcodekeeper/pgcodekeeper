@@ -194,8 +194,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private DiffPaneViewer diffPane;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
-    private List<Entry<PgStatement, PgStatement>> manualDepciesSource = new ArrayList<>();
-    private List<Entry<PgStatement, PgStatement>> manualDepciesTarget = new ArrayList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesOldDb = new ArrayList<>();
+    private List<Entry<PgStatement, PgStatement>> manualDepciesNewDb = new ArrayList<>();
 
     private DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
@@ -344,13 +344,13 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     public void addDependency() {
         if (isDBLoaded){
             ManualDepciesDialog dialog = new ManualDepciesDialog(parent.getShell(),
-                    manualDepciesSource, manualDepciesTarget,
+                    manualDepciesOldDb, manualDepciesNewDb,
                     AbstractDatabase.listPgObjects(dbRemote.getDbObject()),
                     AbstractDatabase.listPgObjects(dbProject.getDbObject()),
                     Messages.database, Messages.ProjectEditorDiffer_project);
             if (dialog.open() == Window.OK) {
-                manualDepciesSource = dialog.getDepciesSourceList();
-                manualDepciesTarget = dialog.getDepciesTargetList();
+                manualDepciesOldDb = dialog.getDepciesSourceList();
+                manualDepciesNewDb = dialog.getDepciesTargetList();
             }
         }
     }
@@ -551,7 +551,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
                             loadedRemote = currentRemote;
-                            setInput(newDiffer.getDbSource(), newDiffer.getDbTarget(),
+                            setInput(newDiffer.getOldDb(), newDiffer.getNewDb(),
                                     newDiffer.getDiffTree());
                             if (diffTable.getElements().isEmpty()) {
                                 showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
@@ -705,10 +705,10 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
 
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDbObject(),
-                dbProject.getDbObject(), diffTree.getRevertedCopy(), false,
-                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType);
-        differ.setAdditionalDepciesSource(manualDepciesSource);
-        differ.setAdditionalDepciesTarget(manualDepciesTarget);
+                dbProject.getDbObject(), diffTree.getRevertedCopy(), pref.get(PROJ_PREF.TIMEZONE, Consts.UTC),
+                getProject(), oneTimePrefs, dbType);
+        differ.setAdditionalDepciesOldDb(manualDepciesOldDb);
+        differ.setAdditionalDepciesNewDb(manualDepciesNewDb);
 
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {
@@ -773,15 +773,15 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
         if (diffTree != null) {
             isDBLoaded = true;
-            manualDepciesSource.clear();
-            manualDepciesTarget.clear();
+            manualDepciesOldDb.clear();
+            manualDepciesNewDb.clear();
         }
     }
 
     private void reset() {
         isDBLoaded = false;
-        manualDepciesSource.clear();
-        manualDepciesTarget.clear();
+        manualDepciesOldDb.clear();
+        manualDepciesNewDb.clear();
         setInput(null, null, null);
     }
 
