@@ -559,7 +559,7 @@ public final class Select extends AbstractExprWithNmspc<Select_stmtContext> {
                     addReference(tableSubQueryAlias, null);
 
                     var columnAliases = alias.column_alias;
-                    for (int i = 0; i < columnAliases.size(); i++) {
+                    for (int i = 0; i < columnAliases.size() && i < columnList.size(); i++) {
                         columnList.set(i, new ModPair<>(columnAliases.get(i).getText(),
                                 columnList.get(i).getSecond()));
                     }
