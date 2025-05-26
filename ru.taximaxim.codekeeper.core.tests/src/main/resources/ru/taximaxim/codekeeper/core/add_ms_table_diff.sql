@@ -15,10 +15,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department21](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[Startic] [datetime2] GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
 	[Endic] [datetime2] GENERATED ALWAYS AS ROW END NULL,
 	PERIOD FOR SYSTEM_TIME ([Startic], [Endic])
@@ -30,10 +30,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department_transaction](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[StartTransactionId] [bigint] GENERATED ALWAYS AS TRANSACTION_ID START HIDDEN NOT NULL,
 	[EndTransactionId] [bigint] GENERATED ALWAYS AS TRANSACTION_ID END HIDDEN NULL
 ) ON [PRIMARY]

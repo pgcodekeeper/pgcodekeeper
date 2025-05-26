@@ -65,6 +65,8 @@ import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
 
+    private static final String SIZE_ONE = " (1)";
+
     protected MsParserAbstract(MsDatabase db, ISettings settings) {
         super(db, settings);
     }
@@ -353,6 +355,16 @@ public abstract class MsParserAbstract extends ParserAbstract<MsDatabase> {
         }
         ids.add(qNameCtx.name);
         return ids;
+    }
+
+    protected String getType(Data_typeContext datatype) {
+        String type = getFullCtxText(datatype);
+        // backward compatibility, remove later
+        if ("[nchar]".equalsIgnoreCase(type) || "[char]".equalsIgnoreCase(type)) {
+            return type.concat(SIZE_ONE);
+        }
+
+        return type;
     }
 
     @Override

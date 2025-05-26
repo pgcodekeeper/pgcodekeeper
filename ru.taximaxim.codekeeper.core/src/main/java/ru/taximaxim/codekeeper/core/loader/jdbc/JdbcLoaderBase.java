@@ -471,15 +471,19 @@ public abstract class JdbcLoaderBase extends DatabaseLoader {
         boolean quoteName = isUserDefined || quoteSysTypes || !Utils.isMsSystemSchema(schema);
         sb.append(quoteName ? MsDiffUtils.quoteName(dataType) : dataType);
 
-        if ("varbinary".equals(dataType) || "nvarchar".equals(dataType)
-                || "varchar".equals(dataType) || "nchar".equals(dataType)) {
+        switch (dataType) {
+        case "varbinary", "nvarchar", "varchar", "nchar", "char":
             if (size == -1) {
                 sb.append(" (max)");
             } else {
                 sb.append(" (").append(size).append(')');
             }
-        } else if ("decimal".equals(dataType) || "numeric".equals(dataType)) {
+            break;
+        case "decimal", "numeric":
             sb.append(" (").append(precision).append(", ").append(scale).append(')');
+            break;
+        default:
+            break;
         }
 
         return sb.toString();

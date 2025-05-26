@@ -324,6 +324,8 @@ class MsDiffTest {
             "alter_ms_table_system_versioning",
             // Test scenario where alter constraint in sys ver table
             "alter_ms_constraint_pk_in_system_vers_table",
+            // Test scenario when size of char and nchar columns removed
+            "compare_char_and_nchar_columns"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);

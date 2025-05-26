@@ -27,7 +27,7 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[test_row](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidTo] [bigint] GENERATED ALWAYS AS TRANSACTION_ID START HIDDEN NOT NULL,
 	[ValidFrom ] [bigint] GENERATED ALWAYS AS TRANSACTION_ID END NULL
 ) ON [PRIMARY]
@@ -38,7 +38,7 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[test_change_to_row244](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[NewColStart] [datetime2] GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
 	[NewColEnd] [datetime2] GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
 	PERIOD FOR SYSTEM_TIME ([NewColStart], [NewColEnd])
@@ -50,10 +50,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department4](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidFrom] [datetime2] NOT NULL,
 	[NewCol] [datetime2] NOT NULL
 ) ON [PRIMARY]
@@ -64,10 +64,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department7](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidFrom] [datetime2] GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
 	[ValidTo] [datetime2] GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
 	PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
@@ -127,7 +127,7 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[test_new_row](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidTo] [datetime2] GENERATED ALWAYS AS ROW START NOT NULL,
 	[ValidFrom] [datetime2] GENERATED ALWAYS AS ROW END NOT NULL,
 	PERIOD FOR SYSTEM_TIME ([ValidTo], [ValidFrom])
@@ -139,10 +139,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department_new](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidFrom] [datetime2] GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
 	[ValidTo] [datetime2] GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
 	PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
@@ -154,10 +154,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department5](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidFrom] [datetime2] NULL,
 	[ValidTo] [datetime2] NULL
 ) ON [PRIMARY]
@@ -168,10 +168,10 @@ GO
 SET ANSI_NULLS ON
 GO
 CREATE TABLE [dbo].[Department6](
-	[DepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[DepartmentName] [varchar] (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	[ManagerID] [int] NULL,
-	[ParentDepartmentNumber] [char] COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
+	[ParentDepartmentNumber] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	[ValidFrom] [datetime2] GENERATED ALWAYS AS ROW START HIDDEN NOT NULL,
 	[ValidTo] [datetime2] GENERATED ALWAYS AS ROW END HIDDEN NOT NULL,
 	PERIOD FOR SYSTEM_TIME ([ValidFrom], [ValidTo])
