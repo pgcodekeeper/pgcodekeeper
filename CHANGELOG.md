@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed setting `Use Unix-style newline characters`.
+
 ### Removed
 
 ## [10.14.0] - 2025-05-27
