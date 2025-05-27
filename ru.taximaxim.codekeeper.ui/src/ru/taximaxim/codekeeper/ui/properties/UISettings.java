@@ -49,7 +49,6 @@ public final class UISettings implements ISettings {
 
     private String timeZone;
     private String inCharsetName = Consts.UTF_8;
-    private boolean keepNewlines;
     private boolean isEnableProjPrefRoot;
     private boolean isEnableProjPrefDbUpdate;
     private IEclipsePreferences projPS;
@@ -67,7 +66,6 @@ public final class UISettings implements ISettings {
             this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
             this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
             this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
-            this.keepNewlines = projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
         }
 
         if (dbType != null) {
@@ -120,7 +118,11 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isKeepNewlines() {
-        return keepNewlines;
+        if (null == projPS) {
+            return false;
+        }
+
+        return !projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
     }
 
     @Override
