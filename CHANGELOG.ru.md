@@ -9,6 +9,16 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+### Удалено
+
+## [10.14.0] - 2025-05-27
+
+### Добавлено
+
 - Добавлена возможность изменять состояние унаследованных триггеров в партиционных таблицах.
 
 ### Изменено
@@ -20,8 +30,6 @@
 - Исправлен текст в `Мастере сравнения`.
 - Исправлено чтение длины столбца для типов char и nchar в базе данных MS SQL.
 - Исправлена ошибка при анализе запроса в PostgreSQL.
-
-### Удалено
 
 ## [10.13.0] - 2025-05-13
 
@@ -2267,7 +2275,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...HEAD
+[10.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...v10.14.0
 [10.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...v10.13.0
 [10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
 [10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
