@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+### Removed
+
+## [10.14.0] - 2025-05-27
+
+### Added
+
 - Added the ability to change the state of inherited triggers in partition tables.
 
 ### Changed
@@ -20,8 +30,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed text in `Diff wizard`.
 - Fixed reading of column length for char and nchar types in MS SQL database.
 - Fixed an error when analyzing a query in PostgreSQL.
-
-### Removed
 
 ## [10.13.0] - 2025-05-13
 
@@ -2266,7 +2274,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...HEAD
+[10.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...v10.14.0
 [10.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...v10.13.0
 [10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
 [10.11.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.10.0...v10.11.0
