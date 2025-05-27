@@ -13,9 +13,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed setting `Use Unix-style newline characters`.
-
 ### Removed
+
+## [10.14.1] - 2025-05-27
+
+### Fixed
+
+- Fixed setting `Use Unix-style newline characters`.
 
 ## [10.14.0] - 2025-05-27
 
@@ -2276,7 +2280,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...HEAD
+[10.14.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...v10.14.1
 [10.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...v10.14.0
 [10.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...v10.13.0
 [10.12.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.11.0...v10.12.0
