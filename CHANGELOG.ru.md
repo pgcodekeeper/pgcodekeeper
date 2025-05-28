@@ -13,10 +13,14 @@
 
 ### Исправлено
 
+### Удалено
+
+## [10.14.2] - 2025-05-28
+
+### Исправлено
+
 - Исправлен текст настроек.
 - Исправлено сообщение об ошибке при анализе.
-
-### Удалено
 
 ## [10.14.1] - 2025-05-27
 
@@ -2284,7 +2288,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...HEAD
+[10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
 [10.14.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...v10.14.1
 [10.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...v10.14.0
 [10.13.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.12.0...v10.13.0
