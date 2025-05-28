@@ -22,6 +22,8 @@ public final class Messages extends NLS {
 
     // SONAR-OFF
 
+    public static String AbstractAnalysisLauncher_error_prefix;
+
     public static String AbstractExprWithNmspc_log_ambiguos_ref;
 
     public static String AbstractExprWithNmspc_log_cte_contains_cols;

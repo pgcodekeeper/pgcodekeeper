@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed text of settings.
+- Fixed error message during analysis.
 
 ### Removed
 
