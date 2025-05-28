@@ -27,6 +27,7 @@ import org.antlr.v4.runtime.Token;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ru.taximaxim.codekeeper.core.localizations.Messages;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
 import ru.taximaxim.codekeeper.core.parsers.antlr.CodeUnitToken;
@@ -143,12 +144,14 @@ public abstract class AbstractAnalysisLauncher {
                 LOG.warn(err.toString(), ex);
                 errors.add(err);
             } else {
-                LOG.warn(ex.toString(), ex);
-                errors.add(location + ' ' + ex.getLocalizedMessage());
+                var errorMsg = Messages.AbstractAnalysisLauncher_error_prefix.formatted(location, ex);
+                LOG.warn(errorMsg, ex);
+                errors.add(errorMsg);
             }
         } catch (Exception ex) {
-            LOG.error(ex.toString(), ex);
-            errors.add(location + ' ' + ex);
+            var errorMsg = Messages.AbstractAnalysisLauncher_error_prefix.formatted(location, ex);
+            LOG.error(errorMsg, ex);
+            errors.add(errorMsg);
         }
 
         return Collections.emptySet();
