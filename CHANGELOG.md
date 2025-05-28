@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed text of settings.
+
 ### Removed
 
 ## [10.14.1] - 2025-05-27
