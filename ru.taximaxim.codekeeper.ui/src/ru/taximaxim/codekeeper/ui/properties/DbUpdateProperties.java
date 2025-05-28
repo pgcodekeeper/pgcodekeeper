@@ -92,7 +92,7 @@ public class DbUpdateProperties extends PropertyPage {
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 Messages.DbUpdatePrefPage_script_add_transaction, btnsPanel, prefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.ApplyCustomDialog_constraint_not_valid, btnsPanel, prefs::getBoolean));
+                Messages.DbUpdatePrefPage_print_index_with_concurrently, btnsPanel, prefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
                 Messages.DbUpdatePrefPage_script_from_selected_objs, btnsPanel, prefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
@@ -110,7 +110,7 @@ public class DbUpdateProperties extends PropertyPage {
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
                     Messages.dbUpdatePrefPage_switch_on_off_using, btnsPanel, prefs::getBoolean));
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                    Messages.dbUpdatePrefPage_check_function_bodies, btnsPanel, prefs::getBoolean));
+                    Messages.ApplyCustomDialog_constraint_not_valid, btnsPanel, prefs::getBoolean));
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
                     Messages.DbUpdatePrefPage_generate_exist_do_block, btnsPanel, prefs::getBoolean));
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
