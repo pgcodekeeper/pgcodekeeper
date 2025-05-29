@@ -110,7 +110,7 @@ additional_statement
     : anonymous_block
     | LISTEN identifier
     | UNLISTEN (identifier | MULTIPLY)
-    | ANALYZE (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
+    | analyze_keyword (LEFT_PAREN analyze_mode (COMMA analyze_mode)* RIGHT_PAREN | VERBOSE)? table_cols_list?
     | cluster_stmt
     | CHECKPOINT
     | LOAD sconst
@@ -136,7 +136,7 @@ cluster_option
     ;
 
 explain_statement
-    : EXPLAIN (ANALYZE? VERBOSE? | LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN) explain_query;
+    : EXPLAIN (analyze_keyword? VERBOSE? | LEFT_PAREN explain_option (COMMA explain_option)* RIGHT_PAREN) explain_query;
 
 explain_query
     : data_statement
@@ -158,7 +158,7 @@ show_statement
     ;
 
 explain_option
-    : (ANALYZE | VERBOSE | COSTS | SETTINGS | GENERIC_PLAN | BUFFERS | WAL | TIMING | SUMMARY | MEMORY) boolean_value?
+    : (analyze_keyword | VERBOSE | COSTS | SETTINGS | GENERIC_PLAN | BUFFERS | WAL | TIMING | SUMMARY | MEMORY) boolean_value?
     | SERIALIZE (NONE | TEXT | BINARY)?
     | FORMAT (TEXT | XML | JSON | YAML)
     ;
@@ -177,11 +177,11 @@ table_cols
 
 vacuum_mode
     : LEFT_PAREN vacuum_option (COMMA vacuum_option)* RIGHT_PAREN 
-    | FULL? FREEZE? VERBOSE? ANALYZE?
+    | FULL? FREEZE? VERBOSE? analyze_keyword?
     ;
 
 vacuum_option
-    : (FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | PROCESS_MAIN | TRUNCATE
+    : (FULL | FREEZE | VERBOSE | analyze_keyword | DISABLE_PAGE_SKIPPING | SKIP_LOCKED | INDEX_CLEANUP | PROCESS_MAIN | TRUNCATE
       | SKIP_DATABASE_STATS | ONLY_DATABASE_STATS) boolean_value?
     | PARALLEL iconst
     | BUFFER_USAGE_LIMIT (iconst identifier)?
@@ -702,7 +702,7 @@ type_action
     ;
 
 type_property
-    : (RECEIVE | SEND | TYPMOD_IN | TYPMOD_OUT | ANALYZE) EQUAL schema_qualified_name
+    : (RECEIVE | SEND | TYPMOD_IN | TYPMOD_OUT | analyze_keyword) EQUAL schema_qualified_name
     | STORAGE EQUAL storage=storage_option
     ;
 
@@ -793,7 +793,7 @@ create_type_statement
             | SEND EQUAL send_function=schema_qualified_name
             | TYPMOD_IN EQUAL type_modifier_input_function=schema_qualified_name
             | TYPMOD_OUT EQUAL type_modifier_output_function=schema_qualified_name
-            | ANALYZE EQUAL analyze_function=schema_qualified_name
+            | analyze_keyword EQUAL analyze_function=schema_qualified_name
             | SUBSCRIPT EQUAL subscript_function=schema_qualified_name
             | INTERNALLENGTH EQUAL (internallength=signediconst | VARIABLE )
             | PASSEDBYVALUE
@@ -4207,3 +4207,8 @@ plpgsql_query
     | show_statement
     | explain_statement
     ;
+
+analyze_keyword
+   : ANALYZE | ANALYSE
+   ;
+

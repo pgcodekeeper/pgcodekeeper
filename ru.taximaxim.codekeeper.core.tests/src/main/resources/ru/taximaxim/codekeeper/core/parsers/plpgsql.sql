@@ -2418,3 +2418,8 @@ DECLARE
 BEGIN
     RETURN;
 END;
+
+BEGIN
+    ANALYSE;
+    RAISE NOTICE 'ANALYZE выполнен для всей базы данных';
+END;

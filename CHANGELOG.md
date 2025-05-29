@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed parser rule for PostgreSQL.
+
 ### Removed
 
 ## [10.14.2] - 2025-05-28

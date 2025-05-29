@@ -21,162 +21,175 @@ Reference: Object = alt_ts_prs2 (FTS_PARSER), action = ALTER, offset = 1113, lin
 Reference: Object = alt_ts_temp1 (FTS_TEMPLATE), action = ALTER, offset = 1173, line number = 21, charPositionInLine = 27
 Reference: Object = alt_ts_temp2 (FTS_TEMPLATE), action = ALTER, offset = 1237, line number = 22, charPositionInLine = 27
 Reference: action = ANALYZE, offset = 1271, line number = 23, charPositionInLine = 0
-Reference: action = ANALYZE, offset = 1349, line number = 24, charPositionInLine = 0
-Reference: action = ANALYZE, offset = 1364, line number = 25, charPositionInLine = 0
-Reference: action = ANALYZE, offset = 1390, line number = 26, charPositionInLine = 0
-Reference: action = BEGIN, offset = 1441, line number = 27, charPositionInLine = 0
-Reference: action = BEGIN, offset = 1480, line number = 28, charPositionInLine = 0
-Reference: action = CHECKPOINT, offset = 1487, line number = 29, charPositionInLine = 0
-Reference: action = CLOSE, offset = 1499, line number = 30, charPositionInLine = 0
-Reference: action = CLUSTER, offset = 1510, line number = 31, charPositionInLine = 0
-Reference: Object = ctlt1_a_b_stat (STATISTICS), action = COMMENT, offset = 1551, line number = 32, charPositionInLine = 22
-Reference: action = COPY, offset = 1581, line number = 33, charPositionInLine = 0
-Reference: action = CREATE ACCESS METHOD, offset = 1608, line number = 34, charPositionInLine = 0
-Reference: Object = addr_nsp (SCHEMA), action = null, offset = 1684, line number = 35, charPositionInLine = 17
-Reference: Object = addr_nsp.genaggr(integer) (AGGREGATE), action = CREATE, offset = 1693, line number = 35, charPositionInLine = 26
-Reference: Object = hstore (EXTENSION), action = CREATE, offset = 1756, line number = 36, charPositionInLine = 17
-Reference: Object = public (SCHEMA), action = null, offset = 1770, line number = 36, charPositionInLine = 31
-Reference: Object = addr_fdw (FOREIGN_DATA_WRAPPER), action = CREATE, offset = 1822, line number = 37, charPositionInLine = 28
-Reference: action = CREATE LANGUAGE, offset = 1832, line number = 38, charPositionInLine = 0
-Reference: Object = "integer" (SERVER), action = CREATE, offset = 1902, line number = 39, charPositionInLine = 14
-Reference: Object = addr_fdw (FOREIGN_DATA_WRAPPER), action = null, offset = 1933, line number = 39, charPositionInLine = 45
-Reference: Object = addr_fserv (SERVER), action = CREATE, offset = 1957, line number = 40, charPositionInLine = 14
-Reference: Object = addr_fdw (FOREIGN_DATA_WRAPPER), action = null, offset = 1989, line number = 40, charPositionInLine = 46
-Reference: Object = alt_fserv1 (SERVER), action = CREATE, offset = 2013, line number = 41, charPositionInLine = 14
-Reference: Object = alt_fdw1 (FOREIGN_DATA_WRAPPER), action = null, offset = 2045, line number = 41, charPositionInLine = 46
-Reference: Object = ab1_b_a_stats (STATISTICS), action = CREATE, offset = 2123, line number = 43, charPositionInLine = 18
-Reference: Object = addr_nsp (SCHEMA), action = null, offset = 2173, line number = 44, charPositionInLine = 18
-Reference: Object = addr_nsp.gentable_stat (STATISTICS), action = CREATE, offset = 2182, line number = 44, charPositionInLine = 27
-Reference: Object = addr_nsp (SCHEMA), action = null, offset = 2209, line number = 44, charPositionInLine = 54
-Reference: Object = addr_nsp.gentable (TABLE), action = null, offset = 2218, line number = 44, charPositionInLine = 63
-Reference: Object = alt_stat1 (STATISTICS), action = CREATE, offset = 2246, line number = 45, charPositionInLine = 18
-Reference: Object = ctlt1_a_b_stat (STATISTICS), action = CREATE, offset = 2302, line number = 46, charPositionInLine = 18
-Reference: Object = func_deps_stat (STATISTICS), action = CREATE, offset = 2354, line number = 47, charPositionInLine = 18
-Reference: Object = regress_schema_2 (SCHEMA), action = null, offset = 2443, line number = 48, charPositionInLine = 18
-Reference: Object = regress_schema_2.ab1_a_b_stats (STATISTICS), action = CREATE, offset = 2460, line number = 48, charPositionInLine = 35
-Reference: Object = s2 (STATISTICS), action = CREATE, offset = 2510, line number = 49, charPositionInLine = 18
-Reference: Object = addr_ts_conf (FTS_CONFIGURATION), action = CREATE, offset = 2569, line number = 50, charPositionInLine = 33
-Reference: Object = alt_ts_conf1 (FTS_CONFIGURATION), action = CREATE, offset = 2631, line number = 51, charPositionInLine = 33
-Reference: Object = addr_ts_dict (FTS_DICTIONARY), action = CREATE, offset = 2690, line number = 52, charPositionInLine = 30
-Reference: Object = alt_ts_dict1 (FTS_DICTIONARY), action = CREATE, offset = 2752, line number = 53, charPositionInLine = 30
-Reference: Object = addr_ts_prs (FTS_PARSER), action = CREATE, offset = 2810, line number = 54, charPositionInLine = 26
-Reference: Object = alt_ts_prs1 (FTS_PARSER), action = CREATE, offset = 2938, line number = 55, charPositionInLine = 26
-Reference: Object = addr_ts_temp (FTS_TEMPLATE), action = CREATE, offset = 3068, line number = 56, charPositionInLine = 28
-Reference: Object = alt_ts_temp2 (FTS_TEMPLATE), action = CREATE, offset = 3134, line number = 57, charPositionInLine = 28
-Reference: action = CREATE TRANSFORM, offset = 3172, line number = 58, charPositionInLine = 0
-Reference: Object = addr_nsp.gentable.t (TRIGGER), action = CREATE, offset = 3320, line number = 59, charPositionInLine = 15
-Reference: Object = addr_nsp (SCHEMA), action = null, offset = 3339, line number = 59, charPositionInLine = 34
-Reference: Object = addr_nsp.gentable (TABLE), action = null, offset = 3348, line number = 59, charPositionInLine = 43
-Reference: Object = addr_nsp (SCHEMA), action = null, offset = 3388, line number = 59, charPositionInLine = 83
-Reference: Object = addr_nsp.trig() (FUNCTION), action = null, offset = 3397, line number = 59, charPositionInLine = 92
-Reference: Object = "regress_addr_user SERVER integer" (USER_MAPPING), action = CREATE, offset = 3429, line number = 60, charPositionInLine = 24
-Reference: Object = "integer" (SERVER), action = null, offset = 3454, line number = 60, charPositionInLine = 49
-Reference: action = CREATE USER, offset = 3465, line number = 61, charPositionInLine = 0
-Reference: Object = addr_nsp (SCHEMA), action = null, offset = 3508, line number = 62, charPositionInLine = 12
-Reference: Object = addr_nsp.genview (VIEW), action = CREATE, offset = 3517, line number = 62, charPositionInLine = 21
-Reference: action = DEALLOCATE, offset = 3561, line number = 63, charPositionInLine = 0
-Reference: action = DEALLOCATE, offset = 3577, line number = 64, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3601, line number = 65, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3660, line number = 66, charPositionInLine = 0
-Reference: action = DECLARE, offset = 3702, line number = 67, charPositionInLine = 0
-Reference: action = DISCARD, offset = 3783, line number = 68, charPositionInLine = 0
-Reference: action = DISCARD, offset = 3796, line number = 69, charPositionInLine = 0
-Reference: action = DISCARD, offset = 3815, line number = 70, charPositionInLine = 0
-Reference: Object = alt_fdw3 (FOREIGN_DATA_WRAPPER), action = DROP, offset = 3881, line number = 72, charPositionInLine = 26
-Reference: Object = ab1_a_b_stats (STATISTICS), action = DROP, offset = 3987, line number = 75, charPositionInLine = 16
-Reference: Object = regress_schema_2 (SCHEMA), action = null, offset = 4018, line number = 76, charPositionInLine = 16
-Reference: Object = regress_schema_2.ab1_a_b_stats (STATISTICS), action = DROP, offset = 4035, line number = 76, charPositionInLine = 33
-Reference: action = END, offset = 4089, line number = 78, charPositionInLine = 0
-Reference: action = EXECUTE, offset = 4094, line number = 79, charPositionInLine = 0
-Reference: action = EXECUTE, offset = 4106, line number = 80, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4118, line number = 81, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4188, line number = 82, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4286, line number = 83, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4321, line number = 84, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4359, line number = 85, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4454, line number = 86, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4472, line number = 87, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4509, line number = 88, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4569, line number = 91, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4625, line number = 92, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4705, line number = 93, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4842, line number = 95, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4950, line number = 98, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 4994, line number = 99, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 5047, line number = 100, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 5113, line number = 101, charPositionInLine = 0
-Reference: action = EXPLAIN, offset = 5179, line number = 102, charPositionInLine = 0
-Reference: action = LISTEN, offset = 5217, line number = 104, charPositionInLine = 0
-Reference: action = LOCK, offset = 5239, line number = 105, charPositionInLine = 0
-Reference: action = LOCK, offset = 5273, line number = 106, charPositionInLine = 0
-Reference: action = LOCK, offset = 5317, line number = 107, charPositionInLine = 0
-Reference: action = LOCK, offset = 5366, line number = 108, charPositionInLine = 0
-Reference: action = LOCK, offset = 5420, line number = 109, charPositionInLine = 0
-Reference: action = LOCK, offset = 5467, line number = 110, charPositionInLine = 0
-Reference: action = LOCK, offset = 5517, line number = 111, charPositionInLine = 0
-Reference: action = LOCK, offset = 5560, line number = 112, charPositionInLine = 0
-Reference: action = LOCK, offset = 5607, line number = 113, charPositionInLine = 0
-Reference: action = LOCK, offset = 5647, line number = 114, charPositionInLine = 0
-Reference: action = LOCK, offset = 5698, line number = 115, charPositionInLine = 0
-Reference: action = LOCK, offset = 5742, line number = 116, charPositionInLine = 0
-Reference: action = LOCK, offset = 5789, line number = 117, charPositionInLine = 0
-Reference: action = LOCK, offset = 5832, line number = 118, charPositionInLine = 0
-Reference: action = LOCK, offset = 5868, line number = 119, charPositionInLine = 0
-Reference: action = LOCK, offset = 5925, line number = 120, charPositionInLine = 0
-Reference: action = LOCK, offset = 5985, line number = 121, charPositionInLine = 0
-Reference: action = LOCK, offset = 6038, line number = 122, charPositionInLine = 0
-Reference: action = LOCK, offset = 6079, line number = 123, charPositionInLine = 0
-Reference: action = MOVE, offset = 6106, line number = 124, charPositionInLine = 0
-Reference: action = NOTIFY, offset = 6131, line number = 125, charPositionInLine = 0
-Reference: action = PREPARE, offset = 6153, line number = 126, charPositionInLine = 0
-Reference: action = PREPARE, offset = 6222, line number = 127, charPositionInLine = 0
-Reference: action = REASSIGN, offset = 6273, line number = 128, charPositionInLine = 0
-Reference: action = REFRESH, offset = 6321, line number = 129, charPositionInLine = 0
-Reference: action = REINDEX, offset = 6369, line number = 130, charPositionInLine = 0
-Reference: action = RELEASE, offset = 6394, line number = 131, charPositionInLine = 0
-Reference: action = RELEASE, offset = 6416, line number = 132, charPositionInLine = 0
-Reference: action = RESET, offset = 6437, line number = 133, charPositionInLine = 0
-Reference: action = ROLLBACK, offset = 6464, line number = 134, charPositionInLine = 0
-Reference: action = ROLLBACK, offset = 6480, line number = 135, charPositionInLine = 0
-Reference: action = ROLLBACK, offset = 6505, line number = 136, charPositionInLine = 0
-Reference: action = SAVEPOINT, offset = 6515, line number = 137, charPositionInLine = 0
-Reference: action = SAVEPOINT, offset = 6529, line number = 138, charPositionInLine = 0
-Reference: action = SECURITY LABEL FOR, offset = 6542, line number = 139, charPositionInLine = 0
-Reference: action = SECURITY LABEL FOR, offset = 6630, line number = 140, charPositionInLine = 0
-Reference: action = SECURITY LABEL ON, offset = 6710, line number = 141, charPositionInLine = 0
-Reference: action = SECURITY LABEL ON, offset = 6794, line number = 142, charPositionInLine = 0
-Reference: action = SECURITY LABEL ON, offset = 6874, line number = 143, charPositionInLine = 0
-Reference: action = SECURITY LABEL ON, offset = 6958, line number = 144, charPositionInLine = 0
-Reference: action = SECURITY LABEL ON, offset = 7034, line number = 145, charPositionInLine = 0
-Reference: action = SECURITY LABEL ON, offset = 7106, line number = 146, charPositionInLine = 0
-Reference: action = SET, offset = 7182, line number = 147, charPositionInLine = 0
-Reference: action = SHOW, offset = 7220, line number = 148, charPositionInLine = 0
-Reference: action = SHOW, offset = 7230, line number = 149, charPositionInLine = 0
-Reference: action = SHOW, offset = 7258, line number = 150, charPositionInLine = 0
-Reference: action = SHOW, offset = 7290, line number = 151, charPositionInLine = 0
-Reference: action = SHOW, offset = 7306, line number = 152, charPositionInLine = 0
-Reference: action = SHOW, offset = 7325, line number = 153, charPositionInLine = 0
-Reference: action = START TRANSACTION, offset = 7359, line number = 154, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7388, line number = 155, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7422, line number = 156, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7448, line number = 157, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7514, line number = 158, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7556, line number = 159, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7600, line number = 160, charPositionInLine = 0
-Reference: action = TRUNCATE, offset = 7621, line number = 161, charPositionInLine = 0
-Reference: action = UNLISTEN, offset = 7659, line number = 162, charPositionInLine = 0
-Reference: action = UNLISTEN, offset = 7671, line number = 163, charPositionInLine = 0
-Reference: action = VACUUM, offset = 7695, line number = 164, charPositionInLine = 0
-Reference: action = VACUUM, offset = 7726, line number = 165, charPositionInLine = 0
-Reference: action = VACUUM, offset = 7769, line number = 166, charPositionInLine = 0
-Reference: action = VACUUM, offset = 7894, line number = 167, charPositionInLine = 0
-Reference: action = VACUUM, offset = 7938, line number = 168, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8046, line number = 169, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8190, line number = 170, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8215, line number = 171, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8245, line number = 172, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8278, line number = 173, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8301, line number = 174, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8348, line number = 175, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8402, line number = 176, charPositionInLine = 0
-Reference: action = VACUUM, offset = 8422, line number = 177, charPositionInLine = 0
+Reference: action = ANALYSE, offset = 1349, line number = 24, charPositionInLine = 0
+Reference: action = ANALYZE, offset = 1427, line number = 25, charPositionInLine = 0
+Reference: action = ANALYSE, offset = 1442, line number = 26, charPositionInLine = 0
+Reference: action = ANALYZE, offset = 1457, line number = 27, charPositionInLine = 0
+Reference: action = ANALYSE, offset = 1483, line number = 28, charPositionInLine = 0
+Reference: action = ANALYZE, offset = 1509, line number = 29, charPositionInLine = 0
+Reference: action = ANALYSE, offset = 1560, line number = 30, charPositionInLine = 0
+Reference: action = BEGIN, offset = 1611, line number = 31, charPositionInLine = 0
+Reference: action = BEGIN, offset = 1650, line number = 32, charPositionInLine = 0
+Reference: action = CHECKPOINT, offset = 1657, line number = 33, charPositionInLine = 0
+Reference: action = CLOSE, offset = 1669, line number = 34, charPositionInLine = 0
+Reference: action = CLUSTER, offset = 1680, line number = 35, charPositionInLine = 0
+Reference: Object = ctlt1_a_b_stat (STATISTICS), action = COMMENT, offset = 1721, line number = 36, charPositionInLine = 22
+Reference: action = COPY, offset = 1751, line number = 37, charPositionInLine = 0
+Reference: action = CREATE ACCESS METHOD, offset = 1778, line number = 38, charPositionInLine = 0
+Reference: Object = addr_nsp (SCHEMA), action = null, offset = 1854, line number = 39, charPositionInLine = 17
+Reference: Object = addr_nsp.genaggr(integer) (AGGREGATE), action = CREATE, offset = 1863, line number = 39, charPositionInLine = 26
+Reference: Object = hstore (EXTENSION), action = CREATE, offset = 1926, line number = 40, charPositionInLine = 17
+Reference: Object = public (SCHEMA), action = null, offset = 1940, line number = 40, charPositionInLine = 31
+Reference: Object = addr_fdw (FOREIGN_DATA_WRAPPER), action = CREATE, offset = 1992, line number = 41, charPositionInLine = 28
+Reference: action = CREATE LANGUAGE, offset = 2002, line number = 42, charPositionInLine = 0
+Reference: Object = "integer" (SERVER), action = CREATE, offset = 2072, line number = 43, charPositionInLine = 14
+Reference: Object = addr_fdw (FOREIGN_DATA_WRAPPER), action = null, offset = 2103, line number = 43, charPositionInLine = 45
+Reference: Object = addr_fserv (SERVER), action = CREATE, offset = 2127, line number = 44, charPositionInLine = 14
+Reference: Object = addr_fdw (FOREIGN_DATA_WRAPPER), action = null, offset = 2159, line number = 44, charPositionInLine = 46
+Reference: Object = alt_fserv1 (SERVER), action = CREATE, offset = 2183, line number = 45, charPositionInLine = 14
+Reference: Object = alt_fdw1 (FOREIGN_DATA_WRAPPER), action = null, offset = 2215, line number = 45, charPositionInLine = 46
+Reference: Object = ab1_b_a_stats (STATISTICS), action = CREATE, offset = 2293, line number = 47, charPositionInLine = 18
+Reference: Object = addr_nsp (SCHEMA), action = null, offset = 2343, line number = 48, charPositionInLine = 18
+Reference: Object = addr_nsp.gentable_stat (STATISTICS), action = CREATE, offset = 2352, line number = 48, charPositionInLine = 27
+Reference: Object = addr_nsp (SCHEMA), action = null, offset = 2379, line number = 48, charPositionInLine = 54
+Reference: Object = addr_nsp.gentable (TABLE), action = null, offset = 2388, line number = 48, charPositionInLine = 63
+Reference: Object = alt_stat1 (STATISTICS), action = CREATE, offset = 2416, line number = 49, charPositionInLine = 18
+Reference: Object = ctlt1_a_b_stat (STATISTICS), action = CREATE, offset = 2472, line number = 50, charPositionInLine = 18
+Reference: Object = func_deps_stat (STATISTICS), action = CREATE, offset = 2524, line number = 51, charPositionInLine = 18
+Reference: Object = regress_schema_2 (SCHEMA), action = null, offset = 2613, line number = 52, charPositionInLine = 18
+Reference: Object = regress_schema_2.ab1_a_b_stats (STATISTICS), action = CREATE, offset = 2630, line number = 52, charPositionInLine = 35
+Reference: Object = s2 (STATISTICS), action = CREATE, offset = 2680, line number = 53, charPositionInLine = 18
+Reference: Object = addr_ts_conf (FTS_CONFIGURATION), action = CREATE, offset = 2739, line number = 54, charPositionInLine = 33
+Reference: Object = alt_ts_conf1 (FTS_CONFIGURATION), action = CREATE, offset = 2801, line number = 55, charPositionInLine = 33
+Reference: Object = addr_ts_dict (FTS_DICTIONARY), action = CREATE, offset = 2860, line number = 56, charPositionInLine = 30
+Reference: Object = alt_ts_dict1 (FTS_DICTIONARY), action = CREATE, offset = 2922, line number = 57, charPositionInLine = 30
+Reference: Object = addr_ts_prs (FTS_PARSER), action = CREATE, offset = 2980, line number = 58, charPositionInLine = 26
+Reference: Object = alt_ts_prs1 (FTS_PARSER), action = CREATE, offset = 3108, line number = 59, charPositionInLine = 26
+Reference: Object = addr_ts_temp (FTS_TEMPLATE), action = CREATE, offset = 3238, line number = 60, charPositionInLine = 28
+Reference: Object = alt_ts_temp2 (FTS_TEMPLATE), action = CREATE, offset = 3304, line number = 61, charPositionInLine = 28
+Reference: action = CREATE TRANSFORM, offset = 3342, line number = 62, charPositionInLine = 0
+Reference: Object = addr_nsp.gentable.t (TRIGGER), action = CREATE, offset = 3490, line number = 63, charPositionInLine = 15
+Reference: Object = addr_nsp (SCHEMA), action = null, offset = 3509, line number = 63, charPositionInLine = 34
+Reference: Object = addr_nsp.gentable (TABLE), action = null, offset = 3518, line number = 63, charPositionInLine = 43
+Reference: Object = addr_nsp (SCHEMA), action = null, offset = 3558, line number = 63, charPositionInLine = 83
+Reference: Object = addr_nsp.trig() (FUNCTION), action = null, offset = 3567, line number = 63, charPositionInLine = 92
+Reference: Object = "regress_addr_user SERVER integer" (USER_MAPPING), action = CREATE, offset = 3599, line number = 64, charPositionInLine = 24
+Reference: Object = "integer" (SERVER), action = null, offset = 3624, line number = 64, charPositionInLine = 49
+Reference: action = CREATE USER, offset = 3635, line number = 65, charPositionInLine = 0
+Reference: Object = addr_nsp (SCHEMA), action = null, offset = 3678, line number = 66, charPositionInLine = 12
+Reference: Object = addr_nsp.genview (VIEW), action = CREATE, offset = 3687, line number = 66, charPositionInLine = 21
+Reference: action = DEALLOCATE, offset = 3731, line number = 67, charPositionInLine = 0
+Reference: action = DEALLOCATE, offset = 3747, line number = 68, charPositionInLine = 0
+Reference: action = DECLARE, offset = 3771, line number = 69, charPositionInLine = 0
+Reference: action = DECLARE, offset = 3830, line number = 70, charPositionInLine = 0
+Reference: action = DECLARE, offset = 3872, line number = 71, charPositionInLine = 0
+Reference: action = DISCARD, offset = 3953, line number = 72, charPositionInLine = 0
+Reference: action = DISCARD, offset = 3966, line number = 73, charPositionInLine = 0
+Reference: action = DISCARD, offset = 3985, line number = 74, charPositionInLine = 0
+Reference: Object = alt_fdw3 (FOREIGN_DATA_WRAPPER), action = DROP, offset = 4051, line number = 76, charPositionInLine = 26
+Reference: Object = ab1_a_b_stats (STATISTICS), action = DROP, offset = 4157, line number = 79, charPositionInLine = 16
+Reference: Object = regress_schema_2 (SCHEMA), action = null, offset = 4188, line number = 80, charPositionInLine = 16
+Reference: Object = regress_schema_2.ab1_a_b_stats (STATISTICS), action = DROP, offset = 4205, line number = 80, charPositionInLine = 33
+Reference: action = END, offset = 4259, line number = 82, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 4264, line number = 83, charPositionInLine = 0
+Reference: action = EXECUTE, offset = 4276, line number = 84, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4288, line number = 85, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4358, line number = 86, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4428, line number = 87, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4526, line number = 88, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4624, line number = 89, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4659, line number = 90, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4697, line number = 91, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4792, line number = 92, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4887, line number = 93, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4905, line number = 94, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 4942, line number = 95, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5002, line number = 98, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5058, line number = 99, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5114, line number = 100, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5194, line number = 101, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5331, line number = 103, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5439, line number = 106, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5483, line number = 107, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5536, line number = 108, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5602, line number = 109, charPositionInLine = 0
+Reference: action = EXPLAIN, offset = 5668, line number = 110, charPositionInLine = 0
+Reference: action = LISTEN, offset = 5706, line number = 112, charPositionInLine = 0
+Reference: action = LOCK, offset = 5728, line number = 113, charPositionInLine = 0
+Reference: action = LOCK, offset = 5762, line number = 114, charPositionInLine = 0
+Reference: action = LOCK, offset = 5806, line number = 115, charPositionInLine = 0
+Reference: action = LOCK, offset = 5855, line number = 116, charPositionInLine = 0
+Reference: action = LOCK, offset = 5909, line number = 117, charPositionInLine = 0
+Reference: action = LOCK, offset = 5956, line number = 118, charPositionInLine = 0
+Reference: action = LOCK, offset = 6006, line number = 119, charPositionInLine = 0
+Reference: action = LOCK, offset = 6049, line number = 120, charPositionInLine = 0
+Reference: action = LOCK, offset = 6096, line number = 121, charPositionInLine = 0
+Reference: action = LOCK, offset = 6136, line number = 122, charPositionInLine = 0
+Reference: action = LOCK, offset = 6187, line number = 123, charPositionInLine = 0
+Reference: action = LOCK, offset = 6231, line number = 124, charPositionInLine = 0
+Reference: action = LOCK, offset = 6278, line number = 125, charPositionInLine = 0
+Reference: action = LOCK, offset = 6321, line number = 126, charPositionInLine = 0
+Reference: action = LOCK, offset = 6357, line number = 127, charPositionInLine = 0
+Reference: action = LOCK, offset = 6414, line number = 128, charPositionInLine = 0
+Reference: action = LOCK, offset = 6474, line number = 129, charPositionInLine = 0
+Reference: action = LOCK, offset = 6527, line number = 130, charPositionInLine = 0
+Reference: action = LOCK, offset = 6568, line number = 131, charPositionInLine = 0
+Reference: action = MOVE, offset = 6595, line number = 132, charPositionInLine = 0
+Reference: action = NOTIFY, offset = 6620, line number = 133, charPositionInLine = 0
+Reference: action = PREPARE, offset = 6642, line number = 134, charPositionInLine = 0
+Reference: action = PREPARE, offset = 6711, line number = 135, charPositionInLine = 0
+Reference: action = REASSIGN, offset = 6762, line number = 136, charPositionInLine = 0
+Reference: action = REFRESH, offset = 6810, line number = 137, charPositionInLine = 0
+Reference: action = REINDEX, offset = 6858, line number = 138, charPositionInLine = 0
+Reference: action = RELEASE, offset = 6883, line number = 139, charPositionInLine = 0
+Reference: action = RELEASE, offset = 6905, line number = 140, charPositionInLine = 0
+Reference: action = RESET, offset = 6926, line number = 141, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 6953, line number = 142, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 6969, line number = 143, charPositionInLine = 0
+Reference: action = ROLLBACK, offset = 6994, line number = 144, charPositionInLine = 0
+Reference: action = SAVEPOINT, offset = 7004, line number = 145, charPositionInLine = 0
+Reference: action = SAVEPOINT, offset = 7018, line number = 146, charPositionInLine = 0
+Reference: action = SECURITY LABEL FOR, offset = 7031, line number = 147, charPositionInLine = 0
+Reference: action = SECURITY LABEL FOR, offset = 7119, line number = 148, charPositionInLine = 0
+Reference: action = SECURITY LABEL ON, offset = 7199, line number = 149, charPositionInLine = 0
+Reference: action = SECURITY LABEL ON, offset = 7283, line number = 150, charPositionInLine = 0
+Reference: action = SECURITY LABEL ON, offset = 7363, line number = 151, charPositionInLine = 0
+Reference: action = SECURITY LABEL ON, offset = 7447, line number = 152, charPositionInLine = 0
+Reference: action = SECURITY LABEL ON, offset = 7523, line number = 153, charPositionInLine = 0
+Reference: action = SECURITY LABEL ON, offset = 7595, line number = 154, charPositionInLine = 0
+Reference: action = SET, offset = 7671, line number = 155, charPositionInLine = 0
+Reference: action = SHOW, offset = 7709, line number = 156, charPositionInLine = 0
+Reference: action = SHOW, offset = 7719, line number = 157, charPositionInLine = 0
+Reference: action = SHOW, offset = 7747, line number = 158, charPositionInLine = 0
+Reference: action = SHOW, offset = 7779, line number = 159, charPositionInLine = 0
+Reference: action = SHOW, offset = 7795, line number = 160, charPositionInLine = 0
+Reference: action = SHOW, offset = 7814, line number = 161, charPositionInLine = 0
+Reference: action = START TRANSACTION, offset = 7848, line number = 162, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 7877, line number = 163, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 7911, line number = 164, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 7937, line number = 165, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 8003, line number = 166, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 8045, line number = 167, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 8089, line number = 168, charPositionInLine = 0
+Reference: action = TRUNCATE, offset = 8110, line number = 169, charPositionInLine = 0
+Reference: action = UNLISTEN, offset = 8148, line number = 170, charPositionInLine = 0
+Reference: action = UNLISTEN, offset = 8160, line number = 171, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8184, line number = 172, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8215, line number = 173, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8246, line number = 174, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8289, line number = 175, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8414, line number = 176, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8539, line number = 177, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8583, line number = 178, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8691, line number = 179, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8835, line number = 180, charPositionInLine = 0
+Reference: action = VACUUM, offset = 8979, line number = 181, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9004, line number = 182, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9034, line number = 183, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9067, line number = 184, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9100, line number = 185, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9123, line number = 186, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9170, line number = 187, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9217, line number = 188, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9271, line number = 189, charPositionInLine = 0
+Reference: action = VACUUM, offset = 9291, line number = 190, charPositionInLine = 0
