@@ -29,7 +29,6 @@ import ru.taximaxim.codekeeper.core.hashers.Hasher;
 import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
 import ru.taximaxim.codekeeper.core.schema.ArgMode;
 import ru.taximaxim.codekeeper.core.schema.Argument;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public abstract class AbstractPgFunction extends AbstractFunction {
 
@@ -264,13 +263,6 @@ public abstract class AbstractPgFunction extends AbstractFunction {
     public void setBody(final String body) {
         this.body = body;
         resetHash();
-    }
-
-    /**
-     * Sets {@link #body} with newlines as requested in arguments.
-     */
-    public void setBody(ISettings settings, String body) {
-        setBody(settings.isKeepNewlines() ? body : body.replace("\r", ""));
     }
 
     public void addTransform(String datatype) {

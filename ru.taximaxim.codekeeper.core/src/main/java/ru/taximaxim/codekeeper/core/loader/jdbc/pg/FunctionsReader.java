@@ -264,7 +264,7 @@ public final class FunctionsReader extends JdbcReader {
         }
 
         ISettings settings = loader.getSettings();
-        function.setBody(settings, body);
+        function.setBody(getTextWithCheckNewLines(body));
 
         // Parsing the function definition and adding its result context for analysis.
         if (function.isInStatementBody()) {

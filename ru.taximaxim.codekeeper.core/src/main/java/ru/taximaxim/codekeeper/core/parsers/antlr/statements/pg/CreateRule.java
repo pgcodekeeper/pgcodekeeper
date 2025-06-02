@@ -22,6 +22,7 @@ import java.util.Locale;
 
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.RuleAnalysisLauncher;
@@ -68,7 +69,7 @@ public final class CreateRule extends PgParserAbstract {
 
         // allows to write a common namespace-setup code with no copy-paste for each cmd type
         for (Rewrite_commandContext cmd : ctx.rewrite_command()) {
-            rule.addCommand(checkNewLines(getFullCtxText(cmd), settings));
+            rule.addCommand(Utils.checkNewLines(getFullCtxText(cmd), settings));
         }
 
         db.addAnalysisLauncher(new RuleAnalysisLauncher(rule, ctx, location));

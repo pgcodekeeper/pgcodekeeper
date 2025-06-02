@@ -112,18 +112,15 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
         return getFullCtxText(ctx, ctx);
     }
 
-    public String getFullCtxTextWithCheckNewLines(ParserRuleContext ctx) {
+    protected String getFullCtxTextWithCheckNewLines(ParserRuleContext ctx) {
         String text = getFullCtxText(ctx, ctx);
         return checkNewLines(text);
     }
 
     protected String checkNewLines(String text) {
-        return checkNewLines(text, settings);
+        return Utils.checkNewLines(text, settings);
     }
 
-    protected static String checkNewLines(String text, ISettings settings) {
-        return settings.isKeepNewlines() ? text : text.replace("\r", "");
-    }
 
     /**
      * Extracts raw text from list of IdentifierContext
@@ -169,7 +166,7 @@ public abstract class ParserAbstract<S extends AbstractDatabase> {
     }
 
     protected String getExpressionText(ParserRuleContext def, CommonTokenStream stream) {
-        String expression = checkNewLines(getFullCtxText(def));
+        String expression = getFullCtxTextWithCheckNewLines(def);
         String whitespace = getHiddenLeftCtxText(def, stream);
         int newline = whitespace.indexOf('\n');
         return newline != -1 ? (whitespace.substring(newline) + expression) : expression;
