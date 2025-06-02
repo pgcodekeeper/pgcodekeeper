@@ -176,4 +176,8 @@ public abstract class JdbcReader extends AbstractStatementReader {
         // left join
         builder.join("LEFT JOIN sys.database_principals p WITH (NOLOCK) ON p.principal_id=" + field);
     }
+
+    protected String getTextWithCheckNewLines(String text) {
+        return Utils.checkNewLines(text, loader.getSettings());
+    }
 }

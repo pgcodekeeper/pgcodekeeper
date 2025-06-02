@@ -854,7 +854,7 @@ class PgAntlrLoaderTest {
         schema.addView(view);
 
         view.setComment("'test view'");
-        view.addColumnComment(new TestCoreSettings(), "id", "'view id col'");
+        view.addColumnComment("id", "'view id col'");
 
         view.setOwner("fordfrog");
 

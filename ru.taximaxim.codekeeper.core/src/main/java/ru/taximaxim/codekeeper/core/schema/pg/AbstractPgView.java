@@ -37,7 +37,6 @@ import ru.taximaxim.codekeeper.core.schema.ObjectState;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.core.schema.PgStatementContainer;
 import ru.taximaxim.codekeeper.core.script.SQLScript;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -227,12 +226,12 @@ public abstract class AbstractPgView extends AbstractView implements ISimpleOpti
         resetHash();
     }
 
-    public void addColumnComment(ISettings settings, String columnName, String comment) {
+    public void addColumnComment(String columnName, String comment) {
         if (comment == null || comment.isEmpty()) {
             return;
         }
 
-        columnComments.put(columnName, settings.isKeepNewlines() ? comment : comment.replace("\r", ""));
+        columnComments.put(columnName, comment);
         resetHash();
     }
 

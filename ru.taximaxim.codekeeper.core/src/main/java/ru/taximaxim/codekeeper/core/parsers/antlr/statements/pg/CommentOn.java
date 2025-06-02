@@ -55,7 +55,7 @@ public final class CommentOn extends PgParserAbstract {
     @Override
     public void parseObject() {
         SconstContext str = ctx.sconst();
-        String comment = str == null ? null : str.getText();
+        String comment = str == null ? null : getFullCtxTextWithCheckNewLines(str);
         Comment_member_objectContext obj = ctx.comment_member_object();
 
         List<ParserRuleContext> ids = null;
@@ -95,10 +95,10 @@ public final class CommentOn extends PgParserAbstract {
                 if (view == null) {
                     PgCompositeType t = ((PgCompositeType) getSafe(PgSchema::getType, schema, tableCtx));
                     addObjReference(tableIds, DbObjType.TYPE, null);
-                    t.getAttr(name).setComment(settings, comment);
+                    t.getAttr(name).setComment(comment);
                 } else {
                     addObjReference(tableIds, DbObjType.VIEW, null);
-                    view.addColumnComment(settings, name, comment);
+                    view.addColumnComment(name, comment);
                 }
             } else {
                 PgColumn column;
@@ -114,7 +114,7 @@ public final class CommentOn extends PgParserAbstract {
                     }
                 }
                 addObjReference(tableIds, DbObjType.TABLE, null);
-                column.setComment(settings, comment);
+                column.setComment(comment);
             }
             return;
         }
@@ -242,7 +242,7 @@ public final class CommentOn extends PgParserAbstract {
             return;
         }
 
-        doSafe((s, c) -> s.setComment(settings, c), st, comment);
+        doSafe(PgStatement::setComment, st, comment);
         if (type == DbObjType.FUNCTION || type == DbObjType.PROCEDURE || type == DbObjType.AGGREGATE) {
             addObjReference(ids, type, ACTION_ALTER, parseArguments(obj.function_args()));
         } else {

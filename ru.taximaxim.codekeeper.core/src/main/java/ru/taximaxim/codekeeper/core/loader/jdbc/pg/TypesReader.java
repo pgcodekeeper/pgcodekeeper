@@ -133,7 +133,7 @@ public final class TypesReader extends JdbcReader {
 
                 d.addConstraint(constrCheck);
                 if (concomments[i] != null && !concomments[i].isEmpty()) {
-                    constrCheck.setComment(settings, PgDiffUtils.quoteString(concomments[i]));
+                    constrCheck.setComment(getTextWithCheckNewLines(PgDiffUtils.quoteString(concomments[i])));
                 }
             }
         }
@@ -295,7 +295,7 @@ public final class TypesReader extends JdbcReader {
             }
             t.addAttr(a);
             if (attcomments[i] != null && !attcomments[i].isEmpty()) {
-                a.setComment(loader.getSettings(), PgDiffUtils.quoteString(attcomments[i]));
+                a.setComment(getTextWithCheckNewLines(PgDiffUtils.quoteString(attcomments[i])));
             }
         }
 

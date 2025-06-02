@@ -181,13 +181,6 @@ public abstract class PgStatement implements IStatement, IHashable {
         return sb.append(getQualifiedName());
     }
 
-    /**
-     * Sets {@link #comment} with newlines as requested in arguments.
-     */
-    public void setComment(ISettings settings, String comment) {
-        setComment(settings.isKeepNewlines() ? comment : comment.replace("\r", ""));
-    }
-
     public void appendComments(SQLScript script) {
         if (checkComments()) {
             appendCommentSql(script);

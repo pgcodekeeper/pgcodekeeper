@@ -20,6 +20,7 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.parsers.antlr.QNameParser;
 import ru.taximaxim.codekeeper.core.parsers.antlr.expr.launcher.DomainAnalysisLauncher;
@@ -81,7 +82,7 @@ public final class CreateDomain extends PgParserAbstract {
     public static void parseDomainConstraint(PgDomain domain, PgConstraintCheck constr,
             Domain_constraintContext ctx, AbstractDatabase db, String location, ISettings settings) {
         VexContext vexCtx = ctx.vex();
-        constr.setExpression(checkNewLines(getFullCtxText(vexCtx), settings));
+        constr.setExpression(Utils.checkNewLines(getFullCtxText(vexCtx), settings));
         db.addAnalysisLauncher(new DomainAnalysisLauncher(domain, vexCtx, location));
     }
 

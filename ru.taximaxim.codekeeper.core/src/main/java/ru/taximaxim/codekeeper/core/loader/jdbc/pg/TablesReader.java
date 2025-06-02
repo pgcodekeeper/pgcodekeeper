@@ -357,7 +357,7 @@ public final class TablesReader extends JdbcReader {
 
             String comment = colComments[i];
             if (comment != null && !comment.isEmpty()) {
-                column.setComment(loader.getSettings(), PgDiffUtils.quoteString(comment));
+                column.setComment(getTextWithCheckNewLines(PgDiffUtils.quoteString(comment)));
             }
 
             // COLUMNS PRIVILEGES

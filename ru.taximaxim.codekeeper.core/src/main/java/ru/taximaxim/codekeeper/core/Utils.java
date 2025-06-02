@@ -37,6 +37,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.core.localizations.Messages;
+import ru.taximaxim.codekeeper.core.settings.ISettings;
 
 public final class Utils {
 
@@ -134,6 +135,10 @@ public final class Utils {
 
     public static boolean stringContainsAnyItem(String inputStr, List<String> items) {
         return items.stream().anyMatch(inputStr::contains);
+    }
+
+    public static String checkNewLines(String text, ISettings settings) {
+        return settings.isKeepNewlines() ? text : text.replace("\r", "");
     }
 
     private Utils() {

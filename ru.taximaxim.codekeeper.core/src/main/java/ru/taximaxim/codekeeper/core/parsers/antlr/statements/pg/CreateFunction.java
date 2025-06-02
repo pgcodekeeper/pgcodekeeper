@@ -157,7 +157,7 @@ public final class CreateFunction extends PgParserAbstract {
                     sb.append(PgDiffUtils.quoteStringDollar(definition));
                 }
 
-                function.setBody(settings, sb.toString());
+                function.setBody(checkNewLines(sb.toString()));
             } else if (action.TRANSFORM() != null) {
                 for (Transform_for_typeContext transform : action.transform_for_type()) {
                     function.addTransform(getFullCtxText(transform.data_type()));
@@ -180,8 +180,7 @@ public final class CreateFunction extends PgParserAbstract {
         Function_bodyContext body = ctx.function_body();
         if (body != null) {
             function.setInStatementBody(true);
-            String bodyText = getFullCtxText(body);
-            function.setBody(settings, bodyText);
+            function.setBody(getFullCtxTextWithCheckNewLines(body));
             if (language == null) {
                 language = "sql";
             }
