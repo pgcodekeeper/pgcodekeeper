@@ -247,56 +247,27 @@ public final class GrantPrivilege extends PgParserAbstract {
             String state, String permissions, List<String> roles, boolean isGO) {
         List<ParserRuleContext> ids = getIdentifiers(name);
         ParserRuleContext idCtx = QNameParser.getFirstNameCtx(ids);
-        PgSchema schema;
-        switch (type) {
-        case SCHEMA:
-            schema = (PgSchema) getSafe(PgDatabase::getSchema, db, idCtx);
-            break;
-        case FOREIGN_DATA_WRAPPER, SERVER:
-            schema = null;
-            break;
-        default:
-            schema = getSchemaSafe(ids);
-        }
+        PgStatement statement = switch (type) {
+            case SCHEMA -> getSafe(PgDatabase::getSchema, db, idCtx);
+            case DOMAIN -> getSafe(PgSchema::getDomain, getSchemaSafe(ids), idCtx);
+            case TABLE -> (PgStatement) getSafe(PgSchema::getRelation, getSchemaSafe(ids), idCtx);
+            case SEQUENCE -> getSafe(PgSchema::getSequence, getSchemaSafe(ids), idCtx);
+            case FOREIGN_DATA_WRAPPER -> getSafe(PgDatabase::getForeignDW, db, idCtx);
+            case SERVER -> getSafe(PgDatabase::getServer, db, idCtx);
+            case TYPE -> {
+                PgSchema schema = getSchemaSafe(ids);
+                statement = schema.getType(idCtx.getText());
 
-        PgStatement statement = null;
-        String typeName = null;
-        switch (type) {
-        case TABLE:
-            statement = (PgStatement) getSafe(PgSchema::getRelation, schema, idCtx);
-            break;
-        case SEQUENCE:
-            statement = getSafe(PgSchema::getSequence, schema, idCtx);
-            break;
-        case SCHEMA:
-            statement = schema;
-            break;
-        case TYPE:
-            statement = schema.getType(idCtx.getText());
-
-            // if type not found try domain
-            if (statement == null) {
-                statement = getSafe(PgSchema::getDomain, schema, idCtx);
+                // if type not found try domain
+                if (statement == null) {
+                    statement = getSafe(PgSchema::getDomain, schema, idCtx);
+                }
+                yield statement;
             }
-            break;
-        case DOMAIN:
-            statement = getSafe(PgSchema::getDomain, schema, idCtx);
-            break;
-        case SERVER:
-            statement = getSafe(PgDatabase::getServer, db, idCtx);
-            typeName = "FOREIGN SERVER";
-            break;
-        case FOREIGN_DATA_WRAPPER:
-            statement = getSafe(PgDatabase::getForeignDW, db, idCtx);
-            typeName = "FOREIGN DATA WRAPPER";
-            break;
-        default:
-            break;
-        }
-        if (typeName == null) {
-            typeName = type.name();
-        }
+            default -> null;
+        };
         if (statement != null) {
+            String typeName = type == DbObjType.SERVER ? "FOREIGN SERVER" : type.getTypeName();
             for (String role : roles) {
                 addPrivilege(statement, new PgPrivilege(state, permissions,
                         typeName + " " + statement.getQualifiedName(), role, isGO, DatabaseType.PG));

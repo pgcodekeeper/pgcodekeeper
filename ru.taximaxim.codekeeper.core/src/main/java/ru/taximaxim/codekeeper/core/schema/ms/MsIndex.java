@@ -144,8 +144,8 @@ public final class MsIndex extends AbstractIndex {
 
     @Override
     public ObjectState appendAlterSQL(PgStatement newCondition, SQLScript script) {
-        if (!compare(newCondition)) {
-            MsIndex newIndex = (MsIndex) newCondition;
+        MsIndex newIndex = (MsIndex) newCondition;
+        if (!compare(newIndex)) {
             if (!isClustered || newIndex.isClustered) {
                 newIndex.getCreationSQL(script, true);
                 return ObjectState.ALTER_WITH_DEP;

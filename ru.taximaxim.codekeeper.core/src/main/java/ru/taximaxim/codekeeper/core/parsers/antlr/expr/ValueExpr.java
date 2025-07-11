@@ -25,6 +25,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -158,7 +159,7 @@ public final class ValueExpr extends AbstractExpr {
             return ret;
         }
 
-        if (vex.equal() != null || vex.and() != null) {
+        if (vex.eq() != null || vex.and() != null) {
             // BETWEEN is handled as AND, no separate processing required
             return new ModPair<>(NONAME, TypesSetManually.BOOLEAN);
         }
@@ -344,7 +345,7 @@ public final class ValueExpr extends AbstractExpr {
                 // we need the Pair of the last expression (ELSE)
                 ret = analyze(new Vex(v));
             }
-            if (ret.getFirst() == null || caseExpr.ELSE() == null) {
+            if (ret != null && (ret.getFirst() == null || caseExpr.ELSE() == null)) {
                 // CASE inherits its name only from the ELSE expression
                 // if it is missing or doesn't carry any name, the name becomes "case"
                 ret.setFirst("case");

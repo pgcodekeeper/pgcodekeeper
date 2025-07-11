@@ -477,17 +477,16 @@ public final class FunctionsReader extends JdbcReader {
             JdbcType returnType = loader.getCachedTypeByOid(argTypes[i]);
             returnType.addTypeDepcy(f);
 
-            if ("t".equals(aMode)) {
-                String name = argNames[i];
+            String argName = argNames != null ? argNames[i] : null;
+            if ("t".equals(aMode) && argName != null) {
                 String type = returnType.getFullName();
-                sb.append(PgDiffUtils.getQuotedName(name)).append(" ")
+                sb.append(PgDiffUtils.getQuotedName(argName)).append(" ")
                 .append(type).append(", ");
                 f.addReturnsColumn(argNames[i], type);
                 continue;
             }
 
             JdbcType argJdbcType = loader.getCachedTypeByOid(argTypes[i]);
-            String argName = argNames != null ? argNames[i] : null;
 
             // these require resetHash functionality for defaults
             Argument a = f.new PgArgument(ArgMode.of(aMode), argName, argJdbcType.getFullName());
