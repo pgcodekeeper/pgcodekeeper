@@ -50,7 +50,7 @@ public abstract class XmlStore<T> {
     protected final String fileName;
     private final String rootTag;
 
-    private volatile Document cachedDocument;
+    private Document cachedDocument;
 
     protected XmlStore(String fileName, String rootTag) {
         this.fileName = fileName;
@@ -127,13 +127,12 @@ public abstract class XmlStore<T> {
      *
      * @param useCached immediately return the Document read in the previous call to this method
      */
-    protected Document readXml(boolean useCached) throws IOException {
-        Document xml = cachedDocument;
-        if (useCached && xml != null) {
-            return xml;
+    protected synchronized Document readXml(boolean useCached) throws IOException {
+        if (useCached && cachedDocument != null) {
+            return cachedDocument;
         }
         try (Reader reader = Files.newBufferedReader(getXmlFile(), StandardCharsets.UTF_8)) {
-            xml = Utils.readXml(reader);
+            Document xml = Utils.readXml(reader);
 
             if (!xml.getDocumentElement().getNodeName().equals(rootTag)) {
                 throw new IOException(Messages.XmlStore_root_error);

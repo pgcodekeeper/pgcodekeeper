@@ -181,7 +181,7 @@ public class Vex {
         return isB ? vexB.GEQ() : vex.GEQ();
     }
 
-    public TerminalNode equal() {
+    public TerminalNode eq() {
         return isB ? vexB.EQUAL() : vex.EQUAL();
     }
 

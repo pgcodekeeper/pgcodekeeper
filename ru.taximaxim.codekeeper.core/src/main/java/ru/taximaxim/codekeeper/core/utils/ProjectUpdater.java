@@ -81,17 +81,7 @@ public class ProjectUpdater {
                 updatePartial(dirTmp);
             } catch (Exception ex) {
                 caughtProcessingEx = true;
-
-                LOG.error(Messages.ProjectUpdater_log_upd_project_err, ex);
-
-                try {
-                    restoreProjectDir(dirTmp);
-                } catch (Exception exRestore) {
-                    LOG.error(Messages.ProjectUpdater_log_restoring_err, exRestore);
-                    IOException exNew = new IOException(Messages.ProjectUpdater_error_backup_restore, exRestore);
-                    exNew.addSuppressed(ex);
-                    throw exNew;
-                }
+                tryToRestore(dirTmp, ex);
                 throw new IOException(
                         MessageFormat.format(Messages.ProjectUpdater_error_update, ex.getLocalizedMessage()), ex);
             }
@@ -102,6 +92,19 @@ public class ProjectUpdater {
             }
             throw new IOException(
                     MessageFormat.format(Messages.ProjectUpdater_error_no_tempdir, ex.getLocalizedMessage()), ex);
+        }
+    }
+
+
+    private void tryToRestore(Path dirTmp, Exception ex) throws IOException {
+        LOG.error(Messages.ProjectUpdater_log_update_err_restore_proj, ex);
+        try {
+            restoreProjectDir(dirTmp);
+        } catch (Exception exRestore) {
+            LOG.error(Messages.ProjectUpdater_log_restoring_err, exRestore);
+            IOException exNew = new IOException(Messages.ProjectUpdater_error_backup_restore, exRestore);
+            exNew.addSuppressed(ex);
+            throw exNew;
         }
     }
 
@@ -157,16 +160,7 @@ public class ProjectUpdater {
             } catch (Exception ex) {
                 caughtProcessingEx = true;
 
-                LOG.error(Messages.ProjectUpdater_log_update_err_restore_proj, ex);
-
-                try {
-                    restoreProjectDir(dirTmp);
-                } catch (Exception exRestore) {
-                    LOG.error(Messages.ProjectUpdater_log_err_restore_project, exRestore);
-                    IOException exNew = new IOException(Messages.ProjectUpdater_error_backup_restore, exRestore);
-                    exNew.addSuppressed(ex);
-                    throw exNew;
-                }
+                tryToRestore(dirTmp, ex);
                 throw new IOException(
                         MessageFormat.format(Messages.ProjectUpdater_error_update, ex.getLocalizedMessage()), ex);
             }
