@@ -84,6 +84,10 @@ public final class Messages extends NLS {
 
     public static String DepcyGraph_log_remove_deps;
 
+    public static String FileUtils_creating_temp_directory;
+
+    public static String FileUtils_creating_temp_file;
+
     public static String FileUtils_error_while_read_uri_lib;
 
     public static String Function_log_variable_not_found;

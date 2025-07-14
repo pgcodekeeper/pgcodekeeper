@@ -228,7 +228,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         dbType = ProjectUtils.getDatabaseType(getProject());
 
         // message box
-        if(!site.getPage().getPerspective().getId().equals(PERSPECTIVE.MAIN)){
+        if(!PERSPECTIVE.MAIN.equals(site.getPage().getPerspective().getId())){
             askPerspectiveChange(site);
         }
         getSite().setSelectionProvider(sp);
@@ -605,10 +605,10 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private void askPerspectiveChange(IEditorSite site) {
         String mode = mainPrefs.getString(PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
         // if select "YES" with toggle
-        if (mode.equals(MessageDialogWithToggle.ALWAYS)){
+        if (MessageDialogWithToggle.ALWAYS.equals(mode)){
             changePerspective(site);
             // if not select "NO" with toggle, show choice message dialog
-        } else if (!mode.equals(MessageDialogWithToggle.NEVER)){
+        } else if (!MessageDialogWithToggle.NEVER.equals(mode)){
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(site.getShell(),
                     Messages.change_perspective_title, Messages.change_perspective_message,
                     Messages.remember_choice_toggle, false, mainPrefs, PG_EDIT_PREF.PERSPECTIVE_CHANGING_STATUS);
@@ -794,10 +794,10 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             boolean inProj = false;
             String creationMode = mainPrefs.getString(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
             // if select "YES" with toggle
-            if (creationMode.equals(MessageDialogWithToggle.ALWAYS)) {
+            if (MessageDialogWithToggle.ALWAYS.equals(creationMode)) {
                 inProj = true;
                 // if not select "NO" with toggle, show choice message dialog
-            } else if (!creationMode.equals(MessageDialogWithToggle.NEVER)) {
+            } else if (!MessageDialogWithToggle.NEVER.equals(creationMode)) {
                 MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(parent.getShell(),
                         Messages.ProjectEditorDiffer_script_creation_title, Messages.ProjectEditorDiffer_script_creation_message,
                         Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT);
@@ -977,7 +977,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
 
     public static void notifyDbChanged(DbInfo dbinfo) {
         String action = Activator.getDefault().getPreferenceStore().getString(PG_EDIT_PREF.EDITOR_UPDATE_ACTION);
-        if (action.equals(PG_EDIT_PREF.NO_ACTION)) {
+        if (PG_EDIT_PREF.NO_ACTION.equals(action)) {
             return;
         }
         for (IWorkbenchWindow wnd : PlatformUI.getWorkbench().getWorkbenchWindows()) {
@@ -985,7 +985,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                 for (IEditorReference ref : page.getEditorReferences()) {
                     IEditorPart ed = ref.getEditor(false);
                     if (ed instanceof ProjectEditorDiffer differ) {
-                        notifyDbChanged(dbinfo, differ, action.equals(PG_EDIT_PREF.UPDATE));
+                        notifyDbChanged(dbinfo, differ, PG_EDIT_PREF.UPDATE.equals(action));
                     }
                 }
             }

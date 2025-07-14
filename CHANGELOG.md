@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed parser rule for PostgreSQL.
+- Improved work with created temporary files.
+- Increased version of JDBC driver for PostgreSQL.
 
 ### Removed
 

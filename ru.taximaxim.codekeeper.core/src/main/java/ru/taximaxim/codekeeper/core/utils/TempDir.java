@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.core.utils;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
@@ -30,11 +29,11 @@ public final class TempDir implements AutoCloseable {
     private final Path dir;
 
     public TempDir(String prefix) throws IOException {
-        this.dir = Files.createTempDirectory(prefix);
+        this.dir = FileUtils.createTempDirectory(prefix);
     }
 
     public TempDir(Path dir, String prefix) throws IOException {
-        this.dir = Files.createTempDirectory(dir, prefix);
+        this.dir = FileUtils.createTempDirectory(dir, prefix);
     }
 
     public Path get() {

@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.function.Predicate;
 
 public class VerificationProperties {
 
@@ -94,9 +95,11 @@ public class VerificationProperties {
     private List<String> getListProperty(Properties properties, String paramName) {
         String temp = properties.getProperty(paramName);
         if (temp != null) {
-            return Arrays.asList(temp.toLowerCase(Locale.ROOT).trim().split("\\s*,\\s*"));
-        }
-
+            return Arrays.stream(temp.toLowerCase(Locale.ROOT).trim().split(","))
+                    .map(String::trim)
+                    .filter(Predicate.not(String::isBlank))
+                    .toList();
+            }
         return Collections.emptyList();
     }
 
