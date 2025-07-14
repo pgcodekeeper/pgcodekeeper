@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Added checks when deserializing objects.
+
 ### Fixed
 
 - Fixed parser rule for PostgreSQL.
