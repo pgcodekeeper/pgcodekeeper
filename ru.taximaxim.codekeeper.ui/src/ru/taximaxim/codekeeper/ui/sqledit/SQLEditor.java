@@ -516,7 +516,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             }
 
             if (ProjectUtils.isPgCodeKeeperProject(proj)) {
-                parser.getObjFromProjFile(file, monitor, dbType);
+                parser.getObjFromProjFile(file, monitor);
                 return;
             }
         }

@@ -93,12 +93,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.GetSystemObjects"
-            id="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
-            name="%command.commandname.GetSystemObjects">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.CancelDdl"
             name="%command.commandname.CancelDdl">
         </command>
@@ -414,14 +408,6 @@
                     name="ru.taximaxim.codekeeper.ui.separator5"
                     visible="true">
                 </separator>
-                <command
-                    commandId="ru.taximaxim.codekeeper.ui.command.GetSystemObjects"
-                    label="%command.commandname.GetSystemObjects"
-                    style="push">
-                <visibleWhen
-                     checkEnabled="true">
-                </visibleWhen>
-                </command>
                 <command
                     commandId="ru.taximaxim.codekeeper.ui.command.OpenDocs"
                     label="%command.label.openDocs"

@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputFilter;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
@@ -75,6 +76,29 @@ import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 public final class PgDbParser implements IResourceChangeListener, Serializable {
 
     private static final long serialVersionUID = -234872770125300447L;
+
+    private static final String FILTER_PATTERN = """
+        maxdepth=10;\
+        ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;\
+        ru.taximaxim.codekeeper.core.schema.meta.*;\
+        ru.taximaxim.codekeeper.core.schema.*;\
+        ru.taximaxim.codekeeper.core.DangerStatement;\
+        ru.taximaxim.codekeeper.core.model.difftree.DbObjType;\
+        ru.taximaxim.codekeeper.core.ContextLocation;\
+        ru.taximaxim.codekeeper.core.utils.Pair;\
+        ru.taximaxim.codekeeper.core.utils.ModPair;\
+        java.util.concurrent.*;\
+        java.util.concurrent.locks.*;\
+        java.util.HashMap;\
+        java.util.Map$Entry;\
+        java.util.HashSet;\
+        java.util.LinkedHashSet;\
+        java.util.ArrayList;\
+        java.lang.Object;\
+        java.lang.Enum;\
+        !*""";
+
+    private static final ObjectInputFilter DESERIALIZATION_FILTER = ObjectInputFilter.Config.createFilter(FILTER_PATTERN);
 
     private static final ConcurrentMap<IProject, PgDbParser> PROJ_PARSERS = new ConcurrentHashMap<>();
 
@@ -147,18 +171,24 @@ public final class PgDbParser implements IResourceChangeListener, Serializable {
         if (Files.notExists(path)) {
             return false;
         }
-
-        try (ObjectInputStream oin = new ObjectInputStream(Files.newInputStream(path))) {
-            PgDbParser parser = (PgDbParser) oin.readObject();
-            objReferences.clear();
-            objReferences.putAll(parser.objReferences);
-            objDefinitions.clear();
-            objDefinitions.putAll(parser.objDefinitions);
+        try (var inputStream = Files.newInputStream(path)) {
+            deserialize(inputStream);
             notifyListeners();
             return true;
         } catch (ClassNotFoundException | IOException | ClassCastException e) {
             Log.log(Log.LOG_DEBUG, "Error while deserialize parser!", e); //$NON-NLS-1$
             return false;
+        }
+    }
+
+    protected void deserialize(InputStream stream) throws IOException, ClassNotFoundException {
+        try (ObjectInputStream oin = new ObjectInputStream(stream)) {
+            oin.setObjectInputFilter(DESERIALIZATION_FILTER);
+            PgDbParser parser = (PgDbParser) oin.readObject();
+            objReferences.clear();
+            objReferences.putAll(parser.objReferences);
+            objDefinitions.clear();
+            objDefinitions.putAll(parser.objDefinitions);
         }
     }
 
@@ -188,8 +218,8 @@ public final class PgDbParser implements IResourceChangeListener, Serializable {
         build.runInBackground(null);
     }
 
-    public void getObjFromProjFile(IFile file, IProgressMonitor monitor, DatabaseType dbType)
-            throws InterruptedException, IOException, CoreException {
+    public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
+            throws InterruptedException, IOException {
         ISettings settings = new UISettings(file.getProject(), null);
         PgUIDumpLoader loader = new PgUIDumpLoader(file, settings, monitor);
         loader.setMode(ParserListenerMode.REF);

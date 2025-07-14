@@ -16,8 +16,6 @@
 package ru.taximaxim.codekeeper.core;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
 import java.io.Serializable;
@@ -67,31 +65,21 @@ public final class Utils {
         }
     }
 
-    /**
-     * Deserializes object
-     *
-     * @param inputStream
-     *            - stream of serialized file
-     *
-     * @return deserialized object or null if not found
-     */
-    public static Object deserialize(InputStream inputStream) {
-        if (inputStream == null) {
-            return null;
-        }
-        try (ObjectInputStream oin = new ObjectInputStream(inputStream)) {
-            return oin.readObject();
-        } catch (ClassNotFoundException | IOException e) {
-            LOG.debug(Messages.Utils_log_err_deserialize, e);
-        }
-        return null;
-    }
-
     public static Document readXml(Reader reader) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        // Disable DOCTYPE declarations entirely
         factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true); //$NON-NLS-1$
+
+        // Disable external general entities
         factory.setFeature("http://xml.org/sax/features/external-general-entities", false); //$NON-NLS-1$
+
+        // Disable external parameter entities
         factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false); //$NON-NLS-1$
+
+        // Prohibit the use of all protocols by external entities (JAXP 1.5+)
+        factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_DTD, ""); //$NON-NLS-1$
+        factory.setAttribute(javax.xml.XMLConstants.ACCESS_EXTERNAL_SCHEMA, ""); //$NON-NLS-1$
+
         Document doc = factory.newDocumentBuilder().parse(new InputSource(reader));
         doc.normalize();
         return doc;
