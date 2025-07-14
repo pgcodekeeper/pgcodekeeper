@@ -340,7 +340,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                 this.dbType = dbType;
                 refreshParser(getParser(), res, null);
             }
-        } catch (InterruptedException | IOException | CoreException ex) {
+        } catch (InterruptedException | IOException ex) {
             Log.log(ex);
         }
     }
@@ -488,7 +488,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             if (res == null || !ProjectUtils.isInProject(res)) {
                 refreshParser(getParser(), res, new NullProgressMonitor());
             }
-        } catch (InterruptedException | IOException | CoreException ex) {
+        } catch (InterruptedException | IOException ex) {
             Log.log(ex);
         }
     }
@@ -499,7 +499,7 @@ implements IResourceChangeListener, ITextErrorReporter {
      * @return true if refresh was triggered successfully
      */
     private void refreshParser(PgDbParser parser, IResource res, IProgressMonitor monitor)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, IOException {
         checkFileSize();
         if (isLargeFile()) {
             parser.clear();

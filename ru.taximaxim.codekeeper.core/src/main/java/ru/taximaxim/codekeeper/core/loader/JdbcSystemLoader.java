@@ -80,9 +80,9 @@ public final class JdbcSystemLoader extends JdbcLoaderBase {
             this.connection = connection;
             this.statement = statement;
             connection.setAutoCommit(false);
-            statement.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
-            statement.execute("SET timezone = " + PgDiffUtils.quoteString(timezone));
-
+            getRunner().run(statement, "SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY");
+            getRunner().run(statement, "SET search_path TO pg_catalog;");
+            getRunner().run(statement, "SET timezone = " + PgDiffUtils.quoteString(timezone));
             queryCheckPgVersion();
             queryCheckLastSysOid();
             queryTypesForCache();

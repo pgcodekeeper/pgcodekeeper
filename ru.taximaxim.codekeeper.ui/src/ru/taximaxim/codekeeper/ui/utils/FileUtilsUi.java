@@ -40,10 +40,9 @@ import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.ContextLocation;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
-
 public final class FileUtilsUi {
 
     /**
@@ -52,8 +51,7 @@ public final class FileUtilsUi {
      */
     public static void saveOpenTmpSqlEditor(String content, String filenamePrefix, DatabaseType dbType)
             throws IOException, CoreException {
-        Log.log(Log.LOG_INFO, "Creating file " + filenamePrefix); //$NON-NLS-1$
-        Path path = Files.createTempFile(filenamePrefix + '_', ".sql"); //$NON-NLS-1$
+        Path path = FileUtils.createTempFile(filenamePrefix + '_', ".sql");
         Files.write(path, content.getBytes(StandardCharsets.UTF_8));
         IEditorInput input = new SQLEditorInput(path, dbType, false);
 

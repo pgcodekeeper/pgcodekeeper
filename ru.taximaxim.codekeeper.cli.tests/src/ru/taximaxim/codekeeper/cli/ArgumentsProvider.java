@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 public abstract class ArgumentsProvider implements AutoCloseable {
@@ -54,8 +55,8 @@ public abstract class ArgumentsProvider implements AutoCloseable {
     }
 
     public Path getDiffResultFile() throws IOException {
-        if (resFile == null){
-            resFile = Files.createTempFile(STANDALONE, "");
+        if (resFile == null) {
+            resFile = FileUtils.createTempFile(STANDALONE, "");
         }
 
         return resFile;

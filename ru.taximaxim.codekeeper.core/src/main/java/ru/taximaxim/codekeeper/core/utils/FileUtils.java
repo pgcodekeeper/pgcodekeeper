@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.core.utils;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -36,6 +37,8 @@ import java.nio.file.SimpleFileVisitor;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.DosFileAttributeView;
+import java.nio.file.attribute.FileAttribute;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,10 +47,20 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.core.localizations.Messages;
 
 public final class FileUtils {
+
+    private static final boolean IS_POSIX = FileSystems.getDefault().supportedFileAttributeViews().contains("posix"); //$NON-NLS-1$
+
+    private static final FileAttribute<?> POSIX_PERMISSIONS =
+            PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString("rwx------")); //$NON-NLS-1$
+
+    private static final Logger LOG = LoggerFactory.getLogger(FileUtils.class);
 
     private static final String EMPTY_STRING = ""; //$NON-NLS-1$
 
@@ -243,6 +256,59 @@ public final class FileUtils {
         }
 
         return dir.toRealPath().toString();
+    }
+
+    public static Path createTempFile(String prefix, String suffix) throws IOException {
+        LOG.info(Messages.FileUtils_creating_temp_file, prefix);
+        if (IS_POSIX) {
+            return Files.createTempFile(prefix, suffix, POSIX_PERMISSIONS);
+        }
+
+        Path path = Files.createTempFile(prefix, suffix, new FileAttribute[0]);
+        File f = path.toFile();
+        setAttributes(f);
+        return path;
+    }
+
+
+    public static Path createTempFile(Path dir, String prefix, String suffix) throws IOException {
+        LOG.info(Messages.FileUtils_creating_temp_file, prefix);
+        return Files.createTempFile(dir, prefix, suffix);
+    }
+
+    public static Path createTempDirectory(String prefix) throws IOException {
+        LOG.info(Messages.FileUtils_creating_temp_directory, prefix);
+
+        if (IS_POSIX) {
+            return Files.createTempDirectory(prefix, POSIX_PERMISSIONS);
+        }
+
+        Path path = Files.createTempDirectory(prefix, new FileAttribute[0]);
+        File f = path.toFile();
+        setAttributes(f);
+        return path;
+    }
+
+    public static Path createTempDirectory(Path dir, String prefix) throws IOException {
+        LOG.info(Messages.FileUtils_creating_temp_directory, prefix);
+        return Files.createTempDirectory(dir, prefix);
+    }
+
+    private static void setAttributes(File f) throws IOException {
+        var readable = f.setReadable(true, true);
+        if (!readable) {
+            throw new IOException("Failed to set temp file readable"); //$NON-NLS-1$
+        }
+
+        var writable = f.setWritable(true, true);
+        if (!writable) {
+            throw new IOException("Failed to set temp file writable"); //$NON-NLS-1$
+        }
+
+        var executable = f.setExecutable(true, true);
+        if (!executable) {
+            throw new IOException("Failed to set temp file executable"); //$NON-NLS-1$
+        }
     }
 
     private FileUtils() {
