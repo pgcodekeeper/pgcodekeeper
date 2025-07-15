@@ -11,13 +11,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Disabled ability to save passwords outside Eclipse secure storage.
 - Added checks when deserializing objects.
+- Improved work with created temporary files.
+- Increased version of JDBC driver for PostgreSQL.
 
 ### Fixed
 
 - Fixed parser rule for PostgreSQL.
-- Improved work with created temporary files.
-- Increased version of JDBC driver for PostgreSQL.
 
 ### Removed
 

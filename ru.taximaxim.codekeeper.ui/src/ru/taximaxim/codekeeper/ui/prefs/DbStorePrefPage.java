@@ -28,13 +28,13 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.layout.PixelConverter;
-import org.eclipse.jface.preference.BooleanFieldEditor;
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
@@ -48,6 +48,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
@@ -59,7 +60,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.ConnectionTypeInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
@@ -70,15 +70,11 @@ import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.pgpass.PgPass;
 
-public final class DbStorePrefPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public final class DbStorePrefPage extends PreferencePage
+        implements IWorkbenchPreferencePage, IPropertyChangeListener {
 
     private DbStorePrefListEditor dbList;
-    private BooleanFieldEditor useSecureStorage;
     private List<DbInfo> oldDbList;
-
-    public DbStorePrefPage() {
-        super(GRID);
-    }
 
     @Override
     public void init(IWorkbench workbench) {
@@ -88,18 +84,15 @@ public final class DbStorePrefPage extends FieldEditorPreferencePage implements 
     }
 
     @Override
-    protected void createFieldEditors() {
-        dbList = new DbStorePrefListEditor(getFieldEditorParent());
+    protected Control createContents(Composite parent) {
+        dbList = new DbStorePrefListEditor(parent);
         dbList.setLayoutData(new GridData(GridData.FILL_BOTH));
         List<DbInfo> dbInfoList = DbXmlStore.getStore();
 
         DbInfo.sortDbGroups(dbInfoList);
         dbList.setInputList(dbInfoList);
         oldDbList = new ArrayList<>(dbList.getList());
-
-        useSecureStorage = new BooleanFieldEditor(PREF.SAVE_IN_SECURE_STORAGE,
-                Messages.GeneralPrefPage_save_in_security_storage, getFieldEditorParent());
-        addField(useSecureStorage);
+        return dbList;
     }
 
     @Override
@@ -111,27 +104,10 @@ public final class DbStorePrefPage extends FieldEditorPreferencePage implements 
     public boolean performOk() {
         setErrorMessage(null);
         try {
-            if (useSecureStorage.getBooleanValue()) {
-                try {
-                    DbXmlStore.INSTANCE.savePasswords(dbList.getList(), oldDbList);
-                } catch (StorageException e) {
-                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                    String text;
-                    if (Platform.OS_LINUX.equals(Platform.getOS())) {
-                        text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
-                    } else {
-                        text = Messages.DbStorePrefPage_secure_storage_error_text_other;
-                    }
-                    mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
-                    mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
-                    if (mb.open() != SWT.YES) {
-                        setErrorMessage(Messages.DbStorePrefPage_secure_storage_error + e.getLocalizedMessage());
-                        return false;
-                    }
-                    getPreferenceStore().setValue(PREF.SAVE_IN_SECURE_STORAGE, false);
-                    useSecureStorage.load();
-                }
+            if (!savePasswords()) {
+                return false;
             }
+
             DbXmlStore.INSTANCE.writeObjects(dbList.getList());
             super.performOk();
             getPreferenceStore().setValue(DB_STORE_PREF.LAST_DB_STORE_CHANGE_TIME, System.currentTimeMillis());
@@ -142,13 +118,32 @@ public final class DbStorePrefPage extends FieldEditorPreferencePage implements 
         }
     }
 
+    private boolean savePasswords() throws IOException {
+        try {
+            DbXmlStore.INSTANCE.savePasswords(dbList.getList(), oldDbList);
+        } catch (StorageException e) {
+            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
+            String text;
+            if (Platform.OS_LINUX.equals(Platform.getOS())) {
+                text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
+            } else {
+                text = Messages.DbStorePrefPage_secure_storage_error_text_other;
+            }
+            mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
+            mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
+            if (mb.open() != SWT.YES) {
+                setErrorMessage(Messages.DbStorePrefPage_secure_storage_error + e.getLocalizedMessage());
+                return false;
+            }
+        }
+        return true;
+    }
+
     @Override
     public void propertyChange(PropertyChangeEvent event) {
         if (CONN_TYPE_PREF.LAST_CONN_TYPE_CHANGE_TIME.equals(event.getProperty()) && !dbList.isDisposed()) {
             dbList.refresh();
         }
-
-        super.propertyChange(event);
     }
 
     @Override
@@ -227,21 +222,12 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             @Override
             public Image getImage(Object element) {
                 DatabaseType dbType = ((DbInfo) element).getDbType();
-                ProjectIcon projectIcon;
-                switch (dbType) {
-                case PG:
-                    projectIcon = ProjectIcon.PG_ICON;
-                    break;
-                case MS:
-                    projectIcon = ProjectIcon.MS_ICON;
-                    break;
-                case CH:
-                    projectIcon = ProjectIcon.CH_ICON;
-                    break;
-                default:
-                    throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-                }
-
+                ProjectIcon projectIcon = switch (dbType) {
+                    case PG -> ProjectIcon.PG_ICON;
+                    case MS -> ProjectIcon.MS_ICON;
+                    case CH -> ProjectIcon.CH_ICON;
+                    default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+                };
                 return Activator.getRegisteredImage(projectIcon);
             }
 

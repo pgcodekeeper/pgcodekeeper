@@ -31,7 +31,6 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -42,7 +41,6 @@ import ru.taximaxim.codekeeper.core.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
@@ -52,7 +50,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             Platform.getStateLocation(Activator.getContext().getBundle()).append(FILE_NAME).toString()));
 
     private final ISecurePreferences securePrefs;
-    private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
     private final Path path;
 
     private List<DbInfo> store = new ArrayList<>();
@@ -178,8 +175,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-            createSubElement(xml, keyElement, Tags.DBPASS.toString(),
-                    mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE) ? "" : dbInfo.getDbPass()); //$NON-NLS-1$
             createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDbGroup());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
@@ -259,11 +254,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             }
         }
 
-        String dbPass = object.get(Tags.DBPASS);
+        String dbPass = object.get(Tags.DBPASS); // backwards compatibility
         try {
-            if (mainPrefs.getBoolean(PREF.SAVE_IN_SECURE_STORAGE)) {
-                dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
-            }
+            dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
         } catch (StorageException e) {
             Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
         }
