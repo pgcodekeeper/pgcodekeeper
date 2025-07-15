@@ -38,7 +38,6 @@ public final class PreferenceInitializer extends AbstractPreferenceInitializer {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
         store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
-        store.setDefault(PREF.SAVE_IN_SECURE_STORAGE, true);
         store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
         store.setDefault(PREF.HEAP_SIZE_WARNING, true);
 
