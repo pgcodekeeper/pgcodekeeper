@@ -176,7 +176,7 @@ table_cols
     ;
 
 vacuum_mode
-    : LEFT_PAREN vacuum_option (COMMA vacuum_option)* RIGHT_PAREN 
+    : LEFT_PAREN vacuum_option (COMMA vacuum_option)* RIGHT_PAREN
     | FULL? FREEZE? VERBOSE? analyze_keyword?
     ;
 
@@ -193,10 +193,10 @@ analyze_mode
     ;
 
 boolean_value
-    : TRUE 
-    | FALSE 
-    | OFF 
-    | ON 
+    : TRUE
+    | FALSE
+    | OFF
+    | ON
     | iconst
     | sconst // 'true', 'false', 'on', 'off'
     ;
@@ -460,7 +460,7 @@ table_action
     | CLUSTER ON index_name=schema_qualified_name
     | SET WITHOUT (CLUSTER | OIDS)
     | SET WITH OIDS
-    | SET ACCESS METHOD (access_method_name=identifier | DEFAULT)
+    | SET ACCESS METHOD (access_method_name=identifier with_storage_parameter? | DEFAULT)
     | set_logged
     | SET storage_parameters
     | RESET names_in_parens
@@ -603,7 +603,7 @@ alter_view_statement
     ;
 
 alter_view_action
-    : ALTER COLUMN? column_name=identifier set_def_column 
+    : ALTER COLUMN? column_name=identifier set_def_column
     | ALTER COLUMN? column_name=identifier drop_def
     | RENAME COLUMN? identifier TO identifier
     | rename_to
@@ -743,9 +743,9 @@ index_where
     ;
 
  create_extension_statement
-    : EXTENSION if_not_exists? name=identifier 
+    : EXTENSION if_not_exists? name=identifier
     WITH?
-    (SCHEMA schema=identifier)? 
+    (SCHEMA schema=identifier)?
     (VERSION (identifier | sconst))?
     (FROM (identifier | sconst))?
     CASCADE?
@@ -1165,7 +1165,7 @@ rewrite_command
 
 create_trigger_statement
     : (OR REPLACE)? CONSTRAINT? TRIGGER name=identifier (before_true=BEFORE | (INSTEAD OF) | AFTER)
-    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE) 
+    (((insert_true=INSERT | delete_true=DELETE | truncate_true=TRUNCATE)
     | update_true=UPDATE (OF identifier_list)?)OR?)+
     ON table_name=schema_qualified_name
     (FROM referenced_table_name=schema_qualified_name)?
@@ -1283,7 +1283,7 @@ security_label
     ;
 
 comment_member_object
-    : ACCESS METHOD identifier 
+    : ACCESS METHOD identifier
     | (AGGREGATE | PROCEDURE | FUNCTION | ROUTINE) name=schema_qualified_name function_args
     | CAST LEFT_PAREN cast_name RIGHT_PAREN
     | COLLATION name=schema_qualified_name
@@ -1433,7 +1433,7 @@ create_schema_statement
     ;
 
 create_policy_statement
-    : POLICY identifier ON schema_qualified_name 
+    : POLICY identifier ON schema_qualified_name
     (AS (PERMISSIVE | RESTRICTIVE))?
     (FOR event=(ALL | SELECT | INSERT | UPDATE | DELETE))?
     (TO user_name (COMMA user_name)*)?
@@ -1516,7 +1516,7 @@ drop_operator_family_statement
     ;
 
 create_operator_class_statement
-    : OPERATOR CLASS schema_qualified_name DEFAULT? FOR TYPE data_type 
+    : OPERATOR CLASS schema_qualified_name DEFAULT? FOR TYPE data_type
     USING identifier (FAMILY schema_qualified_name)? AS
     create_operator_class_option (COMMA create_operator_class_option)*
     ;
@@ -1526,7 +1526,7 @@ create_operator_class_option
         (LEFT_PAREN (data_type | NONE) COMMA (data_type | NONE) RIGHT_PAREN)?
         (FOR SEARCH | FOR ORDER BY schema_qualified_name)?
     | FUNCTION iconst
-        (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)? 
+        (LEFT_PAREN (data_type | NONE) (COMMA (data_type | NONE))? RIGHT_PAREN)?
         function_call
     | STORAGE data_type
     ;
@@ -1586,7 +1586,7 @@ alter_rule_statement
     ;
 
 copy_statement
-    : copy_to_statement 
+    : copy_to_statement
     | copy_from_statement
     ;
 
@@ -1628,7 +1628,7 @@ identifier_list_in_paren
     ;
 
 create_view_statement
-    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW 
+    : (OR REPLACE)? (TEMP | TEMPORARY)? RECURSIVE? MATERIALIZED? VIEW
     if_not_exists? name=schema_qualified_name column_names=view_columns?
     (USING identifier)?
     (WITH storage_parameters)?
@@ -1713,7 +1713,7 @@ create_table_external_statement
     external_table_format
     define_foreign_options?
     (ENCODING sconst)?
-    external_table_log? 
+    external_table_log?
     distributed_clause?
     ;
 
@@ -2081,7 +2081,7 @@ dollar_number
     ;
 
 indirection_list
-    : indirection+ 
+    : indirection+
     | indirection* DOT MULTIPLY
     ;
 
@@ -3581,7 +3581,7 @@ pointer
 function_construct
     : (COALESCE | GREATEST | GROUPING | LEAST | NULLIF | XMLCONCAT) LEFT_PAREN vex (COMMA vex)* RIGHT_PAREN
     | ROW LEFT_PAREN (vex (COMMA vex)*)? RIGHT_PAREN
-    ;                       
+    ;
 
 extract_function
     : EXTRACT LEFT_PAREN (identifier | sconst) FROM vex RIGHT_PAREN
@@ -3625,7 +3625,7 @@ xml_function
     | XMLEXISTS LEFT_PAREN vex PASSING (BY REF)? vex (BY REF)? RIGHT_PAREN
     | XMLPARSE LEFT_PAREN (DOCUMENT | CONTENT) vex RIGHT_PAREN
     | XMLSERIALIZE LEFT_PAREN (DOCUMENT | CONTENT) vex AS data_type RIGHT_PAREN
-    | XMLTABLE LEFT_PAREN 
+    | XMLTABLE LEFT_PAREN
         (XMLNAMESPACES LEFT_PAREN vex AS name=identifier (COMMA vex AS name=identifier)* RIGHT_PAREN COMMA)?
         vex PASSING (BY REF)? vex (BY REF)?
         COLUMNS xml_table_column (COMMA xml_table_column)*
@@ -3762,7 +3762,7 @@ type_coercion
 schema_qualified_name
     : identifier ( DOT identifier_reserved ( DOT identifier_reserved )? )?
     ;
- 
+
 set_qualifier
     : DISTINCT | ALL
     ;

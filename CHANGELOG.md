@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed parser rule for PostgreSQL.
+- Fixed parser rules.
 - Fixed bug with ignoring column order in PostgreSQL and MS SQL constraints.
 
 ### Removed

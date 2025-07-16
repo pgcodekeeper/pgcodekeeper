@@ -79,7 +79,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         MSSQL("mssql"), //$NON-NLS-1$
         DB_TYPE("db_type"), //$NON-NLS-1$
         WIN_AUTH("win_auth"), //$NON-NLS-1$
-        DOMAIN("domain"), //$NON-N:S-1$
+        DOMAIN("domain"), //$NON-NLS-1$
         CON_TYPE("con_type"); //$NON-NLS-1$
 
         String name;
@@ -254,7 +254,8 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             }
         }
 
-        String dbPass = object.get(Tags.DBPASS); // backwards compatibility
+        // backwards compatibility
+        String dbPass = object.getOrDefault(Tags.DBPASS, ""); //$NON-NLS-1$
         try {
             dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
         } catch (StorageException e) {

@@ -2637,6 +2637,7 @@ ALTER TABLE public.ao1 SET DISTRIBUTED REPLICATED;
 ALTER TABLE public.testbug_char5_exchange SET WITH (REORGANIZE=true) DISTRIBUTED BY (user_id public.op_class, timest);
 ALTER TABLE public.distpol_person SET WITH (REORGANIZE=true) DISTRIBUTED BY (name, age public.op_class, location public.op_class_2);
 ALTER TABLE public.t2 SET WITH (REORGANIZE=true) DISTRIBUTED RANDOMLY;
+ALTER TABLE metric_store.t_bs_cl_tpsrc_trft set access method ao_column WITH (compresstype=zstd, compresslevel='4', blocksize='32768', checksum='true');
 
 ALTER FOREIGN TABLE public.films OPTIONS (ADD mpp_execute 'all segments');
 
