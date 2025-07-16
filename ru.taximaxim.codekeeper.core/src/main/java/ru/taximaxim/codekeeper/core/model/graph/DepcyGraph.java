@@ -16,9 +16,9 @@
 package ru.taximaxim.codekeeper.core.model.graph;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.jgrapht.Graph;
 import org.jgrapht.alg.cycle.CycleDetector;
@@ -205,7 +205,7 @@ public final class DepcyGraph {
      * are populated so we have to defer their lookup until here.
      */
     private void createFkeyToUnique(IConstraintFk con) {
-        Set<String> refs = con.getForeignColumns();
+        Collection<String> refs = con.getForeignColumns();
         if (refs.isEmpty()) {
             return;
         }

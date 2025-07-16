@@ -15,10 +15,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.ms;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -29,10 +29,10 @@ import ru.taximaxim.codekeeper.core.schema.StatementUtils;
 
 public final class MsConstraintFk extends MsConstraint implements IConstraintFk {
 
-    private final Set<String> columns = new LinkedHashSet<>();
+    private final List<String> columns = new ArrayList<>();
     private String foreignSchema;
     private String foreignTable;
-    private final Set<String> refs = new LinkedHashSet<>();
+    private final List<String> refs = new ArrayList<>();
     private String delAction;
     private String updAction;
     private boolean isNotForRepl;
@@ -42,8 +42,8 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
     }
 
     @Override
-    public Set<String> getColumns() {
-        return Collections.unmodifiableSet(columns);
+    public List<String> getColumns() {
+        return Collections.unmodifiableList(columns);
     }
 
     public void addColumn(String column) {
@@ -52,8 +52,8 @@ public final class MsConstraintFk extends MsConstraint implements IConstraintFk 
     }
 
     @Override
-    public Set<String> getForeignColumns() {
-        return Collections.unmodifiableSet(refs);
+    public List<String> getForeignColumns() {
+        return Collections.unmodifiableList(refs);
     }
 
     public void addForeignColumn(String referencedColumn) {

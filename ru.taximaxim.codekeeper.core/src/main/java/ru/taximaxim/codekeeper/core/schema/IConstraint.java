@@ -15,14 +15,14 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-import java.util.Set;
+import java.util.Collection;
 
 public interface IConstraint extends ISearchPath {
     default boolean isPrimaryKey() {
         return false;
     }
     String getDefinition();
-    Set<String> getColumns();
+    Collection<String> getColumns();
     boolean containsColumn(String name);
     String getTableName();
 }

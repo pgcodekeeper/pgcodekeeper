@@ -77,6 +77,8 @@ public class DepcyWriterTest {
         "function_circle_quotes, 'public\\.func1'",
         //test searching deps of table with system versioning
         "ms_sys_ver_table, '\\[dbo\\]\\.\\[t1\\]'",
+        //test searching deps of table constraint
+        "table_constraint, public.test_fk_1.fk",
     })
     void compareBothGraph(String fileName, String objectName) throws IOException, InterruptedException {
         compareGraph(fileName, FILES_POSTFIX.DEPS_TXT, objectName, false);

@@ -15,10 +15,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.PgDiffUtils;
@@ -33,9 +33,9 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
 
     private String foreignSchema;
     private String foreignTable;
-    private final Set<String> columns = new LinkedHashSet<>();
-    private final Set<String> delActCols = new LinkedHashSet<>();
-    private final Set<String> refs = new LinkedHashSet<>();
+    private final List<String> columns = new ArrayList<>();
+    private final List<String> delActCols = new ArrayList<>();
+    private final List<String> refs = new ArrayList<>();
     private String match;
     private String delAction;
     private String updAction;
@@ -45,8 +45,8 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     }
 
     @Override
-    public Set<String> getColumns() {
-        return Collections.unmodifiableSet(columns);
+    public List<String> getColumns() {
+        return Collections.unmodifiableList(columns);
     }
 
     public void addColumn(String column) {
@@ -60,8 +60,8 @@ public final class PgConstraintFk extends PgConstraint implements IConstraintFk 
     }
 
     @Override
-    public Set<String> getForeignColumns() {
-        return Collections.unmodifiableSet(refs);
+    public List<String> getForeignColumns() {
+        return Collections.unmodifiableList(refs);
     }
 
     public void addForeignColumn(String referencedColumn) {
