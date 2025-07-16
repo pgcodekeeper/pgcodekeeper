@@ -72,7 +72,7 @@ public final class RowData {
         return !fkCols.isEmpty();
     }
 
-    public boolean containsAllFkCols(Set<String> columns) {
+    public boolean containsAllFkCols(Collection<String> columns) {
         return fkCols.containsAll(columns);
     }
 

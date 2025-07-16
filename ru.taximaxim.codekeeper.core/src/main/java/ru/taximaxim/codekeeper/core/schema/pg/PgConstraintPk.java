@@ -15,12 +15,12 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema.pg;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.Consts;
 import ru.taximaxim.codekeeper.core.DatabaseType;
@@ -38,8 +38,8 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     private final boolean isPrimaryKey;
     private boolean isClustered;
     private boolean isDistinct;
-    private final Set<String> columns = new LinkedHashSet<>();
-    private final Set<String> includes = new LinkedHashSet<>();
+    private final List<String> columns = new ArrayList<>();
+    private final List<String> includes = new ArrayList<>();
     private final Map<String, String> params = new HashMap<>();
     private String tablespace;
 
@@ -87,8 +87,8 @@ public final class PgConstraintPk extends PgConstraint implements IConstraintPk,
     }
 
     @Override
-    public Set<String> getColumns() {
-        return Collections.unmodifiableSet(columns);
+    public List<String> getColumns() {
+        return Collections.unmodifiableList(columns);
     }
 
     public void addColumn(String column) {

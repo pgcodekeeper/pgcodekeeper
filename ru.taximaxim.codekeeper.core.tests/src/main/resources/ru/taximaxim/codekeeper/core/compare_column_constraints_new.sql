@@ -95,4 +95,3 @@ ALTER TABLE public.testtable3
 --
 -- PostgreSQL database dump complete
 --
-

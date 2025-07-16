@@ -18,11 +18,9 @@ package ru.taximaxim.codekeeper.core.schema.ms;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import ru.taximaxim.codekeeper.core.MsDiffUtils;
 import ru.taximaxim.codekeeper.core.hashers.Hasher;
@@ -41,7 +39,7 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     private final boolean isPrimaryKey;
     private boolean isClustered;
     private String dataSpace;
-    private final Set<String> columnNames = new HashSet<>();
+    private final List<String> columnNames = new ArrayList<>();
     private final List<SimpleColumn> columns = new ArrayList<>();
     private final Map<String, String> options = new HashMap<>();
 
@@ -71,8 +69,8 @@ implements IConstraintPk, IOptionContainer, ISimpleColumnContainer {
     }
 
     @Override
-    public Set<String> getColumns() {
-        return Collections.unmodifiableSet(columnNames);
+    public List<String> getColumns() {
+        return Collections.unmodifiableList(columnNames);
     }
 
     @Override

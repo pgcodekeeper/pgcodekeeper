@@ -1,0 +1,17 @@
+CONSTRAINT public.test_fk_1.fk
+	TABLE public.test_fk_1
+		SCHEMA public
+	TABLE public.test_pk
+		SCHEMA public
+	COLUMN public.test_fk_1.col1
+		TABLE public.test_fk_1
+			SCHEMA public
+	COLUMN public.test_fk_1.col2
+		TABLE public.test_fk_1
+			SCHEMA public
+	COLUMN public.test_pk.col2
+		TABLE public.test_pk
+			SCHEMA public
+	COLUMN public.test_pk.col1
+		TABLE public.test_pk
+			SCHEMA public

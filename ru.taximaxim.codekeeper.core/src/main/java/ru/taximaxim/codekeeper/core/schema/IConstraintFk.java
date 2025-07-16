@@ -15,10 +15,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.core.schema;
 
-import java.util.Set;
+import java.util.Collection;
 
 public interface IConstraintFk extends IConstraint {
-    Set<String> getForeignColumns();
+    Collection<String> getForeignColumns();
     String getForeignTable();
     String getForeignSchema();
 }
