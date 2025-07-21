@@ -27,11 +27,15 @@ import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.views.navigator.PgDecorator;
@@ -70,7 +74,8 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
         } catch (InterruptedException ex) {
             throw new OperationCanceledException();
         } catch (IOException | IllegalStateException ex) {
-            throw new CoreException(PgDbParser.getLoadingErroStatus(ex));
+            throw new CoreException(
+                    new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.PgDbParser_error_loading_db, ex));
         } finally {
             // update decorators if any kind of build was run
             PgDecorator.update();

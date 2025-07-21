@@ -27,7 +27,7 @@ class PgDbParserTest {
 
     @Test
     void testPgDbParserDeserializeRightObject() throws IOException {
-        try (var serializedFileStream = PgDbParser.class.getResourceAsStream("pgDbParser_object.ser")) {
+        try (var serializedFileStream = PgDbParser.class.getResourceAsStream("good_object.ser")) {
             var pgDbParser = new PgDbParser();
 
             assertDoesNotThrow(() -> pgDbParser.deserialize(serializedFileStream));
