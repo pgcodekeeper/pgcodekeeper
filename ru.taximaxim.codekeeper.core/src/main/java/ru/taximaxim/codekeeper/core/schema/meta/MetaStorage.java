@@ -46,8 +46,19 @@ public final class MetaStorage implements Serializable {
 
     private static final String FILTER_PATTERN = """
         maxdepth=7;\
-        ru.taximaxim.codekeeper.core.schema.meta.*;\
-        ru.taximaxim.codekeeper.core.schema.*;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaStorage;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaCast;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaFunction;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaOperator;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaRelation;\
+        ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;\
+        ru.taximaxim.codekeeper.core.schema.PgObjLocation;\
+        ru.taximaxim.codekeeper.core.schema.PgObjLocation$LocationType;\
+        ru.taximaxim.codekeeper.core.schema.Argument;\
+        ru.taximaxim.codekeeper.core.schema.ArgMode;\
+        ru.taximaxim.codekeeper.core.schema.GenericColumn;\
+        ru.taximaxim.codekeeper.core.schema.ICast$CastContext;\
         ru.taximaxim.codekeeper.core.DangerStatement;\
         ru.taximaxim.codekeeper.core.model.difftree.DbObjType;\
         ru.taximaxim.codekeeper.core.ContextLocation;\
