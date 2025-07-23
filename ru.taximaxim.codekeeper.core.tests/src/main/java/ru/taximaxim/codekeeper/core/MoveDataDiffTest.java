@@ -21,7 +21,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 /**
  * Tests for migrate data option .
@@ -67,7 +67,7 @@ class MoveDataDiffTest {
     }
 
     void runDiff(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setDataMovementMode(true);
         settings.setDbType(dbType);
         AbstractDatabase dbOld = TestUtils.loadTestDump(

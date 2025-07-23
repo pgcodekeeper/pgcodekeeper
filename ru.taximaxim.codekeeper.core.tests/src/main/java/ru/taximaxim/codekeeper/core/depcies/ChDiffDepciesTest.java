@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 class ChDiffDepciesTest {
 
@@ -65,7 +65,7 @@ class ChDiffDepciesTest {
     @MethodSource("provideSelectedObjects")
     void testDepcy(final String dbTemplate, String userTemplateName, Map<String, DbObjType> selectedObjs)
             throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setDbType(DatabaseType.CH);
         settings.setEnableFunctionBodiesDependencies(true);
         TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), settings);

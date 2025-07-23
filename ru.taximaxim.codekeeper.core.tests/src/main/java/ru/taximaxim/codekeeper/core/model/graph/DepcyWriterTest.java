@@ -27,7 +27,7 @@ import ru.taximaxim.codekeeper.core.DatabaseType;
 import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 public class DepcyWriterTest {
 
@@ -87,7 +87,7 @@ public class DepcyWriterTest {
 
     void compareGraph(String fileName, FILES_POSTFIX expectedPostfix, String objectName, boolean isReverse)
             throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         if (fileName.startsWith("ms_")) {
             settings.setDbType(DatabaseType.MS);
         } else if (fileName.startsWith("ch_")) {

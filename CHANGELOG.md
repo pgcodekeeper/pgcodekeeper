@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Fixed parser rules.
 - Fixed bug with ignoring column order in PostgreSQL and MS SQL constraints.
+- Fixed a bug with the settings when saving objects to a project.
 
 ### Removed
 

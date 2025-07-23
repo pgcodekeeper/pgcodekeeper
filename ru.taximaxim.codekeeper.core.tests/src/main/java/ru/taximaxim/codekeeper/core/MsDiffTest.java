@@ -20,7 +20,7 @@ import java.io.IOException;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 /**
  * Tests for MS SQL statements
@@ -341,7 +341,7 @@ class MsDiffTest {
             "modify_ms_constraint_column",
     })
     void testCorrectOrderScript(String fileNameTamplate) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setDbType(DatabaseType.MS);
         String script = TestUtils.getScript(fileNameTamplate, settings, PgDiffTest.class, true);
         TestUtils.compareResult(script, fileNameTamplate, PgDiffTest.class);

@@ -30,7 +30,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 class MsProjectLoaderTest {
@@ -39,7 +39,7 @@ class MsProjectLoaderTest {
     void testProjectLoaderWithIgnoredSchemas() throws IOException, InterruptedException {
         try (TempDir tempDir = new TempDir("ignore-schemas test project")) {
             Path dir = tempDir.get();
-            var settings = new TestCoreSettings();
+            var settings = new CoreSettings();
             settings.setDbType(DatabaseType.MS);
 
             AbstractDatabase msDbDump = TestUtils.loadTestDump(

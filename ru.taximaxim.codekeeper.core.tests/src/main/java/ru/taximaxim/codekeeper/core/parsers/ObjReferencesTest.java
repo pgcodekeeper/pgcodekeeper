@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.GenericColumn;
 import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 class ObjReferencesTest {
 
@@ -207,7 +207,7 @@ class ObjReferencesTest {
     }
 
     void compareReferences(String fileNameTemplate, DatabaseType dbType) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setDbType(dbType);
 
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;

@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.core.FILES_POSTFIX;
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.loader.TokenLoader;
 import ru.taximaxim.codekeeper.core.parsers.antlr.verification.VerificationProperties;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 public class VerificationTest {
     private static final String RIGHT = "_right";
@@ -73,7 +73,7 @@ public class VerificationTest {
         rules.setProperty(paramKey, paramVal);
 
         String sourcePath = TestUtils.getPathToResource(fileName + FILES_POSTFIX.SQL, getClass()).toString();
-        List<Object> errors = TokenLoader.verify(new TestCoreSettings(), new VerificationProperties(rules),
+        List<Object> errors = TokenLoader.verify(new CoreSettings(), new VerificationProperties(rules),
                 List.of(sourcePath));
         String expectedErr = TestUtils.readResource(fileName + FILES_POSTFIX.ERRORS_TXT, getClass());
 
@@ -86,7 +86,7 @@ public class VerificationTest {
         Path path = TestUtils.getPathToResource("rules.properties", getClass());
         String sourcePathRight = TestUtils.getPathToResource(fileName + RIGHT + FILES_POSTFIX.SQL, getClass()).toString();
         String sourcePath = TestUtils.getPathToResource(fileName + FILES_POSTFIX.SQL, getClass()).toString();
-        List<Object> errors = TokenLoader.verify(new TestCoreSettings(), path, List.of(sourcePath, sourcePathRight));
+        List<Object> errors = TokenLoader.verify(new CoreSettings(), path, List.of(sourcePath, sourcePathRight));
         String expectedErr = TestUtils.readResource(fileName + FILES_POSTFIX.ERRORS_TXT, getClass());
         Assertions.assertEquals(expectedErr, errors.stream().map(Object::toString).collect(Collectors.joining("\n")));
     }

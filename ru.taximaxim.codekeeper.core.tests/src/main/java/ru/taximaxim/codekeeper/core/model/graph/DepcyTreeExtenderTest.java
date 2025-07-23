@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 /**
  * An 'factory' that creates 'artificial' predefined objects
@@ -71,7 +71,7 @@ class DepcyTreeExtenderTest {
          * Index of the file that should be tested.
          */
 
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
 
         String fileName = "depcy_schema_" + fileIndex + ".sql";
         String targetFileName = "depcy_schema_new_" + fileIndex + ".sql";

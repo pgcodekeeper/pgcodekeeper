@@ -49,6 +49,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.ISearchPath;
 import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.core.utils.FileUtils;
 
@@ -124,7 +125,11 @@ public class ModelExporter {
         this.sqlEncoding = sqlEncoding;
         this.changeList = changedObjects;
         this.databaseType = databaseType;
-        this.settings = settings;
+
+        // we should create new settings to get correct script in project files
+        var copySettings = new CoreSettings();
+        copySettings.setDbType(settings.getDbType());
+        this.settings = copySettings;
     }
 
     /**

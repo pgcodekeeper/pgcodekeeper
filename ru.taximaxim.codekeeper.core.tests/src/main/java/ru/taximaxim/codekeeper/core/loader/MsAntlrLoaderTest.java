@@ -44,7 +44,7 @@ import ru.taximaxim.codekeeper.core.schema.ms.MsTable;
 import ru.taximaxim.codekeeper.core.schema.ms.MsTrigger;
 import ru.taximaxim.codekeeper.core.schema.ms.MsType;
 import ru.taximaxim.codekeeper.core.schema.ms.MsView;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
@@ -76,7 +76,7 @@ class MsAntlrLoaderTest {
 
     void loadSchema(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setInCharsetName(ENCODING);
         settings.setKeepNewlines(true);
         settings.setDbType(DatabaseType.MS);
@@ -91,7 +91,7 @@ class MsAntlrLoaderTest {
 
     void exportFullDb(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setInCharsetName(ENCODING);
         settings.setKeepNewlines(true);
         settings.setDbType(DatabaseType.MS);

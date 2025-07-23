@@ -45,8 +45,8 @@ import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.core.schema.ch.ChSchema;
 import ru.taximaxim.codekeeper.core.schema.ms.MsSchema;
 import ru.taximaxim.codekeeper.core.schema.pg.PgSchema;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.settings.ISettings;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
 
 public final class TestUtils {
 
@@ -74,7 +74,7 @@ public final class TestUtils {
     }
 
     public static AbstractDatabase createDumpDB(DatabaseType dbType) {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setDbType(dbType);
         AbstractDatabase db = DatabaseLoader.createDb(settings);
         AbstractSchema schema = switch (dbType) {
@@ -133,18 +133,18 @@ public final class TestUtils {
     }
 
     static void runDiff(String fileNameTemplate, DatabaseType dbType, Class<?> clazz) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setDbType(dbType);
         String script = getScript(fileNameTemplate, settings, clazz);
         TestUtils.compareResult(script, fileNameTemplate, clazz);
     }
 
-    static String getScript(String fileNameTemplate, TestCoreSettings settings, Class<?> clazz)
+    static String getScript(String fileNameTemplate, CoreSettings settings, Class<?> clazz)
             throws IOException, InterruptedException {
         return getScript(fileNameTemplate, settings, clazz, false);
     }
 
-    static String getScript(String fileNameTemplate, TestCoreSettings settings, Class<?> clazz, boolean needTransaction)
+    static String getScript(String fileNameTemplate, CoreSettings settings, Class<?> clazz, boolean needTransaction)
             throws IOException, InterruptedException {
         AbstractDatabase dbOld = TestUtils.loadTestDump(fileNameTemplate + FILES_POSTFIX.ORIGINAL_SQL, clazz, settings);
         TestUtils.runDiffSame(dbOld, fileNameTemplate, settings);

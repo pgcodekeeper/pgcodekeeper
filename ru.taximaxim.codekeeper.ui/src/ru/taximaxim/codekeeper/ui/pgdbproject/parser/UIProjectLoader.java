@@ -69,11 +69,11 @@ public final class UIProjectLoader extends ProjectLoader {
     private final IProject iProject;
     private final boolean projectOnly;
 
-    public UIProjectLoader(IProject iProject, ISettings settings, IProgressMonitor monitor) {
+    public UIProjectLoader(IProject iProject, UISettings settings, IProgressMonitor monitor) {
         this(iProject, settings, monitor, null, false);
     }
 
-    public UIProjectLoader(IProject iProject, ISettings settings, IProgressMonitor monitor,
+    public UIProjectLoader(IProject iProject, UISettings settings, IProgressMonitor monitor,
             IgnoreSchemaList ignoreSchemaList, boolean projectOnly) {
         super(null, settings, monitor, new ArrayList<>(), ignoreSchemaList);
         this.iProject = iProject;
@@ -211,7 +211,8 @@ public final class UIProjectLoader extends ProjectLoader {
 
     private void loadFile(IFile file, IProgressMonitor monitor, AbstractDatabase db)
             throws CoreException, InterruptedException {
-        ISettings copySettings = settings.createTempSettings(file.getCharset());
+        UISettings copySettings = (UISettings) settings.copy();
+        copySettings.setCharsetName(file.getCharset());
 
         PgUIDumpLoader loader = new PgUIDumpLoader(file, copySettings, monitor);
         if (isOverrideMode) {

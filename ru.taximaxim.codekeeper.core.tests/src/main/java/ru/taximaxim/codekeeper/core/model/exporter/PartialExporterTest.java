@@ -42,7 +42,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
@@ -111,7 +111,7 @@ public class PartialExporterTest {
     static void initDiffTree() throws InterruptedException, IOException {
         String sourceFilename = "TestPartialExportSource.sql";
         String targetFilename = "TestPartialExportTarget.sql";
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setInCharsetName(Consts.UTF_8);
         dbSource = TestUtils.loadTestDump(sourceFilename, PartialExporterTest.class, settings, false);
         dbTarget = TestUtils.loadTestDump(targetFilename, PartialExporterTest.class, settings, false);
@@ -131,7 +131,7 @@ public class PartialExporterTest {
             exportDirFull = dirFull.get();
             exportDirPartial = dirPartial.get();
 
-            var settings = new TestCoreSettings();
+            var settings = new CoreSettings();
 
             // full export of source
             new ModelExporter(exportDirFull, dbSource, DatabaseType.PG, Consts.UTF_8, settings).exportFull();
