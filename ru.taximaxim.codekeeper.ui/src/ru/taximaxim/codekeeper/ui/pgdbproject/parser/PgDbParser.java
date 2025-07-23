@@ -197,7 +197,7 @@ public final class PgDbParser implements IResourceChangeListener {
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, ProjectUtils.countFiles(proj));
-        ISettings settings = new UISettings(proj, null);
+        UISettings settings = new UISettings(proj, null);
         DatabaseLoader loader = new UIProjectLoader(proj, settings, mon);
         AbstractDatabase db = loader.load();
         referencesStorage.clear();

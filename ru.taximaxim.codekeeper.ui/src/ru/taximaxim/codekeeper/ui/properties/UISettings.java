@@ -228,20 +228,6 @@ public final class UISettings implements ISettings {
         }
         return temp;
     }
-    
-    @Override
-    public ISettings createTempSettings(boolean isIgnorePriv) {
-        var tempSettings = createTempPrefs();
-        tempSettings.put(PREF.NO_PRIVILEGES, isIgnorePriv);
-        return new UISettings(project, tempSettings, dbType);
-    }
-
-    @Override
-    public ISettings createTempSettings(String inCharsetName) {
-        var tempSettings = new UISettings(project, createTempPrefs(), dbType);
-        tempSettings.inCharsetName = inCharsetName;
-        return tempSettings;
-    }
 
     public boolean isUseGlobalIgnoreList() {
         if (oneTimePS != null) {
@@ -288,5 +274,19 @@ public final class UISettings implements ISettings {
         if (Files.exists(path)) {
             paths.add(path.toString());
         }
+    }
+
+    @Override
+    public UISettings copy() {
+        return new UISettings(project, createTempPrefs(), dbType);
+    }
+
+    @Override
+    public void setIgnorePrivileges(boolean ignorePrivileges) {
+        oneTimePS.put(PREF.NO_PRIVILEGES, ignorePrivileges);
+    }
+
+    public void setCharsetName(String inCharsetName) {
+        this.inCharsetName = inCharsetName;
     }
 }

@@ -75,7 +75,7 @@ public interface ISettings {
 
     Collection<String> getPostFilePath();
 
-    ISettings createTempSettings(boolean isIgnorePriv);
+    ISettings copy();
 
-    ISettings createTempSettings(String inCharsetName);
+    void setIgnorePrivileges(boolean ignorePrivileges);
 }

@@ -22,7 +22,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 class BrokenScriptTest {
 
@@ -32,7 +32,7 @@ class BrokenScriptTest {
             "broken_duplicated_index, line 5:1 INDEX i already exists for TABLE t1"
     })
     void testPgBrokenScript(String fileNameTemplate, String expectedError) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
 
         String resource = fileNameTemplate + FILES_POSTFIX.SQL;
         PgDumpLoader loader = new PgDumpLoader(() -> getClass().getResourceAsStream(resource), resource, settings);

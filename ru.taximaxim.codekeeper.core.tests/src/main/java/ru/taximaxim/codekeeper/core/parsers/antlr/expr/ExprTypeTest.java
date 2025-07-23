@@ -38,7 +38,7 @@ import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.IRelation;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;
 import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.utils.Pair;
 
 /**
@@ -67,7 +67,7 @@ class ExprTypeTest {
             "check_named_notation",
     })
     void runCheck(String fileNameTemplate) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         String typesForCompare = TestUtils.readResource(
                 fileNameTemplate + FILES_POSTFIX.DIFF_SQL, getClass());
 
@@ -80,21 +80,21 @@ class ExprTypeTest {
             "compare_types_aster_ord_view",
     })
     void runCompare(String fileNameTemplate) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         String typesForCompare = getRelationColumnsTypes(
                 loadAndAnalyze(fileNameTemplate, settings, FILES_POSTFIX.ORIGINAL_SQL));
 
         runDiff(fileNameTemplate, settings, typesForCompare);
     }
 
-    private void runDiff(String fileNameTemplate, TestCoreSettings settings, String typesForCompare)
+    private void runDiff(String fileNameTemplate, CoreSettings settings, String typesForCompare)
             throws InterruptedException, IOException {
         MetaContainer dbNew = loadAndAnalyze(fileNameTemplate, settings, FILES_POSTFIX.NEW_SQL);
         Assertions.assertEquals(typesForCompare,
                 getRelationColumnsTypes(dbNew), "File: " + fileNameTemplate);
     }
 
-    private MetaContainer loadAndAnalyze(String fileNameTemplate, TestCoreSettings settings, FILES_POSTFIX postfix)
+    private MetaContainer loadAndAnalyze(String fileNameTemplate, CoreSettings settings, FILES_POSTFIX postfix)
             throws InterruptedException, IOException {
         AbstractDatabase dbNew = TestUtils.loadTestDump(
                 fileNameTemplate + postfix, ExprTypeTest.class, settings, false);

@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.core.model.difftree.TreeFlattener;
 import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
 import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
 import ru.taximaxim.codekeeper.core.schema.AbstractSchema;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 class PgProjectLoaderTest {
@@ -44,7 +44,7 @@ class PgProjectLoaderTest {
     void testProjectLoaderWithIgnoredSchemas() throws IOException, InterruptedException {
         try(TempDir tempDir = new TempDir("ignore-schemas-test-project")){
             Path dir = tempDir.get();
-            var settings = new TestCoreSettings();
+            var settings = new CoreSettings();
 
             AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
 
@@ -76,7 +76,7 @@ class PgProjectLoaderTest {
     void testModelExporterWithIgnoredLists() throws IOException, InterruptedException {
         try(TempDir tempDir = new TempDir("new-project")){
             Path dir = tempDir.get();
-            var settings = new TestCoreSettings();
+            var settings = new CoreSettings();
 
             AbstractDatabase dbDump = TestUtils.loadTestDump(TestUtils.RESOURCE_DUMP, TestUtils.class, settings);
             TreeElement root = DiffTree.create(dbDump, null, null);

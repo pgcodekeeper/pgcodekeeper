@@ -156,17 +156,13 @@ public final class TestUiSettings implements ISettings {
         throw new UnsupportedOperationException();
     }
 
-    private TestUiSettings copy() {
-        return new TestUiSettings();
+    @Override
+    public ISettings copy() {
+        throw new UnsupportedOperationException();
     }
 
     @Override
-    public ISettings createTempSettings(boolean isIgnorePriv) {
-        return copy();
-    }
-
-    @Override
-    public ISettings createTempSettings(String inCharsetName) {
-        return copy();
+    public void setIgnorePrivileges(boolean ignorePrivileges) {
+        throw new UnsupportedOperationException();
     }
 }

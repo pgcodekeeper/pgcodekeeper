@@ -562,7 +562,8 @@ public class CliArgs implements ISettings {
         return oldSrcFormat;
     }
 
-    private CliArgs copy() {
+    @Override
+    public CliArgs copy() {
         var args = new CliArgs();
         args.addTransaction = addTransaction;
         args.allowedDangers = allowedDangers;
@@ -628,15 +629,8 @@ public class CliArgs implements ISettings {
     }
 
     @Override
-    public ISettings createTempSettings(boolean isIgnorePriv) {
-        var args = copy();
-        args.ignorePrivileges = isIgnorePriv;
-        return args;
-    }
-
-    @Override
-    public ISettings createTempSettings(String inCharsetName) {
-        throw new UnsupportedOperationException();
+    public void setIgnorePrivileges(boolean ignorePrivileges) {
+        this.ignorePrivileges = ignorePrivileges;
     }
 
     /**

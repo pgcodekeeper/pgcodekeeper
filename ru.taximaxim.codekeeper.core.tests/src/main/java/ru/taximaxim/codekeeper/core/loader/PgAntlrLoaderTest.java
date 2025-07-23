@@ -55,7 +55,7 @@ import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger;
 import ru.taximaxim.codekeeper.core.schema.pg.PgTrigger.TgTypes;
 import ru.taximaxim.codekeeper.core.schema.pg.PgView;
 import ru.taximaxim.codekeeper.core.schema.pg.SimplePgTable;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 import ru.taximaxim.codekeeper.core.utils.TempDir;
 
 /**
@@ -78,7 +78,7 @@ class PgAntlrLoaderTest {
 
     void loadSchema(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // first test the dump loader itself
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setKeepNewlines(true);
         AbstractDatabase d = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
 
@@ -91,7 +91,7 @@ class PgAntlrLoaderTest {
 
     void exportFullDb(String fileName, AbstractDatabase dbPredefined) throws IOException, InterruptedException {
         // prepare db object from sql file
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setKeepNewlines(true);
         AbstractDatabase dbFromFile = TestUtils.loadTestDump(fileName, PgAntlrLoaderTest.class, settings);
 

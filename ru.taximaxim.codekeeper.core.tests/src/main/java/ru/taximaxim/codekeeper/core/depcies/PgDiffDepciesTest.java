@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import ru.taximaxim.codekeeper.core.TestUtils;
 import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 /**
  * Тестирует сравнение БД с неполным выбором различающихся объектов
@@ -272,7 +272,7 @@ class PgDiffDepciesTest {
     @MethodSource("provideSelectedObjects")
     void runDiff(final String dbTemplate, String userTemplateName, Map<String, DbObjType> selectedObjs)
             throws IOException, InterruptedException {
-        TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), new TestCoreSettings());
+        TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), new CoreSettings());
     }
 
     private static Stream<Arguments> provideSelectedObjectsWithFunctionBody() {
@@ -332,7 +332,7 @@ class PgDiffDepciesTest {
     @MethodSource("provideSelectedObjectsWithFunctionBody")
     void runDiffWithFunctionDependencies(final String dbTemplate, String userTemplateName,
             Map<String, DbObjType> selectedObjs) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setEnableFunctionBodiesDependencies(true);
         TestUtils.testDepcy(dbTemplate, userTemplateName, selectedObjs, getClass(), settings);
     }

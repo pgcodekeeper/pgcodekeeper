@@ -27,7 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-import ru.taximaxim.codekeeper.core.settings.TestCoreSettings;
+import ru.taximaxim.codekeeper.core.settings.CoreSettings;
 
 /**
  * Tests for PgDiff class.
@@ -624,7 +624,7 @@ class PgDiffTest {
             "compare_function;              Comparing a signature in a function",
     })
     void runCompare(String fileNameTemplate, String description) throws IOException, InterruptedException {
-        String script = TestUtils.getScript(fileNameTemplate, new TestCoreSettings(), PgDiffTest.class);
+        String script = TestUtils.getScript(fileNameTemplate, new CoreSettings(), PgDiffTest.class);
         assertEquals(script.trim(), "");
     }
 
@@ -638,7 +638,7 @@ class PgDiffTest {
             "alter_children_comments_in_end"
     })
     void testCommentsInScriptEnd(String fileNameTemplate) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setCommentsToEnd(true);
         String script = TestUtils.getScript(fileNameTemplate, settings, PgDiffTest.class);
         TestUtils.compareResult(script, fileNameTemplate, PgDiffTest.class);
@@ -653,7 +653,7 @@ class PgDiffTest {
             "add_costraints_with_exeption_block"
     })
     void testGenerateExistDoBlock(String fileNameTemplate) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         settings.setGenerateExistDoBlock(true);
 
         String script = TestUtils.getScript(fileNameTemplate, settings, PgDiffTest.class);
@@ -665,7 +665,7 @@ class PgDiffTest {
             "alter_greenplum_table"
     })
     void testCorrectOrderScript(String fileNameTamplate) throws IOException, InterruptedException {
-        var settings = new TestCoreSettings();
+        var settings = new CoreSettings();
         String script = TestUtils.getScript(fileNameTamplate, settings, PgDiffTest.class, true);
         TestUtils.compareResult(script, fileNameTamplate, PgDiffTest.class);
     }
