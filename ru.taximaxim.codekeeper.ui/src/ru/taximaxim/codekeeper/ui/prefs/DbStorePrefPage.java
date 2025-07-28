@@ -19,14 +19,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.MessageFormat;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -50,7 +47,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -74,7 +70,6 @@ public final class DbStorePrefPage extends PreferencePage
         implements IWorkbenchPreferencePage, IPropertyChangeListener {
 
     private DbStorePrefListEditor dbList;
-    private List<DbInfo> oldDbList;
 
     @Override
     public void init(IWorkbench workbench) {
@@ -91,7 +86,6 @@ public final class DbStorePrefPage extends PreferencePage
 
         DbInfo.sortDbGroups(dbInfoList);
         dbList.setInputList(dbInfoList);
-        oldDbList = new ArrayList<>(dbList.getList());
         return dbList;
     }
 
@@ -104,10 +98,6 @@ public final class DbStorePrefPage extends PreferencePage
     public boolean performOk() {
         setErrorMessage(null);
         try {
-            if (!savePasswords()) {
-                return false;
-            }
-
             DbXmlStore.INSTANCE.writeObjects(dbList.getList());
             super.performOk();
             getPreferenceStore().setValue(DB_STORE_PREF.LAST_DB_STORE_CHANGE_TIME, System.currentTimeMillis());
@@ -116,27 +106,6 @@ public final class DbStorePrefPage extends PreferencePage
             setErrorMessage(e.getLocalizedMessage());
             return false;
         }
-    }
-
-    private boolean savePasswords() throws IOException {
-        try {
-            DbXmlStore.INSTANCE.savePasswords(dbList.getList(), oldDbList);
-        } catch (StorageException e) {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-            String text;
-            if (Platform.OS_LINUX.equals(Platform.getOS())) {
-                text = Messages.DbStorePrefPage_secure_storage_error_text_linux;
-            } else {
-                text = Messages.DbStorePrefPage_secure_storage_error_text_other;
-            }
-            mb.setMessage(MessageFormat.format(text, e.getLocalizedMessage()));
-            mb.setText(Messages.DbStorePrefPage_secure_storage_error_title);
-            if (mb.open() != SWT.YES) {
-                setErrorMessage(Messages.DbStorePrefPage_secure_storage_error + e.getLocalizedMessage());
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override
@@ -272,7 +241,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 String stringPath = dialog.open();
                 if (stringPath != null) {
                     try {
-                        new DbXmlStore(Paths.get(stringPath)).writeObjects(getList());
+                        new DbXmlStore(Paths.get(stringPath), false).writeObjects(getList());
                     } catch (IOException ex) {
                         ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_saving_error, ex);
                     }
@@ -296,7 +265,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 String stringPath = dialog.open();
                 if (stringPath != null) {
                     try {
-                        DbStorePrefListEditor.this.setInputList(new DbXmlStore(Paths.get(stringPath)).readObjects());
+                        DbStorePrefListEditor.this
+                            .setInputList(new DbXmlStore(Paths.get(stringPath), false).readObjects());
                     } catch (IOException ex) {
                         ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_opening_error, ex);
                     }
