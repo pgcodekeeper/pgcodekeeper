@@ -15,16 +15,35 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.GeneralSecurityException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import javax.crypto.Cipher;
+import javax.crypto.CipherInputStream;
+import javax.crypto.CipherOutputStream;
+import javax.crypto.KeyGenerator;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.stream.StreamResult;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
@@ -35,8 +54,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.core.Utils;
 import ru.taximaxim.codekeeper.core.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -45,15 +67,19 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
+    private static final int KEY_SIZE = 256;
+    private static final String CIPHER_KEY = PLUGIN_ID.THIS + ".cipherSecret"; //$NON-NLS-1$
+    private static final String ALGORITHM = "AES"; //$NON-NLS-1$
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
     public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(
-            Platform.getStateLocation(Activator.getContext().getBundle()).append(FILE_NAME).toString()));
+            Platform.getStateLocation(Activator.getContext().getBundle()).append(FILE_NAME).toString()), true);
 
     private final ISecurePreferences securePrefs;
     private final Path path;
 
     private List<DbInfo> store = new ArrayList<>();
     private boolean isDirty = true;
+    private boolean encrypt;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -94,9 +120,10 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    public DbXmlStore(Path path) {
+    public DbXmlStore(Path path, boolean encrypt) {
         super(path.getFileName().toString(), Tags.DB_STORE.toString());
         this.path = path;
+        this.encrypt = encrypt;
 
         ISecurePreferences pref;
         try {
@@ -149,23 +176,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         super.writeObjects(list);
     }
 
-    public void savePasswords(List<DbInfo> list, List<DbInfo> oldlist) throws IOException, StorageException {
-        boolean isSecurePrefs = false;
-        for (DbInfo dbInfo : list) {
-            if (dbInfo.getDbPass().isEmpty()) {
-                int index = oldlist.indexOf(dbInfo);
-                if (index != -1 && oldlist.get(index).getDbPass().isEmpty()) {
-                    continue;
-                }
-            }
-            securePrefs.put(dbInfo.getName(), dbInfo.getDbPass(), true);
-            isSecurePrefs = true;
-        }
-        if (isSecurePrefs) {
-            securePrefs.flush();
-        }
-    }
-
     @Override
     protected void appendChildren(Document xml, Element root, List<DbInfo> list) {
         for (DbInfo dbInfo : list) {
@@ -175,6 +185,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(), dbInfo.getDbPass());
             createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDbGroup());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
@@ -254,13 +265,16 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             }
         }
 
-        // backwards compatibility
         String dbPass = object.getOrDefault(Tags.DBPASS, ""); //$NON-NLS-1$
-        try {
-            dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
-        } catch (StorageException e) {
-            Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
+        // backwards compatibility
+        if (dbPass.isBlank()) {
+            try {
+                dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
+            } catch (StorageException e) {
+                Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
+            }
         }
+
         String dbTypeText = object.get(Tags.DB_TYPE);
         DatabaseType dbType;
         if (dbTypeText != null) {
@@ -292,6 +306,48 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
+    @Override
+    protected void writeDocument(Document xml, Path path) throws IOException, TransformerException {
+        if (encrypt) {
+            try {
+                encryptDocument(xml, path.toString(), getSecret());
+            } catch (GeneralSecurityException | StorageException e) {
+                throw new IOException(e);
+            }
+        } else {
+            super.writeDocument(xml, path);
+        }
+    }
+
+    @Override
+    protected Document readXml() throws IOException {
+        try {
+            // backwards compatibility
+            return super.readXml();
+        } catch (IOException ex) {
+            try {
+                return decryptFileToDoc(getXmlFile().toString(), getSecret());
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
+    private SecretKey getSecret() throws StorageException, NoSuchAlgorithmException, IOException {
+        String encodedKey = securePrefs.get(CIPHER_KEY, null);
+        if (encodedKey != null && !encodedKey.isEmpty()) {
+            byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
+            return new SecretKeySpec(decodedKey, ALGORITHM);
+        }
+
+        KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
+        keyGen.init(KEY_SIZE);
+        var secret = keyGen.generateKey();
+        securePrefs.put(CIPHER_KEY, Base64.getEncoder().encodeToString(secret.getEncoded()), true);
+        securePrefs.flush();
+        return secret;
+    }
+
     private void fillPropertyList(NodeList xml, Map<String, String> map) {
         for (int i = 0; i < xml.getLength(); i++) {
             Node property = xml.item(i);
@@ -314,6 +370,46 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 }
             }
         }
+    }
+
+    private void encryptDocument(Document xmlDoc, String outputFile, SecretKey secret)
+            throws GeneralSecurityException, IOException, TransformerException {
+        byte[] iv = new byte[16];
+        PgDiffUtils.RANDOM.nextBytes(iv);
+
+        Cipher cipher = createCipher(secret, iv, Cipher.ENCRYPT_MODE);
+
+        try (FileOutputStream out = new FileOutputStream(outputFile)) {
+            out.write(iv);
+
+            try (CipherOutputStream cipherOut = new CipherOutputStream(out, cipher)) {
+                Utils.writeXml(xmlDoc, true, new StreamResult(cipherOut));
+            }
+        }
+    }
+
+    private Document decryptFileToDoc(String inputFile, SecretKey secret)
+            throws IOException, GeneralSecurityException, ParserConfigurationException, SAXException {
+        try (FileInputStream in = new FileInputStream(inputFile)) {
+            byte[] iv = new byte[16];
+            if (in.read(iv) != 16) {
+                throw new IOException("IV not found or invalid!"); //$NON-NLS-1$
+            }
+            Cipher cipher = createCipher(secret, iv, Cipher.DECRYPT_MODE);
+
+            try (CipherInputStream cipherIn = new CipherInputStream(in, cipher);
+                    var input = new InputStreamReader(cipherIn, StandardCharsets.UTF_8.newDecoder());
+                    var reader = new BufferedReader(input)) {
+                return Utils.readXml(reader);
+            }
+        }
+    }
+
+    private Cipher createCipher(SecretKey secret, byte[] iv, int mode) throws GeneralSecurityException {
+        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        Cipher cipher = Cipher.getInstance(secret.getAlgorithm());
+        cipher.init(mode, secret, ivSpec);
+        return cipher;
     }
 }
 
