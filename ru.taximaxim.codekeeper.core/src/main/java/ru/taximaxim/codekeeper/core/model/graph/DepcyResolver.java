@@ -249,6 +249,14 @@ public final class DepcyResolver {
         }
     }
 
+    private void removeAlteredFromRefreshes() {
+        toRefresh.removeIf(st ->
+            actions.stream().anyMatch(action -> action.getState() == ObjectState.ALTER
+                && action.getOldObj() instanceof MsView
+                && action.getOldObj().equals(st))
+            );
+    }
+
     /**
      * Пересоздает ранее удаленные объекты в новое состояние
      */
@@ -595,6 +603,7 @@ public final class DepcyResolver {
         depRes.fillObjects(dbObjects, null);
         depRes.recreateDrops();
         depRes.removeExtraActions();
+        depRes.removeAlteredFromRefreshes();
 
         return depRes.actions;
     }

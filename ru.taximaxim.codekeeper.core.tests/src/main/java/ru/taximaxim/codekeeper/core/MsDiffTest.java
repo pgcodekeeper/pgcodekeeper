@@ -327,7 +327,9 @@ class MsDiffTest {
             // Test scenario when size of char and nchar columns removed
             "compare_char_and_nchar_columns",
             // Test scenario where alter order in constraint
-            "alter_ms_constraint_columns_order"
+            "alter_ms_constraint_columns_order",
+            // Test scenario when table columns were altered and dependent view was altered
+            "alter_ms_table_column_and_view"
     })
     void runDiff(String fileNameTemplate) throws IOException, InterruptedException {
         TestUtils.runDiff(fileNameTemplate, DatabaseType.MS, MsDiffTest.class);
