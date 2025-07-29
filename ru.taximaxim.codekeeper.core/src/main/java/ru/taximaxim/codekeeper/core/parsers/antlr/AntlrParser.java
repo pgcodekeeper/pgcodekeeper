@@ -100,6 +100,7 @@ public final class AntlrParser {
         SQLLexer lexer = new SQLLexer(stream);
         SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
         addErrorListener(lexer, parser, parsedObjectName, errors, offset, lineOffset, inLineOffset);
+        parser.setErrorHandler(new CustomSQLAntlrErrorStrategy());
         pgParserLastStart = System.currentTimeMillis();
         return parser;
     }
@@ -119,6 +120,7 @@ public final class AntlrParser {
         TSQLLexer lexer = new TSQLLexer(stream);
         TSQLParser parser = new TSQLParser(new CommonTokenStream(lexer));
         addErrorListener(lexer, parser, parsedObjectName, errors, 0, 0, 0);
+        parser.setErrorHandler(new CustomTSQLAntlrErrorStrategy());
         msParserLastStart = System.currentTimeMillis();
         return parser;
     }
@@ -138,6 +140,7 @@ public final class AntlrParser {
         Lexer lexer = new CHLexer(stream);
         CHParser parser = new CHParser(new CommonTokenStream(lexer));
         addErrorListener(lexer, parser, parsedObjectName, errors, 0, 0, 0);
+        parser.setErrorHandler(new CustomChSQLAntlrErrorStrategy());
         chParserLastStart = System.currentTimeMillis();
         return parser;
     }
