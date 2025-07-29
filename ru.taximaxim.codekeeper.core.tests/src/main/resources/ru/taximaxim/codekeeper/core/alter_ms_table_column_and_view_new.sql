@@ -1,0 +1,19 @@
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE TABLE [dbo].[testtable](
+	[a1] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[a2] [char] (1) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL
+) ON [PRIMARY]
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+GO
+CREATE VIEW [dbo].[testview]
+AS
+SELECT [a1], [a2]
+FROM [testtable] alias
+GO
