@@ -11,10 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Added encryption of the dbstore.xml file.
-- Added checks when deserializing objects.
-- Improved work with created temporary files.
-- Increased version of JDBC driver for PostgreSQL.
+### Fixed
+
+## [10.15.0] - 2025-07-29
 
 ### Fixed
 
@@ -23,7 +22,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed bug with ignoring column order in PostgreSQL and MS SQL constraints.
 - Fixed a bug with the settings when saving objects to a project.
 
-### Removed
+### Security
+
+- Added encryption of the file with connection settings. After saving the settings, previous versions will not be able to read these settings.
+- Added checks when deserializing objects.
+- Fixed work with created temporary files.
+- Increased version of JDBC driver for PostgreSQL due to CVE-2025-49146.
 
 ## [10.14.2] - 2025-05-28
 
@@ -2297,7 +2301,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...HEAD
+[10.15.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...v10.15.0
 [10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
 [10.14.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...v10.14.1
 [10.14.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.13.0...v10.14.0
