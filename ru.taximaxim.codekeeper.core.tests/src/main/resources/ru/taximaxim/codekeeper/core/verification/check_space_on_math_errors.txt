@@ -1,4 +1,4 @@
-check_space_on_math.sql line 3:2 missing {'=', ':='} at '+'
+check_space_on_math.sql line 3:2 missing '=', ':=' at '+'
 check_space_on_math.sql line 7:2 There must be spaces between math expressions.
 check_space_on_math.sql line 7:3 There must be spaces between math expressions.
 check_space_on_math.sql line 7:4 There must be spaces between math expressions.
