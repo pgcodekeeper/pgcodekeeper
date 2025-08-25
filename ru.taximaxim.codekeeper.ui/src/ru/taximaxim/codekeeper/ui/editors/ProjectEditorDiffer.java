@@ -110,18 +110,18 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
+import org.pgcodekeeper.core.model.graph.DepcyTreeExtender;
+import org.pgcodekeeper.core.monitor.IMonitor;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.schema.PgOverride;
+import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.utils.FileUtils;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
-import ru.taximaxim.codekeeper.core.model.graph.DepcyTreeExtender;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgOverride;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -163,6 +163,7 @@ import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
@@ -481,20 +482,20 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         }
         IEclipsePreferences projProps = proj.getPrefs();
 
-        DbSource dbProject = DbSource.fromProject(proj, oneTimePrefs);
+        DbSource oldDb = DbSource.fromProject(proj, oneTimePrefs);
 
         TreeDiffer newDiffer;
-
+        var settings = new UISettings(getProject(), oneTimePrefs, dbType);
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            DbSource dbRemote = DbSource.fromDbInfo(dbInfo, charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
+            DbSource newDb = DbSource.fromDbInfo(dbInfo, charset, projProps.get(PROJ_PREF.TIMEZONE, Consts.UTC),
                     getProject(), oneTimePrefs);
-            newDiffer = new TreeDiffer(dbProject, dbRemote);
+            newDiffer = new TreeDiffer(settings, oldDb, newDb);
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
-            DbSource dbRemote = DbSource.fromFile(file, getProject(), oneTimePrefs);
-            newDiffer = new TreeDiffer(dbProject, dbRemote);
+            DbSource newDb = DbSource.fromFile(file, getProject(), oneTimePrefs);
+            newDiffer = new TreeDiffer(settings, oldDb, newDb);
         }
 
         if (!ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
@@ -515,7 +516,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                             Messages.diffPresentationPane_getting_changes_for_diff, 100);
                     getProject().refreshLocal(IResource.DEPTH_INFINITE, sub.newChild(10));
 
-                    PgDiffUtils.checkCancelled(monitor);
+                    IMonitor.checkCancelled(new UIMonitor(monitor));
                     sub.subTask(Messages.diffPresentationPane_getting_changes_for_diff);
                     newDiffer.run(sub.newChild(90));
                     monitor.done();

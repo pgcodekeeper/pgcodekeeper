@@ -1,3 +1,0 @@
-FUNCTION public.f1()
-	FUNCTION public.f2()
-		FUNCTION public.f1() - cyclic dependency

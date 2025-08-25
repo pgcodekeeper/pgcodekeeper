@@ -1,5 +1,0 @@
-Reference: action = MERGE, offset = 77, line number = 4, charPositionInLine = 0
-Reference: action = MERGE, offset = 435, line number = 14, charPositionInLine = 0
-Reference: action = MERGE, offset = 662, line number = 22, charPositionInLine = 0
-Reference: action = MERGE, offset = 1091, line number = 33, charPositionInLine = 0
-Reference: action = MERGE, offset = 2063, line number = 56, charPositionInLine = 0

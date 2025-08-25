@@ -1,2 +1,0 @@
-ALTER TABLE [dbo].[table1] SET (LOCK_ESCALATION = AUTO);  
-GO

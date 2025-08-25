@@ -1,5 +1,0 @@
-CREATE EXTENSION hstore SCHEMA addons;
-
-ALTER EXTENSION hstore SET SCHEMA utils;
-
-DROP EXTENSION hstore;

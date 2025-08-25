@@ -98,14 +98,14 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
+import org.pgcodekeeper.core.DangerStatement;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.loader.JdbcRunner;
+import org.pgcodekeeper.core.parsers.antlr.base.ScriptParser;
+import org.pgcodekeeper.core.reporter.IProgressReporter;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
-import ru.taximaxim.codekeeper.core.DangerStatement;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.IProgressReporter;
-import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
-import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
@@ -134,6 +134,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.UpdateDdlJobTester;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public class SQLEditor extends AbstractDecoratedTextEditor
 implements IResourceChangeListener, ITextErrorReporter {
@@ -720,7 +721,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset, dbInfo.getName());
             try (IProgressReporter toClose = reporter) {
-                new JdbcRunner(monitor).runBatches(connector, parser.batch(), reporter);
+                new JdbcRunner(new UIMonitor(monitor)).runBatches(connector, parser.batch(), reporter);
                 ProjectEditorDiffer.notifyDbChanged(dbInfo);
                 return Status.OK_STATUS;
             } catch (InterruptedException ex) {

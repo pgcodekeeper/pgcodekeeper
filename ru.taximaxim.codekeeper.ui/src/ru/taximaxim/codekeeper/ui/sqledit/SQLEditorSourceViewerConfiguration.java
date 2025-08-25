@@ -44,8 +44,8 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.pgcodekeeper.core.PgDiffUtils;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 
 public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {

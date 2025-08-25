@@ -50,23 +50,24 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.Utils;
+import org.pgcodekeeper.core.loader.DatabaseLoader;
+import org.pgcodekeeper.core.loader.FullAnalyze;
+import org.pgcodekeeper.core.loader.ParserListenerMode;
+import org.pgcodekeeper.core.loader.PgDumpLoader;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.schema.meta.MetaUtils;
+import org.pgcodekeeper.core.settings.ISettings;
+import org.pgcodekeeper.core.utils.FileUtils;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
-import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
-import ru.taximaxim.codekeeper.core.loader.ParserListenerMode;
-import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
-import ru.taximaxim.codekeeper.core.schema.meta.MetaUtils;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class PgDbParser implements IResourceChangeListener {
 
@@ -87,26 +88,26 @@ public final class PgDbParser implements IResourceChangeListener {
         java.util.LinkedHashMap;\
         java.util.LinkedHashSet;\
         java.util.Map$Entry;\
-        ru.taximaxim.codekeeper.core.ContextLocation;\
-        ru.taximaxim.codekeeper.core.DangerStatement;\
-        ru.taximaxim.codekeeper.core.model.difftree.DbObjType;\
-        ru.taximaxim.codekeeper.core.schema.ArgMode;\
-        ru.taximaxim.codekeeper.core.schema.Argument;\
-        ru.taximaxim.codekeeper.core.schema.GenericColumn;\
-        ru.taximaxim.codekeeper.core.schema.ICast$CastContext;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaCast;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaCompositeType;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaConstraint;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaContainer;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaFunction;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaOperator;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaRelation;\
-        ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;\
-        ru.taximaxim.codekeeper.core.schema.PgObjLocation$LocationType;\
-        ru.taximaxim.codekeeper.core.schema.PgObjLocation;\
-        ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;\
-        ru.taximaxim.codekeeper.core.utils.ModPair;\
-        ru.taximaxim.codekeeper.core.utils.Pair;\
+        org.codekeeper.core.ContextLocation;\
+        org.codekeeper.core.DangerStatement;\
+        org.codekeeper.core.model.difftree.DbObjType;\
+        org.codekeeper.core.schema.ArgMode;\
+        org.codekeeper.core.schema.Argument;\
+        org.codekeeper.core.schema.GenericColumn;\
+        org.codekeeper.core.schema.ICast$CastContext;\
+        org.codekeeper.core.schema.meta.MetaCast;\
+        org.codekeeper.core.schema.meta.MetaCompositeType;\
+        org.codekeeper.core.schema.meta.MetaConstraint;\
+        org.codekeeper.core.schema.meta.MetaContainer;\
+        org.codekeeper.core.schema.meta.MetaFunction;\
+        org.codekeeper.core.schema.meta.MetaOperator;\
+        org.codekeeper.core.schema.meta.MetaRelation;\
+        org.codekeeper.core.schema.meta.MetaStatement;\
+        org.codekeeper.core.schema.PgObjLocation$LocationType;\
+        org.codekeeper.core.schema.PgObjLocation;\
+        org.codekeeper.core.schema.PgObjLocation.LocationType;\
+        org.codekeeper.core.utils.ModPair;\
+        org.codekeeper.core.utils.Pair;\
         ru.taximaxim.codekeeper.ui.pgdbproject.parser.ProjectReferencesStorage;\
         !*""";
 
@@ -218,7 +219,8 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void fillRefsFromInputStream(InputStream input, String fileName, IProgressMonitor monitor, IProject project)
             throws InterruptedException, IOException {
-        PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, new UISettings(project, null), monitor);
+        PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, new UISettings(project, null),
+                new UIMonitor(monitor));
         loader.setMode(ParserListenerMode.REF);
         AbstractDatabase db = loader.load();
         referencesStorage.clear();

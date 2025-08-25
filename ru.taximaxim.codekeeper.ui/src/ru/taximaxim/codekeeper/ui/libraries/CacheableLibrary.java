@@ -21,8 +21,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.utils.FileUtils;
 
 public abstract class CacheableLibrary extends AbstractLibrary {
 

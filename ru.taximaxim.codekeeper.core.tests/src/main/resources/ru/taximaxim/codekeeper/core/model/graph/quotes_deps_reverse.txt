@@ -1,2 +1,0 @@
-TABLE public."MyTable"
-	SCHEMA public

@@ -16,8 +16,7 @@
 package ru.taximaxim.codekeeper.ui.sqledit;
 
 import org.eclipse.jface.text.IRegion;
-
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
 public class SQLEditorMyRegion implements IRegion {
 

@@ -17,8 +17,8 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.TableViewer;
+import org.pgcodekeeper.core.model.difftree.IgnoredObject;
 
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 
 public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor> {

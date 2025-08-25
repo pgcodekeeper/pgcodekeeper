@@ -46,10 +46,10 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.osgi.service.prefs.BackingStoreException;
+import org.pgcodekeeper.core.library.PgLibrary;
+import org.pgcodekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
 
-import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
-import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -189,7 +189,7 @@ public class DependencyProperties extends PropertyPage {
 
         @Override
         protected String errorAlreadyExists(PgLibrary obj) {
-            return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getPath());
+            return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.path());
         }
 
         @Override

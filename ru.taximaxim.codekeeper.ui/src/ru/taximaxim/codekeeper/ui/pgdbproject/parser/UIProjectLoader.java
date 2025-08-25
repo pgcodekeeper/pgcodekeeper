@@ -38,29 +38,31 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.Utils;
+import org.pgcodekeeper.core.WorkDirs;
+import org.pgcodekeeper.core.loader.DatabaseLoader;
+import org.pgcodekeeper.core.loader.FullAnalyze;
+import org.pgcodekeeper.core.loader.LibraryLoader;
+import org.pgcodekeeper.core.loader.ProjectLoader;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
+import org.pgcodekeeper.core.model.exporter.ModelExporter;
+import org.pgcodekeeper.core.monitor.IMonitor;
+import org.pgcodekeeper.core.parsers.antlr.base.AntlrError;
+import org.pgcodekeeper.core.parsers.antlr.base.AntlrTaskManager;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.schema.ms.MsDatabase;
+import org.pgcodekeeper.core.settings.ISettings;
+import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
-import ru.taximaxim.codekeeper.core.loader.FullAnalyze;
-import ru.taximaxim.codekeeper.core.loader.LibraryLoader;
-import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.schema.ms.MsDatabase;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
-import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class UIProjectLoader extends ProjectLoader {
 
@@ -75,7 +77,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
     public UIProjectLoader(IProject iProject, UISettings settings, IProgressMonitor monitor,
             IgnoreSchemaList ignoreSchemaList, boolean projectOnly) {
-        super(null, settings, monitor, new ArrayList<>(), ignoreSchemaList);
+        super(null, settings, new UIMonitor(monitor), new ArrayList<>(), ignoreSchemaList);
         this.iProject = iProject;
         this.projectOnly = projectOnly;
     }
@@ -196,7 +198,7 @@ public final class UIProjectLoader extends ProjectLoader {
     /**
      * @param checkFile additional filter for loaded sql files
      */
-    private void filterFile(IResource[] iResources, IProgressMonitor monitor, AbstractDatabase db,
+    private void filterFile(IResource[] iResources, IMonitor monitor, AbstractDatabase db,
             Predicate<IResource> checkFile)
                     throws CoreException, InterruptedException {
 
@@ -204,12 +206,12 @@ public final class UIProjectLoader extends ProjectLoader {
                 .filter(r -> r.getType() == IResource.FILE && SQL_EXTENSION.equals(r.getFileExtension()))
                 .filter(checkFile);
 
-        for (IResource resource : PgDiffUtils.sIter(streamR)) {
+        for (IResource resource : Utils.streamIterator(streamR)) {
             loadFile((IFile) resource, monitor, db);
         }
     }
 
-    private void loadFile(IFile file, IProgressMonitor monitor, AbstractDatabase db)
+    private void loadFile(IFile file, IMonitor monitor, AbstractDatabase db)
             throws CoreException, InterruptedException {
         UISettings copySettings = (UISettings) settings.copy();
         copySettings.setCharsetName(file.getCharset());
@@ -252,7 +254,7 @@ public final class UIProjectLoader extends ProjectLoader {
             if (schemasPath.isPrefixOf(filePath)) {
                 schemaFiles.add(filePath.removeFileExtension().lastSegment());
             } else {
-                loadFile(file, mon, db);
+                loadFile(file, new UIMonitor(mon), db);
             }
         }
         AntlrTaskManager.finish(antlrTasks);
@@ -318,7 +320,7 @@ public final class UIProjectLoader extends ProjectLoader {
                 }
             }
 
-            loadFile(file, mon, db);
+            loadFile(file, new UIMonitor(mon), db);
         }
         return db;
     }

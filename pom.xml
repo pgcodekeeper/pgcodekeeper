@@ -15,18 +15,13 @@
     <version>${revision}</version>
     <packaging>pom</packaging>
     <modules>
-        <module>ru.taximaxim.codekeeper.core</module>
-        <module>ru.taximaxim.codekeeper.core.tests</module>
         <module>ru.taximaxim.codekeeper.ui</module>
         <module>ru.taximaxim.codekeeper.ui.tests</module>
-        <module>ru.taximaxim.codekeeper.cli</module>
-        <module>ru.taximaxim.codekeeper.cli.tests</module>
         <module>ru.taximaxim.codekeeper.mainapp</module>
         <module>ru.taximaxim.codekeeper.mainapp/report</module>
         <module>ru.taximaxim.codekeeper.mainapp/feature</module>
         <module>ru.taximaxim.codekeeper.mainapp/updatesite</module>
         <module>ru.taximaxim.codekeeper.mainapp/product/rcp</module>
-        <module>ru.taximaxim.codekeeper.mainapp/product/standalone</module>
     </modules>
 
     <properties>

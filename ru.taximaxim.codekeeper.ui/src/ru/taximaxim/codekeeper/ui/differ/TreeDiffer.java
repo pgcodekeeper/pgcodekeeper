@@ -28,13 +28,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.pgcodekeeper.core.model.difftree.DiffTree;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.monitor.IMonitor;
+import org.pgcodekeeper.core.settings.ISettings;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.model.difftree.DiffTree;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 /**
  * строит дерево сравнения из двух баз
@@ -45,8 +47,15 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private final DbSource oldDb;
     private final DbSource newDb;
+    private final ISettings settings;
 
     private TreeElement diffTree;
+
+    public TreeDiffer(ISettings settings, DbSource oldDb, DbSource newDb) {
+        this.settings = settings;
+        this.oldDb = oldDb;
+        this.newDb = newDb;
+    }
 
     public Stream<Object> getErrors() {
         return Stream.of(oldDb, newDb)
@@ -66,11 +75,6 @@ public class TreeDiffer implements IRunnableWithProgress {
             throw new IllegalStateException(Messages.runnable_has_not_finished);
         }
         return diffTree;
-    }
-
-    public TreeDiffer(DbSource oldDb, DbSource newDb) {
-        this.oldDb = oldDb;
-        this.newDb = newDb;
     }
 
     @Override
@@ -101,8 +105,9 @@ public class TreeDiffer implements IRunnableWithProgress {
         + " newDb: " + newDb.getOrigin()); //$NON-NLS-1$
 
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
-        diffTree = DiffTree.create(oldDb.getDbObject(), newDb.getDbObject(), pm);
-        PgDiffUtils.checkCancelled(pm);
+        var uiMon = new UIMonitor(pm);
+        diffTree = DiffTree.create(settings, oldDb.getDbObject(), newDb.getDbObject(), uiMon);
+        IMonitor.checkCancelled(uiMon);
         monitor.done();
     }
 

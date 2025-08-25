@@ -1,1 +1,0 @@
-CREATE SERVER test_server_0 FOREIGN DATA WRAPPER fdw1;

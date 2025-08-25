@@ -36,9 +36,9 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
+import org.pgcodekeeper.core.library.PgLibrary;
+import org.pgcodekeeper.core.library.PgLibrarySource;
 
-import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
-import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -78,10 +78,10 @@ public class DependencyEditorDialog extends TrayDialog {
                 newShell.removeShellListener(this);
 
                 if (initialLibrary != null) {
-                    txtName.setText(initialLibrary.getName());
-                    txtPath.setText(initialLibrary.getPath());
-                    txtOwner.setText(initialLibrary.getOwner());
-                    btnIgnorePriv.setSelection(initialLibrary.isIgnorePriv());
+                    txtName.setText(initialLibrary.name());
+                    txtPath.setText(initialLibrary.path());
+                    txtOwner.setText(initialLibrary.owner());
+                    btnIgnorePriv.setSelection(initialLibrary.isIgnorePrivileges());
                 }
             }
         });

@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.ui.generators;
 
 import java.util.Random;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
+import org.pgcodekeeper.core.PgDiffUtils;
 
 /**
  * An implementation of a PostgreSql data generator for JSON type.

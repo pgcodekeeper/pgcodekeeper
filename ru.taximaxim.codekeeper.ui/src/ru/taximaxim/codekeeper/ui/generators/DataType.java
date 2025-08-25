@@ -25,9 +25,10 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.MsDiffUtils;
+
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.MsDiffUtils;
 
 public enum DataType {
     BIGINT      (e -> new IntegerData(e, Long.MAX_VALUE)),

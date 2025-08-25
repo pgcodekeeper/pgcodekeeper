@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IStartup;
+import org.pgcodekeeper.core.parsers.antlr.base.AntlrParser;
 
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;

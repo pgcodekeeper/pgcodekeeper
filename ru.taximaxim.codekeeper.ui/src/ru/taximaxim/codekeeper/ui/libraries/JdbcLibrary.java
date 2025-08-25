@@ -18,8 +18,8 @@ package ru.taximaxim.codekeeper.ui.libraries;
 import java.util.Objects;
 
 import org.eclipse.swt.graphics.Image;
+import org.pgcodekeeper.core.utils.FileUtils;
 
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 

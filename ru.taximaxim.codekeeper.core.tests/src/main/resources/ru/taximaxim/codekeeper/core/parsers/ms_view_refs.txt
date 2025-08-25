@@ -1,3 +1,0 @@
-Reference: Object = v1 (VIEW), action = CREATE, offset = 12, line number = 1, charPositionInLine = 12
-Reference: Object = v2 (VIEW), action = CREATE, offset = 79, line number = 7, charPositionInLine = 12
-Reference: Object = v3 (VIEW), action = CREATE, offset = 260, line number = 13, charPositionInLine = 12

@@ -1,3 +1,0 @@
-CREATE SCHEMA first;
-
-CREATE SCHEMA second;

@@ -1,3 +1,0 @@
-FUNCTION public."Func1"()
-	FUNCTION public.f2()
-		FUNCTION public."Func1"() - cyclic dependency

@@ -1,4 +1,0 @@
-CREATE ROLE [test] AUTHORIZATION [dbo]
-GO
-ALTER ROLE [test] ADD MEMBER [test_user_2]
-GO

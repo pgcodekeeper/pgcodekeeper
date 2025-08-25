@@ -1,3 +1,0 @@
-CREATE SEQUENCE [dbo].[testseq]
-    START WITH 1000
-    INCREMENT BY 1;

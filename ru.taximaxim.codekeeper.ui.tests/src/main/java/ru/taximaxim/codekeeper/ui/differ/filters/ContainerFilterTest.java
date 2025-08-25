@@ -21,8 +21,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
-
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
 
 class ContainerFilterTest extends AbstractFilterTest{
 

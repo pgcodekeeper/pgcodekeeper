@@ -18,10 +18,10 @@ package ru.taximaxim.codekeeper.ui.utils;
 import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.utils.ProjectUpdater;
 
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.utils.ProjectUpdater;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 

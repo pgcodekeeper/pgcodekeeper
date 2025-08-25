@@ -20,11 +20,11 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
+import org.pgcodekeeper.core.xmlstore.XmlStore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import ru.taximaxim.codekeeper.core.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 
 public class IgnoreListsXmlStore extends XmlStore<String> {

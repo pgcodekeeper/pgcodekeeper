@@ -1,6 +1,0 @@
-CREATE SEQUENCE public.testtable2_sequence_seq
-	START WITH 1
-	INCREMENT BY 1
-	NO MAXVALUE
-	NO MINVALUE
-	CACHE 1;

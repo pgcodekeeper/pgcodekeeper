@@ -18,10 +18,10 @@ package ru.taximaxim.codekeeper.ui.differ.filters;
 import java.util.Map;
 
 import org.mockito.Mock;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.settings.ISettings;
 
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.TestUiSettings;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 

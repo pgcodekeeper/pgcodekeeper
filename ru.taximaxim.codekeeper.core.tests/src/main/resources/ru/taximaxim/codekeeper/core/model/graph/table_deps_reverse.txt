@@ -1,2 +1,0 @@
-TABLE public.t1
-	SCHEMA public

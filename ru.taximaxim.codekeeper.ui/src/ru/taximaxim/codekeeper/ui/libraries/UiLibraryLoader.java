@@ -28,14 +28,14 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.WorkDirs;
-import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
-import ru.taximaxim.codekeeper.core.libraries.PgLibrarySource;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
-import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.Utils;
+import org.pgcodekeeper.core.WorkDirs;
+import org.pgcodekeeper.core.library.PgLibrary;
+import org.pgcodekeeper.core.library.PgLibrarySource;
+import org.pgcodekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
 
 public class UiLibraryLoader {
 
@@ -77,7 +77,7 @@ public class UiLibraryLoader {
     }
 
     private void readLib(AbstractLibrary root, PgLibrary lib) throws IOException {
-        readLib(root, lib.getPath());
+        readLib(root, lib.path());
     }
 
     void readLib(AbstractLibrary root, String path) throws IOException {
@@ -146,7 +146,7 @@ public class UiLibraryLoader {
         }
 
         try (Stream<Path> stream = Files.list(path).sorted(DIR_COMPARATOR)) {
-            for (Path sub : PgDiffUtils.sIter(stream)) {
+            for (Path sub : Utils.streamIterator(stream)) {
                 readPath(parent, sub);
             }
         }

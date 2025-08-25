@@ -50,16 +50,15 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.Utils;
+import org.pgcodekeeper.core.xmlstore.XmlStore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.xmlstore.XmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -375,7 +374,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     private void encryptDocument(Document xmlDoc, String outputFile, SecretKey secret)
             throws GeneralSecurityException, IOException, TransformerException {
         byte[] iv = new byte[16];
-        PgDiffUtils.RANDOM.nextBytes(iv);
+        Utils.getRandom().nextBytes(iv);
 
         Cipher cipher = createCipher(secret, iv, Cipher.ENCRYPT_MODE);
 

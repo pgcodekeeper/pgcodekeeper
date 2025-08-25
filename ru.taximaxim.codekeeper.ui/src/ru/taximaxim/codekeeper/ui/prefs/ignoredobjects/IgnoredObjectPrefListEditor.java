@@ -30,11 +30,11 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
+import org.pgcodekeeper.core.model.difftree.IIgnoreList;
+import org.pgcodekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
+import org.pgcodekeeper.core.model.difftree.IgnoredObject;
 
-import ru.taximaxim.codekeeper.core.model.difftree.IIgnoreList;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoredObject;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

@@ -1,2 +1,0 @@
-DROP PROCEDURE [dbo].[proc1]
-GO

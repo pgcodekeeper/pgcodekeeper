@@ -24,10 +24,10 @@ import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
+import org.pgcodekeeper.core.ignoreparser.IgnoreParser;
+import org.pgcodekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
 
-import ru.taximaxim.codekeeper.core.ignoreparser.IgnoreParser;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;

@@ -18,9 +18,8 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.Objects;
 
 import org.eclipse.jface.text.Position;
-
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
 public class Segments extends Position {
 

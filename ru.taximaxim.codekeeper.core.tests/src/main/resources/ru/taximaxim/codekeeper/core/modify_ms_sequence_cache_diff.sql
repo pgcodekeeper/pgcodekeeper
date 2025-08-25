@@ -1,3 +1,0 @@
-ALTER SEQUENCE [dbo].[TEST_SEQ]
-	CACHE 
-GO

@@ -22,9 +22,9 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Platform;
+import org.pgcodekeeper.core.library.PgLibrary;
+import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
 
-import ru.taximaxim.codekeeper.core.libraries.PgLibrary;
-import ru.taximaxim.codekeeper.core.xmlstore.DependenciesXmlStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 

@@ -1,1 +1,0 @@
-DROP DATABASE db_comment;

@@ -76,12 +76,6 @@ jobs:
       - name: set macos x86 build name
         run: echo "MACOS_X86_BUILD=${{ env.PREFIX }}${{ env.RELEASE_VERSION }}-macosx.cocoa.x86_64.tar.gz" >> $GITHUB_ENV
 
-      - name: set cli build name
-        run: echo "CLI_BUILD=pgCodeKeeper-cli-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
-
-      - name: set updatesite name
-        run: echo "UPDATESITE=pgCodeKeeper-updatesite-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
-
       - name: create GitHub release
         id: create_release
         uses: comnoco/create-release-action@v2.0.5
@@ -131,16 +125,6 @@ jobs:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_X86_BUILD }}
           asset_name: ${{ env.MACOS_X86_BUILD }}
-          asset_content_type: application/zip
-
-      - name: upload release cli build
-        uses: sekwah41/upload-release-assets@main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/standalone/target/products/${{ env.CLI_BUILD }}
-          asset_name: ${{ env.CLI_BUILD }}
           asset_content_type: application/zip
 
       - name: upload release updatesite

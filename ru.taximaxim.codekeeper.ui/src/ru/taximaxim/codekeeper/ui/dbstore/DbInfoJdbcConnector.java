@@ -17,12 +17,14 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Properties;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
@@ -45,7 +47,21 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
     @Override
     public Connection getConnection() throws IOException {
         log(getMessage());
-        var con = super.getConnection();
+        Connection con = null;
+        // This part of the code solves the problem with finding the right class in the
+        // right location and loads ClickHouseDriver in the Equinox driver whitelist.
+        // we can try remove this code and remove folder libs when will be resolved
+        // https://github.com/ClickHouse/clickhouse-java/issues/905
+        if (DatabaseType.CH == dbType) {
+            try {
+                Class.forName("com.clickhouse.jdbc.ClickHouseDriver");
+                con = DriverManager.getConnection(getUrl(), makeProperties());
+            } catch (SQLException | ClassNotFoundException e) {
+                throw new IOException(e.getLocalizedMessage(), e);
+            }
+        } else {
+            con = super.getConnection();
+        }
         try {
             con.setReadOnly(dbInfo.isReadOnly());
             return con;

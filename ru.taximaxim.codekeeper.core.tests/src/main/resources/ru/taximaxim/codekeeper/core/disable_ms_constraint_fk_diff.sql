@@ -1,2 +1,0 @@
-ALTER TABLE [dbo].[table1] WITH NOCHECK NOCHECK CONSTRAINT [iden_fk]
-GO

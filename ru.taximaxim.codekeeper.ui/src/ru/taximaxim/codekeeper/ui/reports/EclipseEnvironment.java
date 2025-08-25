@@ -26,8 +26,8 @@ import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.framework.Bundle;
 import org.osgi.service.prefs.BackingStoreException;
+import org.pgcodekeeper.core.Utils;
 
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.USAGE_REPORT_PREF;
@@ -120,7 +120,7 @@ public class EclipseEnvironment {
     private String createIdentifier() {
         long min = 1_000_000_000L;
         long max = 9_999_999_999L;
-        long id = PgDiffUtils.RANDOM.nextLong() % (max - min) + max;
+        long id = Utils.getRandom().nextLong() % (max - min) + max;
         return id + "." + System.currentTimeMillis();
     }
 

@@ -1,3 +1,0 @@
-TABLE public."MyTable"
-	COLUMN public."MyTable".c1
-	COLUMN public."MyTable".c2
