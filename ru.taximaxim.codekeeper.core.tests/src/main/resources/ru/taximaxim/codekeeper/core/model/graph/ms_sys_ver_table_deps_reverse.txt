@@ -1,4 +1,0 @@
-TABLE [dbo].[t1]
-	SCHEMA [dbo]
-	TABLE [dbo].[hist_t1]
-		SCHEMA [dbo]

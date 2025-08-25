@@ -19,8 +19,7 @@ import java.util.Objects;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
-
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
 public class SegmentsWithParent extends Segments implements IAdaptable {
 

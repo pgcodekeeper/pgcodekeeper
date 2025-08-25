@@ -22,4 +22,5 @@
 - Andrew Saushkin ([asaushkin](https://github.com/asaushkin)) - For product management
 - Dmitry Novgorodov - For suggesting ideas
 - Andrew Volodin ([volodin-aa](https://github.com/volodin-aa)) - For suggesting ideas
+- Sergey Grinko ([sgrinko](https://github.com/sgrinko)) - For help in query optimization and active participation
 - Bug Reporters - For all bug reports

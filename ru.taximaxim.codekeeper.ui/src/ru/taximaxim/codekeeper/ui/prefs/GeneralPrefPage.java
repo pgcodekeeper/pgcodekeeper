@@ -27,10 +27,10 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.parsers.antlr.base.AntlrParser;
+import org.pgcodekeeper.core.parsers.antlr.base.AntlrTaskManager;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrParser;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrTaskManager;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.EclipseIniWriter;
 import ru.taximaxim.codekeeper.ui.IntegerVerifyListener;

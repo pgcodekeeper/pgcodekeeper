@@ -18,8 +18,7 @@ package ru.taximaxim.codekeeper.ui;
 import java.util.List;
 
 import org.eclipse.jface.viewers.LabelProvider;
-
-import ru.taximaxim.codekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.DatabaseType;
 
 public interface UIConsts {
 

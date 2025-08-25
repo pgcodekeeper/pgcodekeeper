@@ -1,1 +1,0 @@
-grant_privil.sql line 14:1 Error while checking for rights group. Not allowed user for GRANT: public

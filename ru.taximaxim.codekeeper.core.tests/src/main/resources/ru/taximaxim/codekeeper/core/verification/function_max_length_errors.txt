@@ -1,1 +1,0 @@
-function_max_length.sql line 1:1 The length of function 18. A function should be no longer than 4 strings.

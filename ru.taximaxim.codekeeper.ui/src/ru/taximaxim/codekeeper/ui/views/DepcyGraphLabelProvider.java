@@ -31,9 +31,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
-
-import ru.taximaxim.codekeeper.core.schema.IConstraintFk;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.schema.IConstraintFk;
+import org.pgcodekeeper.core.schema.PgStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
 

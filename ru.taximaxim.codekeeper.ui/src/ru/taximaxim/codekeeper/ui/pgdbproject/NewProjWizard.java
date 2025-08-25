@@ -58,12 +58,12 @@ import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.loader.JdbcRunner;
+import org.pgcodekeeper.core.schema.pg.PgDatabase;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
-import ru.taximaxim.codekeeper.core.schema.pg.PgDatabase;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -80,6 +80,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class NewProjWizard extends Wizard
 implements IExecutableExtension, INewWizard {
@@ -484,7 +485,7 @@ class PageDb extends WizardPage {
 
             try (Connection connection = connector.getConnection();
                     Statement st = connection.createStatement();
-                    ResultSet rs = new JdbcRunner(monitor).runScript(st, QUERY_TZ)) {
+                    ResultSet rs = new JdbcRunner(new UIMonitor(monitor)).runScript(st, QUERY_TZ)) {
                 timezone = rs.next() ? rs.getString("setting") : null; //$NON-NLS-1$
             } catch (SQLException | IOException e) {
                 throw new InvocationTargetException(e, e.getLocalizedMessage());

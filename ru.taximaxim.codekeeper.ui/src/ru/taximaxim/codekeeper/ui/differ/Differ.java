@@ -28,17 +28,18 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.PgDiff;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.monitor.IMonitor;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.schema.PgStatement;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiff;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class Differ implements IRunnableWithProgress {
 
@@ -143,7 +144,7 @@ public final class Differ implements IRunnableWithProgress {
             throw new InvocationTargetException(e, e.getLocalizedMessage());
         }
 
-        PgDiffUtils.checkCancelled(pm);
+        IMonitor.checkCancelled(new UIMonitor(monitor));
         monitor.done();
     }
 }

@@ -19,8 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.utils.TempFile;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.utils.TempFile;
+
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
 

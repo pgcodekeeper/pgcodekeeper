@@ -23,8 +23,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.meta.MetaStatement;
 
 class ProjectReferencesStorage implements Serializable {
 

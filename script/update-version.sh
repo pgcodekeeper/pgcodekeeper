@@ -6,9 +6,7 @@ cd "${DIR}/../" \
 && \
 mvn org.eclipse.tycho:tycho-versions-plugin:set-version \
 -Dartifacts=\
-ru.taximaxim.codekeeper.cli,\
 ru.taximaxim.codekeeper.rcp.product,\
-ru.taximaxim.codekeeper.standalone.product,\
 ru.taximaxim.codekeeper.mainapp,\
 ru.taximaxim.codekeeper.feature \
 -DnewVersion=$1"-SNAPSHOT" \

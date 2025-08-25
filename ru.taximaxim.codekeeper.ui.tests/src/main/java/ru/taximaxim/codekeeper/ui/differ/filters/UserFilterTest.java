@@ -31,8 +31,8 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
 
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
 
 class UserFilterTest extends AbstractFilterTest {

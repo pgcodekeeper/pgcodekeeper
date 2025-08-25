@@ -1,2 +1,0 @@
-quotes_in_table_column.sql line 8:5 There should be no quotation marks in the table column name.
-quotes_in_table_column.sql line 12:5 There should be no quotation marks in the table column name.

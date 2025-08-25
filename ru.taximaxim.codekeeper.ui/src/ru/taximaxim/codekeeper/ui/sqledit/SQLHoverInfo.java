@@ -17,8 +17,7 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.Annotation;
-
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
 public class SQLHoverInfo {
 

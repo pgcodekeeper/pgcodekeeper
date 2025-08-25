@@ -24,8 +24,8 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
 
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.reports.EclipseEnvironment;
 
 public class Activator extends AbstractUIPlugin {

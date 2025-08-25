@@ -42,8 +42,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.pgcodekeeper.core.schema.PgStatement;
 
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ManualDepciesGroup extends Group{

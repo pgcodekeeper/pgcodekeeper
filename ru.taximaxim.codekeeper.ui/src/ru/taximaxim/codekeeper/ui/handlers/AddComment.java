@@ -34,13 +34,13 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.PgDiffUtils;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.PgStatement;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -48,6 +48,7 @@ import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -112,11 +113,13 @@ public final class AddComment extends AbstractHandler {
         DbSource oldDbSource = DbSource.fromDbObject(oldDb, "old");
         DbSource newDbSource = DbSource.fromDbObject(newDb, "new");
 
-        TreeDiffer treeDiffer = new TreeDiffer(newDbSource, oldDbSource);
+        var project = file.getProject();
+        var settings = new UISettings(project, null);
+        TreeDiffer treeDiffer = new TreeDiffer(settings, newDbSource, oldDbSource);
         treeDiffer.run(new NullProgressMonitor());
         TreeElement el = treeDiffer.getDiffTree().findElement(statement);
 
-        PgDbProject proj = new PgDbProject(file.getProject());
+        PgDbProject proj = new PgDbProject(project);
         new UIProjectUpdater(newDb, oldDb, List.of(el), proj, false).updatePartial();
         file.refreshLocal(IResource.DEPTH_INFINITE, null);
         openFileInEditor(file);

@@ -35,9 +35,9 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.PgDiffUtils;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {

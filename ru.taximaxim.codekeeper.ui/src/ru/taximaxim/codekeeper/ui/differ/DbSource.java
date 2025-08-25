@@ -31,17 +31,17 @@ import java.util.Map;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.loader.DatabaseLoader;
+import org.pgcodekeeper.core.loader.LoaderFactory;
+import org.pgcodekeeper.core.loader.PgDumpLoader;
+import org.pgcodekeeper.core.loader.ProjectLoader;
+import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
+import org.pgcodekeeper.core.reporter.IProgressReporter;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.utils.InputStreamProvider;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.IProgressReporter;
-import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.DatabaseLoader;
-import ru.taximaxim.codekeeper.core.loader.LoaderFactory;
-import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.loader.ProjectLoader;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreSchemaList;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.utils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
@@ -54,6 +54,7 @@ import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public abstract class DbSource {
 
@@ -245,7 +246,7 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-        return load(new PgDumpLoader(filename, new UISettings(proj, oneTimePrefs), monitor, 2));
+        return load(new PgDumpLoader(filename, new UISettings(proj, oneTimePrefs), new UIMonitor(monitor), 2));
     }
 
     private int countLines(Path filename) throws IOException {
@@ -321,7 +322,8 @@ class DbSourceDb extends DbSource {
 
         pm.newChild(1).subTask(Messages.dbSource_loading_dump);
 
-        return load(new PgDumpLoader(streamProvider, "pg_dump", new UISettings(proj, oneTimePrefs), monitor)); //$NON-NLS-1$
+        return load(new PgDumpLoader(streamProvider, "pg_dump", new UISettings(proj, oneTimePrefs), //$NON-NLS-1$
+                new UIMonitor(monitor)));
     }
 }
 
@@ -360,7 +362,7 @@ class DbSourceJdbc extends DbSource {
         }
 
         return load(LoaderFactory.createJdbcLoader(new UISettings(proj, oneTimePrefs, jdbcConnector.getType()),
-                timezone, jdbcConnector, monitor, ignoreShemaList));
+                timezone, jdbcConnector, new UIMonitor(monitor), ignoreShemaList));
     }
 }
 class DbSourceFromDbObject extends DbSource {

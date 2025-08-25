@@ -16,32 +16,12 @@
     <dependencies>
         <dependency>
             <groupId>ru.taximaxim.codeKeeper</groupId>
-            <artifactId>ru.taximaxim.codekeeper.core</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taximaxim.codeKeeper</groupId>
-            <artifactId>ru.taximaxim.codekeeper.core.tests</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taximaxim.codeKeeper</groupId>
             <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
             <version>${ui.revision}</version>
         </dependency>
         <dependency>
             <groupId>ru.taximaxim.codeKeeper</groupId>
             <artifactId>ru.taximaxim.codekeeper.ui.tests</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taximaxim.codeKeeper</groupId>
-            <artifactId>ru.taximaxim.codekeeper.cli</artifactId>
-            <version>${revision}</version>
-        </dependency>
-        <dependency>
-            <groupId>ru.taximaxim.codeKeeper</groupId>
-            <artifactId>ru.taximaxim.codekeeper.cli.tests</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

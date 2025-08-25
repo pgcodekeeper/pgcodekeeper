@@ -1,9 +1,0 @@
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_NULLS ON
-GO
-CREATE TABLE [dbo].[testtable] (
-    [c1] [bigint] NOT NULL IDENTITY (1,1),
-    [c2] [int] NOT NULL
-)
-GO

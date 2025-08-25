@@ -1,1 +1,0 @@
-CONSTRAINT public.test_fk_1.fk

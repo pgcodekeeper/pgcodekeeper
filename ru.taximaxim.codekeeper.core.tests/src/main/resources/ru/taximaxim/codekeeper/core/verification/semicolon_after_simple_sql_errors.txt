@@ -1,1 +1,0 @@
-semicolon_after_simple_sql.sql line 5:12 Warning: Not semicolon after simple sql statement.

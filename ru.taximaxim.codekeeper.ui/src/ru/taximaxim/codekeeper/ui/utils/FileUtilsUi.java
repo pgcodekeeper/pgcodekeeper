@@ -35,12 +35,12 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.ContextLocation;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.utils.FileUtils;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.ContextLocation;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorInput;
 public final class FileUtilsUi {

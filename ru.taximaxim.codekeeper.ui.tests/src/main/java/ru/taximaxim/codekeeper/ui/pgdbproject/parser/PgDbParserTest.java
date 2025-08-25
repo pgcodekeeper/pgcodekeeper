@@ -15,12 +15,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.pgdbproject.parser;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.io.IOException;
 import java.io.InvalidClassException;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class PgDbParserTest {
@@ -30,7 +28,7 @@ class PgDbParserTest {
         try (var serializedFileStream = PgDbParser.class.getResourceAsStream("good_object.ser")) {
             var pgDbParser = new PgDbParser();
 
-            assertDoesNotThrow(() -> pgDbParser.deserialize(serializedFileStream));
+            Assertions.assertDoesNotThrow(() -> pgDbParser.deserialize(serializedFileStream));
         }
     }
 
@@ -39,7 +37,7 @@ class PgDbParserTest {
         try (var serializedFileStream = PgDbParser.class.getResourceAsStream("wrong_object.ser")) {
             var pgDbParser = new PgDbParser();
 
-            assertThrows(InvalidClassException.class, () -> pgDbParser.deserialize(serializedFileStream));
+            Assertions.assertThrows(InvalidClassException.class, () -> pgDbParser.deserialize(serializedFileStream));
         }
     }
 }

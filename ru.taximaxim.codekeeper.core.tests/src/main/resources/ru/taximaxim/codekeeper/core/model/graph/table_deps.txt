@@ -1,3 +1,0 @@
-TABLE public.t1
-	COLUMN public.t1.c1
-	COLUMN public.t1.c2

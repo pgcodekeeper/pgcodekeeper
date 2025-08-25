@@ -15,8 +15,8 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import ru.taximaxim.codekeeper.core.sql.Keyword;
-import ru.taximaxim.codekeeper.core.sql.Keyword.KeywordCategory;
+import org.pgcodekeeper.core.sql.Keyword;
+import org.pgcodekeeper.core.sql.Keyword.KeywordCategory;
 
 public class SqlPostgresSyntax {
 

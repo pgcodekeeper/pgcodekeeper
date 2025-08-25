@@ -15,7 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.model.difftree.IgnoreList;
 
 public interface InternalIgnoreListener {
 

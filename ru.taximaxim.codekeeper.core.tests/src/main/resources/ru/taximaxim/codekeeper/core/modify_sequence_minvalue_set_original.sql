@@ -1,6 +1,0 @@
-CREATE SEQUENCE public.testseq
-    START WITH 1
-    INCREMENT BY 10
-    NO MAXVALUE
-    NO MINVALUE
-    CACHE 1;

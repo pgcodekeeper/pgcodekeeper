@@ -4,8 +4,7 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
 Bundle-Version: 5.13.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
-Require-Bundle: ru.taximaxim.codekeeper.core;bundle-version="[10.0.0,11.0.0)",
- ru.taximaxim.codekeeper.mainapp,
+Require-Bundle: ru.taximaxim.codekeeper.mainapp,
  org.eclipse.compare;bundle-version="[3.7.0,4.0.0)",
  org.eclipse.core.expressions;bundle-version="[3.6.0,4.0.0)",
  org.eclipse.core.filesystem;bundle-version="[1.7.0,2.0.0)",
@@ -30,9 +29,11 @@ Require-Bundle: ru.taximaxim.codekeeper.core;bundle-version="[10.0.0,11.0.0)",
  org.eclipse.ui.workbench.texteditor;bundle-version="[3.14.0,4.0.0)",
  org.eclipse.zest.core;bundle-version="[1.5.0,2.0.0)",
  org.eclipse.zest.layouts;bundle-version="[1.1.0,3.0.0)",
- wrapped.com.github.technology16.pgpass;bundle-version="2.0.1"
+ wrapped.com.github.technology16.pgpass;bundle-version="2.0.1",
+ wrapped.org.pgcodekeeper.pgcodekeeper-core;bundle-version="[11.0.0,12.0.0)"
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ libs/clickhouse-jdbc-0.4.6.jar
 Bundle-Vendor: %Bundle-Vendor
 Automatic-Module-Name: ru.taximaxim.codekeeper.ui

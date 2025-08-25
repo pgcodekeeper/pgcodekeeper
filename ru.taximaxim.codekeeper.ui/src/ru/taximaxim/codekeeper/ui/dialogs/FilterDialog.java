@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -34,10 +35,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement.DiffSide;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.filters.AbstractFilter;
 import ru.taximaxim.codekeeper.ui.differ.filters.CodeFilter;

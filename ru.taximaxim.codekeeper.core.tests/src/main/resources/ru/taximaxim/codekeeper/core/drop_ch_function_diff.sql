@@ -1,1 +1,0 @@
-DROP FUNCTION `02148_test_function`;

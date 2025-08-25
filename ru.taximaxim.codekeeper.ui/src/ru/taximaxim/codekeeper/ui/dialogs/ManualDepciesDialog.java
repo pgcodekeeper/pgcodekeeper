@@ -24,8 +24,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.pgcodekeeper.core.schema.PgStatement;
 
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class ManualDepciesDialog extends TrayDialog {

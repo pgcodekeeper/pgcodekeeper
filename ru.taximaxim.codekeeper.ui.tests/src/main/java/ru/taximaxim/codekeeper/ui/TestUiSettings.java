@@ -17,10 +17,10 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.util.Collection;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.formatter.FormatConfiguration;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.settings.ISettings;
 
 public final class TestUiSettings implements ISettings {
 
@@ -47,7 +47,7 @@ public final class TestUiSettings implements ISettings {
     }
 
     @Override
-    public boolean isConstraintNotValid() {
+    public boolean isGenerateConstraintNotValid() {
         throw new UnsupportedOperationException();
     }
 

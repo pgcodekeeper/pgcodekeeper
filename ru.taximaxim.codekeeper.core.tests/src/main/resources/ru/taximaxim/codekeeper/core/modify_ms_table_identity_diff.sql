@@ -1,7 +1,0 @@
-ALTER TABLE [dbo].[testtable]
-	DROP COLUMN [c1]
-GO
-
-ALTER TABLE [dbo].[testtable]
-	ADD [c1] [int] IDENTITY (2,1) NOT FOR REPLICATION NOT NULL
-GO

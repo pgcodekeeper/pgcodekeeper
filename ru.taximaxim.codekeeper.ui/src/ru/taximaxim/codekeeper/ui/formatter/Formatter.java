@@ -19,12 +19,12 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.formatter.FileFormatter;
+import org.pgcodekeeper.core.formatter.FormatConfiguration;
+import org.pgcodekeeper.core.formatter.FormatConfiguration.IndentType;
+import org.pgcodekeeper.core.formatter.FormatItem;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.formatter.FileFormatter;
-import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration;
-import ru.taximaxim.codekeeper.core.formatter.FormatConfiguration.IndentType;
-import ru.taximaxim.codekeeper.core.formatter.FormatItem;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
 

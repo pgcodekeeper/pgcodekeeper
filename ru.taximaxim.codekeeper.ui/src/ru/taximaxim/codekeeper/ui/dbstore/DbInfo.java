@@ -22,8 +22,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.model.difftree.IgnoreList;
+
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 

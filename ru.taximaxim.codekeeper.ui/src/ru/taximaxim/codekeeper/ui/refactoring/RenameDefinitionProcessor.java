@@ -33,15 +33,14 @@ import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.Utils;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.model.exporter.ModelExporter;
+import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.PgObjLocation.LocationType;
+import org.pgcodekeeper.core.utils.FileUtils;
 
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.PgDiffUtils;
-import ru.taximaxim.codekeeper.core.Utils;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.exporter.ModelExporter;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation.LocationType;
-import ru.taximaxim.codekeeper.core.utils.FileUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
@@ -138,7 +137,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         MultiTextEdit multiEdit = null;
         List<RenameDefinitionChange> fileRenames = new ArrayList<>();
 
-        for (PgObjLocation ref : PgDiffUtils.sIter(getReferences())) {
+        for (PgObjLocation ref : Utils.streamIterator(getReferences())) {
             IFile mfile = FileUtilsUi.getFileForLocation(ref);
 
             if (mfile == null) {

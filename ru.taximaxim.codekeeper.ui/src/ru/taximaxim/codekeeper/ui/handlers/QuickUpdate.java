@@ -45,18 +45,18 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.progress.IProgressConstants2;
+import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.DangerStatement;
+import org.pgcodekeeper.core.DatabaseType;
+import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.loader.JdbcRunner;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.parsers.antlr.base.ScriptParser;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.schema.AbstractFunction;
+import org.pgcodekeeper.core.schema.PgStatement;
 
-import ru.taximaxim.codekeeper.core.Consts;
-import ru.taximaxim.codekeeper.core.DangerStatement;
-import ru.taximaxim.codekeeper.core.DatabaseType;
-import ru.taximaxim.codekeeper.core.loader.AbstractJdbcConnector;
-import ru.taximaxim.codekeeper.core.loader.JdbcRunner;
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.model.difftree.TreeElement;
-import ru.taximaxim.codekeeper.core.parsers.antlr.ScriptParser;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.schema.AbstractFunction;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -75,6 +75,7 @@ import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class QuickUpdate extends AbstractHandler {
@@ -192,10 +193,11 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
+        var settings = new UISettings(null, null);
         DbSource dbRemote = DbSource.fromDbInfo(dbInfo, proj.getProjectCharset(), timezone, proj.getProject());
         DbSource dbProject = DbSource.fromProject(proj);
 
-        TreeDiffer treediffer = new TreeDiffer(dbRemote, dbProject);
+        TreeDiffer treediffer = new TreeDiffer(settings, dbRemote, dbProject);
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
@@ -227,14 +229,14 @@ class QuickUpdateJob extends SingletonEditorJob {
                 throw new PgCodekeeperUIException(Messages.QuickUpdate_danger);
             }
 
-            new JdbcRunner(monitor).runBatches(connector, parser.batch(), null);
+            new JdbcRunner(new UIMonitor(monitor)).runBatches(connector, parser.batch(), null);
         } catch (SQLException e) {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_migration_failed + e.getLocalizedMessage());
         }
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(DbSource.fromDbObject(dbProject), dbRemote);
+        TreeDiffer treedifferAfter = new TreeDiffer(settings, DbSource.fromDbObject(dbProject), dbRemote);
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 

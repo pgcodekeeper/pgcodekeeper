@@ -1,5 +1,0 @@
-cyclomatic_complexity.sql line 10:11 A function’s cyclomatic complexity and nesting includes 6 nestings. There are should be no more than 5.
-cyclomatic_complexity.sql line 11:13 A function’s cyclomatic complexity and nesting includes 7 nestings. There are should be no more than 5.
-cyclomatic_complexity.sql line 13:13 A function’s cyclomatic complexity and nesting includes 7 nestings. There are should be no more than 5.
-cyclomatic_complexity.sql line 15:13 A function’s cyclomatic complexity and nesting includes 7 nestings. There are should be no more than 5.
-cyclomatic_complexity.sql line 17:13 A function’s cyclomatic complexity and nesting includes 7 nestings. There are should be no more than 5.

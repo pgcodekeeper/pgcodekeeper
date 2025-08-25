@@ -1,1 +1,0 @@
-DROP DICTIONARY default.dict1;

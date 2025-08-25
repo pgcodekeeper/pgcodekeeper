@@ -20,8 +20,8 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.navigator.IDescriptionProvider;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
 
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.sqledit.SegmentsWithParent;
 

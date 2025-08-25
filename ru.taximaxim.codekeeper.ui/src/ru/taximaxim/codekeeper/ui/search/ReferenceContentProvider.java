@@ -27,8 +27,8 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;

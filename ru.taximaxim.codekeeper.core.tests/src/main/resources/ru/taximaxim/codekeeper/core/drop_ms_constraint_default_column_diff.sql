@@ -1,3 +1,0 @@
-ALTER TABLE [dbo].[table1]
-	DROP CONSTRAINT [DF_table1]
-GO

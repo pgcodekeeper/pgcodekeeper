@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ru.taximaxim.codekeeper.core.IProgressReporter;
+import org.pgcodekeeper.core.reporter.IProgressReporter;
+
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class PgDumper {

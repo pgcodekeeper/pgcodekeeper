@@ -1,7 +1,0 @@
-CREATE SEQUENCE public.testseq
-    AS smallint
-    START WITH 15
-    INCREMENT BY 10
-    MAXVALUE 32767
-    NO MINVALUE
-    CACHE 1;

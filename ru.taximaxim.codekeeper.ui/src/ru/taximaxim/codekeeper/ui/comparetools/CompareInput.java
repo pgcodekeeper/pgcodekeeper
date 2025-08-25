@@ -23,11 +23,11 @@ import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareEditorInput;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.schema.PgOverride;
+import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.settings.ISettings;
 
-import ru.taximaxim.codekeeper.core.model.difftree.DbObjType;
-import ru.taximaxim.codekeeper.core.schema.PgOverride;
-import ru.taximaxim.codekeeper.core.schema.PgStatement;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class CompareInput extends CompareEditorInput {

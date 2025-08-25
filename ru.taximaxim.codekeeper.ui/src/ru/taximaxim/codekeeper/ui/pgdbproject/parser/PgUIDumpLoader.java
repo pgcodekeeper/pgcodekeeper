@@ -27,14 +27,16 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.pgcodekeeper.core.loader.PgDumpLoader;
+import org.pgcodekeeper.core.monitor.IMonitor;
+import org.pgcodekeeper.core.parsers.antlr.base.AntlrError;
+import org.pgcodekeeper.core.parsers.antlr.base.ErrorTypes;
+import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.settings.ISettings;
 
-import ru.taximaxim.codekeeper.core.loader.PgDumpLoader;
-import ru.taximaxim.codekeeper.core.parsers.antlr.AntlrError;
-import ru.taximaxim.codekeeper.core.parsers.antlr.ErrorTypes;
-import ru.taximaxim.codekeeper.core.schema.AbstractDatabase;
-import ru.taximaxim.codekeeper.core.settings.ISettings;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 /**
  * {@link PgDumpLoader} extension that works with workspace {@link IResource} structure
@@ -45,7 +47,7 @@ public final class PgUIDumpLoader extends PgDumpLoader {
 
     private final IFile file;
 
-    public PgUIDumpLoader(IFile ifile, ISettings settings, IProgressMonitor monitor, int monitoringLevel) {
+    public PgUIDumpLoader(IFile ifile, ISettings settings, IMonitor monitor, int monitoringLevel) {
         super(() -> {
             try {
                 return ifile.getContents();
@@ -56,10 +58,18 @@ public final class PgUIDumpLoader extends PgDumpLoader {
         file = ifile;
     }
 
+    public PgUIDumpLoader(IFile ifile, ISettings settings, IProgressMonitor monitor, int monitoringLevel) {
+        this(ifile, settings, new UIMonitor(monitor), monitoringLevel);
+    }
+
     /**
      * This constructor sets the monitoring level to the default of 1.
      * @throws CoreException
      */
+    public PgUIDumpLoader(IFile ifile, ISettings settings, IMonitor monitor) {
+        this(ifile, settings, monitor, 1);
+    }
+
     public PgUIDumpLoader(IFile ifile, ISettings settings, IProgressMonitor monitor) {
         this(ifile, settings, monitor, 1);
     }

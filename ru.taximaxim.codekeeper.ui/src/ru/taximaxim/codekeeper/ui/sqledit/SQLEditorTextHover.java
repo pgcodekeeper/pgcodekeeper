@@ -30,8 +30,8 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.EditorsUI;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 
 final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExtension, ITextHoverExtension2, ITextHover {

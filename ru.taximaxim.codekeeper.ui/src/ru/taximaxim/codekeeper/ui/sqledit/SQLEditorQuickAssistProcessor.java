@@ -25,8 +25,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
-
-import ru.taximaxim.codekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.schema.PgObjLocation;
 
 public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
     private final SQLEditor editor;

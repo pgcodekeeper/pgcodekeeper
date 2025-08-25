@@ -1,2 +1,0 @@
-space_after_comma.sql line 8:14 Warning: Not space after comma.
-space_after_comma.sql line 12:19 Warning: Not space after comma.
