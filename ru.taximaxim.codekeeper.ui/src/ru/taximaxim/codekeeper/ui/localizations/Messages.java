@@ -400,6 +400,8 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_export_db;
 
+    public static String DbStorePrefPage_export_dialog;
+
     public static String DbStorePrefPage_import_db_list;
 
     public static String DbStorePrefPage_opening_error;
