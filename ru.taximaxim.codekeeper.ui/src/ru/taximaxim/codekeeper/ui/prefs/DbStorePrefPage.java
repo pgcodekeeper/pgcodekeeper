@@ -47,6 +47,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -232,16 +233,25 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
+                var box = new MessageBox(getShell(), SWT.YES | SWT.NO | SWT.CANCEL | SWT.ICON_QUESTION);
+                box.setText(Messages.DbStorePrefPage_export_dialog);
+                int result = box.open();
+                if (SWT.NO != result && SWT.YES != result) {
+                    return;
+                }
+                boolean needPassword = SWT.YES == result;
+
                 FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
                 dialog.setText(Messages.DbStorePrefPage_export_db);
                 dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterNames(new String[] { Messages.DbStorePrefPage_xml_files, Messages.DiffPresentationPane_any_file_filter });
+                dialog.setFilterNames(new String[] { Messages.DbStorePrefPage_xml_files,
+                        Messages.DiffPresentationPane_any_file_filter });
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
                 String stringPath = dialog.open();
                 if (stringPath != null) {
                     try {
-                        new DbXmlStore(Paths.get(stringPath), false).writeObjects(getList());
+                        DbXmlStore.export(Paths.get(stringPath), needPassword, getList());
                     } catch (IOException ex) {
                         ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_saving_error, ex);
                     }

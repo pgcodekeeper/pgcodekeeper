@@ -79,6 +79,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     private List<DbInfo> store = new ArrayList<>();
     private boolean isDirty = true;
     private boolean encrypt;
+    private boolean exportWithPassword;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -120,9 +121,14 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     }
 
     public DbXmlStore(Path path, boolean encrypt) {
+        this(path, encrypt, true);
+    }
+
+    private DbXmlStore(Path path, boolean encrypt, boolean exportWithPassword) {
         super(path.getFileName().toString(), Tags.DB_STORE.toString());
         this.path = path;
         this.encrypt = encrypt;
+        this.exportWithPassword = exportWithPassword;
 
         ISecurePreferences pref;
         try {
@@ -184,7 +190,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.NAME.toString(), dbInfo.getName());
             createSubElement(xml, keyElement, Tags.DBNAME.toString(), dbInfo.getDbName());
             createSubElement(xml, keyElement, Tags.DBUSER.toString(), dbInfo.getDbUser());
-            createSubElement(xml, keyElement, Tags.DBPASS.toString(), dbInfo.getDbPass());
+            createSubElement(xml, keyElement, Tags.DBPASS.toString(), exportWithPassword ? dbInfo.getDbPass() : "");
             createSubElement(xml, keyElement, Tags.DBGROUP.toString(), dbInfo.getDbGroup());
             createSubElement(xml, keyElement, Tags.DBHOST.toString(), dbInfo.getDbHost());
             createSubElement(xml, keyElement, Tags.DBPORT.toString(), String.valueOf(dbInfo.getDbPort()));
@@ -409,6 +415,10 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         Cipher cipher = Cipher.getInstance(secret.getAlgorithm());
         cipher.init(mode, secret, ivSpec);
         return cipher;
+    }
+
+    public static void export(Path path, boolean needPassword, List<DbInfo> list) throws IOException {
+        new DbXmlStore(path, false, needPassword).writeObjects(list);
     }
 }
 
