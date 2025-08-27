@@ -20,7 +20,6 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.IntStream;
@@ -91,9 +90,9 @@ public final class EclipseIniWriter {
             Log.log(e);
             String filePath = path != null ? path.toAbsolutePath().toString() : ""; // $NON-NLS-1$
             new MessageDialogWithLink(shell,
-                    MessageFormat.format(Messages.EclipseIniWriter_change_manually, message),
-                    MessageFormat.format(Messages.EclipseIniWriter_replace_parameter_msg, property,
-                            filePath, e.getLocalizedMessage(), newLine),
+                    Messages.EclipseIniWriter_change_manually.formatted(message),
+                    Messages.EclipseIniWriter_replace_parameter_msg.formatted(e.getLocalizedMessage(),
+                            property, newLine, filePath),
                     MessageDialog.ERROR,
                     Messages.EclipseIniWriter_manual_editing_link,
                     LINK_ECLIPSE_INI_INFO)

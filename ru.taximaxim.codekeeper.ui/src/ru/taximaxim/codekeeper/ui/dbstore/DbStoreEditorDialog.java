@@ -480,7 +480,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
         });
 
         new Label(tabPGDupmConfigProperties, SWT.NONE).setText(
-                MessageFormat.format(Messages.DbStoreEditorDialog_dump_custom_parameters,
+                Messages.DbStoreEditorDialog_dump_custom_parameters.formatted(
                         CMD_VARS.DB_NAME_PLACEHOLDER, CMD_VARS.DB_HOST_PLACEHOLDER,
                         CMD_VARS.DB_PORT_PLACEHOLDER, CMD_VARS.DB_USER_PLACEHOLDER,
                         CMD_VARS.DB_PASS_PLACEHOLDER));
@@ -587,7 +587,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
             } catch (NumberFormatException ex) {
                 MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
                 mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-                mb.setMessage(MessageFormat.format(Messages.dbStoreEditorDialog_not_valid_port_number, port));
+                mb.setMessage(Messages.dbStoreEditorDialog_not_valid_port_number.formatted(port));
                 mb.open();
                 return;
             }

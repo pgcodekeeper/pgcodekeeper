@@ -124,8 +124,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
 
     @Override
     public String getToolTipText() {
-        return toolTip != null ? toolTip : MessageFormat.format(
-                Messages.ProjectEditorInput_pgcodekeeper_project, projName);
+        return toolTip != null ? toolTip : Messages.ProjectEditorInput_pgcodekeeper_project.formatted(projName);
     }
 
     @Override

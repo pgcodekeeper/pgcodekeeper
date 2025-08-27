@@ -59,7 +59,7 @@ public class HeapSizeChecker implements IStartup {
 
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
                     shell, Messages.HeapSizeChecker_heap_size_warning_title,
-                    MessageFormat.format(Messages.HeapSizeChecker_heap_size_warning,
+                    Messages.HeapSizeChecker_heap_size_warning.formatted(
                             RECOMMENDED_XMX_SIZE_GB),
                     Messages.HeapSizeChecker_do_not_ask_again,
                     false, mainPrefs, PREF.HEAP_SIZE_WARNING);

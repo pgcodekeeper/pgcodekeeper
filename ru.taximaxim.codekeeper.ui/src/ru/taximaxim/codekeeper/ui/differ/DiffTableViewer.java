@@ -1080,17 +1080,16 @@ public class DiffTableViewer extends Composite {
 
         if (lineManager != null) {
             if (isApplyToProj) {
-                lineManager.setMessage(image, MessageFormat.format(text, checked, count,
+                lineManager.setMessage(image, text.formatted(checked, count,
                         Messages.DiffTableViewer_save_to_project));
             } else {
-                lineManager.setMessage(image, MessageFormat.format(text, checked, count,
+                lineManager.setMessage(image, text.formatted(checked, count,
                         Messages.DiffTableViewer_save_to_DB));
             }
         } else {
-            lblObjectCount.setText(MessageFormat.format(Messages.diffTableViewer_objects, count));
+            lblObjectCount.setText(Messages.diffTableViewer_objects.formatted(count));
             if (!viewOnly) {
-                lblCheckedCount.setText(MessageFormat.format(Messages.DiffTableViewer_selected,
-                        checked));
+                lblCheckedCount.setText(Messages.DiffTableViewer_selected.formatted(checked));
             }
             lblObjectCount.getParent().layout();
         }

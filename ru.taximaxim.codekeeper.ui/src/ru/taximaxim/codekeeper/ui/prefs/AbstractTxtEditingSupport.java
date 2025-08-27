@@ -77,8 +77,7 @@ extends CommonEditingSupport<TextCellEditor> {
                     MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
                             SWT.ICON_WARNING);
                     mb.setText(Messages.PrefListEditor_cannot_add);
-                    mb.setMessage(MessageFormat.format(
-                            Messages.IgnoredObjectPrefListEditor_already_present, newText));
+                    mb.setMessage(Messages.IgnoredObjectPrefListEditor_already_present.formatted(newText));
                     mb.open();
                     return;
                 }

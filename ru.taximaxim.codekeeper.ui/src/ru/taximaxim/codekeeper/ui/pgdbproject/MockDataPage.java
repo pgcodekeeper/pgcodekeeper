@@ -183,7 +183,7 @@ public final class MockDataPage extends WizardPage {
                 try {
                     c.generateValue();
                 } catch (Exception e) {
-                    err = MessageFormat.format(Messages.MockDataPage_generation_failed,
+                    err = Messages.MockDataPage_generation_failed.formatted(
                             c.getName(), e.getLocalizedMessage());
                 }
                 finally {

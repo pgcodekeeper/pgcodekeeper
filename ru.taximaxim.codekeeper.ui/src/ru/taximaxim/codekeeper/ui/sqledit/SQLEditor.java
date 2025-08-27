@@ -897,8 +897,8 @@ implements IResourceChangeListener, ITextErrorReporter {
             // if not select "NO" with toggle, show choice message dialog
         } else if (!mode.equals(MessageDialogWithToggle.NEVER)) {
             MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(getSite().getShell(),
-                    Messages.SqlEditor_script_delete_dialog_title, MessageFormat.format(
-                            Messages.SqlEditor_script_delete_dialog_message, f.getName()),
+                    Messages.SqlEditor_script_delete_dialog_title,
+                    Messages.SqlEditor_script_delete_dialog_message.formatted(f.getName()),
                     Messages.remember_choice_toggle, false, mainPrefs, DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE);
             if (dialog.getReturnCode() == IDialogConstants.YES_ID) {
                 deleteFile(f);

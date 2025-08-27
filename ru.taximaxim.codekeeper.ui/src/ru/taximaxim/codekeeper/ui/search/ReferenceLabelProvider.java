@@ -31,7 +31,7 @@ import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
 
 public class ReferenceLabelProvider extends LabelProvider implements IStyledLabelProvider {
 
-    private static final String LINE_NUMBER = "{0}: "; //$NON-NLS-1$
+    private static final String LINE_NUMBER = "%s: "; //$NON-NLS-1$
 
     private static final String HIGHLIGHT_COLOR_NAME = "org.eclipse.search.ui.match.highlight"; //$NON-NLS-1$
 
@@ -65,7 +65,7 @@ public class ReferenceLabelProvider extends LabelProvider implements IStyledLabe
 
         if (element instanceof PgObjLocation loc) {
             StyledString text = new StyledString();
-            String lineNumber = MessageFormat.format(LINE_NUMBER, loc.getLineNumber());
+            String lineNumber = LINE_NUMBER.formatted(loc.getLineNumber());
             text.append(lineNumber, StyledString.QUALIFIER_STYLER);
             text.append(loc.getSql());
 

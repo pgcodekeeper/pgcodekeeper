@@ -37,11 +37,11 @@ public class EclipseEnvironment {
 
     private static final String ECLIPSE_RUNTIME_BULDEID = "org.eclipse.core.runtime"; //$NON-NLS-1$
 
-    private static final String USERAGENT_WIN = "{0}/{1} (Windows; U; Windows NT {2};)"; //$NON-NLS-1$
-    private static final String USERAGENT_WIN_64 = "{0}/{1} (Windows; U; Windows NT {2}; Win64; x64;)"; //$NON-NLS-1$
-    private static final String USERAGENT_MAC = "{0}/{1} (Macintosh; U; Intel Mac OS X {2};)"; //$NON-NLS-1$
-    private static final String USERAGENT_LINUX = "{0}/{1} (X11; U; Linux i686;)"; //$NON-NLS-1$
-    private static final String USERAGENT_LINUX_64 = "{0}/{1} (X11; U; Linux x86_64;)"; //$NON-NLS-1$
+    private static final String USERAGENT_WIN = "%s/%s (Windows; U; Windows NT %s;)"; //$NON-NLS-1$
+    private static final String USERAGENT_WIN_64 = "%s/%s (Windows; U; Windows NT %s; Win64; x64;)"; //$NON-NLS-1$
+    private static final String USERAGENT_MAC = "%s/%s (Macintosh; U; Intel Mac OS X %s;)"; //$NON-NLS-1$
+    private static final String USERAGENT_LINUX = "%s/%s (X11; U; Linux i686;)"; //$NON-NLS-1$
+    private static final String USERAGENT_LINUX_64 = "%s/%s (X11; U; Linux x86_64;)"; //$NON-NLS-1$
 
     public static final char VERSION_DELIMITER = '.';
 
@@ -255,7 +255,7 @@ public class EclipseEnvironment {
     }
 
     public String getUserAgent() {
-        return MessageFormat.format(getUserAgentPattern(), getApplicationName(),
+        return getUserAgentPattern().formatted(getApplicationName(),
                 getApplicationVersion(), getOSVersion());
     }
 

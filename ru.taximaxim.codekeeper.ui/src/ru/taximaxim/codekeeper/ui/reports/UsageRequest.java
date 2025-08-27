@@ -100,16 +100,15 @@ public class UsageRequest {
             urlConnection.connect();
             int responseCode = urlConnection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
-                Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                        "HTTP POST to url \"{0}\" successfull!", url)); //$NON-NLS-1$
+                Log.log(Log.LOG_DEBUG, "HTTP POST to url \"%s\" successfull!".formatted(url)); //$NON-NLS-1$
                 return true;
             } else {
-                Log.log(Log.LOG_ERROR, MessageFormat.format(
-                        "HTTP POST to \"{0}\" failed, response code received \"{1}\"", url, responseCode)); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR,
+                        "HTTP POST to \"%s\" failed, response code received \"%s\"".formatted(url, responseCode)); //$NON-NLS-1$
             }
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG, MessageFormat.format(
-                    "HTTP POST to \"{0}\" failed, exception occured: \"{1}\"", url, e)); //$NON-NLS-1$
+            Log.log(Log.LOG_DEBUG,
+                    "HTTP POST to \"%s\" failed, exception occured: \"%s\"".formatted(url, e)); //$NON-NLS-1$
         }
         return false;
 

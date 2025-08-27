@@ -124,8 +124,7 @@ public class DependencyProperties extends PropertyPage {
             setValid(true);
             setErrorMessage(null);
         } catch (IOException | BackingStoreException e) {
-            setErrorMessage(MessageFormat.format(
-                    Messages.projectProperties_error_occurs_while_saving_properties,
+            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
                     e.getLocalizedMessage()));
             setValid(false);
             return false;
@@ -189,7 +188,7 @@ public class DependencyProperties extends PropertyPage {
 
         @Override
         protected String errorAlreadyExists(PgLibrary obj) {
-            return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.path());
+            return Messages.DbStorePrefPage_already_present.formatted(obj.path());
         }
 
         @Override

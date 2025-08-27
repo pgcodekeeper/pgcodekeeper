@@ -29,7 +29,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
 
-    private static final String ESTABLISHING_MSG = "Establishing JDBC connection with host:port {0}:{1}, db name {2}, username {3}"; // $NON-NLS-1$
+    private static final String ESTABLISHING_MSG = "Establishing JDBC connection with host:port %s:%s, db name %s, username %s"; // $NON-NLS-1$
 
     private final DbInfo dbInfo;
     private final int timeoutSeconds;
@@ -143,7 +143,7 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
     }
 
     protected String getMessage() {
-        return MessageFormat.format(ESTABLISHING_MSG, dbInfo.getDbHost(), getPort(), dbInfo.getDbName(),
+        return ESTABLISHING_MSG.formatted(dbInfo.getDbHost(), getPort(), dbInfo.getDbName(),
                 dbInfo.getDbUser());
     }
 }

@@ -242,8 +242,7 @@ public class ProjectProperties extends PropertyPage {
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
-            setErrorMessage(MessageFormat.format(
-                    Messages.projectProperties_error_occurs_while_saving_properties,
+            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
                     e.getLocalizedMessage()));
             setValid(false);
         }
@@ -270,8 +269,7 @@ public class ProjectProperties extends PropertyPage {
                 activateEditor();
             }
         } catch (BackingStoreException e) {
-            setErrorMessage(MessageFormat.format(
-                    Messages.projectProperties_error_occurs_while_saving_properties,
+            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
                     e.getLocalizedMessage()));
             setValid(false);
             return false;

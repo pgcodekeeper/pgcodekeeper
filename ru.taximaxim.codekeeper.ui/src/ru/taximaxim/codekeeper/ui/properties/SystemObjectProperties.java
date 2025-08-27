@@ -70,8 +70,7 @@ public class SystemObjectProperties extends PropertyPage {
             editor.setInputList(new ArrayList<>());
             fillPrefs();
         } catch (BackingStoreException e) {
-            setErrorMessage(MessageFormat.format(
-                    Messages.projectProperties_error_occurs_while_saving_properties,
+            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
                     e.getLocalizedMessage()));
             setValid(false);
         }
@@ -82,8 +81,7 @@ public class SystemObjectProperties extends PropertyPage {
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
-            setErrorMessage(MessageFormat.format(
-                    Messages.projectProperties_error_occurs_while_saving_properties,
+            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
                     e.getLocalizedMessage()));
             setValid(false);
             return false;

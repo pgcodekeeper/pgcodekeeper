@@ -83,12 +83,12 @@ public final class InternalIgnoreList {
             new IgnoreParser(appendTo).parse(listFile);
         } catch (FileNotFoundException | NoSuchFileException ex) {
             if (showNotFound) {
-                ExceptionNotifier.notifyDefault(MessageFormat.format(
-                        Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile), ex);
+                ExceptionNotifier.notifyDefault(
+                        Messages.IgnoredObjectsPrefPage_error_getting_ignores_list.formatted(listFile), ex);
             }
         } catch (IOException ex) {
-            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile), ex);
+            ExceptionNotifier.notifyDefault(
+                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list.formatted(listFile), ex);
         }
         return appendTo;
     }
@@ -111,9 +111,8 @@ public final class InternalIgnoreList {
         } catch (FileNotFoundException | NoSuchFileException ex) {
             // ignore file was not created
         } catch (IOException e) {
-            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list, listFile),
-                    e);
+            ExceptionNotifier.notifyDefault(
+                    Messages.IgnoredObjectsPrefPage_error_getting_ignores_list.formatted(listFile), e);
         }
         return ignoreSchemaList;
     }

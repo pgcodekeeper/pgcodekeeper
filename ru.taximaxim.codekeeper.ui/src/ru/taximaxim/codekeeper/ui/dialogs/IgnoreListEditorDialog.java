@@ -113,8 +113,7 @@ public class IgnoreListEditorDialog extends Dialog {
         try {
             Files.write(path, ignoreList.getListCode().getBytes(StandardCharsets.UTF_8));
         } catch (IOException ex) {
-            ExceptionNotifier.notifyDefault(MessageFormat.format(
-                    Messages.IgnoreListEditorDialog_error_file, path), ex);
+            ExceptionNotifier.notifyDefault(Messages.IgnoreListEditorDialog_error_file.formatted(path), ex);
         }
 
         super.okPressed();

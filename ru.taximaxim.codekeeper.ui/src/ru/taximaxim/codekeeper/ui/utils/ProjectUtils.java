@@ -239,8 +239,7 @@ public final class ProjectUtils {
             }
 
         } catch (FileNotFoundException ex) {
-            message.append(MessageFormat.format(Messages.OpenProjectUtils_file,
-                    markerFile.getAbsolutePath()));
+            message.append(Messages.OpenProjectUtils_file.formatted(markerFile.getAbsolutePath()));
             return false;
         } catch (IOException ex) {
             Log.log(ex);
