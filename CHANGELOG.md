@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug with the encryption algorithm.
+
 ## [10.15.0] - 2025-07-29
 
 ### Fixed

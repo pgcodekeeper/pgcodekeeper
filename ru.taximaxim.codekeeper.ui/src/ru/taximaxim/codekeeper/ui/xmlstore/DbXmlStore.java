@@ -66,10 +66,23 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
+    /**
+     * @deprecated old property retained for backward compatibility
+     */
+    @Deprecated(since = "11.0.0", forRemoval = true)
+    private static final String CIPHER_KEY_OLD = PLUGIN_ID.THIS + ".cipherSecret"; //$NON-NLS-1$
+    /**
+     * @deprecated old algorithm retained for backward compatibility
+     */
+    @Deprecated(since = "11.0.0", forRemoval = true)
+    private static final String ALGORITHM_OLD = "AES"; //$NON-NLS-1$
+    private static final String CIPHER_KEY = PLUGIN_ID.THIS + ".cipher"; //$NON-NLS-1$
+    private static final String ALGORITHM = "AES/GCM/NoPadding"; //$NON-NLS-1$
     private static final int KEY_SIZE = 256;
-    private static final String CIPHER_KEY = PLUGIN_ID.THIS + ".cipherSecret"; //$NON-NLS-1$
-    private static final String ALGORITHM = "AES"; //$NON-NLS-1$
+    private static final int IV_LENGTH = 16;
+
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
+
     public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(
             Platform.getStateLocation(Activator.getContext().getBundle()).append(FILE_NAME).toString()), true);
 
@@ -331,11 +344,37 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             return super.readXml();
         } catch (IOException ex) {
             try {
-                return decryptFileToDoc(getXmlFile().toString(), getSecret());
+                return decryptFileToDoc(getXmlFile().toString(), getOldSecret());
             } catch (Exception e) {
                 throw new IOException(e);
             }
         }
+    }
+
+    /**
+     * @deprecated replaced by {@link #getSecret()}
+     */
+    @Deprecated(since = "11.0.0", forRemoval = true)
+    private SecretKey getOldSecret() throws StorageException, NoSuchAlgorithmException, IOException {
+        String encodedKeyNew = securePrefs.get(CIPHER_KEY, null);
+        if (encodedKeyNew != null && !encodedKeyNew.isEmpty()) {
+            byte[] decodedKey = Base64.getDecoder().decode(encodedKeyNew);
+            return new SecretKeySpec(decodedKey, ALGORITHM);
+        }
+
+        // backwards compatibility
+        String encodedKeyOld = securePrefs.get(CIPHER_KEY_OLD, null);
+        if (encodedKeyOld != null && !encodedKeyOld.isEmpty()) {
+            byte[] decodedKey = Base64.getDecoder().decode(encodedKeyOld);
+            return new SecretKeySpec(decodedKey, ALGORITHM_OLD);
+        }
+
+        KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
+        keyGen.init(KEY_SIZE);
+        var secret = keyGen.generateKey();
+        securePrefs.put(CIPHER_KEY, Base64.getEncoder().encodeToString(secret.getEncoded()), true);
+        securePrefs.flush();
+        return secret;
     }
 
     private SecretKey getSecret() throws StorageException, NoSuchAlgorithmException, IOException {
@@ -379,7 +418,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
 
     private void encryptDocument(Document xmlDoc, String outputFile, SecretKey secret)
             throws GeneralSecurityException, IOException, TransformerException {
-        byte[] iv = new byte[16];
+        byte[] iv = new byte[IV_LENGTH];
         Utils.getRandom().nextBytes(iv);
 
         Cipher cipher = createCipher(secret, iv, Cipher.ENCRYPT_MODE);
@@ -396,8 +435,8 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     private Document decryptFileToDoc(String inputFile, SecretKey secret)
             throws IOException, GeneralSecurityException, ParserConfigurationException, SAXException {
         try (FileInputStream in = new FileInputStream(inputFile)) {
-            byte[] iv = new byte[16];
-            if (in.read(iv) != 16) {
+            byte[] iv = new byte[IV_LENGTH];
+            if (in.read(iv) != IV_LENGTH) {
                 throw new IOException("IV not found or invalid!"); //$NON-NLS-1$
             }
             Cipher cipher = createCipher(secret, iv, Cipher.DECRYPT_MODE);
