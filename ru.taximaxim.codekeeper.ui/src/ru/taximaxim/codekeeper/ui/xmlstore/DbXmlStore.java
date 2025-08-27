@@ -16,15 +16,15 @@
 package ru.taximaxim.codekeeper.ui.xmlstore;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.EnumMap;
@@ -71,13 +71,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
      */
     @Deprecated(since = "11.0.0", forRemoval = true)
     private static final String CIPHER_KEY_OLD = PLUGIN_ID.THIS + ".cipherSecret"; //$NON-NLS-1$
-    /**
-     * @deprecated old algorithm retained for backward compatibility
-     */
-    @Deprecated(since = "11.0.0", forRemoval = true)
-    private static final String ALGORITHM_OLD = "AES"; //$NON-NLS-1$
     private static final String CIPHER_KEY = PLUGIN_ID.THIS + ".cipher"; //$NON-NLS-1$
-    private static final String ALGORITHM = "AES/GCM/NoPadding"; //$NON-NLS-1$
+    private static final String KEY_GENERATOR_ALGORITHM = "AES";
+    private static final String CIPHER_ALGORITHM = "AES/GCM/NoPadding"; //$NON-NLS-1$
     private static final int KEY_SIZE = 256;
     private static final int IV_LENGTH = 16;
 
@@ -328,7 +324,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     protected void writeDocument(Document xml, Path path) throws IOException, TransformerException {
         if (encrypt) {
             try {
-                encryptDocument(xml, path.toString(), getSecret());
+                encryptDocument(xml, path);
             } catch (GeneralSecurityException | StorageException e) {
                 throw new IOException(e);
             }
@@ -340,56 +336,15 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     @Override
     protected Document readXml() throws IOException {
         try {
-            // backwards compatibility
-            return super.readXml();
-        } catch (IOException ex) {
-            try {
-                return decryptFileToDoc(getXmlFile().toString(), getOldSecret());
-            } catch (Exception e) {
-                throw new IOException(e);
-            }
+            return decryptFileToDoc(getXmlFile());
+        } catch (Exception e) {
+            throw new IOException(e);
         }
     }
 
-    /**
-     * @deprecated replaced by {@link #getSecret()}
-     */
-    @Deprecated(since = "11.0.0", forRemoval = true)
-    private SecretKey getOldSecret() throws StorageException, NoSuchAlgorithmException, IOException {
-        String encodedKeyNew = securePrefs.get(CIPHER_KEY, null);
-        if (encodedKeyNew != null && !encodedKeyNew.isEmpty()) {
-            byte[] decodedKey = Base64.getDecoder().decode(encodedKeyNew);
-            return new SecretKeySpec(decodedKey, ALGORITHM);
-        }
-
-        // backwards compatibility
-        String encodedKeyOld = securePrefs.get(CIPHER_KEY_OLD, null);
-        if (encodedKeyOld != null && !encodedKeyOld.isEmpty()) {
-            byte[] decodedKey = Base64.getDecoder().decode(encodedKeyOld);
-            return new SecretKeySpec(decodedKey, ALGORITHM_OLD);
-        }
-
-        KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
-        keyGen.init(KEY_SIZE);
-        var secret = keyGen.generateKey();
-        securePrefs.put(CIPHER_KEY, Base64.getEncoder().encodeToString(secret.getEncoded()), true);
-        securePrefs.flush();
-        return secret;
-    }
-
-    private SecretKey getSecret() throws StorageException, NoSuchAlgorithmException, IOException {
-        String encodedKey = securePrefs.get(CIPHER_KEY, null);
-        if (encodedKey != null && !encodedKey.isEmpty()) {
-            byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
-            return new SecretKeySpec(decodedKey, ALGORITHM);
-        }
-
-        KeyGenerator keyGen = KeyGenerator.getInstance(ALGORITHM);
-        keyGen.init(KEY_SIZE);
-        var secret = keyGen.generateKey();
-        securePrefs.put(CIPHER_KEY, Base64.getEncoder().encodeToString(secret.getEncoded()), true);
-        securePrefs.flush();
-        return secret;
+    private SecretKey decodeSecretKey(String encodedKey) {
+        byte[] decodedKey = Base64.getDecoder().decode(encodedKey);
+        return new SecretKeySpec(decodedKey, KEY_GENERATOR_ALGORITHM);
     }
 
     private void fillPropertyList(NodeList xml, Map<String, String> map) {
@@ -416,30 +371,62 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    private void encryptDocument(Document xmlDoc, String outputFile, SecretKey secret)
-            throws GeneralSecurityException, IOException, TransformerException {
+    private void encryptDocument(Document xmlDoc, Path outputFile)
+            throws GeneralSecurityException, IOException, TransformerException, StorageException {
+        SecretKey secret;
+        boolean needFlush = false;
+        String encodedKey = securePrefs.get(CIPHER_KEY, null);
+        if (encodedKey != null && !encodedKey.isEmpty()) {
+            secret = decodeSecretKey(encodedKey);
+        } else {
+            KeyGenerator keyGen = KeyGenerator.getInstance(KEY_GENERATOR_ALGORITHM);
+            keyGen.init(KEY_SIZE);
+            secret = keyGen.generateKey();
+            needFlush = true;
+        }
+
         byte[] iv = new byte[IV_LENGTH];
         Utils.getRandom().nextBytes(iv);
+        Cipher cipher = createCipher(secret, CIPHER_ALGORITHM, iv, Cipher.ENCRYPT_MODE);
 
-        Cipher cipher = createCipher(secret, iv, Cipher.ENCRYPT_MODE);
-
-        try (FileOutputStream out = new FileOutputStream(outputFile)) {
+        try (OutputStream out = Files.newOutputStream(outputFile)) {
             out.write(iv);
 
             try (CipherOutputStream cipherOut = new CipherOutputStream(out, cipher)) {
                 Utils.writeXml(xmlDoc, true, new StreamResult(cipherOut));
             }
         }
+
+        if (needFlush) {
+            securePrefs.put(CIPHER_KEY, Base64.getEncoder().encodeToString(secret.getEncoded()), true);
+            securePrefs.flush();
+        }
     }
 
-    private Document decryptFileToDoc(String inputFile, SecretKey secret)
-            throws IOException, GeneralSecurityException, ParserConfigurationException, SAXException {
-        try (FileInputStream in = new FileInputStream(inputFile)) {
+    private Document decryptFileToDoc(Path path)
+            throws IOException, GeneralSecurityException, ParserConfigurationException, SAXException, StorageException {
+        String encodedKeyNew = securePrefs.get(CIPHER_KEY, null);
+        String encodedKeyOld = securePrefs.get(CIPHER_KEY_OLD, null);
+
+        SecretKey secret;
+        String algorithm;
+        if (encodedKeyNew != null && !encodedKeyNew.isEmpty()) {
+            secret = decodeSecretKey(encodedKeyNew);
+            algorithm = CIPHER_ALGORITHM;
+        } else if (encodedKeyOld != null && !encodedKeyOld.isEmpty()) {
+            // backwards compatibility
+            secret = decodeSecretKey(encodedKeyOld);
+            algorithm = secret.getAlgorithm();
+        } else {
+            return super.readXml();
+        }
+
+        try (InputStream in = Files.newInputStream(path)) {
             byte[] iv = new byte[IV_LENGTH];
             if (in.read(iv) != IV_LENGTH) {
                 throw new IOException("IV not found or invalid!"); //$NON-NLS-1$
             }
-            Cipher cipher = createCipher(secret, iv, Cipher.DECRYPT_MODE);
+            Cipher cipher = createCipher(secret, algorithm, iv, Cipher.DECRYPT_MODE);
 
             try (CipherInputStream cipherIn = new CipherInputStream(in, cipher);
                     var input = new InputStreamReader(cipherIn, StandardCharsets.UTF_8.newDecoder());
@@ -449,9 +436,10 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    private Cipher createCipher(SecretKey secret, byte[] iv, int mode) throws GeneralSecurityException {
+    private Cipher createCipher(SecretKey secret, String algorithm, byte[] iv, int mode)
+            throws GeneralSecurityException {
         IvParameterSpec ivSpec = new IvParameterSpec(iv);
-        Cipher cipher = Cipher.getInstance(secret.getAlgorithm());
+        Cipher cipher = Cipher.getInstance(algorithm);
         cipher.init(mode, secret, ivSpec);
         return cipher;
     }
