@@ -119,7 +119,7 @@ public class IgnoredObjectPrefListEditor extends PrefListEditor<IgnoredObject> {
 
     @Override
     protected String errorAlreadyExists(IgnoredObject obj) {
-        return MessageFormat.format(Messages.IgnoredObjectPrefListEditor_already_present, obj.getName());
+        return Messages.IgnoredObjectPrefListEditor_already_present.formatted(obj.getName());
     }
 
     @Override

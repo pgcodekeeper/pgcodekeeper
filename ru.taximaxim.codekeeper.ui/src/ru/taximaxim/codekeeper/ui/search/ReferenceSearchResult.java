@@ -51,8 +51,7 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
 
     @Override
     public String getLabel() {
-        return MessageFormat.format(RESULT_LABEL,
-                query.getReference().getQualifiedName(), getMatchCount());
+        return RESULT_LABEL.formatted(query.getReference().getQualifiedName(), getMatchCount());
     }
 
     @Override

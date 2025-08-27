@@ -81,7 +81,7 @@ public final class TimestampData extends DbData<Instant> {
             return Instant.parse(s);
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), "YYYY-MM-DDTHH:MM:SSZ"), ex); //$NON-NLS-1$
+                    EXP_FORMAT.formatted(ex.getParsedString(), "YYYY-MM-DDTHH:MM:SSZ"), ex); //$NON-NLS-1$
         }
     }
 
@@ -96,7 +96,7 @@ public final class TimestampData extends DbData<Instant> {
             setStep(Instant.ofEpochMilli(Duration.parse(step).toMillis()));
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), Messages.Duration_expected_format), ex);
+                    EXP_FORMAT.formatted(ex.getParsedString(), Messages.Duration_expected_format), ex);
         }
     }
 }

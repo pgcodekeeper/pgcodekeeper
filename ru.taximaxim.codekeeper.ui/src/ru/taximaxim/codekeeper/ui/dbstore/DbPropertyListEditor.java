@@ -56,8 +56,7 @@ public class DbPropertyListEditor extends PrefListEditor<Entry<String, String>> 
 
     @Override
     protected String errorAlreadyExists(Entry<String, String> obj) {
-        return MessageFormat.format(
-                Messages.DbPropertyListEditor_already_present, obj.getKey());
+        return Messages.DbPropertyListEditor_already_present.formatted(obj.getKey());
     }
 
     @Override

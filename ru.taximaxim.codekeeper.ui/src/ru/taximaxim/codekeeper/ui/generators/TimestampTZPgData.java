@@ -87,7 +87,7 @@ public final class TimestampTZPgData extends DbData<ZonedDateTime> {
             return ZonedDateTime.parse(s);
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), "YYYY-MM-DDTHH:MM:SS+01:00"), ex); //$NON-NLS-1$
+                    EXP_FORMAT.formatted(ex.getParsedString(), "YYYY-MM-DDTHH:MM:SS+01:00"), ex); //$NON-NLS-1$
         }
     }
 
@@ -103,7 +103,7 @@ public final class TimestampTZPgData extends DbData<ZonedDateTime> {
             setStep(ZonedDateTime.ofInstant(Instant.ofEpochMilli(Duration.parse(step).toMillis()), ZoneOffset.UTC));
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), Messages.Duration_expected_format), ex);
+                    EXP_FORMAT.formatted(ex.getParsedString(), Messages.Duration_expected_format), ex);
         }
     }
 }

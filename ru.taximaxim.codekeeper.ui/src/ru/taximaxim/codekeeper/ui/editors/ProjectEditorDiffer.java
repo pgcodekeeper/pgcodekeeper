@@ -1273,7 +1273,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             if (showWarning && isApplyToProj != diffTable.isApplyToProj()) {
                 MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
                 mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
-                mb.setMessage(MessageFormat.format(Messages.ProjectEditorDiffer_changed_direction_of_roll_on,
+                mb.setMessage(Messages.ProjectEditorDiffer_changed_direction_of_roll_on.formatted(
                         isApplyToProj ? Messages.ProjectEditorDiffer_project
                                 : Messages.ProjectEditorDiffer_database));
                 mb.open();

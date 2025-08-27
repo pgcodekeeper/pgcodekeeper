@@ -140,7 +140,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
     @Override
     protected String errorAlreadyExists(DbInfo obj) {
-        return MessageFormat.format(Messages.DbStorePrefPage_already_present, obj.getName());
+        return Messages.DbStorePrefPage_already_present.formatted(obj.getName());
     }
 
     protected Set<String> getDbGroups() {

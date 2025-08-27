@@ -73,8 +73,8 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
                 .map(s -> s.toUpperCase(Locale.ROOT))
                 .toList();
 
-        tmplMsg = MessageFormat.format(Messages.SQLEditorCompletionProcessor_show_templates, hotKey);
-        keyMsg = MessageFormat.format(Messages.SQLEditorCompletionProcessor_show_keywords, hotKey);
+        tmplMsg = Messages.SQLEditorCompletionProcessor_show_templates.formatted(hotKey);
+        keyMsg = Messages.SQLEditorCompletionProcessor_show_keywords.formatted(hotKey);
 
         assistant.addCompletionListener(new CompletionListener());
     }

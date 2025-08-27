@@ -98,8 +98,8 @@ public final class NewObjectPage extends WizardPage {
     private static final String EXPECTED_NAME = "name"; //$NON-NLS-1$
     private static final String EXPECTED_OP_NAME = "=+*";
 
-    private static final String PATTERN = "CREATE SCHEMA {0};"; //$NON-NLS-1$
-    private static final String CH_PATTERN = "CREATE DATABASE {0}\nENGINE = Atomic;"; //$NON-NLS-1$
+    private static final String PATTERN = "CREATE SCHEMA %s;"; //$NON-NLS-1$
+    private static final String CH_PATTERN = "CREATE DATABASE %\nENGINE = Atomic;"; //$NON-NLS-1$
     private static final String CREATE_POSTFIX = ".create"; //$NON-NLS-1$
 
     private final List<DbObjType> allowedTypes = new ArrayList<>();
@@ -425,7 +425,7 @@ public final class NewObjectPage extends WizardPage {
 
         setErrorMessage(err);
         if (err == null) {
-            setDescription(MessageFormat.format(Messages.Object_create_object, dbType.getDbTypeName()));
+            setDescription(Messages.Object_create_object.formatted(dbType.getDbTypeName()));
         }
         return err == null;
     }
@@ -533,7 +533,7 @@ public final class NewObjectPage extends WizardPage {
         IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
-            String schemaText = MessageFormat.format(isClickHouseDb() ? CH_PATTERN : PATTERN,
+            String schemaText = (isClickHouseDb() ? CH_PATTERN : PATTERN).formatted(
                     Utils.getQuotedName(name, dbType));
             sb.append(schemaText);
             file.create(new ByteArrayInputStream(sb.toString().getBytes(

@@ -47,8 +47,8 @@ public final class OpenEditor extends AbstractHandler {
             try {
                 openEditor(HandlerUtil.getActiveWorkbenchWindow(event).getActivePage(), proj);
             } catch (PartInitException e) {
-                ExceptionNotifier.notifyDefault(MessageFormat.format(
-                        Messages.OpenEditor_error_open_project_editor, proj.getName()), e);
+                ExceptionNotifier.notifyDefault(Messages.OpenEditor_error_open_project_editor.formatted(
+                        proj.getName()), e);
             }
         }
         return null;

@@ -58,8 +58,7 @@ final class StdStreamRedirector {
                     // the process was destroyed by us, exit silently
                     return;
                 }
-                throw new IllegalStateException(MessageFormat.format(
-                        Messages.StdStreamRedirector_error_reading_std,
+                throw new IllegalStateException(Messages.StdStreamRedirector_error_reading_std.formatted(
                         ex.getLocalizedMessage()), ex);
             }
         }
@@ -107,8 +106,7 @@ final class StdStreamRedirector {
                     p.waitFor();
                 } catch (InterruptedException ex2) {
                     throw new IOException(
-                            MessageFormat.format(
-                                    Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly,
+                            Messages.StdStreamRedirector_wait_destroy_interrupted_unexpectedly.formatted(
                                     ex2.getLocalizedMessage()), ex2);
                 }
             }
@@ -118,23 +116,18 @@ final class StdStreamRedirector {
                 redirectorThread.join();
             } catch (InterruptedException ex) {
                 throw new IOException(
-                        MessageFormat.format(
-                                Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly,
+                        Messages.StdStreamRedirector_wait_thread_interrupted_unexpectedly.formatted(
                                 ex.getLocalizedMessage()), ex);
             }
-            reporter.writeMessage(MessageFormat.format(
-                    Messages.stdStreamRedirector_completed_with_code, pb
+            reporter.writeMessage(Messages.stdStreamRedirector_completed_with_code.formatted(pb
                     .command().get(0), exitValue));
 
             if (!isDestroyed && 0 != exitValue) {
-                throw new IOException(MessageFormat.format(
-                        Messages.StdStreamRedirector_process_returned_with_error,
-                        exitValue));
+                throw new IOException(Messages.StdStreamRedirector_process_returned_with_error.formatted(exitValue));
             }
 
             if (lastException.get() != null) {
-                throw new IOException(MessageFormat.format(
-                        Messages.StdStreamRedirector_error_reading_std_external,
+                throw new IOException(Messages.StdStreamRedirector_error_reading_std_external.formatted(
                         lastException.get().getLocalizedMessage()), lastException.get());
             }
 

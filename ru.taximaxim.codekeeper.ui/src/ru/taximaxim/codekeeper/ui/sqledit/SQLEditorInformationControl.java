@@ -163,8 +163,7 @@ implements IInformationControlExtension2 {
         if (proposals.length == 1) {
             text = Messages.SQLEditorInformationControl_quick_fix_available;
         } else {
-            text = MessageFormat.format(Messages.SQLEditorInformationControl_multiple_quick_fix_available,
-                    proposals.length);
+            text = Messages.SQLEditorInformationControl_multiple_quick_fix_available.formatted(proposals.length);
         }
         quickFixLabel.setText(text);
 

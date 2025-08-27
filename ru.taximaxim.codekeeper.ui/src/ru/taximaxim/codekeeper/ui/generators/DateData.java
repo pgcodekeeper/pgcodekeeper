@@ -82,7 +82,7 @@ public final class DateData extends DbData<LocalDate> {
             return LocalDate.parse(s);
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), "YYYY-MM-DD"), ex); //$NON-NLS-1$
+                    EXP_FORMAT.formatted(ex.getParsedString(), "YYYY-MM-DD"), ex); //$NON-NLS-1$
         }
     }
 

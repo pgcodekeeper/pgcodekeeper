@@ -150,7 +150,7 @@ public class TreeDiffer implements IRunnableWithProgress {
         private final SubMonitor m;
 
         public DbSourceJob(DbSource s, SubMonitor m) {
-            super(MessageFormat.format(Messages.TreeDiffer_loading_schema_from, s.getOrigin()));
+            super(Messages.TreeDiffer_loading_schema_from.formatted(s.getOrigin()));
             this.s = s;
             this.m = m;
         }

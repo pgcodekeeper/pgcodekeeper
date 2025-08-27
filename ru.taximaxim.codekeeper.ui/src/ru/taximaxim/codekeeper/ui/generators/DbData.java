@@ -32,7 +32,7 @@ import org.pgcodekeeper.core.Utils;
  */
 public abstract class DbData<T> {
 
-    protected static final String EXP_FORMAT = "{0}. Expected format: {1}"; //$NON-NLS-1$
+    protected static final String EXP_FORMAT = "%s. Expected format: %s"; //$NON-NLS-1$
 
     private final DataType type;
     private String name;

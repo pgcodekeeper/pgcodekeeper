@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class CompareInput extends CompareEditorInput {
 
-    private static final String TITLE = "Compare (''{0}'' - ''{1}'')"; //$NON-NLS-1$
+    private static final String TITLE = "Compare (''%s'' - ''%s'')"; //$NON-NLS-1$
 
     private CompareItem left;
     private CompareItem right;
@@ -52,7 +52,7 @@ public final class CompareInput extends CompareEditorInput {
         getCompareConfiguration().setLeftLabel(oldPath);
         getCompareConfiguration().setRightLabel(newPath);
 
-        setTitle(MessageFormat.format(TITLE, oldPath, newPath));
+        setTitle(TITLE.formatted(oldPath, newPath));
     }
 
     public CompareInput(String name, DbObjType type, PgStatement project, PgStatement remote, ISettings settings) {

@@ -85,7 +85,7 @@ public final class TimeData extends DbData<LocalTime> {
             return LocalTime.parse(s);
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), "HH:MM:SS"), ex); //$NON-NLS-1$
+                    EXP_FORMAT.formatted(ex.getParsedString(), "HH:MM:SS"), ex); //$NON-NLS-1$
         }
     }
 
@@ -100,7 +100,7 @@ public final class TimeData extends DbData<LocalTime> {
             setStep(LocalTime.ofNanoOfDay((Duration.parse(step).toNanos())));
         } catch (DateTimeParseException ex) {
             throw new DateTimeException(
-                    MessageFormat.format(EXP_FORMAT, ex.getParsedString(), Messages.Duration_expected_format), ex);
+                    EXP_FORMAT.formatted(ex.getParsedString(), Messages.Duration_expected_format), ex);
         }
     }
 }
