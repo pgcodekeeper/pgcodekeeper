@@ -66,12 +66,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
-    /**
-     * @deprecated old property retained for backward compatibility
-     */
-    @Deprecated(since = "11.0.0", forRemoval = true)
-    private static final String CIPHER_KEY_OLD = PLUGIN_ID.THIS + ".cipherSecret"; //$NON-NLS-1$
-    private static final String CIPHER_KEY = PLUGIN_ID.THIS + ".cipher"; //$NON-NLS-1$
+    private static final String CIPHER_KEY = PLUGIN_ID.THIS + ".cipherSecret"; //$NON-NLS-1$
     private static final String KEY_GENERATOR_ALGORITHM = "AES";
     private static final String CIPHER_ALGORITHM = "AES/GCM/NoPadding"; //$NON-NLS-1$
     private static final int KEY_SIZE = 256;
@@ -335,6 +330,10 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
 
     @Override
     protected Document readXml() throws IOException {
+        if (!encrypt) {
+            return super.readXml();
+        }
+
         try {
             return decryptFileToDoc(getXmlFile());
         } catch (Exception e) {
@@ -403,24 +402,27 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         }
     }
 
-    private Document decryptFileToDoc(Path path)
-            throws IOException, GeneralSecurityException, ParserConfigurationException, SAXException, StorageException {
-        String encodedKeyNew = securePrefs.get(CIPHER_KEY, null);
-        String encodedKeyOld = securePrefs.get(CIPHER_KEY_OLD, null);
-
-        SecretKey secret;
-        String algorithm;
-        if (encodedKeyNew != null && !encodedKeyNew.isEmpty()) {
-            secret = decodeSecretKey(encodedKeyNew);
-            algorithm = CIPHER_ALGORITHM;
-        } else if (encodedKeyOld != null && !encodedKeyOld.isEmpty()) {
-            // backwards compatibility
-            secret = decodeSecretKey(encodedKeyOld);
-            algorithm = secret.getAlgorithm();
-        } else {
-            return super.readXml();
+    private Document decryptFileToDoc(Path path) throws IOException {
+        try {
+            String encodedKeyNew = securePrefs.get(CIPHER_KEY, null);
+            if (encodedKeyNew != null && !encodedKeyNew.isEmpty()) {
+                SecretKey secret = decodeSecretKey(encodedKeyNew);
+                try {
+                    return tryToDecrypt(path, secret, CIPHER_ALGORITHM);
+                } catch (Exception ex1) {
+                    // try old version
+                    return tryToDecrypt(path, secret, secret.getAlgorithm());
+                }
+            }
+        } catch (Exception ex) {
+            // try simple file
         }
 
+        return super.readXml();
+    }
+
+    private Document tryToDecrypt(Path path, SecretKey secret, String algorithm)
+            throws IOException, GeneralSecurityException, ParserConfigurationException, SAXException {
         try (InputStream in = Files.newInputStream(path)) {
             byte[] iv = new byte[IV_LENGTH];
             if (in.read(iv) != IV_LENGTH) {
@@ -444,8 +446,12 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         return cipher;
     }
 
-    public static void export(Path path, boolean needPassword, List<DbInfo> list) throws IOException {
+    public static void exportStore(Path path, boolean needPassword, List<DbInfo> list) throws IOException {
         new DbXmlStore(path, false, needPassword).writeObjects(list);
+    }
+
+    public static List<DbInfo> importStore(Path path) throws IOException {
+        return new DbXmlStore(path, false).readObjects();
     }
 }
 
