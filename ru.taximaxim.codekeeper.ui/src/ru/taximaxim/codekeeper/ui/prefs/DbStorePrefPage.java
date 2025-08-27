@@ -251,7 +251,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 String stringPath = dialog.open();
                 if (stringPath != null) {
                     try {
-                        DbXmlStore.export(Paths.get(stringPath), needPassword, getList());
+                        DbXmlStore.exportStore(Paths.get(stringPath), needPassword, getList());
                     } catch (IOException ex) {
                         ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_saving_error, ex);
                     }
@@ -275,8 +275,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                 String stringPath = dialog.open();
                 if (stringPath != null) {
                     try {
-                        DbStorePrefListEditor.this
-                            .setInputList(new DbXmlStore(Paths.get(stringPath), false).readObjects());
+                        var list = DbXmlStore.importStore(Paths.get(stringPath));
+                        DbStorePrefListEditor.this.setInputList(list);
                     } catch (IOException ex) {
                         ExceptionNotifier.notifyDefault(Messages.DbStorePrefPage_opening_error, ex);
                     }
