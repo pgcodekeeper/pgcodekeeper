@@ -9,9 +9,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [11.0.0] - 2025-08-28
+
+### Added
+
 - Added the ability to export DB storage without passwords.
 
 ### Changed
+
+- The core of the project logic has been separated into a [separate project](https://github.com/pgcodekeeper/pgcodekeeper-core). The CLI version has also been moved to a [separate project](https://github.com/pgcodekeeper/pgcodekeeper-cli).
 
 ### Fixed
 
@@ -2305,7 +2315,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...HEAD
+[11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0
 [10.15.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...v10.15.0
 [10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
 [10.14.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...v10.14.1

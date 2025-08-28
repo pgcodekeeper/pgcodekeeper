@@ -17,7 +17,7 @@
         <dependency>
             <groupId>ru.taximaxim.codeKeeper</groupId>
             <artifactId>ru.taximaxim.codekeeper.ui</artifactId>
-            <version>${ui.revision}</version>
+            <version>${revision}</version>
         </dependency>
         <dependency>
             <groupId>ru.taximaxim.codeKeeper</groupId>
