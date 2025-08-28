@@ -9,9 +9,19 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [11.0.0] - 2025-08-28
+
+### Добавлено
+
 - Добавлена возможность экспортировать хранилище БД без паролей.
 
 ### Изменено
+
+- Ядро логики проекта отделено в [отдельный проект](https://github.com/pgcodekeeper/pgcodekeeper-core). CLI версия также перенесена в [отдельный проект](https://github.com/pgcodekeeper/pgcodekeeper-cli).
 
 ### Исправлено
 
@@ -2306,7 +2316,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...HEAD
+[11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0
 [10.15.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...v10.15.0
 [10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
 [10.14.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.0...v10.14.1
