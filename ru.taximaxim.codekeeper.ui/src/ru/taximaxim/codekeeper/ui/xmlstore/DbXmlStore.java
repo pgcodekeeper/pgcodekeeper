@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.EnumMap;
@@ -39,6 +40,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.parsers.ParserConfigurationException;
@@ -71,6 +73,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     private static final String CIPHER_ALGORITHM = "AES/GCM/NoPadding"; //$NON-NLS-1$
     private static final int KEY_SIZE = 256;
     private static final int IV_LENGTH = 16;
+    private static final int TAG_LENGTH = 128;
 
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
 
@@ -440,9 +443,14 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
 
     private Cipher createCipher(SecretKey secret, String algorithm, byte[] iv, int mode)
             throws GeneralSecurityException {
-        IvParameterSpec ivSpec = new IvParameterSpec(iv);
+        AlgorithmParameterSpec spec;
+        if (CIPHER_ALGORITHM.equals(algorithm)) {
+            spec = new GCMParameterSpec(TAG_LENGTH, iv);
+        } else {
+            spec = new IvParameterSpec(iv);
+        }
         Cipher cipher = Cipher.getInstance(algorithm);
-        cipher.init(mode, secret, ivSpec);
+        cipher.init(mode, secret, spec);
         return cipher;
     }
 
