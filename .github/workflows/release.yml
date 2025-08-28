@@ -76,6 +76,9 @@ jobs:
       - name: set macos x86 build name
         run: echo "MACOS_X86_BUILD=${{ env.PREFIX }}${{ env.RELEASE_VERSION }}-macosx.cocoa.x86_64.tar.gz" >> $GITHUB_ENV
 
+      - name: set updatesite name
+        run: echo "UPDATESITE=pgCodeKeeper-updatesite-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
+
       - name: create GitHub release
         id: create_release
         uses: comnoco/create-release-action@v2.0.5
