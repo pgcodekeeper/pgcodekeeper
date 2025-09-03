@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug with the encryption algorithm.
+- Fixed bug with comparing dumps in diff wizard.
 
 ## [10.15.0] - 2025-07-29
 

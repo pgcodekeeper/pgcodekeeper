@@ -32,6 +32,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.DatabaseType;
 import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
 import org.pgcodekeeper.core.loader.DatabaseLoader;
 import org.pgcodekeeper.core.loader.LoaderFactory;
@@ -124,20 +125,16 @@ public abstract class DbSource {
         return fromProject(proj, null);
     }
 
-    public static DbSource fromFile(File filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return fromFile(filename.toPath(), proj, oneTimePrefs);
-    }
-
-    public static DbSource fromFile(Path filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
-        return new DbSourceFile(filename, proj, oneTimePrefs);
-    }
-
     public static DbSource fromFile(File filename, IProject proj) {
-        return fromFile(filename.toPath(), proj);
+        return fromFile(filename, proj, null);
     }
 
-    public static DbSource fromFile(Path filename, IProject proj) {
-        return fromFile(filename, proj, null);
+    public static DbSource fromFile(File filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
+        return fromFile(filename, proj, oneTimePrefs, null);
+    }
+
+    public static DbSource fromFile(File filename, IProject proj, Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
+        return new DbSourceFile(filename.toPath(), proj, oneTimePrefs, dbType);
     }
 
     public static DbSource fromDbInfo(DbInfo dbinfo, String charset, String timezone, IProject proj,
@@ -224,13 +221,15 @@ class DbSourceFile extends DbSource {
     private final Path filename;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
+    private final DatabaseType dbType;
 
-    DbSourceFile(Path filename, IProject proj, Map<String, Boolean> oneTimePrefs) {
+    DbSourceFile(Path filename, IProject proj, Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
         super(filename.toAbsolutePath().toString());
 
         this.filename = filename;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
+        this.dbType = dbType;
     }
 
     @Override
@@ -246,7 +245,7 @@ class DbSourceFile extends DbSource {
             Log.log(Log.LOG_INFO, "Error counting file lines. Setting 1000"); //$NON-NLS-1$
             monitor.setWorkRemaining(1000);
         }
-        return load(new PgDumpLoader(filename, new UISettings(proj, oneTimePrefs), new UIMonitor(monitor), 2));
+        return load(new PgDumpLoader(filename, new UISettings(proj, oneTimePrefs, dbType), new UIMonitor(monitor), 2));
     }
 
     private int countLines(Path filename) throws IOException {

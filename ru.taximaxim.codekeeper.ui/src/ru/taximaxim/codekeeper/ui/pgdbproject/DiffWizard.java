@@ -330,8 +330,8 @@ final class PageDiff extends WizardPage implements Listener {
         }
     }
 
-    private DatabaseType getDbType(DbSourcePicker sourcePicer) {
-        DbInfo dbInfo = sourcePicer.getSelectedDbInfo();
+    private DatabaseType getDbType(DbSourcePicker sourcePicker) {
+        DbInfo dbInfo = sourcePicker.getSelectedDbInfo();
         if (dbInfo != null) {
             return dbInfo.getDbType();
         }
