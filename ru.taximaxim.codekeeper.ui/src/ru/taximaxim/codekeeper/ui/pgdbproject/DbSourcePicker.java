@@ -114,7 +114,7 @@ class DbSourcePicker extends Composite {
         if ((dbInfo = storePicker.getDbInfo()) != null) {
             return DbSource.fromDbInfo(dbInfo, getEncoding(), pageDiff.getTimezone(), null, oneTimePrefs);
         } else if ((file = storePicker.getPathOfFile()) != null) {
-            return DbSource.fromFile(file, null, oneTimePrefs);
+            return DbSource.fromFile(file, null, oneTimePrefs, pageDiff.getSelectedDbType());
         } else if ((dir = storePicker.getPathOfDir()) != null) {
             PgDbProject project = getProjectFromDir(dir);
             if (project != null) {
