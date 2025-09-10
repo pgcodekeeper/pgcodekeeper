@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed a bug with comparing dumps in `Diff wizard`.
+- Fixed reading logic when xml file is missing.
+- Fixed a race condition when loading a library from an archive.
+
 ## [11.0.0] - 2025-08-28
 
 ### Added
@@ -26,7 +30,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug with the encryption algorithm.
-- Fixed bug with comparing dumps in diff wizard.
 
 ## [10.15.0] - 2025-07-29
 
