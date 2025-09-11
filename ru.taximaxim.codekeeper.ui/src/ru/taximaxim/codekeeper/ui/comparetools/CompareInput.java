@@ -32,7 +32,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class CompareInput extends CompareEditorInput {
 
-    private static final String TITLE = "Compare (''%s'' - ''%s'')"; //$NON-NLS-1$
+    private static final String TITLE = "Compare ('%s' - '%s')"; //$NON-NLS-1$
 
     private CompareItem left;
     private CompareItem right;
