@@ -785,8 +785,6 @@ public final class Messages extends NLS {
 
     public static String OpenProjectUtils_update_format;
 
-    public static String OpenProjectUtils_update_warning;
-
     public static String OpenProjectUtils_updating_project;
 
     public static String OpenProjectUtils_version_error;
