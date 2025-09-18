@@ -113,7 +113,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isPrintUsing() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USING_ON_OFF);
+        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_USING);
     }
 
     @Override
@@ -202,7 +202,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isDisableCheckFunctionBodies() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES);
+        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES);
     }
 
     @Override

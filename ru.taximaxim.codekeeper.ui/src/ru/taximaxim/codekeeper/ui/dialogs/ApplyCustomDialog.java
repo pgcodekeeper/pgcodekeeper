@@ -96,9 +96,9 @@ public class ApplyCustomDialog extends Dialog {
                 Messages.DbUpdatePrefPage_allow_data_movement, btnsPanel, prefs::getBooleanOfDbUpdatePref));
 
         if (DatabaseType.PG == dbType) {
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
                     Messages.dbUpdatePrefPage_check_function_bodies, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
+            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_USING,
                     Messages.dbUpdatePrefPage_switch_on_off_using, btnsPanel, prefs::getBooleanOfDbUpdatePref));
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
                     Messages.ApplyCustomDialog_constraint_not_valid, btnsPanel, prefs::getBooleanOfDbUpdatePref));
