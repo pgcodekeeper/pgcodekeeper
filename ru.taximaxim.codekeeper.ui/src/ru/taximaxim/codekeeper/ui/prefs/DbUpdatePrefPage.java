@@ -72,10 +72,10 @@ public final class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
                 Messages.DbUpdatePrefPage_script_add_transaction, getFieldEditorParent()));
 
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies, getFieldEditorParent()));
 
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_USING,
                 Messages.dbUpdatePrefPage_switch_on_off_using, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,

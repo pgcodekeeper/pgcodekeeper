@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Fixed a bug with comparing dumps in `Diff wizard`.
 - Fixed reading logic when xml file is missing.
 - Fixed a race condition when loading a library from an archive.
+- Fixed setting name to `Disable PostgreSQL function body checking in migration script`. The setting value was forcibly reset.
 
 ## [11.0.0] - 2025-08-28
 

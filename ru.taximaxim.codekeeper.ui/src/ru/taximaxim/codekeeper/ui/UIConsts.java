@@ -115,8 +115,8 @@ public interface UIConsts {
         String RESTART_WITH_STATEMENT = "prefRestartWithStatement"; //$NON-NLS-1$
         String UPDATE_STATEMENT = "prefUpdateStatement"; //$NON-NLS-1$
         String SCRIPT_IN_TRANSACTION = "prefScriptInTransaction"; //$NON-NLS-1$
-        String CHECK_FUNCTION_BODIES = "prefCheckFunctionBodies"; //$NON-NLS-1$
-        String USING_ON_OFF = "prefUsingOnOff"; //$NON-NLS-1$
+        String DISABLE_CHECK_FUNCTION_BODIES = "prefDisableCheckFunctionBodies"; //$NON-NLS-1$
+        String PRINT_USING = "prefUsingOnOff"; //$NON-NLS-1$
         String COMMAND_LINE_DDL_UPDATE = "prefCommandLineDdlUpdate"; //$NON-NLS-1$
         String MIGRATION_COMMAND = "prefMigrationCommand"; //$NON-NLS-1$
         String PRINT_INDEX_WITH_CONCURRENTLY = "prefPrintIndexWithConcurrently"; //$NON-NLS-1$

@@ -299,9 +299,9 @@ final class PageDiff extends WizardPage implements Listener {
                 Messages.DbUpdatePrefPage_option_drop_object, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
                 Messages.DbUpdatePrefPage_allow_data_movement, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.CHECK_FUNCTION_BODIES,
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
                 Messages.dbUpdatePrefPage_check_function_bodies, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USING_ON_OFF,
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_USING,
                 Messages.dbUpdatePrefPage_switch_on_off_using, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
                 Messages.ApplyCustomDialog_constraint_not_valid, container, mainPrefs::getBoolean));
