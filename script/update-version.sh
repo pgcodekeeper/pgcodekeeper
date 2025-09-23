@@ -4,7 +4,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 ( \
 cd "${DIR}/../" \
 && \
-mvn org.eclipse.tycho:tycho-versions-plugin:set-version \
+mvn org.eclipse.tycho:tycho-versions-plugin:4.0.13:set-version \
 -Dartifacts=\
 ru.taximaxim.codekeeper.rcp.product,\
 ru.taximaxim.codekeeper.mainapp,\

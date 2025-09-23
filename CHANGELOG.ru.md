@@ -13,10 +13,19 @@
 
 ### Исправлено
 
+## [11.1.0] - 2025-09-23
+
+### Добавлено
+
+- Добавлен анализ функций, возвращающих тип RECORD.
+
+### Исправлено
+
 - Исправлен ошибка при сравнении дампов в `Мастере сравнения`.
 - Исправлена логика чтения при отсутствующем xml файле.
 - Исправлено состояние гонки при загрузке библиотеки из архива.
 - Исправлено имя настройки на `Отключать проверку PostgreSQL тел функций в скрипте миграции`. Принудительно сброшено значение настройки.
+- Исправлено правило парсера для чисел с плавающей запятой для MS SQL.
 
 ## [11.0.0] - 2025-08-28
 
@@ -2321,7 +2330,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...HEAD
+[11.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...11.1.0
 [11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0
 [10.15.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...v10.15.0
 [10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
