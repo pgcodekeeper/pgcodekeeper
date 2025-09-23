@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: ru.taximaxim.codekeeper.ui;singleton:=true
-Bundle-Version: 11.0.0.qualifier
+Bundle-Version: 11.1.0.qualifier
 Bundle-Activator: ru.taximaxim.codekeeper.ui.Activator
 Require-Bundle: ru.taximaxim.codekeeper.mainapp,
  org.eclipse.compare;bundle-version="[3.7.0,4.0.0)",

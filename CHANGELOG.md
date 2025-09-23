@@ -13,10 +13,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [11.1.0] - 2025-09-23
+
+### Added
+
+- Added analysis of functions returning the RECORD type.
+
+### Fixed
+
 - Fixed a bug with comparing dumps in `Diff wizard`.
 - Fixed reading logic when xml file is missing.
 - Fixed a race condition when loading a library from an archive.
 - Fixed setting name to `Disable PostgreSQL function body checking in migration script`. The setting value was forcibly reset.
+- Fixed parser rule for floating point constants for MS SQL.
 
 ## [11.0.0] - 2025-08-28
 
@@ -2320,7 +2329,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...HEAD
+[11.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...v11.1.0
 [11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0
 [10.15.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...v10.15.0
 [10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
