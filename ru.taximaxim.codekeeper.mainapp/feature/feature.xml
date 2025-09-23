@@ -37,10 +37,6 @@
          version="0.0.0"/>
 
    <plugin
-         id="wrapped.org.pgcodekeeper.pgcodekeeper-core"
-         version="0.0.0"/>
-
-   <plugin
          id="wrapped.com.github.technology16.pgpass"
          version="0.0.0"/>
 
@@ -70,6 +66,9 @@
 
    <plugin
          id="wrapped.org.apfloat.apfloat"
+         version="0.0.0"/>
+   <plugin
+         id="org.pgcodekeeper.core"
          version="0.0.0"/>
 
 </feature>
