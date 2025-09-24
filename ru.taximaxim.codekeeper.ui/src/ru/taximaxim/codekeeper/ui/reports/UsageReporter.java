@@ -62,8 +62,8 @@ public class UsageReporter {
                 ReportingJob job = new ReportingJob() {
 
                     @Override
-                    public void report() {
-                        checkCountEventInternal(type);
+                    public void report(IProgressMonitor monitor) {
+                        checkCountEventInternal(type, monitor);
                     }
                 };
                 job.schedule();
@@ -86,8 +86,8 @@ public class UsageReporter {
             ReportingJob job = new ReportingJob() {
 
                 @Override
-                public void report() {
-                    if (isEnabled()) {
+                public void report(IProgressMonitor monitor) {
+                    if (isEnabled() && !monitor.isCanceled()) {
                         sendRequest(event, true);
                     }
                 }
@@ -110,9 +110,9 @@ public class UsageReporter {
             ReportingJob job = new ReportingJob() {
 
                 @Override
-                public void report() {
+                public void report(IProgressMonitor monitor) {
                     for (UsageEventType type : EventRegister.getInstance().getRegisteredEventTypes()) {
-                        checkCountEventInternal(type);
+                        checkCountEventInternal(type, monitor);
                     }
                 }
             };
@@ -130,24 +130,24 @@ public class UsageReporter {
     /**
      * Checks if the corresponding daily event should be sent. If yes then that daily event(s) is sent.
      * @param type
-     * @return the number of sent events
+     * @param monitor
      */
-    private int checkCountEventInternal(UsageEventType type) {
-        int sent = 0;
+    private void checkCountEventInternal(UsageEventType type, IProgressMonitor monitor) {
         if (isEnabled()) {
             Set<Result> results = EventRegister.getInstance().checkCountEvent(type);
             for (Result result : results) {
+                if (monitor.isCanceled()) {
+                    break;
+                }
+
                 if (result.isOkToSend()) {
                     int value = result.getPreviousSumOfValues();
                     String label = result.getCountEventLabel();
                     UsageEvent event = type.event(label, value);
-                    if (getUsageRequest().sendRequest(event, false)) {
-                        sent++;
-                    }
+                    getUsageRequest().sendRequest(event, false);
                 }
             }
         }
-        return sent;
     }
 
     /**
@@ -201,21 +201,25 @@ public class UsageReporter {
             } finally {
                 lockToAskUser.unlock();
             }
-            report();
+
+            report(monitor);
+
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+
             monitor.worked(2);
             monitor.done();
 
             return Status.OK_STATUS;
         }
 
-        abstract void report();
-
+        abstract void report(IProgressMonitor monitor);
 
         /**
-         * Asks the user is he allows us to report usage. Opens a dialog for this sake.
+         * Asks user if he allows us to report usage. Opens a dialog for this sake.
          */
         private void askUser() {
-
             Display.getDefault().syncExec(() -> {
                 Shell shell = PlatformUI.getWorkbench().getModalDialogShellProvider().getShell();
                 boolean isEnabled =  MessageDialog.openQuestion(shell,
