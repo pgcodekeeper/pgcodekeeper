@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed behavior when canceling sending analytical reports. 
+
 ## [11.1.0] - 2025-09-23
 
 ### Added
