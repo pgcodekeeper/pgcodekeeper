@@ -13,6 +13,10 @@
 
 ### Исправлено
 
+## [11.1.1] - 2025-09-30
+
+### Исправлено
+
 - Исправлено поведение при отмене отправки аналитических отчетов.
 - Исправлена ошибка обновления и установки последней версии плагина pgCodeKeeper для Eclipse.
 
@@ -2333,8 +2337,9 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...HEAD
-[11.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...11.1.0
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...HEAD
+[11.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...v11.1.1
+[11.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...v11.1.0
 [11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0
 [10.15.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.2...v10.15.0
 [10.14.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.14.1...v10.14.2
