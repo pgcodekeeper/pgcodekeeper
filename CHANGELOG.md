@@ -13,7 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed behavior when canceling sending analytical reports. 
+- Fixed behavior when canceling sending analytical reports.
+- Fixed an error updating and installing the latest version of the pgCodeKeeper plugin for Eclipse.
 
 ## [11.1.0] - 2025-09-23
 
