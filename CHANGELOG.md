@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+### Security
+
+- The ability to edit the ini-file from within the plugin has been removed. Now settings the number of parser threads do not allowed from the settings window. Updated dialog box whitch open when low-RAM: now it display help, than change configuration.
+
 ## [11.1.1] - 2025-09-30
 
 ### Fixed
