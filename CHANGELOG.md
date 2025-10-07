@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [11.1.2] - 2025-10-07
+
 ### Security
 
 - The ability to edit the ini-file from within the plugin has been removed. Now settings the number of parser threads do not allowed from the settings window. Updated dialog box whitch open when low-RAM: now it display help, than change configuration.
@@ -2340,7 +2342,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.2...HEAD
+[11.1.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...v11.1.2
 [11.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...v11.1.1
 [11.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...v11.1.0
 [11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0

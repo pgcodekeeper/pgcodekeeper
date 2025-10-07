@@ -25,7 +25,7 @@
     </modules>
 
     <properties>
-        <revision>11.1.1-SNAPSHOT</revision>
+        <revision>11.1.2-SNAPSHOT</revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
