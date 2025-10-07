@@ -15,9 +15,8 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.prefs.heap;
 
-import java.text.MessageFormat;
+import java.util.Locale;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
@@ -28,7 +27,6 @@ import org.eclipse.ui.PlatformUI;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.dialogs.HeapSizeCheckerDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
@@ -57,16 +55,12 @@ public class HeapSizeChecker implements IStartup {
 
             Shell shell = activeWindow.getShell();
 
-            MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
-                    shell, Messages.HeapSizeChecker_heap_size_warning_title,
-                    Messages.HeapSizeChecker_heap_size_warning.formatted(
-                            RECOMMENDED_XMX_SIZE_GB),
-                    Messages.HeapSizeChecker_do_not_ask_again,
-                    false, mainPrefs, PREF.HEAP_SIZE_WARNING);
+            var appName = System.getProperty("eclipse.launcher.name");
+            var iniFileName = appName.toLowerCase(Locale.ROOT) + ".ini";
 
-            if (IDialogConstants.YES_ID == dialog.getReturnCode()) {
-                new HeapSizeCheckerDialog(shell).open();
-            }
+            MessageDialogWithToggle.openWarning(shell, Messages.HeapSizeChecker_heap_size_warning_title,
+                    Messages.HeapSizeChecker_heap_size_warning.formatted(RECOMMENDED_XMX_SIZE_GB, iniFileName, appName),
+                    Messages.HeapSizeChecker_do_not_ask_again, false, mainPrefs, PREF.HEAP_SIZE_WARNING);
         });
     }
 }

@@ -595,11 +595,6 @@ public final class Messages extends NLS {
     public static String HeapSizeChecker_heap_size_warning_title;
     public static String HeapSizeChecker_heap_size_warning;
     public static String HeapSizeChecker_do_not_ask_again;
-    public static String HeapSizeCheckerDialog_set_heap_size;
-    public static String HeapSizeCheckerDialog_new_heap_size;
-    public static String HeapSizeCheckerDialog_manual_heap_editing_title;
-    public static String Eclipse_restart_offer;
-    public static String EclipseIniWriter_manual_editing_link;
 
     public static String IgnoredObjectPrefListEditor_already_present;
 
@@ -1069,12 +1064,6 @@ public final class Messages extends NLS {
 
     // usage report
     public static String EclipseEnvironment_Error_SavePreferences;
-
-    public static String EclipseIniWriter_change_manually;
-
-    public static String EclipseIniWriter_replace_parameter_msg;
-
-    public static String EclipseIniWriter_updated;
 
     public static String LabelPicker_choice_db;
 

@@ -24,24 +24,17 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.parsers.antlr.base.AntlrParser;
-import org.pgcodekeeper.core.parsers.antlr.base.AntlrTaskManager;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.EclipseIniWriter;
-import ru.taximaxim.codekeeper.ui.IntegerVerifyListener;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
 public final class GeneralPrefPage extends FieldEditorPreferencePage
         implements IWorkbenchPreferencePage {
-
-    private Text threadsTxt;
 
     public GeneralPrefPage() {
         super(GRID);
@@ -98,14 +91,6 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
         new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
             .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
-        new Label(getFieldEditorParent(), SWT.NONE)
-            .setText(Messages.GeneralPrefPage_number_of_loading_threads);
-
-        threadsTxt = new Text(getFieldEditorParent(), SWT.BORDER);
-        threadsTxt.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-        threadsTxt.setText(Integer.toString(AntlrTaskManager.getPoolSize()));
-        threadsTxt.addVerifyListener(new IntegerVerifyListener());
-
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
                 Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary,
                 getFieldEditorParent()));
@@ -125,18 +110,5 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
                 PgDbParser.cleanAll();
             }
         });
-    }
-
-    @Override
-    public boolean performOk() {
-        String newThreadVal = threadsTxt.getText();
-
-        if (AntlrTaskManager.getPoolSize() != Integer.parseInt(newThreadVal)) {
-            var fullPropertyName = "-D" + Consts.POOL_SIZE + '='; //$NON-NLS-1$
-            EclipseIniWriter.write(getShell(), fullPropertyName, newThreadVal,
-                    Messages.GeneralPrefPage_number_of_thread);
-        }
-
-        return super.performOk();
     }
 }
