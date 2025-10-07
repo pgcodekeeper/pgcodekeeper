@@ -13,6 +13,8 @@
 
 ### Исправлено
 
+## [11.1.2] - 2025-10-07
+
 ### Безопасность
 
 - Удалена возможность редактирования ini-файла из плагина. Теперь настройка количества потоков парсера недоступно из окна настроек. Обновлено диалоговое окно, которое появляется при нехватке оперативной памяти: теперь оно показывает справку вместо изменения конфигурации.
@@ -2341,7 +2343,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.2...HEAD
+[11.1.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...v11.1.2
 [11.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...v11.1.1
 [11.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.0.0...v11.1.0
 [11.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v10.15.0...v11.0.0
