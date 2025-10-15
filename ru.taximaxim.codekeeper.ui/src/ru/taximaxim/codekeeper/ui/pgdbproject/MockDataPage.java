@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -804,7 +803,7 @@ public final class MockDataPage extends WizardPage {
         }
 
         DbData<?> c = DataType.dataForType(type, dbType);
-        c.setNotNull(!column.getNullValue());
+        c.setNotNull(column.isNotNull());
         c.setName(column.getName());
         c.setAlias(typeName);
         columns.add(c);

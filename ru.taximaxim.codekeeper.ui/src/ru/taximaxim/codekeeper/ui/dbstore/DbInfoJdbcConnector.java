@@ -19,15 +19,23 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.Properties;
 
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
 
+import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
+
+    private static final String URL_START_MS = "jdbc:sqlserver:";
+    private static final String URL_START_PG = "jdbc:postgresql:";
+    private static final String URL_START_CH = "jdbc:clickhouse:";
+
+    private static final String PG_DRIVER_NAME = "org.postgresql.Driver";
+    private static final String MS_DRIVER_NAME = "com.microsoft.sqlserver.jdbc.SQLServerDriver";
+    private static final String CH_DRIVER_NAME = "com.clickhouse.jdbc.ClickHouseDriver";
 
     private static final String ESTABLISHING_MSG = "Establishing JDBC connection with host:port %s:%s, db name %s, username %s"; // $NON-NLS-1$
 
@@ -39,22 +47,22 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
     }
 
     public DbInfoJdbcConnector(DbInfo dbInfo, int timeoutSeconds) {
-        super(dbInfo.getDbType());
         this.dbInfo = dbInfo;
         this.timeoutSeconds = timeoutSeconds;
     }
 
+
     @Override
     public Connection getConnection() throws IOException {
-        log(getMessage());
+        Log.log(Log.LOG_INFO, getMessage());
         Connection con = null;
         // This part of the code solves the problem with finding the right class in the
         // right location and loads ClickHouseDriver in the Equinox driver whitelist.
         // we can try remove this code and remove folder libs when will be resolved
         // https://github.com/ClickHouse/clickhouse-java/issues/905
-        if (DatabaseType.CH == dbType) {
+        if (DatabaseType.CH == dbInfo.getDbType()) {
             try {
-                Class.forName("com.clickhouse.jdbc.ClickHouseDriver");
+                Class.forName(CH_DRIVER_NAME);
                 con = DriverManager.getConnection(getUrl(), makeProperties());
             } catch (SQLException | ClassNotFoundException e) {
                 throw new IOException(e.getLocalizedMessage(), e);
@@ -83,7 +91,7 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
             props.setProperty("password", pass); //$NON-NLS-1$
         }
 
-        switch (dbType) {
+        switch (dbInfo.getDbType()) {
         case PG, MS:
             props.setProperty("loginTimeout", String.valueOf(timeoutSeconds)); //$NON-NLS-1$
             break;
@@ -99,7 +107,7 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
             properties.entrySet().forEach(entry -> props.setProperty(entry.getKey(), entry.getValue()));
         }
 
-        if (DatabaseType.MS != dbType) {
+        if (DatabaseType.MS != dbInfo.getDbType()) {
             return props;
         }
 
@@ -123,13 +131,12 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
 
     @Override
     protected String getUrl() {
-        return switch (dbType) {
+        return switch (dbInfo.getDbType()) {
             case PG -> URL_START_PG + "//" + dbInfo.getDbHost() + ':' + getPort() + '/' + dbInfo.getDbName(); //$NON-NLS-1$
             case MS -> URL_START_MS + "//" + dbInfo.getDbHost() + ':' + getPort() //$NON-NLS-1$
                         + (isDbNameEscapable() ? ";databaseName={" + dbInfo.getDbName() + '}' : ""); //$NON-NLS-1$ //$NON-NLS-1$ //$NON-NLS-2$
             case CH -> URL_START_CH + "//" + dbInfo.getDbHost() + ':' + getPort() //$NON-NLS-1$
                         + (dbInfo.getDbName() != null ? '/' + dbInfo.getDbName() : ""); //$NON-NLS-1$ //$NON-NLS-1$
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
         };
     }
 
@@ -139,11 +146,20 @@ public final class DbInfoJdbcConnector extends AbstractJdbcConnector {
             return String.valueOf(port);
         }
 
-        return dbType.getDefaultPort();
+        return dbInfo.getDbType().getDefaultPort();
     }
 
     protected String getMessage() {
         return ESTABLISHING_MSG.formatted(dbInfo.getDbHost(), getPort(), dbInfo.getDbName(),
                 dbInfo.getDbUser());
+    }
+
+    @Override
+    protected String getDriverName() {
+        return switch (dbInfo.getDbType()) {
+            case PG -> PG_DRIVER_NAME;
+            case MS -> MS_DRIVER_NAME;
+            case CH -> CH_DRIVER_NAME;
+        };
     }
 }

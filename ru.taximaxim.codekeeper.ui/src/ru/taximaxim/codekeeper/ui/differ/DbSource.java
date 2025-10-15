@@ -33,12 +33,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
+import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
 import org.pgcodekeeper.core.loader.DatabaseLoader;
 import org.pgcodekeeper.core.loader.LoaderFactory;
 import org.pgcodekeeper.core.loader.PgDumpLoader;
 import org.pgcodekeeper.core.loader.ProjectLoader;
-import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
 import org.pgcodekeeper.core.reporter.IProgressReporter;
 import org.pgcodekeeper.core.schema.AbstractDatabase;
 import org.pgcodekeeper.core.utils.InputStreamProvider;
@@ -333,6 +333,7 @@ class DbSourceJdbc extends DbSource {
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
     private final String timezone;
+    private final DatabaseType dbType;
 
     @Override
     public String getDbName() {
@@ -344,6 +345,7 @@ class DbSourceJdbc extends DbSource {
 
         this.jdbcConnector = new DbInfoJdbcConnector(dbinfo);
         this.dbName = dbinfo.getDbName();
+        this.dbType = dbinfo.getDbType();
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
         this.timezone = timezone;
@@ -360,7 +362,7 @@ class DbSourceJdbc extends DbSource {
             ignoreShemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
         }
 
-        return load(LoaderFactory.createJdbcLoader(new UISettings(proj, oneTimePrefs, jdbcConnector.getType()),
+        return load(LoaderFactory.createJdbcLoader(new UISettings(proj, oneTimePrefs, dbType),
                 timezone, jdbcConnector, new UIMonitor(monitor), ignoreShemaList));
     }
 }

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.dbstore;
 
-import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
 

@@ -9,9 +9,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added support for PostgreSQL 18.
+- Added formatting of the SELECT part of VIEW objects when reading from the database for ClickHouse.
+
 ### Changed
 
 ### Fixed
+
+- Fixed code generation for columns with Nullable values in ClickHouse.
+
+### Removed
+
+- Removed support for MS SQL versions below 2017.
+- Removed support for PostgreSQL versions below 14.
 
 ## [11.1.2] - 2025-10-07
 

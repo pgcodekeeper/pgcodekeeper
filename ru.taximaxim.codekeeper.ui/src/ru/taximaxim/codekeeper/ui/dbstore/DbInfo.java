@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.ignorelist.IgnoreList;
 
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
@@ -164,10 +164,9 @@ public final class DbInfo {
         if (obj == null) {
             return false;
         }
-        if (!(obj instanceof DbInfo)) {
+        if (!(obj instanceof DbInfo other)) {
             return false;
         }
-        DbInfo other = (DbInfo) obj;
         return name.equals(other.name);
     }
 

@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;

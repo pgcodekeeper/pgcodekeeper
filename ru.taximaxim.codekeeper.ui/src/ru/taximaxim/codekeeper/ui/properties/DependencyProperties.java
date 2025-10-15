@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.ui.properties;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
