@@ -46,7 +46,7 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.IgnoreList;
+import org.pgcodekeeper.core.ignorelist.IgnoreList;
 import org.pgcodekeeper.core.schema.AbstractDatabase;
 
 import ru.taximaxim.codekeeper.ui.Activator;

@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
-import java.text.MessageFormat;
-
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -30,10 +28,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
-import org.pgcodekeeper.core.model.difftree.IIgnoreList;
-import org.pgcodekeeper.core.model.difftree.IgnoreList;
-import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
-import org.pgcodekeeper.core.model.difftree.IgnoredObject;
+import org.pgcodekeeper.core.ignorelist.IIgnoreList;
+import org.pgcodekeeper.core.ignorelist.IgnoreList;
+import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
+import org.pgcodekeeper.core.ignorelist.IgnoredObject;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;

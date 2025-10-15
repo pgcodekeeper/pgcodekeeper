@@ -60,7 +60,7 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.loader.AbstractJdbcConnector;
+import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
 import org.pgcodekeeper.core.loader.JdbcRunner;
 import org.pgcodekeeper.core.schema.pg.PgDatabase;
 

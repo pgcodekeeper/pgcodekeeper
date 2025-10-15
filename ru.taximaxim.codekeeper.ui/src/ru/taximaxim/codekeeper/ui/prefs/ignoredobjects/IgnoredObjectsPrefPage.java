@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.pgcodekeeper.core.model.difftree.IgnoreList;
-import org.pgcodekeeper.core.model.difftree.IgnoredObject;
+import org.pgcodekeeper.core.ignorelist.IgnoreList;
+import org.pgcodekeeper.core.ignorelist.IgnoredObject;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;

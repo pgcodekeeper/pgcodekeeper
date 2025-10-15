@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.ui.prefs.ignoredobjects;
 
 import org.eclipse.jface.viewers.CheckboxCellEditor;
 import org.eclipse.jface.viewers.TableViewer;
-import org.pgcodekeeper.core.model.difftree.IgnoredObject;
+import org.pgcodekeeper.core.ignorelist.IgnoredObject;
 
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 
@@ -37,14 +37,11 @@ public class CheckEditingSupport extends CommonEditingSupport<CheckboxCellEditor
     @Override
     protected Object getValue(Object element) {
         if (element instanceof IgnoredObject data) {
-            switch (type) {
-            case IGNORE_CONTENT:
-                return data.isIgnoreContent();
-            case REGULAR:
-                return data.isRegular();
-            case QUALIFIED:
-                return data.isQualified();
-            }
+            return switch (type) {
+                case IGNORE_CONTENT -> data.isIgnoreContent();
+                case REGULAR -> data.isRegular();
+                case QUALIFIED -> data.isQualified();
+            };
         }
         return null;
     }

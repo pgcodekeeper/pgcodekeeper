@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,8 +32,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Shell;
-import org.pgcodekeeper.core.model.difftree.IgnoreList;
-import org.pgcodekeeper.core.model.difftree.IgnoredObject;
+import org.pgcodekeeper.core.ignorelist.IgnoreList;
+import org.pgcodekeeper.core.ignorelist.IgnoredObject;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;

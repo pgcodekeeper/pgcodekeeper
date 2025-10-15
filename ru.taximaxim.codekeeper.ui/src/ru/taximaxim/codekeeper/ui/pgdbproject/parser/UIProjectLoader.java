@@ -41,12 +41,12 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.pgcodekeeper.core.DatabaseType;
 import org.pgcodekeeper.core.Utils;
 import org.pgcodekeeper.core.WorkDirs;
+import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
 import org.pgcodekeeper.core.loader.DatabaseLoader;
 import org.pgcodekeeper.core.loader.FullAnalyze;
 import org.pgcodekeeper.core.loader.LibraryLoader;
 import org.pgcodekeeper.core.loader.ProjectLoader;
 import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.model.difftree.IgnoreSchemaList;
 import org.pgcodekeeper.core.model.exporter.ModelExporter;
 import org.pgcodekeeper.core.monitor.IMonitor;
 import org.pgcodekeeper.core.parsers.antlr.base.AntlrError;
@@ -149,7 +149,7 @@ public final class UIProjectLoader extends ProjectLoader {
                 continue;
             }
             IFolder schemaDir = (IFolder) sub;
-            if (checkIgnoreSchemaList(schemaDir.getName())) {
+            if (isAllowedSchema(schemaDir.getName())) {
                 loadSubdir(schemaDir, db);
                 for (DbObjType dirSub : WorkDirs.getDirLoadOrder()) {
                     loadSubdir(schemaDir.getFolder(dirSub.name()), db);
@@ -162,7 +162,7 @@ public final class UIProjectLoader extends ProjectLoader {
             throws InterruptedException, IOException, CoreException {
         IFolder securityFolder = baseDir.getFolder(new Path(WorkDirs.MS_SECURITY));
 
-        loadSubdir(securityFolder.getFolder(WorkDirs.MS_SCHEMAS), db, this::checkIgnoreSchemaList);
+        loadSubdir(securityFolder.getFolder(WorkDirs.MS_SCHEMAS), db, this::isAllowedSchema);
         // DBO schema check requires schema loads to finish first
         AntlrTaskManager.finish(antlrTasks);
         addDboSchema(db);
@@ -172,7 +172,7 @@ public final class UIProjectLoader extends ProjectLoader {
 
         for (String dirSub : WorkDirs.getDirectoryNames(DatabaseType.MS)) {
             if (WorkDirs.isInMsSchema(dirSub)) {
-                loadSubdir(baseDir.getFolder(new Path(dirSub)), db, this::checkIgnoreSchemaList);
+                loadSubdir(baseDir.getFolder(new Path(dirSub)), db, this::isAllowedSchema);
                 continue;
             }
             loadSubdir(baseDir.getFolder(new Path(dirSub)), db);
