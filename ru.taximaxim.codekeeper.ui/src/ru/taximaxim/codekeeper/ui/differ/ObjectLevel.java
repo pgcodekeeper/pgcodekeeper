@@ -38,12 +38,12 @@ public enum ObjectLevel {
             dbType == DatabaseType.PG ? ObjectLevel.CONTAINER : ObjectLevel.UNKNOWN;
         case TABLE, VIEW -> ObjectLevel.CONTAINER;
         case FUNCTION -> DatabaseType.CH == dbType ? ObjectLevel.SCHEMA : ObjectLevel.CONTAINER;
-        case PROCEDURE, TYPE -> dbType != DatabaseType.CH ? ObjectLevel.CONTAINER : ObjectLevel.UNKNOWN;
+        case PROCEDURE, TYPE, SEQUENCE -> dbType != DatabaseType.CH ? ObjectLevel.CONTAINER : ObjectLevel.UNKNOWN;
         case DICTIONARY -> dbType == DatabaseType.CH ? ObjectLevel.CONTAINER : ObjectLevel.UNKNOWN;
         case ASSEMBLY -> DatabaseType.MS == dbType ? ObjectLevel.SCHEMA : ObjectLevel.UNKNOWN;
         case INDEX, CONSTRAINT -> ObjectLevel.SUB_ELEMENT;
         case RULE -> dbType == DatabaseType.PG ? ObjectLevel.SUB_ELEMENT : ObjectLevel.UNKNOWN;
-        case TRIGGER, SEQUENCE -> dbType != DatabaseType.CH ? ObjectLevel.SUB_ELEMENT : ObjectLevel.UNKNOWN;
+        case TRIGGER -> dbType != DatabaseType.CH ? ObjectLevel.SUB_ELEMENT : ObjectLevel.UNKNOWN;
         case POLICY -> switch (dbType) {
         case CH -> ObjectLevel.SCHEMA;
         case PG -> ObjectLevel.SUB_ELEMENT;
