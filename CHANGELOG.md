@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed an error creating a SEQUENCE object in a table file using the New Object Wizard.
+
 ## [12.0.0] - 2025-10-07
 
 ### Added
