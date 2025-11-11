@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.dbstore;
+package ru.taximaxim.codekeeper.ui.database.jdbc.base;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
@@ -23,6 +23,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.pgcodekeeper.core.DatabaseType;
+
+import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 class DbInfoJdbcConnectorTest {
 
@@ -40,7 +43,7 @@ class DbInfoJdbcConnectorTest {
         when(dbInfo.getDbPort()).thenReturn(1000);
         when(dbInfo.getDbName()).thenReturn(dbName);
 
-        return new DbInfoJdbcConnector(dbInfo).getUrl();
+        return IDbInfoConnector.createConnector(dbInfo).getUrl();
     }
 
     @Test

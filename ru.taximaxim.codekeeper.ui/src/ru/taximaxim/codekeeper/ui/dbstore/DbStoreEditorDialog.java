@@ -69,6 +69,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
@@ -136,7 +137,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 boolean generateEntryName = true;
                 DatabaseType dbType = DatabaseType.PG;
                 String dbHost = DEFAULT_HOST;
-                String dbPort = dbType.getDefaultPort();
+                String dbPort = "0";
                 String dbName = ""; //$NON-NLS-1$
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
@@ -214,9 +215,8 @@ public final class DbStoreEditorDialog extends TrayDialog {
         String dbHost = txtDbHost.getText();
         entryNameSb.append(dbHost.isEmpty() ? DEFAULT_HOST : dbHost);
 
-        String defPort = getSelectedDbType().getDefaultPort();
         String dbPort = txtDbPort.getText();
-        if (!dbPort.isEmpty() && !"0".equals(dbPort) && !defPort.equals(dbPort)) { //$NON-NLS-1$
+        if (!dbPort.isEmpty() && !"0".equals(dbPort)) { //$NON-NLS-1$
             entryNameSb.append(':').append(dbPort);
         }
 
@@ -546,7 +546,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                var connector = new DbInfoJdbcConnector(testDbInfo, 10);
+                var connector = IDbInfoConnector.createConnector(testDbInfo, 10);
                 try (Connection connection = connector.getConnection()) {
                     return Status.OK_STATUS;
                 } catch (NumberFormatException ex) {

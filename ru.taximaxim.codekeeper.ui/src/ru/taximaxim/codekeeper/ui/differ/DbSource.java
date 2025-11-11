@@ -33,7 +33,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
 import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
 import org.pgcodekeeper.core.loader.DatabaseLoader;
 import org.pgcodekeeper.core.loader.LoaderFactory;
@@ -46,8 +45,8 @@ import org.pgcodekeeper.core.utils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
+import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -328,7 +327,7 @@ class DbSourceDb extends DbSource {
 
 class DbSourceJdbc extends DbSource {
 
-    private final AbstractJdbcConnector jdbcConnector;
+    private final IDbInfoConnector jdbcConnector;
     private final String dbName;
     private final IProject proj;
     private final Map<String, Boolean> oneTimePrefs;
@@ -343,7 +342,7 @@ class DbSourceJdbc extends DbSource {
     DbSourceJdbc(DbInfo dbinfo, String timezone, IProject proj, Map<String, Boolean> oneTimePrefs) {
         super(dbinfo.getDbName());
 
-        this.jdbcConnector = new DbInfoJdbcConnector(dbinfo);
+        this.jdbcConnector = IDbInfoConnector.createConnector(dbinfo);
         this.dbName = dbinfo.getDbName();
         this.dbType = dbinfo.getDbType();
         this.proj = proj;
