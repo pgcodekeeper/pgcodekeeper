@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: junit-jupiter-api;bundle-version="[5.10.0,6.0.0)",
  junit-jupiter-params;bundle-version="[5.10.0,6.0.0)",
  org.mockito.mockito-core;bundle-version="[5.12.0,16.0.0)",
- net.bytebuddy.byte-buddy;bundle-version="[1.14.0, 2.0.0)",
- net.bytebuddy.byte-buddy-agent;bundle-version="[1.14.0, 2.0.0)",
- org.objenesis;bundle-version="[3.4.0, 4.0.0)"
+ net.bytebuddy.byte-buddy;bundle-version="[1.14.0,2.0.0)",
+ net.bytebuddy.byte-buddy-agent;bundle-version="[1.14.0,2.0.0)",
+ org.objenesis;bundle-version="[3.4.0,4.0.0)"
 Automatic-Module-Name: ru.taximaxim.codekeeper.ui.tests

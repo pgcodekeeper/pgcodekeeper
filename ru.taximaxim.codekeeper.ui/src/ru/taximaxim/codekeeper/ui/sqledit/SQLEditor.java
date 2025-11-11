@@ -99,7 +99,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.DangerStatement;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
 import org.pgcodekeeper.core.loader.JdbcRunner;
 import org.pgcodekeeper.core.parsers.antlr.base.ScriptParser;
 import org.pgcodekeeper.core.reporter.IProgressReporter;
@@ -120,8 +119,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
+import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.editors.ProjectEditorDiffer;
 import ru.taximaxim.codekeeper.ui.externalcalls.RunScriptExternal;
@@ -716,7 +715,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         private IStatus runInternal(IProgressMonitor monitor) {
             Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
 
-            AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
+            IDbInfoConnector connector = IDbInfoConnector.createConnector(dbInfo);
 
             IProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this, offset, dbInfo.getName());
             try (IProgressReporter toClose = reporter) {

@@ -48,7 +48,6 @@ import org.eclipse.ui.progress.IProgressConstants2;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DangerStatement;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
 import org.pgcodekeeper.core.loader.JdbcRunner;
 import org.pgcodekeeper.core.model.difftree.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
@@ -61,8 +60,8 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -215,7 +214,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_db);
 
-        AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
+        IDbInfoConnector connector = IDbInfoConnector.createConnector(dbInfo);
 
         try {
             ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(),

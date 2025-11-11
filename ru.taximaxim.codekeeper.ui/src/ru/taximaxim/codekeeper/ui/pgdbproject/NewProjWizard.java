@@ -60,7 +60,6 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.database.base.jdbc.AbstractJdbcConnector;
 import org.pgcodekeeper.core.loader.JdbcRunner;
 import org.pgcodekeeper.core.schema.pg.PgDatabase;
 
@@ -72,8 +71,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF_PAGE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.WORKING_SET;
+import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
-import ru.taximaxim.codekeeper.ui.dbstore.DbInfoJdbcConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -481,7 +480,7 @@ class PageDb extends WizardPage {
         public void run(IProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException {
 
-            AbstractJdbcConnector connector = new DbInfoJdbcConnector(dbInfo);
+            IDbInfoConnector connector = IDbInfoConnector.createConnector(dbInfo);
 
             try (Connection connection = connector.getConnection();
                     Statement st = connection.createStatement();

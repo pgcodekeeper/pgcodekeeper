@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed code generation for columns with Nullable values in ClickHouse.
+- Fixed a bug when rolling over changes in batches in MS SQL.
 
 ### Removed
 
