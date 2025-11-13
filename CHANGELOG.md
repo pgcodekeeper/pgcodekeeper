@@ -13,7 +13,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [12.1.0] - 2025-11-12
+
+### Added
+
+- Added connection string validation.
+- Added a common interface for JDBC connections.
+
+### Changed
+
+- Improved parser rules for ClickHouse.
+- Improved migration script generation for tables and indexes with options in MS SQL.
+- Added the IS JSON parser rule for PostgreSQL.
+- Improved validation of arrays obtained from metadata queries.
+
+### Fixed
+
+- Fixed CTE formatting in ClickHouse.
+- Fixed an error comparing tables when the column order is ignored setting is enabled.
+- Fixed bug in generating the migration script when adding a column to Log family tables in ClickHouse.
+- Fixed a false difference between NOT NULL constraints with the default name in PostgreSQL.
+- Fixed adding ONLY for columns in partitioned tables in PostgreSQL.
+- Fixed reading of EXTERNAL TABLES in Greenplum 7.
 - Fixed an error creating a SEQUENCE object in a table file using the New Object Wizard.
+- Fixed a bug when rolling over changes in batches in MS SQL.
 
 ## [12.0.0] - 2025-10-07
 
@@ -22,12 +45,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Added support for PostgreSQL 18.
 - Added formatting of the SELECT part of VIEW objects when reading from the database for ClickHouse.
 
-### Changed
-
 ### Fixed
 
 - Fixed code generation for columns with Nullable values in ClickHouse.
-- Fixed a bug when rolling over changes in batches in MS SQL.
 
 ### Removed
 
@@ -2363,7 +2383,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.0.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...HEAD
+[12.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.2...v12.0.0
 [11.1.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...v11.1.2
 [11.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.0...v11.1.1
