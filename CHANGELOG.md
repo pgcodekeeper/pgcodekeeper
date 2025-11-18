@@ -13,6 +13,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [12.2.0] - 2025-11-18
+
+### Changed
+
+- Updated library dependencies. To use [Windows authentication](https://pgcodekeeper.readthedocs.io/en/latest/windowsauth.html#id2) you need to update [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v13.2.1).
+
+### Fixed
+
+- Fixed an error when reading functions from the ClickHouse database.
+- Fixed a false difference between STATISTICS in PostgreSQL.
+
 ## [12.1.0] - 2025-11-12
 
 ### Changed
@@ -2378,7 +2389,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...HEAD
+[12.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.2...v12.0.0
 [11.1.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...v11.1.2
