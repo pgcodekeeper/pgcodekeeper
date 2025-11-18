@@ -13,6 +13,17 @@
 
 ### Исправлено
 
+## [12.2.0] - 2025-11-18
+
+### Изменено
+
+- Обновлены библиотечные зависимости. Для использования [Windows аутентификации](https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html#id2) требуется обновить [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v13.2.1).
+
+### Исправлено
+
+- Исправлена ошибка при чтении функций из базы данных ClickHouse.
+- Исправлено ложное различие для объекта STATISTICS в PostgreSQL.
+
 ## [12.1.0] - 2025-11-12
 
 ### Изменено
@@ -2378,7 +2389,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...HEAD
+[12.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.2...v12.0.0
 [11.1.2]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.1...v11.1.2
