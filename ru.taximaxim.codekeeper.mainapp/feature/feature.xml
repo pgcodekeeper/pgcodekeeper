@@ -76,4 +76,20 @@
          id="lz4-java"
          version="0.0.0"/>
 
+   <plugin
+         id="wrapped-click.com.clickhouse.clickhouse-client"
+         version="0.0.0"/>
+
+   <plugin
+         id="wrapped-click.com.clickhouse.clickhouse-data"
+         version="0.0.0"/>
+
+   <plugin
+         id="wrapped-click.com.clickhouse.client-v2"
+         version="0.0.0"/>
+
+   <plugin
+         id="wrapped-click.com.clickhouse.jdbc-v2"
+         version="0.0.0"/>
+
 </feature>

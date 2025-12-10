@@ -23,35 +23,108 @@
 			<unit id="org.eclipse.platform.feature.group" version="4.32.0.v20240601-0610" />
 			<unit id="org.eclipse.zest.feature.group" version="3.20.0.202405290843" />
 		</location>
-		<location includeDependencyDepth="none"
-			includeDependencyScopes="compile,provided" includeSource="true"
-			missingManifest="generate" type="Maven">
-			<dependencies>
-				<dependency>
-					<groupId>com.github.technology16</groupId>
-					<artifactId>pgpass</artifactId>
-					<version>2.0.1</version>
-					<type>jar</type>
-				</dependency>
-				<dependency>
-					<groupId>org.osgi</groupId>
-					<artifactId>org.osgi.service.jdbc</artifactId>
-					<version>1.1.0</version>
-					<type>jar</type>
-				</dependency>
-			</dependencies>
-		</location>
-		<location includeDependencyDepth="infinite"
-			includeDependencyScopes="compile,provided" includeSource="true"
-			missingManifest="generate" type="Maven">
-			<dependencies>
-				<dependency>
-					<groupId>org.pgcodekeeper</groupId>
-					<artifactId>pgcodekeeper-core</artifactId>
-					<version>13.1.0</version>
-					<type>jar</type>
-				</dependency>
-			</dependencies>
-		</location>
+    	<location includeDependencyDepth="none" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
+        	<dependencies>
+            	<dependency>
+                	<groupId>com.github.technology16</groupId>
+                	<artifactId>pgpass</artifactId>
+                	<version>2.0.1</version>
+                	<type>jar</type>
+            	</dependency>
+            	<dependency>
+                	<groupId>org.osgi</groupId>
+                	<artifactId>org.osgi.service.jdbc</artifactId>
+                	<version>1.1.0</version>
+                	<type>jar</type>
+            	</dependency>
+        	</dependencies>
+    	</location>
+    	<location includeDependencyDepth="infinite" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
+        	<dependencies>
+            	<dependency>
+                	<groupId>org.pgcodekeeper</groupId>
+                	<artifactId>pgcodekeeper-core</artifactId>
+                	<version>13.1.0</version>
+                	<type>jar</type>
+            	</dependency>
+        	</dependencies>
+    	</location>
+    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="click-jdbc-v2" missingManifest="generate" type="Maven">
+        	<dependencies>
+            	<dependency>
+                	<groupId>com.clickhouse</groupId>
+                	<artifactId>jdbc-v2</artifactId>
+                	<version>0.9.4</version>
+                	<type>jar</type>
+            	</dependency>
+        	</dependencies>
+        	<instructions><![CDATA[
+Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        *;resolution:=optional
+Export-Package:        *;version="${version}";-noimport:=true
+DynamicImport-Package: *
+]]></instructions>
+    	</location>
+    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="clickhouse-client" missingManifest="generate" type="Maven">
+        	<dependencies>
+            	<dependency>
+                	<groupId>com.clickhouse</groupId>
+                	<artifactId>clickhouse-client</artifactId>
+                	<version>0.9.4</version>
+                	<type>jar</type>
+            	</dependency>
+        	</dependencies>
+        	<instructions><![CDATA[
+Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        *;resolution:=optional
+Export-Package:        *;version="${version}";-noimport:=true
+DynamicImport-Package: *
+]]></instructions>
+    	</location>
+    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="clickhouse-data" missingManifest="generate" type="Maven">
+        	<dependencies>
+            	<dependency>
+                	<groupId>com.clickhouse</groupId>
+                	<artifactId>clickhouse-data</artifactId>
+                	<version>0.9.4</version>
+                	<type>jar</type>
+            	</dependency>
+        	</dependencies>
+        	<instructions><![CDATA[
+Fragment-Host: wrapped-click.com.clickhouse.jdbc-v2
+Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        *;resolution:=optional
+Export-Package:        *;version="${version}";-noimport:=true
+DynamicImport-Package: *
+]]></instructions>
+    	</location>
+    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+        	<dependencies>
+            	<dependency>
+                	<groupId>com.clickhouse</groupId>
+                	<artifactId>client-v2</artifactId>
+                	<version>0.9.4</version>
+                	<type>jar</type>
+            	</dependency>
+        	</dependencies>
+        	<instructions><![CDATA[
+Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
+version:               ${version_cleanup;${mvnVersion}}
+Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
+Bundle-Version:        ${version}
+Import-Package:        *;resolution:=optional
+Export-Package:        *;version="${version}";-noimport:=true
+DynamicImport-Package: *
+]]></instructions>
+    	</location>
 	</locations>
 </target>

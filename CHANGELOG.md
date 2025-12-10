@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- The clickhouse-jdbc driver has been updated. All connections to ClickHouse must now include the required `password` parameter.
+
 ### Fixed
 
 ## [12.2.0] - 2025-11-18

@@ -42,13 +42,25 @@ public class ChDbInfoConnector extends ChJdbcConnector implements IDbInfoConnect
     public Connection getConnection() throws IOException {
         Log.log(Log.LOG_INFO, getMessage(dbInfo));
         try {
-            Class.forName(getDriverName());
+            loadDriver();
             var con = DriverManager.getConnection(getUrl(), makeProperties());
             setReadOnly(con, dbInfo);
+
+            // FIXME when the connection() method of the clickhouse driver throws an
+            // exception
+            // when trying to connect to a non-existent database.
+
+            // check connection catch and throw exception if false
+            con.createStatement().executeQuery("SELECT 1");
             return con;
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
             throw new IOException(e.getLocalizedMessage(), e);
         }
+    }
+
+    @Override
+    protected void loadDriver() {
+        com.clickhouse.jdbc.Driver.load();
     }
 
     @Override
