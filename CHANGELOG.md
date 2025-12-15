@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed display of ClickHouse collections in query results.
+
 ## [12.2.0] - 2025-11-18
 
 ### Changed
