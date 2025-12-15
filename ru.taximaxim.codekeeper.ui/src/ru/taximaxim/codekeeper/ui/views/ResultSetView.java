@@ -15,8 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.views;
 
+import java.lang.reflect.Array;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -57,6 +60,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.utils.UiUtils;
 
 public final class ResultSetView extends ViewPart {
+
+    private static final String NULL = "NULL"; //$NON-NLS-1$
 
     private CTabFolder tabFolder;
     private Menu popupMenu;
@@ -276,9 +281,65 @@ public final class ResultSetView extends ViewPart {
 
     private String valueForCsv(Object val) {
         if (val == null) {
-            return "NULL"; //$NON-NLS-1$
+            return NULL;
         }
-        return PgDiffUtils.quoteString(val.toString());
+        return PgDiffUtils.quoteString(formatValue(val));
+    }
+
+    private static String formatValue(Object obj) {
+        if (obj == null) {
+            return NULL;
+        }
+        if (obj instanceof java.sql.Array sqlArray) {
+            try {
+                Object array = sqlArray.getArray();
+                return array == null ? NULL : arrayToString(array);
+            } catch (SQLException e) {
+                return obj.toString();
+            }
+        }
+        if (obj.getClass().isArray()) {
+            return arrayToString(obj);
+        }
+        if (obj instanceof List<?> list) {
+            return arrayToString(list.toArray());
+        }
+        if (obj instanceof Map<?, ?> map) {
+            return mapToString(map);
+        }
+        return obj.toString();
+    }
+
+    private static String arrayToString(Object array) {
+        if (!array.getClass().isArray()) {
+            return formatValue(array);
+        }
+        int length = Array.getLength(array);
+        StringBuilder sb = new StringBuilder("["); //$NON-NLS-1$
+        for (int i = 0; i < length; i++) {
+            sb.append(formatValue(Array.get(array, i)));
+            sb.append(", "); //$NON-NLS-1$
+        }
+        if (sb.length() > 1) {
+            sb.setLength(sb.length() - 2);
+        }
+        sb.append("]"); //$NON-NLS-1$
+        return sb.toString();
+    }
+    
+    private static String mapToString(java.util.Map<?, ?> map) {
+        StringBuilder sb = new StringBuilder("{"); //$NON-NLS-1$
+        for (var entry : map.entrySet()) {
+            sb.append(formatValue(entry.getKey()));
+            sb.append("="); //$NON-NLS-1$
+            sb.append(formatValue(entry.getValue()));
+            sb.append(", "); //$NON-NLS-1$
+        }
+        if (sb.length() > 1) {
+            sb.setLength(sb.length() - 2);
+        }
+        sb.append("}"); //$NON-NLS-1$
+        return sb.toString();
     }
 
     private static class IndexedColumnLabelProvider extends ColumnLabelProvider {
@@ -292,7 +353,7 @@ public final class ResultSetView extends ViewPart {
         public String getText(Object element) {
             List<?> l = (List<?>) element;
             Object obj = l.get(i);
-            return obj == null ? "<NULL>" : obj.toString(); //$NON-NLS-1$
+            return obj == null ? "<NULL>" : formatValue(obj); //$NON-NLS-1$
         }
     }
 
