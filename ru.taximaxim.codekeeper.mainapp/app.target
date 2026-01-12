@@ -2,26 +2,23 @@
 <?pde version="3.8"?>
 <target includeMode="feature" name="app" sequenceNumber="128">
 	<locations>
-		<location includeAllPlatforms="false" includeConfigurePhase="true"
-			includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository
-				location="https://download.eclipse.org/tools/orbit/simrel/maven-osgi/release/4.32.0" />
-			<unit id="junit-jupiter-api" version="5.10.2" />
-			<unit id="junit-jupiter-engine" version="5.10.2" />
-			<unit id="junit-jupiter-params" version="5.10.2" />
-			<unit id="slf4j.api" version="2.0.13" />
-			<unit id="org.mockito.mockito-core" version="5.12.0" />
-			<unit id="org.objenesis" version="3.4.0" />
-			<unit id="net.bytebuddy.byte-buddy" version="1.14.16" />
-			<unit id="net.bytebuddy.byte-buddy-agent" version="1.14.16" />
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/tools/orbit/simrel/maven-osgi/release/4.32.0"/>
+			<unit id="junit-jupiter-api" version="5.10.2"/>
+			<unit id="junit-jupiter-engine" version="5.10.2"/>
+			<unit id="junit-jupiter-params" version="5.10.2"/>
+			<unit id="slf4j.api" version="2.0.13"/>
+			<unit id="org.mockito.mockito-core" version="5.12.0"/>
+			<unit id="org.objenesis" version="3.4.0"/>
+			<unit id="net.bytebuddy.byte-buddy" version="1.14.16"/>
+			<unit id="net.bytebuddy.byte-buddy-agent" version="1.14.16"/>
 		</location>
-		<location includeAllPlatforms="false" includeConfigurePhase="true"
-			includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/releases/2024-06" />
-			<unit id="org.eclipse.egit.feature.group" version="6.10.0.202406032230-r" />
-			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.23.1200.v20240524-2033" />
-			<unit id="org.eclipse.platform.feature.group" version="4.32.0.v20240601-0610" />
-			<unit id="org.eclipse.zest.feature.group" version="3.20.0.202405290843" />
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/releases/2024-06"/>
+			<unit id="org.eclipse.egit.feature.group" version="6.10.0.202406032230-r"/>
+			<unit id="org.eclipse.equinox.sdk.feature.group" version="3.23.1200.v20240524-2033"/>
+			<unit id="org.eclipse.platform.feature.group" version="4.32.0.v20240601-0610"/>
+			<unit id="org.eclipse.zest.feature.group" version="3.20.0.202405290843"/>
 		</location>
     	<location includeDependencyDepth="none" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
         	<dependencies>
