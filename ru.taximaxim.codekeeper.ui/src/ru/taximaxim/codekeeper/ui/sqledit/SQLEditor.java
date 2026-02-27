@@ -98,11 +98,11 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.DangerStatement;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.loader.JdbcRunner;
-import org.pgcodekeeper.core.parsers.antlr.base.ScriptParser;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.reporter.IProgressReporter;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
+import org.pgcodekeeper.core.database.base.parser.ScriptParser;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
@@ -255,7 +255,7 @@ implements IResourceChangeListener, ITextErrorReporter {
     public void setLineBackground() {
         // TODO who deletes stale annotations after editor refresh?
         IAnnotationModel model = getSourceViewer().getAnnotationModel();
-        for (PgObjLocation loc : getReferences()) {
+        for (ObjectLocation loc : getReferences()) {
             if (loc.isDanger()) {
                 model.addAnnotation(new Annotation(MARKER.DANGER_ANNOTATION, false,
                         getWarningText(loc.getDanger())),
@@ -275,7 +275,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         };
     }
 
-    private Set<PgObjLocation> getReferences() {
+    private Set<ObjectLocation> getReferences() {
         return getParser().getObjsForEditor(getEditorInput());
     }
 
@@ -305,7 +305,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         setAction(CONTENT_ASSIST, action);
     }
 
-    public PgObjLocation getCurrentReference() {
+    public ObjectLocation getCurrentReference() {
         ISelectionProvider provider = getSelectionProvider();
         if (provider == null) {
             return null;
@@ -319,8 +319,8 @@ implements IResourceChangeListener, ITextErrorReporter {
         return null;
     }
 
-    public PgObjLocation getObjectAtOffset(int offset, boolean includeNextPos) {
-        for (PgObjLocation obj : getReferences()) {
+    public ObjectLocation getObjectAtOffset(int offset, boolean includeNextPos) {
+        for (ObjectLocation obj : getReferences()) {
             int endPos = obj.getOffset() + obj.getObjLength();
             if (includeNextPos) {
                 endPos++;
@@ -839,14 +839,14 @@ implements IResourceChangeListener, ITextErrorReporter {
                 return;
             }
 
-            PgObjLocation selected = getCurrentReference();
+            ObjectLocation selected = getCurrentReference();
             IDocumentProvider provider = getDocumentProvider();
             if (selected == null || provider == null) {
                 return;
             }
 
             Map<Annotation, Position> annotations = new HashMap<>();
-            for (PgObjLocation loc : getReferences()) {
+            for (ObjectLocation loc : getReferences()) {
                 if (loc.compare(selected)) {
                     annotations.put(new Annotation(MARKER.OBJECT_OCCURRENCE, false, loc.toString()),
                             new Position(loc.getOffset(), loc.getObjLength()));

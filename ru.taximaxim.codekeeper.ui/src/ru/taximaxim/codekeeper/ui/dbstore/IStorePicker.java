@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.io.File;
 
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 public interface IStorePicker {
 

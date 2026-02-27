@@ -17,19 +17,11 @@ package ru.taximaxim.codekeeper.ui;
 
 import java.util.Collection;
 
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.formatter.FormatConfiguration;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.base.formatter.FormatConfiguration;
 import org.pgcodekeeper.core.settings.ISettings;
 
 public final class TestUiSettings implements ISettings {
-
-    private DatabaseType dbType = DatabaseType.PG;
-
-    @Override
-    public DatabaseType getDbType() {
-        return dbType;
-    }
 
     @Override
     public boolean isConcurrentlyMode() {
@@ -164,5 +156,10 @@ public final class TestUiSettings implements ISettings {
     @Override
     public void setIgnorePrivileges(boolean ignorePrivileges) {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String getClusterName() {
+        return null;
     }
 }

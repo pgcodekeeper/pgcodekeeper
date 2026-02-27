@@ -63,16 +63,18 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.Utils;
-import org.pgcodekeeper.core.WorkDirs;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.model.exporter.ModelExporter;
-import org.pgcodekeeper.core.parsers.antlr.base.QNameParserWrapper;
-import org.pgcodekeeper.core.schema.ISearchPath;
-import org.pgcodekeeper.core.schema.PgStatement;
-import org.pgcodekeeper.core.schema.ch.ChFunction;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.ISearchPath;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.base.parser.QNameParserWrapper;
+import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
+import org.pgcodekeeper.core.database.ch.parser.ChParserUtils;
+import org.pgcodekeeper.core.database.ch.schema.ChFunction;
+import org.pgcodekeeper.core.database.ms.project.MsWorkDirs;
+import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
 import org.pgcodekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -175,7 +177,7 @@ public final class NewObjectPage extends WizardPage {
         Set<DbObjType> types = ObjectLevel.getTypes(dbType, false, ObjectLevel.SCHEMA, ObjectLevel.CONTAINER);
         types.remove(DbObjType.SCHEMA);
 
-        PgStatement st = null;
+        IStatement st = null;
         try {
             st = UIProjectLoader.parseStatement((IFile) resource, types);
         } catch (IOException | InterruptedException | CoreException ex) {
@@ -395,11 +397,11 @@ public final class NewObjectPage extends WizardPage {
         }
         QNameParserWrapper parser;
         if (isClickHouseDb()) {
-            parser = QNameParserWrapper.parseCh(fullName);
+            parser = ChParserUtils.wrapParsedQName(fullName);
         } else if (type != null && type == DbObjType.OPERATOR) {
-            parser = QNameParserWrapper.parsePgOperator(fullName);
+            parser = PgParserUtils.wrapParsedPgOperator(fullName);
         } else {
-            parser = QNameParserWrapper.parsePg(fullName);
+            parser = PgParserUtils.wrapParsedQName(fullName);
         }
         if (parser.hasErrors()) {
             err = Messages.NewObjectWizard_invalid_input_format + expectedFormat;
@@ -494,8 +496,8 @@ public final class NewObjectPage extends WizardPage {
                 provider.connect(file);
                 IDocument doc = provider.getDocument(file);
                 int offset = doc.getLength();
-                doc.replace(offset, 0, ModelExporter.GROUP_DELIMITER);
-                offset += ModelExporter.GROUP_DELIMITER.length();
+                doc.replace(offset, 0, AbstractModelExporter.GROUP_DELIMITER);
+                offset += AbstractModelExporter.GROUP_DELIMITER.length();
 
                 new SqlEditorTemplateProposal(newObjTmpl,
                         new DocumentTemplateContext(new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
@@ -513,7 +515,7 @@ public final class NewObjectPage extends WizardPage {
         IFolder schemaFolder;
         String schemaFolderName = WorkDirs.getDirectoryNameForType(dbType, DbObjType.SCHEMA);
         if (dbType == DatabaseType.MS) {
-            IFolder securityFolder = project.getFolder(new Path(WorkDirs.MS_SECURITY));
+            IFolder securityFolder = project.getFolder(new Path(MsWorkDirs.SECURITY));
             if (!securityFolder.exists()) {
                 securityFolder.create(false, true, null);
             }
@@ -530,7 +532,7 @@ public final class NewObjectPage extends WizardPage {
             schemaFolder.create(false, true, null);
         }
 
-        IFile file = schemaFolder.getFile(ModelExporter.getExportedFilenameSql(name));
+        IFile file = schemaFolder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             String schemaText = (isClickHouseDb() ? CH_PATTERN : PATTERN).formatted(
@@ -654,7 +656,7 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFolder getMsSecurityFolder() throws CoreException {
-        IFolder securityFolder = currentProj.getFolder(new Path(WorkDirs.MS_SECURITY));
+        IFolder securityFolder = currentProj.getFolder(new Path(MsWorkDirs.SECURITY));
         if (!securityFolder.exists()) {
             securityFolder.create(false, true, null);
         }

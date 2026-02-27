@@ -26,7 +26,7 @@ import org.eclipse.ltk.core.refactoring.participants.RenameRefactoring;
 import org.eclipse.ltk.ui.refactoring.RefactoringWizardOpenOperation;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ide.IDE;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 
@@ -42,7 +42,7 @@ public class PgRefactory {
         //empty private constructor
     }
 
-    public void rename(Shell shell, PgObjLocation selection) {
+    public void rename(Shell shell, ObjectLocation selection) {
         IFile file = FileUtilsUi.getFileForLocation(selection);
         if (file == null || !IDE.saveAllEditors(new IResource[] { file.getProject() }, true)) {
             return;
@@ -60,7 +60,7 @@ public class PgRefactory {
         }
     }
 
-    public void fixFileName(PgObjLocation selection) throws CoreException {
+    public void fixFileName(ObjectLocation selection) throws CoreException {
         RenameDefinitionProcessor processor = new RenameDefinitionProcessor(selection);
         RenameRefactoring refactoring = new RenameRefactoring(processor);
         processor.setNewName(selection.getBareName());

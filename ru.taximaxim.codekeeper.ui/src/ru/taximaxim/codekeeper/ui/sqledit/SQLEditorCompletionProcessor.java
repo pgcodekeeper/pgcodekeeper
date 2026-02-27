@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -37,9 +36,9 @@ import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
 import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.jface.text.contentassist.IContextInformationValidator;
 import org.eclipse.swt.graphics.Image;
-import org.pgcodekeeper.core.PgDiffUtils;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
 import org.pgcodekeeper.core.sql.Keyword;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -210,7 +209,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         }
 
         if (parentName != null && (difName.equalsIgnoreCase(parentName)
-                || !definition.getGenericColumn().schema.equalsIgnoreCase(parentName))) {
+                || !definition.getObject().getSchema().equalsIgnoreCase(parentName))) {
             return false;
         }
 

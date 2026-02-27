@@ -29,7 +29,7 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.search.ui.text.Match;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -38,10 +38,10 @@ public class ReferenceSearchQuery implements ISearchQuery {
 
     private final ReferenceSearchResult result;
 
-    private final PgObjLocation ref;
+    private final ObjectLocation ref;
     private final PgDbParser parser;
 
-    public ReferenceSearchQuery(PgObjLocation ref, IProject proj) {
+    public ReferenceSearchQuery(ObjectLocation ref, IProject proj) {
         this.ref = ref;
         this.parser = PgDbParser.getParser(proj);
         this.result = new ReferenceSearchResult(this);
@@ -52,10 +52,10 @@ public class ReferenceSearchQuery implements ISearchQuery {
         ReferenceSearchResult res = (ReferenceSearchResult) getSearchResult();
         res.removeAll();
 
-        List<PgObjLocation> locs = parser.getAllObjReferences().filter(ref::compare).toList();
+        List<ObjectLocation> locs = parser.getAllObjReferences().filter(ref::compare).toList();
         SubMonitor sub = SubMonitor.convert(monitor, locs.size());
-        for (PgObjLocation loc : locs) {
-            PgObjLocation copy = getLocationCopy(loc);
+        for (ObjectLocation loc : locs) {
+            ObjectLocation copy = getLocationCopy(loc);
             if (copy != null) {
                 res.addMatch(new Match(copy, loc.getOffset(), loc.getObjLength()));
             }
@@ -69,13 +69,13 @@ public class ReferenceSearchQuery implements ISearchQuery {
         return Status.OK_STATUS;
     }
 
-    private PgObjLocation getLocationCopy(PgObjLocation loc) {
+    private ObjectLocation getLocationCopy(ObjectLocation loc) {
         String sql = getLineFromFile(loc.getFilePath(), loc.getLineNumber());
         if (sql == null) {
             return null;
         }
 
-        return new PgObjLocation.Builder()
+        return new ObjectLocation.Builder()
                 .setOffset(loc.getOffset())
                 .setLineNumber(loc.getLineNumber())
                 .setCharPositionInLine(loc.getCharPositionInLine())
@@ -94,7 +94,7 @@ public class ReferenceSearchQuery implements ISearchQuery {
         }
     }
 
-    public PgObjLocation getReference() {
+    public ObjectLocation getReference() {
         return ref;
     }
 

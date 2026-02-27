@@ -22,8 +22,9 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 public enum ObjectLevel {
     SCHEMA, CONTAINER, SUB_ELEMENT, UNKNOWN;

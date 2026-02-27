@@ -45,10 +45,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.eclipse.ui.navigator.CommonNavigator;
 import org.osgi.service.prefs.BackingStoreException;
-import org.pgcodekeeper.core.library.PgLibrary;
+import org.pgcodekeeper.core.library.Library;
+import org.pgcodekeeper.core.library.LibraryXmlStore;
 import org.pgcodekeeper.core.utils.FileUtils;
-import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
-
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -63,7 +62,7 @@ public class DependencyProperties extends PropertyPage {
 
     private final String defaultPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
     private Path xmlStorePath;
-    private DependenciesXmlStore store;
+    private LibraryXmlStore store;
     private IEclipsePreferences prefs;
 
     private DependenciesListEditor editor;
@@ -75,8 +74,8 @@ public class DependencyProperties extends PropertyPage {
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        xmlStorePath = Paths.get(proj.getLocation().append(DependenciesXmlStore.FILE_NAME).toString());
-        store = new DependenciesXmlStore(xmlStorePath);
+        xmlStorePath = Paths.get(proj.getLocation().append(LibraryXmlStore.FILE_NAME).toString());
+        store = new LibraryXmlStore(xmlStorePath);
         prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
     }
 
@@ -85,7 +84,7 @@ public class DependencyProperties extends PropertyPage {
         Composite area = new Composite(parent, SWT.NONE);
         area.setLayout(new GridLayout());
 
-        List<PgLibrary> input;
+        List<Library> input;
         boolean loadNested;
         try {
             input = store.readObjects();
@@ -164,7 +163,7 @@ public class DependencyProperties extends PropertyPage {
         }
     }
 
-    private class DependenciesListEditor extends PrefListEditor<PgLibrary> {
+    private class DependenciesListEditor extends PrefListEditor<Library> {
 
         private String action;
 
@@ -174,19 +173,19 @@ public class DependencyProperties extends PropertyPage {
         }
 
         @Override
-        public boolean checkDuplicate(PgLibrary o1, PgLibrary o2) {
+        public boolean checkDuplicate(Library o1, Library o2) {
             return o1.getTitle().equals(o2.getTitle());
         }
 
         @Override
-        protected PgLibrary getNewObject(PgLibrary oldObject) {
+        protected Library getNewObject(Library oldObject) {
             DependencyEditorDialog dialog = new DependencyEditorDialog(getShell(), oldObject, action,
                     defaultPath, xmlStorePath);
             return dialog.open() == Window.OK ? dialog.getLibrary() : null;
         }
 
         @Override
-        protected String errorAlreadyExists(PgLibrary obj) {
+        protected String errorAlreadyExists(Library obj) {
             return Messages.DbStorePrefPage_already_present.formatted(obj.path());
         }
 
@@ -197,7 +196,7 @@ public class DependencyProperties extends PropertyPage {
 
                 @Override
                 public String getText(Object element) {
-                    PgLibrary obj = (PgLibrary) element;
+                    Library obj = (Library) element;
                     return obj.getTitle();
                 }
             });
@@ -224,7 +223,7 @@ public class DependencyProperties extends PropertyPage {
         }
 
         @Override
-        public void addNewObject(PgLibrary oldObject) {
+        public void addNewObject(Library oldObject) {
             action = Messages.DependencyProperties_create_new_dependency;
             super.addNewObject(oldObject);
         }

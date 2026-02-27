@@ -19,7 +19,8 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-import org.pgcodekeeper.core.Utils;
+import org.pgcodekeeper.core.utils.Utils;
+
 
 /**
  * An abstract base implementation of a PostgreSql data generator.

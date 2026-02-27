@@ -31,8 +31,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 
 import ru.taximaxim.codekeeper.ui.differ.ObjectLevel;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

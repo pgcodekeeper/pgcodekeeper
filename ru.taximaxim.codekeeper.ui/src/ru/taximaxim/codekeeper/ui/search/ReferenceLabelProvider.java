@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.StyledString;
 import org.eclipse.jface.viewers.StyledString.Styler;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -46,7 +46,7 @@ public class ReferenceLabelProvider extends LabelProvider implements IStyledLabe
 
     @Override
     public Image getImage(Object element) {
-        if (element instanceof PgObjLocation) {
+        if (element instanceof ObjectLocation) {
             return Activator.getRegisteredImage(ProjectIcon.SEARCH_LINE);
         }
 
@@ -63,7 +63,7 @@ public class ReferenceLabelProvider extends LabelProvider implements IStyledLabe
             return new StyledString(lib.getName());
         }
 
-        if (element instanceof PgObjLocation loc) {
+        if (element instanceof ObjectLocation loc) {
             StyledString text = new StyledString();
             String lineNumber = LINE_NUMBER.formatted(loc.getLineNumber());
             text.append(lineNumber, StyledString.QUALIFIER_STYLER);

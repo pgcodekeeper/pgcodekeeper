@@ -45,9 +45,9 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -141,7 +141,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            AbstractDatabase oldDb = treediffer.getOldDb().getDbObject();
+            IDatabase oldDb = treediffer.getOldDb().getDbObject();
 
             Differ differ = new Differ(oldDb, treediffer.getNewDb().getDbObject(), treediffer.getDiffTree(), pageDiff.getTimezone(),
                     null, pageDiff.getOneTimePrefs(), pagePartial.getDbType());

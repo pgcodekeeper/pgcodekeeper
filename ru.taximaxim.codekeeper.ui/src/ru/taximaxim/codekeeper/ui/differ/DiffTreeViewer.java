@@ -39,7 +39,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 
 import ru.taximaxim.codekeeper.ui.Activator;

@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.function.Function;
 
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
@@ -34,7 +34,7 @@ public final class UserFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            AbstractDatabase dbProject, AbstractDatabase dbRemote, ISettings settings) {
+            IDatabase dbProject, IDatabase dbRemote, ISettings settings) {
         ElementMetaInfo meta = elementInfoMap.get(el);
 
         if (meta != null) {

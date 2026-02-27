@@ -22,8 +22,8 @@ import java.util.List;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Platform;
-import org.pgcodekeeper.core.library.PgLibrary;
-import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
+import org.pgcodekeeper.core.library.Library;
+import org.pgcodekeeper.core.library.LibraryXmlStore;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -34,9 +34,9 @@ public class LibraryUtils {
             Activator.getContext().getBundle()).append("dependencies").toString()); //$NON-NLS-1$
 
     public static RootLibrary create(IProject proj) throws IOException {
-        Path xmlPath = Paths.get(proj.getLocation().toString()).resolve(DependenciesXmlStore.FILE_NAME);
-        DependenciesXmlStore xml = new DependenciesXmlStore(xmlPath);
-        List<PgLibrary> libs = xml.readObjects();
+        Path xmlPath = Paths.get(proj.getLocation().toString()).resolve(LibraryXmlStore.FILE_NAME);
+        LibraryXmlStore xml = new LibraryXmlStore(xmlPath);
+        List<Library> libs = xml.readObjects();
         return new UiLibraryLoader(proj.getName(), ProjectUtils.getDatabaseType(proj), xml.readLoadNestedFlag(),
                 xmlPath)
                 .load(libs);

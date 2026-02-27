@@ -105,18 +105,17 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
-import org.pgcodekeeper.core.library.PgLibrarySource;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.library.LibrarySource;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.DiffTree;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 import org.pgcodekeeper.core.model.difftree.TreeFlattener;
-import org.pgcodekeeper.core.model.exporter.ModelExporter;
 import org.pgcodekeeper.core.model.graph.DepcyFinder;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
@@ -508,10 +507,10 @@ public class DiffTableViewer extends Composite {
             public void run() {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
-                PgStatement remote = el.getSide() == DiffSide.LEFT ? null
-                        : el.getPgStatement(dbRemote.getDbObject());
-                PgStatement project = el.getSide() == DiffSide.RIGHT ? null
-                        : el.getPgStatement(dbProject.getDbObject());
+                IStatement remote = el.getSide() == DiffSide.LEFT ? null
+                        : el.getStatement(dbRemote.getDbObject());
+                IStatement project = el.getSide() == DiffSide.RIGHT ? null
+                        : el.getStatement(dbProject.getDbObject());
                 CompareAction.openCompareEditor(new CompareInput(el.getName(),
                         el.getType(), remote, project, settings));
             }
@@ -547,8 +546,8 @@ public class DiffTableViewer extends Composite {
         if (graphDlg.open() != Window.OK) {
             return;
         }
-        AbstractDatabase source = graphDlg.isProject() ? dbProject.getDbObject() : dbRemote.getDbObject();
-        PgStatement st = el.getPgStatement(source);
+        IDatabase source = graphDlg.isProject() ? dbProject.getDbObject() : dbRemote.getDbObject();
+        IStatement st = el.getStatement(source);
         List<String> deps = DepcyFinder.byStatement(graphDlg.getGraphDepth(), graphDlg.isReverse(),
                 graphDlg.getObjTypes(), st);
 
@@ -873,8 +872,8 @@ public class DiffTableViewer extends Composite {
             selected = Collections.emptyList();
             tabs = Collections.emptySet();
         } else {
-            AbstractDatabase source = dbProject.getDbObject();
-            AbstractDatabase target = dbRemote.getDbObject();
+            IDatabase source = dbProject.getDbObject();
+            IDatabase target = dbRemote.getDbObject();
             selected = new TreeFlattener()
                     .onlyEdits(source, target)
                     .useIgnoreList(ignoreList, dbRemote.getDbName())
@@ -934,7 +933,7 @@ public class DiffTableViewer extends Composite {
                 continue;
             }
 
-            PgStatement st = entry.getKey().getPgStatement(dbProject.getDbObject());
+            IStatement st = entry.getKey().getStatement(dbProject.getDbObject());
             if (!st.isLib()) {
                 continue;
             }
@@ -943,7 +942,7 @@ public class DiffTableViewer extends Composite {
             String type = null;
             String loc = null;
             String libName = st.getLibName();
-            switch (PgLibrarySource.getSource(libName)) {
+            switch (LibrarySource.getSource(libName)) {
             case JDBC:
                 type = Messages.DiffTableViewer_database;
                 name = FileUtils.dbNameFromUrl(libName);
@@ -974,7 +973,7 @@ public class DiffTableViewer extends Composite {
     private void readDbUsers() {
         elementInfoMap.forEach((k,v) -> {
             if (k.getSide() != DiffSide.LEFT) {
-                String author = k.getPgStatement(dbRemote.getDbObject()).getAuthor();
+                String author = k.getStatement(dbRemote.getDbObject()).getAuthor();
                 v.setDbUser(author);
                 if (author != null) {
                     showDbUser = true;
@@ -994,7 +993,7 @@ public class DiffTableViewer extends Composite {
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT && v.getLibLocation() == null) {
                             Path fullPath = location.resolve(ModelExporter.getRelativeFilePath(
-                                    k.getPgStatement(dbProject.getDbObject())));
+                                    k.getStatement(dbProject.getDbObject())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes
@@ -1107,7 +1106,7 @@ public class DiffTableViewer extends Composite {
     public boolean checkLibChange() {
         for (TreeElement el : elements) {
             if (el.isSelected() && el.getSide() != DiffSide.RIGHT
-                    && el.getPgStatement(dbProject.getDbObject()).isLib()) {
+                    && el.getStatement(dbProject.getDbObject()).isLib()) {
                 return true;
             }
         }

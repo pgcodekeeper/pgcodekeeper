@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockitoAnnotations;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 
 class ContainerFilterTest extends AbstractFilterTest{
 

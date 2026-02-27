@@ -50,18 +50,18 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.Utils;
-import org.pgcodekeeper.core.loader.DatabaseLoader;
-import org.pgcodekeeper.core.loader.FullAnalyze;
-import org.pgcodekeeper.core.loader.ParserListenerMode;
-import org.pgcodekeeper.core.loader.PgDumpLoader;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgObjLocation;
-import org.pgcodekeeper.core.schema.meta.MetaStatement;
-import org.pgcodekeeper.core.schema.meta.MetaUtils;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+
+import org.pgcodekeeper.core.database.api.parser.ParserListenerMode;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.base.parser.FullAnalyze;
+import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.database.base.schema.meta.MetaUtils;
+import org.pgcodekeeper.core.database.pg.loader.PgDumpLoader;
 import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -103,9 +103,9 @@ public final class PgDbParser implements IResourceChangeListener {
         org.codekeeper.core.schema.meta.MetaOperator;\
         org.codekeeper.core.schema.meta.MetaRelation;\
         org.codekeeper.core.schema.meta.MetaStatement;\
-        org.codekeeper.core.schema.PgObjLocation$LocationType;\
-        org.codekeeper.core.schema.PgObjLocation;\
-        org.codekeeper.core.schema.PgObjLocation.LocationType;\
+        org.codekeeper.core.schema.ObjectLocation$LocationType;\
+        org.codekeeper.core.schema.ObjectLocation;\
+        org.codekeeper.core.schema.ObjectLocation.LocationType;\
         org.codekeeper.core.utils.ModPair;\
         org.codekeeper.core.utils.Pair;\
         ru.taximaxim.codekeeper.ui.pgdbproject.parser.ProjectReferencesStorage;\
@@ -174,7 +174,7 @@ public final class PgDbParser implements IResourceChangeListener {
         ISettings settings = new UISettings(file.getProject(), null);
         PgUIDumpLoader loader = new PgUIDumpLoader(file, settings, monitor);
         loader.setMode(ParserListenerMode.REF);
-        AbstractDatabase db = loader.loadFile(DatabaseLoader.createDb(settings));
+        IDatabase db = loader.loadFile(DatabaseLoader.createDb(settings));
         removeResFromRefs(file);
         referencesStorage.putReferences(MetaUtils.getObjDefinitions(db), db.getObjReferences());
         notifyListeners();
@@ -182,7 +182,7 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
             throws InterruptedException, IOException, CoreException {
-        AbstractDatabase db = UIProjectLoader.buildFiles(files, dbType, monitor);
+        IDatabase db = UIProjectLoader.buildFiles(files, dbType, monitor);
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
@@ -200,7 +200,7 @@ public final class PgDbParser implements IResourceChangeListener {
         SubMonitor mon = SubMonitor.convert(monitor, ProjectUtils.countFiles(proj));
         UISettings settings = new UISettings(proj, null);
         DatabaseLoader loader = new UIProjectLoader(proj, settings, mon);
-        AbstractDatabase db = loader.load();
+        IDatabase db = loader.load();
         referencesStorage.clear();
 
         // fill definitions, view columns will be filled in the analysis
@@ -222,22 +222,22 @@ public final class PgDbParser implements IResourceChangeListener {
         PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, new UISettings(project, null),
                 new UIMonitor(monitor));
         loader.setMode(ParserListenerMode.REF);
-        AbstractDatabase db = loader.load();
+        IDatabase db = loader.load();
         referencesStorage.clear();
         referencesStorage.putReferences(MetaUtils.getObjDefinitions(db), db.getObjReferences());
         notifyListeners();
     }
 
-    public Stream<MetaStatement> getDefinitionsForObj(PgObjLocation obj) {
+    public Stream<MetaStatement> getDefinitionsForObj(ObjectLocation obj) {
         return getAllObjDefinitions().filter(st -> st.getObject().compare(obj));
     }
 
-    public Set<PgObjLocation> getObjsForEditor(IEditorInput in) {
+    public Set<ObjectLocation> getObjsForEditor(IEditorInput in) {
         String path = getPathFromInput(in);
         return path == null ? Collections.emptySet() : getObjsForPath(path);
     }
 
-    public Set<PgObjLocation> getObjsForPath(String pathToFile) {
+    public Set<ObjectLocation> getObjsForPath(String pathToFile) {
         return referencesStorage.getObjReferencesForPath(pathToFile);
     }
 
@@ -249,7 +249,7 @@ public final class PgDbParser implements IResourceChangeListener {
         return referencesStorage.getAllObjDefinitions();
     }
 
-    public Stream<PgObjLocation> getAllObjReferences() {
+    public Stream<ObjectLocation> getAllObjReferences() {
         return referencesStorage.getAllObjReferences();
     }
 

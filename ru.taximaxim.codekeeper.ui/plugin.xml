@@ -947,7 +947,7 @@
             icon="IMG_OBJ_ADD"
             category="ru.taximaxim.codekeeper.ui.viewsCategory" />
         <view
-            id="ru.taximaxim.codekeeper.ui.pgoverrideview"
+            id="ru.taximaxim.codekeeper.ui.objectoverrideview"
             name="%view.name.ProjectOverrideView"
             class="ru.taximaxim.codekeeper.ui.views.ProjectOverrideView"
             icon="icons/lib.gif"
@@ -971,7 +971,7 @@
         <perspectiveExtension targetID="ru.taximaxim.codekeeper.ui.mainperspective">
             <viewShortcut id="ru.taximaxim.codekeeper.ui.depcyview">
             </viewShortcut>
-            <viewShortcut id="ru.taximaxim.codekeeper.ui.pgoverrideview">
+            <viewShortcut id="ru.taximaxim.codekeeper.ui.objectoverrideview">
             </viewShortcut>
             <viewShortcut id="org.eclipse.ui.navigator.ProjectExplorer">
             </viewShortcut>
@@ -1029,7 +1029,7 @@
                 relative="org.eclipse.ui.editorss">
             </view>
             <view
-                id="ru.taximaxim.codekeeper.ui.pgoverrideview"
+                id="ru.taximaxim.codekeeper.ui.objectoverrideview"
                 minimized="false"
                 ratio="0.80"
                 relationship="bottom"
@@ -1041,14 +1041,14 @@
                 minimized="false"
                 relationship="stack"
                 visible="false"
-                relative="ru.taximaxim.codekeeper.ui.pgoverrideview">
+                relative="ru.taximaxim.codekeeper.ui.objectoverrideview">
             </view>
             <view
                 id="org.eclipse.ui.console.ConsoleView"
                 minimized="false"
                 relationship="stack"
                 visible="false"
-                relative="ru.taximaxim.codekeeper.ui.pgoverrideview">
+                relative="ru.taximaxim.codekeeper.ui.objectoverrideview">
             </view>
             <showInPart id="org.eclipse.ui.navigator.ProjectExplorer">
             </showInPart>

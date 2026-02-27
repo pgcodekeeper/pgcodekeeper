@@ -50,16 +50,16 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.MsDiffUtils;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.schema.AbstractColumn;
-import org.pgcodekeeper.core.schema.AbstractConstraint;
-import org.pgcodekeeper.core.schema.AbstractTable;
-import org.pgcodekeeper.core.schema.IConstraintPk;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.IColumn;
+import org.pgcodekeeper.core.database.api.schema.IConstraint;
+import org.pgcodekeeper.core.database.api.schema.IConstraintPk;
+import org.pgcodekeeper.core.database.api.schema.ITable;
+import org.pgcodekeeper.core.database.ms.utils.MsDiffUtils;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -754,10 +754,10 @@ public final class MockDataPage extends WizardPage {
     private void parseSelection(IStructuredSelection selection) {
         Object source = selection.getFirstElement();
         if (source instanceof IFile file && ProjectUtils.isInProject(file)) {
-            AbstractTable table = null;
+            ITable table = null;
             try {
                 dbType = ProjectUtils.getDatabaseType(file.getProject());
-                table = (AbstractTable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
+                table = (ITable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
             } catch (InterruptedException | IOException | CoreException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }
@@ -780,7 +780,7 @@ public final class MockDataPage extends WizardPage {
      *
      * @param constraint Table constraint
      */
-    private void parseConstraints(AbstractConstraint constraint) {
+    private void parseConstraints(IConstraint constraint) {
         if (constraint instanceof IConstraintPk) {
             columns.stream()
             .filter(wrapper -> constraint.containsColumn(wrapper.getName()))
@@ -793,7 +793,7 @@ public final class MockDataPage extends WizardPage {
      *
      * @param column Table column
      */
-    private void parseColumns(AbstractColumn column) {
+    private void parseColumns(IColumn column) {
         String type = column.getType();
         String typeName;
         if (type != null) {

@@ -30,7 +30,7 @@ import org.eclipse.search.ui.text.IEditorMatchAdapter;
 import org.eclipse.search.ui.text.IFileMatchAdapter;
 import org.eclipse.search.ui.text.Match;
 import org.eclipse.ui.IEditorPart;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -87,7 +87,7 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
 
     @Override
     public IFile getFile(Object element) {
-        if (element instanceof PgObjLocation loc) {
+        if (element instanceof ObjectLocation loc) {
             return ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(new Path(loc.getFilePath()));
         }
         return null;
@@ -96,7 +96,7 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
     @Override
     public boolean isShownInEditor(Match match, IEditorPart editor) {
         if (editor instanceof SQLEditor) {
-            PgObjLocation loc = (PgObjLocation) match.getElement();
+            ObjectLocation loc = (ObjectLocation) match.getElement();
             String path = PgDbParser.getPathFromInput(editor.getEditorInput());
             return loc.getFilePath().equals(path);
         }
@@ -117,7 +117,7 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
 
         Set<Match> matches = new HashSet<>();
         for (Object obj : result.getElements()) {
-            PgObjLocation loc = (PgObjLocation) obj;
+            ObjectLocation loc = (ObjectLocation) obj;
             if (loc.getFilePath().equals(path)) {
                 Collections.addAll(matches, getMatches(loc));
             }

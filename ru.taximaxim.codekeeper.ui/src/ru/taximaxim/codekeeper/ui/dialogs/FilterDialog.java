@@ -35,8 +35,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;

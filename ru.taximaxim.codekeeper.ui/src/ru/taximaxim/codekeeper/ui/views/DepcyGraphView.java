@@ -49,8 +49,8 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 import org.pgcodekeeper.core.model.graph.SimpleDepcyResolver;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -130,7 +130,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                 ISelection selection = gv.getSelection();
                 if (currentProject != null && !selection.isEmpty()
                         && selection instanceof IStructuredSelection ss
-                        && ss.getFirstElement() instanceof PgStatement st) {
+                        && ss.getFirstElement() instanceof IStatement st) {
                     try {
                         FileUtilsUi.openFileInSqlEditor(
                                 st.getLocation(), currentProject.getName(), st.getDbType(), st.isLib());
@@ -183,24 +183,24 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
-        AbstractDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
-        AbstractDatabase currentDb = newDb;
+        IDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
+        IDatabase currentDb = newDb;
         depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
         if (currentDb == null || depRes == null) {
             gv.setInput(null);
             return;
         }
 
-        Set<PgStatement> newInput = new HashSet<>();
-        Set<PgStatement> rootSet = new HashSet<>();
+        Set<IStatement> newInput = new HashSet<>();
+        Set<IStatement> rootSet = new HashSet<>();
         for (Object object : selected) {
             if (object instanceof TreeElement el) {
                 // does el exist in the chosen graph (or DB)
                 boolean elIsProject = el.getSide() == DiffSide.LEFT;
                 if (elIsProject == showProject || el.getSide() == DiffSide.BOTH) {
-                    PgStatement root = el.getPgStatement(currentDb);
+                    IStatement root = el.getStatement(currentDb);
                     rootSet.add(root);
-                    for (PgStatement dependant : depRes.getDropDepcies(root)) {
+                    for (IStatement dependant : depRes.getDropDepcies(root)) {
                         newInput.add(dependant);
                     }
                 }
@@ -219,7 +219,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
 
         @Override
         public Object[] getConnectedTo(Object entity) {
-            if (entity instanceof PgStatement st) {
+            if (entity instanceof IStatement st) {
                 return depRes.getConnectedTo(st).toArray();
             }
             return null;

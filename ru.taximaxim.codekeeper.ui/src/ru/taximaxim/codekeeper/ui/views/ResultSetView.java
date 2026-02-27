@@ -52,8 +52,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.ViewPart;
-import org.pgcodekeeper.core.PgDiffUtils;
 import org.pgcodekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -283,7 +283,7 @@ public final class ResultSetView extends ViewPart {
         if (val == null) {
             return NULL;
         }
-        return PgDiffUtils.quoteString(formatValue(val));
+        return Utils.quoteString(formatValue(val));
     }
 
     private static String formatValue(Object obj) {
@@ -326,7 +326,7 @@ public final class ResultSetView extends ViewPart {
         sb.append("]"); //$NON-NLS-1$
         return sb.toString();
     }
-    
+
     private static String mapToString(java.util.Map<?, ?> map) {
         StringBuilder sb = new StringBuilder("{"); //$NON-NLS-1$
         for (var entry : map.entrySet()) {

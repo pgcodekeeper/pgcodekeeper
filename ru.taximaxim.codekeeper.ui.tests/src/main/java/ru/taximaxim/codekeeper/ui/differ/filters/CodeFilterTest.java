@@ -30,21 +30,21 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.script.SQLScript;
 
 class CodeFilterTest extends AbstractFilterTest{
 
     @Mock
-    private PgStatement pgStatement;
+    private IStatement statement;
     @Mock
-    private PgStatement parent;
+    private IStatement parent;
     @Mock
-    private PgStatement child;
+    private IStatement child;
 
     @BeforeEach
     void setup() {
@@ -78,7 +78,7 @@ class CodeFilterTest extends AbstractFilterTest{
 
     @ParameterizedTest
     @EnumSource(value = DiffSide.class)
-    void testElementPgStatementIsNull(DiffSide side) {
+    void testElementIStatementIsNull(DiffSide side) {
         whenElementSideIs(side);
 
         boolean result = filter.checkElement(treeElement, elementInfoMap, dbProject, dbRemote, SETTINGS);
@@ -161,19 +161,19 @@ class CodeFilterTest extends AbstractFilterTest{
     }
 
     private void whenStatementIsNotNull(boolean hasCreationSql) {
-        pgStatement = mock(PgStatement.class);
+        statement = mock(IStatement.class);
 
-        when(treeElement.getPgStatement(any(AbstractDatabase.class))).thenReturn(pgStatement);
-        when(pgStatement.getDbType()).thenReturn(DatabaseType.PG);
+        when(treeElement.getStatement(any(IDatabase.class))).thenReturn(statement);
+        when(statement.getDbType()).thenReturn(DatabaseType.PG);
         if (hasCreationSql) {
-            setCreationSql(pgStatement);
+            setCreationSql(statement);
         }
     }
 
     private void whenElementIsChild(boolean isParentNull) {
         whenStatementIsNotNull(false);
         when(treeElement.isSubElement()).thenReturn(true);
-        when(pgStatement.getParent()).thenReturn(isParentNull ? null : parent);
+        when(statement.getParent()).thenReturn(isParentNull ? null : parent);
         when(parent.getDbType()).thenReturn(DatabaseType.PG);
         setCreationSql(parent);
     }
@@ -188,12 +188,12 @@ class CodeFilterTest extends AbstractFilterTest{
         whenStatementIsNotNull(false);
         when(treeElement.isContainer()).thenReturn(true);
         when(treeElement.getChildren()).thenReturn(Arrays.asList(childElement));
-        when(childElement.getPgStatement(any(AbstractDatabase.class))).thenReturn(isChildNull ? null : child);
+        when(childElement.getStatement(any(IDatabase.class))).thenReturn(isChildNull ? null : child);
         when(child.getDbType()).thenReturn(DatabaseType.PG);
         setCreationSql(child);
     }
 
-    private void setCreationSql(PgStatement statement) {
+    private void setCreationSql(IStatement statement) {
         doAnswer(invocation -> {
             SQLScript script = (SQLScript) invocation.getArgument(0);
             script.addStatement(RIGHT);

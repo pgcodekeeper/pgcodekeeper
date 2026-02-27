@@ -17,19 +17,19 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.source.Annotation;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 public class SQLHoverInfo {
 
     public final Annotation annotation;
     public final ITextViewer viewer;
-    public final PgObjLocation pgObjLocation;
+    public final ObjectLocation objectLocation;
     public final String comment;
 
-    public SQLHoverInfo(Annotation annotation, ITextViewer textViewer, PgObjLocation pgObjLocation, String comment) {
+    public SQLHoverInfo(Annotation annotation, ITextViewer textViewer, ObjectLocation objectLocation, String comment) {
         this.annotation = annotation;
         this.viewer = textViewer;
-        this.pgObjLocation = pgObjLocation;
+        this.objectLocation = objectLocation;
         this.comment = comment;
     }
 }

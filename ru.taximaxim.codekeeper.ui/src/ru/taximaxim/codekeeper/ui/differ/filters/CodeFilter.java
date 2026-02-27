@@ -20,8 +20,8 @@ import java.util.Set;
 
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.script.SQLScript;
 import org.pgcodekeeper.core.settings.ISettings;
 
@@ -38,7 +38,7 @@ public final class CodeFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            AbstractDatabase dbProject, AbstractDatabase dbRemote, ISettings settings) {
+            IDatabase dbProject, IDatabase dbRemote, ISettings settings) {
 
         Set<TreeElement> elements = elementInfoMap.keySet();
         if (el.getSide() != DiffSide.RIGHT && checkSide(el, dbProject, elements, settings)) {
@@ -52,21 +52,21 @@ public final class CodeFilter extends AbstractFilter {
         return false;
     }
 
-    private String getScript(PgStatement st, ISettings settings) {
-        SQLScript script = new SQLScript(settings);
+    private String getScript(IStatement st, ISettings settings) {
+        SQLScript script = new SQLScript(settings, st.getSeparator());
         st.getCreationSQL(script);
         return script.getFullScript();
     }
 
-    private boolean checkSide(TreeElement el, AbstractDatabase db, Set<TreeElement> elements, ISettings settings) {
-        PgStatement statement = el.getPgStatement(db);
+    private boolean checkSide(TreeElement el, IDatabase db, Set<TreeElement> elements, ISettings settings) {
+        IStatement statement = el.getStatement(db);
         if (statement != null) {
             if (searchMatches(getScript(statement, settings))) {
                 return true;
             }
 
             if (el.isSubElement()) {
-                PgStatement parent = statement.getParent();
+                IStatement parent = statement.getParent();
                 if (parent != null) {
                     return searchMatches(getScript(parent, settings));
                 }
@@ -74,7 +74,7 @@ public final class CodeFilter extends AbstractFilter {
 
             if (el.isContainer()) {
                 return el.getChildren().stream().filter(elements::contains)
-                        .map(e -> e.getPgStatement(db))
+                        .map(e -> e.getStatement(db))
                         .anyMatch(s -> s != null && searchMatches(getScript(s, settings)));
             }
         }

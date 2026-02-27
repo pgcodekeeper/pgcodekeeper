@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.ui.generators;
 
 import java.util.Random;
 
-import org.pgcodekeeper.core.PgDiffUtils;
+import org.pgcodekeeper.core.utils.Utils;
 
 /**
  * An implementation of a PostgreSql data generator for JSON type.
@@ -34,7 +34,7 @@ public final class JsonData extends DbData<String> {
     @Override
     public String generateValue() {
         return switch (generator) {
-        case CONSTANT -> PgDiffUtils.quoteString(start);
+        case CONSTANT -> Utils.quoteString(start);
         case INCREMENT -> null;
         case RANDOM -> generateRandom();
         default -> null;

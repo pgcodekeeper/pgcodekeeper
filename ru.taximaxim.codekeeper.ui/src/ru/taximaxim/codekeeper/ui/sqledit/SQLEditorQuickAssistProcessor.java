@@ -25,7 +25,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
     private final SQLEditor editor;
@@ -63,7 +63,7 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
                 }
                 pos = new Position(pos.getOffset(), pos.getLength() + 1);
                 if (pos.overlapsWith(documentOffset, 0) && canFix(annotation)) {
-                    PgObjLocation obj = editor.getObjectAtOffset(documentOffset, true);
+                    ObjectLocation obj = editor.getObjectAtOffset(documentOffset, true);
                     if (obj != null) {
                         return getMisplaceProposal(annotation, obj);
                     }
@@ -73,8 +73,8 @@ public class SQLEditorQuickAssistProcessor implements IQuickAssistProcessor {
         return null;
     }
 
-    private MisplaceCompletionProposal[] getMisplaceProposal(Annotation annotation, PgObjLocation pgObjLocation) {
-        return MisplaceCompletionProposal.getMisplaceProposals(annotation, pgObjLocation);
+    private MisplaceCompletionProposal[] getMisplaceProposal(Annotation annotation, ObjectLocation objectLocation) {
+        return MisplaceCompletionProposal.getMisplaceProposals(annotation, objectLocation);
     }
 
     @Override

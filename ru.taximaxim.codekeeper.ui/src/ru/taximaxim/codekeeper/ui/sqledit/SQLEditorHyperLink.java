@@ -22,8 +22,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.texteditor.ITextEditor;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.WorkDirs;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;

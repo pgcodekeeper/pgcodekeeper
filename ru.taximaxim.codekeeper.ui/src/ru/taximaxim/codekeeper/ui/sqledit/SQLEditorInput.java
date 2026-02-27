@@ -32,7 +32,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.model.IWorkbenchAdapter;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 public class SQLEditorInput extends PlatformObject implements IURIEditorInput, IPersistableElement {
 

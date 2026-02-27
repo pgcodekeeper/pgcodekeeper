@@ -36,8 +36,8 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
-import org.pgcodekeeper.core.library.PgLibrary;
-import org.pgcodekeeper.core.library.PgLibrarySource;
+import org.pgcodekeeper.core.library.Library;
+import org.pgcodekeeper.core.library.LibrarySource;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -45,8 +45,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 public class DependencyEditorDialog extends TrayDialog {
 
     private String action;
-    private PgLibrary initialLibrary;
-    private PgLibrary library;
+    private Library initialLibrary;
+    private Library library;
     private String defaultPath;
     private Path xmlStorePath;
 
@@ -55,7 +55,7 @@ public class DependencyEditorDialog extends TrayDialog {
     private Text txtOwner;
     private Button btnIgnorePriv;
 
-    protected DependencyEditorDialog(Shell shell, PgLibrary initialLibrary, String action, String defaultPath,
+    protected DependencyEditorDialog(Shell shell, Library initialLibrary, String action, String defaultPath,
             Path xmlStorePath) {
         super(shell);
         this.initialLibrary = initialLibrary;
@@ -126,8 +126,8 @@ public class DependencyEditorDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 String path = txtPath.getText();
-                PgLibrarySource source = PgLibrarySource.getSource(path);
-                if (source == PgLibrarySource.LOCAL) {
+                LibrarySource source = LibrarySource.getSource(path);
+                if (source == LibrarySource.LOCAL) {
                     Path p = Paths.get(path);
                     if (p.isAbsolute()) {
                         txtPath.setText(xmlStorePath.getParent().relativize(p).toString());
@@ -206,7 +206,7 @@ public class DependencyEditorDialog extends TrayDialog {
         return area;
     }
 
-    public PgLibrary getLibrary() {
+    public Library getLibrary() {
         return library;
     }
 
@@ -223,7 +223,7 @@ public class DependencyEditorDialog extends TrayDialog {
 
         String name = txtName.getText().trim();
         String owner = txtOwner.getText().trim();
-        library = new PgLibrary(name, path, btnIgnorePriv.getSelection(), owner);
+        library = new Library(name, path, btnIgnorePriv.getSelection(), owner);
         super.okPressed();
     }
 

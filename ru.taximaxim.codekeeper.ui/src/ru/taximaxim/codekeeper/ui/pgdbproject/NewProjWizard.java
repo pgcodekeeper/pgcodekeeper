@@ -59,9 +59,10 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.loader.JdbcRunner;
-import org.pgcodekeeper.core.schema.pg.PgDatabase;
+import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
+import org.pgcodekeeper.core.database.pg.schema.PgDatabase;
+
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;

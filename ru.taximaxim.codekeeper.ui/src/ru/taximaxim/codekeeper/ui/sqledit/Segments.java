@@ -18,8 +18,8 @@ package ru.taximaxim.codekeeper.ui.sqledit;
 import java.util.Objects;
 
 import org.eclipse.jface.text.Position;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 public class Segments extends Position {
 
@@ -33,9 +33,9 @@ public class Segments extends Position {
      * @param offset the offset of the segment
      * @param length the length of the segment
      */
-    public Segments(PgObjLocation loc) {
+    public Segments(ObjectLocation loc) {
         super(loc.getOffset(), loc.getObjLength());
-        this.name = loc.getObjName();
+        this.name = loc.getName();
         this.type = loc.getType();
         this.action = loc.getAction();
     }

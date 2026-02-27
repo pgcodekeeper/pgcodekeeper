@@ -25,8 +25,8 @@ import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
-import org.pgcodekeeper.core.schema.PgObjLocation;
-import org.pgcodekeeper.core.schema.PgObjLocation.LocationType;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation.LocationType;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 
@@ -55,7 +55,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
 
         PgDbParser parser = editor.getParser();
 
-        for (PgObjLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
+        for (ObjectLocation obj : parser.getObjsForEditor(editor.getEditorInput())) {
             if (offset >= obj.getOffset() && offset < (obj.getOffset() + obj.getObjLength())) {
                 Stream<IHyperlink> stream = parser.getAllObjReferences()
                         .filter(obj::compare)
@@ -74,7 +74,7 @@ public class SQLEditorHyperLinkDetector extends AbstractHyperlinkDetector {
                         .map(def -> new SQLEditorHyperLink(
                                 new Region(def.getOffset(), def.getObjLength()),
                                 new Region(obj.getOffset(), obj.getObjLength()),
-                                obj.getObjName(), def.getFilePath(),
+                                obj.getName(), def.getFilePath(),
                                 def.getLineNumber(), editor.getDbType(), project));
                 links = Stream.concat(links, stream);
             }

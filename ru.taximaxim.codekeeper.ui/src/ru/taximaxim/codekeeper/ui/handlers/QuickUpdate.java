@@ -21,10 +21,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -47,14 +49,14 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.progress.IProgressConstants2;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DangerStatement;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.loader.JdbcRunner;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.parsers.antlr.base.ScriptParser;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.AbstractFunction;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IFunction;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
+import org.pgcodekeeper.core.database.base.parser.ScriptParser;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
@@ -175,9 +177,10 @@ class QuickUpdateJob extends SingletonEditorJob {
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
-        AbstractDatabase dbProjectFragment = UIProjectLoader
+        IDatabase dbProjectFragment = UIProjectLoader
                 .buildFiles(Arrays.asList(file), dbType, monitor.newChild(1));
-        Collection<PgStatement> listPgObjectsFragment = dbProjectFragment.getDescendants().toList();
+        List<IStatement> listPgObjectsFragment = new ArrayList<>();
+        dbProjectFragment.getDescendants().forEach(listPgObjectsFragment::add);
 
         long schemaCount = dbProjectFragment.getSchemas().size();
         if (schemaCount > 1) {
@@ -260,24 +263,24 @@ class QuickUpdateJob extends SingletonEditorJob {
 
     /**
      * элементы в объекте TreeElement treeFull, совпадающие с
-     * переданными в Map<String, PgStatement> listPgObjectsFragment
+     * переданными в Map<String, IStatement> listPgObjectsFragment
      * помечаются как выбранные.
      *
      * @return возвращает коллекцию содержащую TreeElement'ы, которые
      * были помечены как выбранные.
      */
     private Collection<TreeElement> setCheckedFromFragment(TreeElement treeFull,
-            Collection<PgStatement> listPgObjectsFragment, AbstractDatabase left, AbstractDatabase right) {
+            Collection<IStatement> listPgObjectsFragment, IDatabase left, IDatabase right) {
         // mark schemas only when there are no schema-nested objects
         boolean markSchemas = listPgObjectsFragment.stream()
-                .map(PgStatement::getStatementType)
+                .map(IStatement::getStatementType)
                 .allMatch(ty -> ty == DbObjType.SCHEMA
                 || ty == DbObjType.EXTENSION
                 || ty == DbObjType.CAST
                 || ty == DbObjType.EVENT_TRIGGER);
 
         Set<TreeElement> checked = new HashSet<>();
-        for (PgStatement st : listPgObjectsFragment){
+        for (IStatement st : listPgObjectsFragment){
             TreeElement el = treeFull.findElement(st);
             if(el == null){
                 continue;
@@ -286,7 +289,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             // children of tables, views, overloads of functions
             switch (el.getType()) {
             case FUNCTION:
-                markFunctions((AbstractFunction) st, el, checked, left, right);
+                markFunctions((IFunction) st, el, checked, left, right);
                 break;
             case TABLE, VIEW:
                 el.getChildren().forEach(child -> {
@@ -307,12 +310,12 @@ class QuickUpdateJob extends SingletonEditorJob {
         return checked;
     }
 
-    private void markFunctions(AbstractFunction func, TreeElement elFunc, Set<TreeElement> checked,
-            AbstractDatabase left, AbstractDatabase right) {
+    private void markFunctions(IFunction func, TreeElement elFunc, Set<TreeElement> checked,
+            IDatabase left, IDatabase right) {
         // check every "adjacent" element for overload changes
         elFunc.getParent().getChildren().stream()
         .filter(el -> el.getType() == DbObjType.FUNCTION)
-        .filter(el -> func.getBareName().equals(el.getPgStatementSide(left, right).getBareName()))
+        .filter(el -> func.getBareName().equals(el.getStatementSide(left, right).getBareName()))
         .forEach(overload -> {
             overload.setSelected(true);
             checked.add(overload);

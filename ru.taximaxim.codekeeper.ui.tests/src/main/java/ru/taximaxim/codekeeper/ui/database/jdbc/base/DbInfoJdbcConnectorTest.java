@@ -22,9 +22,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
-import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 class DbInfoJdbcConnectorTest {

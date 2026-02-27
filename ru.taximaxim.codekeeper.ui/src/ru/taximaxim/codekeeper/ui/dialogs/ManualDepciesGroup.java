@@ -42,14 +42,14 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ManualDepciesGroup extends Group{
 
-    private final List<Entry<PgStatement, PgStatement>> depcies;
-    private final Map<String, PgStatement> objects;
+    private final List<Entry<IStatement, IStatement>> depcies;
+    private final Map<String, IStatement> objects;
 
     private final Text txtDependents;
     private final Text txtDependencies;
@@ -57,13 +57,13 @@ public class ManualDepciesGroup extends Group{
     private final Button btnAdd;
     private final Button btnRemove;
 
-    public List<Entry<PgStatement, PgStatement>> getDepciesList() {
+    public List<Entry<IStatement, IStatement>> getDepciesList() {
         return depcies;
     }
 
     public ManualDepciesGroup(Composite parent, int style,
-            List<Entry<PgStatement, PgStatement>> dependencies,
-            Map<String, PgStatement> objects, String groupName) {
+            List<Entry<IStatement, IStatement>> dependencies,
+            Map<String, IStatement> objects, String groupName) {
         super(parent, style);
 
         this.depcies = new LinkedList<>(dependencies);
@@ -74,7 +74,7 @@ public class ManualDepciesGroup extends Group{
         for (String name : objects.keySet()) {
             prop[i++] = new ContentProposal(name);
         }
-        Arrays.sort(prop, PgStatementProposalComparator.INSTANCE);
+        Arrays.sort(prop, IStatementProposalComparator.INSTANCE);
         List<IContentProposal> proposals = List.of(prop);
 
         setLayout(new GridLayout(2, true));
@@ -98,7 +98,7 @@ public class ManualDepciesGroup extends Group{
         txtDependents = new Text(grpSelectors, SWT.BORDER);
         txtDependents.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDependents.addModifyListener(new TextModifyListener());
-        new PgStatementAutoCompleteField(txtDependents, new TextContentAdapter(), proposals);
+        new IStatementAutoCompleteField(txtDependents, new TextContentAdapter(), proposals);
 
         new Label(grpSelectors, SWT.NONE).setText(Messages.manualDepciesDialog_depends_on);
 
@@ -106,7 +106,7 @@ public class ManualDepciesGroup extends Group{
         txtDependencies.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         txtDependencies.addModifyListener(new TextModifyListener());
 
-        new PgStatementAutoCompleteField(txtDependencies, new TextContentAdapter(), proposals);
+        new IStatementAutoCompleteField(txtDependencies, new TextContentAdapter(), proposals);
 
         btnAdd = new Button(grpSelectors, SWT.PUSH);
         btnAdd.setLayoutData(new GridData(SWT.RIGHT, SWT.DEFAULT, false, false, 2, 1));
@@ -142,7 +142,7 @@ public class ManualDepciesGroup extends Group{
             @Override
             public String getText(Object element) {
                 @SuppressWarnings("unchecked")
-                Entry<PgStatement, PgStatement> e = (Entry<PgStatement, PgStatement>) element;
+                Entry<IStatement, IStatement> e = (Entry<IStatement, IStatement>) element;
                 return e.getKey().getQualifiedName() + " \u2192 " //$NON-NLS-1$
                         + e.getValue().getQualifiedName();
             }
@@ -164,8 +164,8 @@ public class ManualDepciesGroup extends Group{
                 for (Object selectionElement :
                     ((IStructuredSelection) listDepcies.getSelection()).toList()) {
                     @SuppressWarnings("unchecked")
-                    Entry<PgStatement, PgStatement> toRemove =
-                    (Entry<PgStatement, PgStatement>) selectionElement;
+                    Entry<IStatement, IStatement> toRemove =
+                    (Entry<IStatement, IStatement>) selectionElement;
                     removedStuff |= removeDepcy(toRemove, depcies.iterator());
                 }
                 if (removedStuff) {
@@ -176,7 +176,7 @@ public class ManualDepciesGroup extends Group{
         listDepcies.setInput(depcies);
     }
 
-    private Entry<PgStatement, PgStatement> getSelectionDepcy() {
+    private Entry<IStatement, IStatement> getSelectionDepcy() {
         return new AbstractMap.SimpleEntry<>(
                 objects.get(txtDependents.getText()),
                 objects.get(txtDependencies.getText()));
@@ -188,10 +188,10 @@ public class ManualDepciesGroup extends Group{
         // ~should~ be fine
     }
 
-    private boolean removeDepcy(Entry<PgStatement, PgStatement> toRemove,
-            Iterator<Entry<PgStatement, PgStatement>> it) {
+    private boolean removeDepcy(Entry<IStatement, IStatement> toRemove,
+            Iterator<Entry<IStatement, IStatement>> it) {
         while (it.hasNext()) {
-            Entry<PgStatement, PgStatement> el = it.next();
+            Entry<IStatement, IStatement> el = it.next();
             if (toRemove.getKey().compare(el.getKey())
                     && toRemove.getValue().compare(el.getValue())) {
                 it.remove();
@@ -205,7 +205,7 @@ public class ManualDepciesGroup extends Group{
 
         @Override
         public void modifyText(ModifyEvent e) {
-            Entry<PgStatement, PgStatement> selection = getSelectionDepcy();
+            Entry<IStatement, IStatement> selection = getSelectionDepcy();
             btnAdd.setEnabled(
                     selection.getKey() != null
                     && selection.getValue() != null

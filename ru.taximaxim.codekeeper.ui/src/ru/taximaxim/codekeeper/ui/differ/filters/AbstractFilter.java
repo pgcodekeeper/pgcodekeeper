@@ -21,8 +21,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.dialogs.FilterDialog;
@@ -87,7 +87,7 @@ public abstract class AbstractFilter {
      * @return true if element meets the conditions
      */
     public abstract boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            AbstractDatabase dbProject, AbstractDatabase dbRemote, ISettings settings);
+            IDatabase dbProject, IDatabase dbRemote, ISettings settings);
 
     /**
      * Looks for matches in a given string by filter pattern

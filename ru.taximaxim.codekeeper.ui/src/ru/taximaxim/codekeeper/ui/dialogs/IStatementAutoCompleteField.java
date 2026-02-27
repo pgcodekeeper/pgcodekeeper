@@ -26,7 +26,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.IControlContentAdapter;
 import org.eclipse.swt.widgets.Control;
 
-class PgStatementAutoCompleteField {
+class IStatementAutoCompleteField {
 
     private final ContentProposalAdapter adapter;
 
@@ -44,20 +44,20 @@ class PgStatementAutoCompleteField {
      *            the array of Strings representing valid content proposals for
      *            the field.
      */
-    public PgStatementAutoCompleteField(Control control,
+    public IStatementAutoCompleteField(Control control,
             IControlContentAdapter controlContentAdapter, List<IContentProposal> proposals) {
         adapter = new ContentProposalAdapter(control, controlContentAdapter,
-                new PgStatementProposalProvider(proposals), null, null);
+                new IStatementProposalProvider(proposals), null, null);
         adapter.setPropagateKeys(true);
         adapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
     }
 }
 
-class PgStatementProposalProvider implements IContentProposalProvider {
+class IStatementProposalProvider implements IContentProposalProvider {
 
     private final List<IContentProposal> proposals;
 
-    public PgStatementProposalProvider(List<IContentProposal> proposals) {
+    public IStatementProposalProvider(List<IContentProposal> proposals) {
         this.proposals = proposals;
     }
 
@@ -79,9 +79,9 @@ class PgStatementProposalProvider implements IContentProposalProvider {
     }
 }
 
-class PgStatementProposalComparator implements Comparator<IContentProposal> {
+class IStatementProposalComparator implements Comparator<IContentProposal> {
 
-    public static final PgStatementProposalComparator INSTANCE = new PgStatementProposalComparator();
+    public static final IStatementProposalComparator INSTANCE = new IStatementProposalComparator();
 
     @Override
     public int compare(IContentProposal o1, IContentProposal o2) {

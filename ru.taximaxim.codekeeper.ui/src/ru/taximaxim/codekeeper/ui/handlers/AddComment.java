@@ -34,12 +34,11 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.PgDiffUtils;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgObjLocation;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -70,16 +69,16 @@ public final class AddComment extends AbstractHandler {
     private void addComment(ExecutionEvent event)
             throws InvocationTargetException, InterruptedException, CoreException, IOException {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
-        PgObjLocation location = editor.getCurrentReference();
+        ObjectLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
         if (file == null || !IDE.saveAllEditors(new IResource[] { file.getProject() }, true)) {
             return;
         }
 
-        AbstractDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), DatabaseType.PG, null);
-        AbstractDatabase newDb = (AbstractDatabase) oldDb.deepCopy();
+        IDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), DatabaseType.PG, null);
+        IDatabase newDb = (IDatabase) oldDb.deepCopy();
 
-        PgStatement statement = newDb.getStatement(location.getObj());
+        IStatement statement = newDb.getStatement(location.getObjectReference());
         if (statement == null) {
             return;
         }
@@ -133,7 +132,7 @@ public final class AddComment extends AbstractHandler {
                 return false;
             }
 
-            PgObjLocation location = editor.getCurrentReference();
+            ObjectLocation location = editor.getCurrentReference();
             if (location == null) {
                 return false;
             }

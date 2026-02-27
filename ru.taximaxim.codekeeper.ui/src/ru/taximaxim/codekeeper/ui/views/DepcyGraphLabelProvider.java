@@ -31,8 +31,8 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IEntityStyleProvider;
-import org.pgcodekeeper.core.schema.IConstraintFk;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IConstraintFk;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvider{
 
@@ -67,7 +67,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public String getText(Object element) {
-        if (element instanceof PgStatement st) {
+        if (element instanceof IStatement st) {
             switch (st.getStatementType()) {
             case CAST:
                 return "CAST " + st.getBareName(); //$NON-NLS-1$
@@ -177,7 +177,7 @@ class DepcyGraphLabelProvider extends LabelProvider implements IEntityStyleProvi
 
     @Override
     public IFigure getTooltip(Object entity) {
-        if (entity instanceof PgStatement st) {
+        if (entity instanceof IStatement st) {
             TextFlow text = new TextFlow(st.getName());
             FlowPage page = new FlowPage();
             page.add(text);
