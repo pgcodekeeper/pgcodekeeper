@@ -43,9 +43,9 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class ProjectUtils {
 
-    private static final String NATURE_ID = UIConsts.PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
-    private static final String NATURE_MS = UIConsts.PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
-    private static final String NATURE_CH = UIConsts.PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
+    public static final String NATURE_ID = UIConsts.PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
+    public static final String NATURE_MS = UIConsts.PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
+    public static final String NATURE_CH = UIConsts.PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
@@ -78,53 +78,7 @@ public final class ProjectUtils {
     public static boolean isInProject(IPath path, DatabaseType dbType) {
         String dir = path.segment(0);
         return dir != null && (WorkDirs.OVERRIDES.equals(dir)
-                || WorkDirs.getDirectoryNames(dbType).stream().anyMatch(dir::equals));
-    }
-
-    /**
-     * @param path
-     *            project relative path
-     * @param dbType
-     *            type of project
-     * @return whether the path corresponds to a schema sql file
-     */
-    public static boolean isSchemaFile(IPath path, DatabaseType dbType) {
-        return switch (dbType) {
-            case PG -> isPgSchemaFile(path);
-            case MS -> isMsSchemaFile(path);
-            case CH -> isChSchemaFile(path);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
-        };
-    }
-
-    /**
-     * @param path
-     *            project relative path
-     * @return whether the path corresponds to a schema sql file like this: /SCHEMA/schema_name/schema_name.sql
-     */
-    private static boolean isPgSchemaFile(IPath path) {
-        int c = path.segmentCount();
-        return c == 3
-                && path.segment(0).equals(WorkDirs.PG_SCHEMA)
-                && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
-    }
-
-    /**
-     * @param path
-     *            project relative path
-     * @return whether the path corresponds to a schema sql file like this: /Security/Schemas/schema_name.sql
-     */
-    private static boolean isMsSchemaFile(IPath path) {
-        return path.segmentCount() == 3
-                && WorkDirs.MS_SECURITY.equals(path.segment(0))
-                && WorkDirs.MS_SCHEMAS.equals(path.segment(1))
-                && path.segment(2).endsWith(".sql"); //$NON-NLS-1$
-    }
-
-    private static boolean isChSchemaFile(IPath path) {
-        return path.segmentCount() == 3
-                && path.segment(0).equals(WorkDirs.CH_DATABASE)
-                && path.segment(2).endsWith(".sql");
+                || dbType.getDatabaseProvider().getDirectoryNames().stream().anyMatch(dir::equals));
     }
 
     public static int countFiles(IContainer container) throws CoreException {

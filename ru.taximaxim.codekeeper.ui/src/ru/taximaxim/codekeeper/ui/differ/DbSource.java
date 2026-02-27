@@ -42,7 +42,7 @@ import org.pgcodekeeper.core.utils.InputStreamProvider;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.consoles.UiProgressReporter;
-import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.externalcalls.PgDumper;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;

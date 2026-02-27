@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.comparetools;
 
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.Objects;
 
 import org.eclipse.compare.CompareConfiguration;
@@ -41,8 +40,8 @@ public final class CompareInput extends CompareEditorInput {
     public CompareInput(ObjectOverride override, ISettings settings) {
         super(new CompareConfiguration());
 
-        IStatement oldStatement = override.getOldStatement();
-        IStatement newStatement = override.getNewStatement();
+        IStatement oldStatement = override.oldStatement();
+        IStatement newStatement = override.newStatement();
 
         String oldPath = oldStatement.getLocation().getFilePath();
         String newPath = newStatement.getLocation().getFilePath();

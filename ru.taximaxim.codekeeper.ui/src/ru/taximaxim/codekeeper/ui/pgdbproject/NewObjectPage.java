@@ -153,8 +153,10 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void parseSelectionFolder(IResource resource) {
+        var provider = dbType.getDatabaseProvider();
+        var resName = resource.getName();
         type = allowedTypes.stream()
-                .filter(e -> resource.getName().equals(WorkDirs.getDirectoryNameForType(dbType, e)))
+                .filter(e -> resName.equals(provider.getDirectoryNameForType(e)))
                 .findAny().orElse(null);
 
         if (dbType == DatabaseType.MS) {
@@ -163,7 +165,7 @@ public final class NewObjectPage extends WizardPage {
         }
 
         IContainer cont = resource.getParent();
-        var dbContName = WorkDirs.getDirectoryNameForType(dbType, DbObjType.SCHEMA);
+        var dbContName = provider.getDirectoryNameForType(DbObjType.SCHEMA);
         if (cont != null) {
             if (type != null && !isSchemaLevel()) {
                 schema = cont.getName();
@@ -513,7 +515,7 @@ public final class NewObjectPage extends WizardPage {
 
     private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
         IFolder schemaFolder;
-        String schemaFolderName = WorkDirs.getDirectoryNameForType(dbType, DbObjType.SCHEMA);
+        String schemaFolderName = dbType.getDatabaseProvider().getDirectoryNameForType(DbObjType.SCHEMA);
         if (dbType == DatabaseType.MS) {
             IFolder securityFolder = project.getFolder(new Path(MsWorkDirs.SECURITY));
             if (!securityFolder.exists()) {
@@ -554,7 +556,7 @@ public final class NewObjectPage extends WizardPage {
             if (dbType == DatabaseType.MS && type.in(DbObjType.SCHEMA, DbObjType.ROLE, DbObjType.USER)) {
                 folder = getMsSecurityFolder();
             } else {
-                folder = currentProj.getFolder(WorkDirs.getDirectoryNameForType(dbType, type));
+                folder = currentProj.getFolder(dbType.getDatabaseProvider().getDirectoryNameForType(type));
                 if (!folder.exists()) {
                     folder.create(false, true, null);
                 }
@@ -578,10 +580,10 @@ public final class NewObjectPage extends WizardPage {
 
     private String getFileName(DbObjType type, String name) {
         if (DatabaseType.MS == dbType && ObjectLevel.SCHEMA != ObjectLevel.getLevel(dbType, type)) {
-            return FileUtils.getValidFilename(schema) + '.' + ModelExporter.getExportedFilenameSql(name);
+            return FileUtils.getValidFilename(schema) + '.' + AbstractModelExporter.getExportedFilenameSql(name);
         }
 
-        return ModelExporter.getExportedFilenameSql(name);
+        return AbstractModelExporter.getExportedFilenameSql(name);
     }
 
     private String getTemplateType() {
@@ -640,7 +642,7 @@ public final class NewObjectPage extends WizardPage {
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {
         IFolder schemaFolder = createSchema(name, false, project);
-        String folderName = WorkDirs.getDirectoryNameForType(dbType, type);
+        String folderName = dbType.getDatabaseProvider().getDirectoryNameForType(type);
 
         IFolder typeFolder;
         if (DatabaseType.MS == dbType) {
@@ -660,7 +662,7 @@ public final class NewObjectPage extends WizardPage {
         if (!securityFolder.exists()) {
             securityFolder.create(false, true, null);
         }
-        IFolder objFolder = securityFolder.getFolder(WorkDirs.getDirectoryNameForType(dbType, type));
+        IFolder objFolder = securityFolder.getFolder(dbType.getDatabaseProvider().getDirectoryNameForType(type));
         if (!objFolder.exists()) {
             objFolder.create(false, true, null);
         }

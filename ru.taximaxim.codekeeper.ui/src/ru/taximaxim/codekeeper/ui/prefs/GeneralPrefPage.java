@@ -26,7 +26,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import org.pgcodekeeper.core.database.base.parser.AntlrParser;
+import org.pgcodekeeper.core.database.ch.parser.ChParserUtils;
+import org.pgcodekeeper.core.database.ms.parser.MsParserUtils;
+import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -105,7 +107,9 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                AntlrParser.cleanCacheOfAllParsers();
+                PgParserUtils.cleanCachePgParser();
+                MsParserUtils.cleanCacheMsParser();
+                ChParserUtils.cleanCacheChParser();
                 System.gc();
                 PgDbParser.cleanAll();
             }

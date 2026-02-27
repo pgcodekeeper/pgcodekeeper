@@ -13,24 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.database.jdbc.pg;
+package ru.taximaxim.codekeeper.ui.database.ch.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.Properties;
 
-import org.pgcodekeeper.core.database.pg.jdbc.PgJdbcConnector;
+import org.pgcodekeeper.core.database.ch.jdbc.ChJdbcConnector;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
-public class PgDbInfoConnector extends PgJdbcConnector implements IDbInfoConnector {
+public class ChDbInfoConnector extends ChJdbcConnector implements IDbInfoConnector {
 
     private final DbInfo dbInfo;
     private final int timeoutSeconds;
 
-    public PgDbInfoConnector(DbInfo dbInfo, int timeoutSeconds) {
+    public ChDbInfoConnector(DbInfo dbInfo, int timeoutSeconds) {
         super(dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbName());
         this.dbInfo = dbInfo;
         this.timeoutSeconds = timeoutSeconds;
@@ -39,17 +41,33 @@ public class PgDbInfoConnector extends PgJdbcConnector implements IDbInfoConnect
     @Override
     public Connection getConnection() throws IOException {
         Log.log(Log.LOG_INFO, getMessage(dbInfo));
-        var con = super.getConnection();
-        setReadOnly(con, dbInfo);
-        return con;
+        try {
+            loadDriver();
+            var con = DriverManager.getConnection(getUrl(), makeProperties());
+            setReadOnly(con, dbInfo);
+
+            // FIXME when the connection() method of the clickhouse driver throws an
+            // exception
+            // when trying to connect to a non-existent database.
+
+            // check connection catch and throw exception if false
+            con.createStatement().executeQuery("SELECT 1");
+            return con;
+        } catch (SQLException e) {
+            throw new IOException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    @Override
+    protected void loadDriver() {
+        com.clickhouse.jdbc.Driver.load();
     }
 
     @Override
     protected Properties makeProperties() {
         Properties props = super.makeProperties();
         makeDefaultDbInfoProps(props, dbInfo);
-        props.setProperty("loginTimeout", String.valueOf(timeoutSeconds)); //$NON-NLS-1$
+        props.setProperty("connect_timeout", String.valueOf(timeoutSeconds * 1000)); //$NON-NLS-1$
         return props;
     }
-
 }

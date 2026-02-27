@@ -52,7 +52,7 @@ public class Formatter {
     }
 
     public static TextEdit formatDoc(int offset, int length, String source, DatabaseType dbType) {
-        FileFormatter formatter = new FileFormatter(source, offset, length, getFormatterConfig(), dbType);
+        var formatter = dbType.getDatabaseProvider().getFormatter(source, offset, length, getFormatterConfig());
         var list = formatter.getFormatItems();
         if (list.isEmpty()) {
             return null;

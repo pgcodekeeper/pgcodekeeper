@@ -13,25 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.database.jdbc.ms;
+package ru.taximaxim.codekeeper.ui.database.pg.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
 import java.util.Properties;
 
-import org.pgcodekeeper.core.database.ms.jdbc.MsJdbcConnector;
+import org.pgcodekeeper.core.database.pg.jdbc.PgJdbcConnector;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
-public class MsDbInfoConnector extends MsJdbcConnector implements IDbInfoConnector {
+public class PgDbInfoConnector extends PgJdbcConnector implements IDbInfoConnector {
 
     private final DbInfo dbInfo;
     private final int timeoutSeconds;
 
-    public MsDbInfoConnector(DbInfo dbInfo, int timeoutSeconds) {
-        super(dbInfo.getDbHost(), dbInfo.getDbPort(), isDbNameEscapable(dbInfo) ? dbInfo.getDbName() : null);
+    public PgDbInfoConnector(DbInfo dbInfo, int timeoutSeconds) {
+        super(dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbName());
         this.dbInfo = dbInfo;
         this.timeoutSeconds = timeoutSeconds;
     }
@@ -49,21 +49,7 @@ public class MsDbInfoConnector extends MsJdbcConnector implements IDbInfoConnect
         Properties props = super.makeProperties();
         makeDefaultDbInfoProps(props, dbInfo);
         props.setProperty("loginTimeout", String.valueOf(timeoutSeconds)); //$NON-NLS-1$
-        if (!isDbNameEscapable(dbInfo)) {
-            props.setProperty("databaseName", dbInfo.getDbName()); //$NON-NLS-1$
-        }
-        var domain = dbInfo.getDomain();
-        if (dbInfo.isWinAuth()) {
-            props.setProperty("integratedSecurity", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-        } else if (domain != null && !"".equals(domain)) { //$NON-NLS-1$
-            props.setProperty("authenticationScheme", "NTLM"); //$NON-NLS-1$ //$NON-NLS-2$
-            props.setProperty("integratedSecurity", "true"); //$NON-NLS-1$ //$NON-NLS-2$
-            props.setProperty("domain", domain); //$NON-NLS-1$
-        }
         return props;
     }
 
-    private static boolean isDbNameEscapable(DbInfo dbInfo) {
-        return dbInfo.getDbName().indexOf('}') < 0;
-    }
 }

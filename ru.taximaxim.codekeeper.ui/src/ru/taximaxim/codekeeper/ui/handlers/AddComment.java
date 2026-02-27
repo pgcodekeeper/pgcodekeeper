@@ -36,9 +36,11 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.utils.Utils;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -104,7 +106,7 @@ public final class AddComment extends AbstractHandler {
             }
             statement.setComment(null);
         } else if (!newComment.equals(oldComment)) {
-            statement.setComment(PgDiffUtils.quoteString(newComment));
+            statement.setComment(Utils.quoteString(newComment));
         } else {
             return;
         }

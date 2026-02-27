@@ -83,7 +83,7 @@ public final class ConvertProject extends AbstractHandler {
     }
 
     public static boolean createMarker(Shell shell, Path path, DatabaseType dbType) throws IOException {
-        boolean unknownProject = WorkDirs.getDirectoryNames(dbType).stream().map(path::resolve)
+        boolean unknownProject = dbType.getDatabaseProvider().getDirectoryNames().stream().map(path::resolve)
                 .allMatch(Files::notExists);
 
         if (unknownProject) {

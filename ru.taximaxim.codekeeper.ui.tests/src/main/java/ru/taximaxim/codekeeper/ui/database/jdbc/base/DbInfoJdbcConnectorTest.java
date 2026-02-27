@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
-
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 class DbInfoJdbcConnectorTest {

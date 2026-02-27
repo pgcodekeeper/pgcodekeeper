@@ -95,7 +95,7 @@ public class SQLEditorHyperLink implements IHyperlink {
      * @return true if it's library, and false if not
      */
     private boolean isLib() {
-        var isInProjectDir = WorkDirs.getDirectoryNames(dbType).stream().anyMatch(location::contains);
+        var isInProjectDir = dbType.getDatabaseProvider().getDirectoryNames().stream().anyMatch(location::contains);
         return location.contains(DEPENDENCIES_FOLDER) || !isInProjectDir;
     }
 }
