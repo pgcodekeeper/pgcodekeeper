@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.views;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.core.resources.IProject;
@@ -41,10 +42,10 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.ViewPart;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgObjLocation;
-import org.pgcodekeeper.core.schema.PgOverride;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectOverride;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
@@ -88,9 +89,9 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
             return;
         }
 
-        AbstractDatabase db = dbPair.dbProject.getDbObject();
+        IDatabase db = dbPair.dbProject.getDbObject();
 
-        List<PgOverride> overrides = db.getOverrides();
+        Collection<ObjectOverride> overrides = db.getOverrides();
 
         if (!filterStatement) {
             viewer.setInput(overrides);
@@ -100,7 +101,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
                             .filter(TreeElement.class::isInstance)
                             .map(TreeElement.class::cast)
                             .filter(e -> e.getSide() != DiffSide.RIGHT)
-                            .map(e -> e.getPgStatement(db))
+                            .map(e -> e.getStatement(db))
                             .anyMatch(st -> o.getNewStatement().equals(st)))
                     .toList());
         }
@@ -181,7 +182,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
                 ISelection sel = viewer.getSelection();
                 if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
                     Object obj = ss.getFirstElement();
-                    if (obj instanceof PgOverride override) {
+                    if (obj instanceof ObjectOverride override) {
                         CompareAction.openCompareEditor(new CompareInput(override, new UISettings(project, null)));
                     }
                 }
@@ -204,10 +205,10 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
         ISelection sel = viewer.getSelection();
         if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
             Object obj = ss.getFirstElement();
-            if (obj instanceof PgOverride ov) {
+            if (obj instanceof ObjectOverride ov) {
                 try {
-                    PgStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
-                    PgObjLocation loc = st.getLocation();
+                    IStatement st = openOldFile ? ov.getOldStatement() : ov.getNewStatement();
+                    ObjectLocation loc = st.getLocation();
                     String proj = project == null ? null : project.getName();
                     FileUtilsUi.openFileInSqlEditor(loc, proj, st.getDbType(), st.isLib());
                 } catch (PartInitException ex) {
@@ -221,8 +222,8 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
         ISelection sel = viewer.getSelection();
         if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
             Object obj = ss.getFirstElement();
-            if (obj instanceof PgOverride ov) {
-                PgStatement st = isOld ? ov.getOldStatement() : ov.getNewStatement();
+            if (obj instanceof ObjectOverride ov) {
+                IStatement st = isOld ? ov.getOldStatement() : ov.getNewStatement();
                 return st.getLocation() != null;
             }
         }
@@ -239,7 +240,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
 
             @Override
             public String getText(Object element) {
-                PgOverride c = (PgOverride) element;
+                ObjectOverride c = (ObjectOverride) element;
                 return c.getType().name();
             }
         });
@@ -252,7 +253,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
 
             @Override
             public String getText(Object element) {
-                PgOverride c = (PgOverride) element;
+                ObjectOverride c = (ObjectOverride) element;
                 return c.getName();
             }
         });
@@ -265,7 +266,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
 
             @Override
             public String getText(Object element) {
-                PgOverride c = (PgOverride) element;
+                ObjectOverride c = (ObjectOverride) element;
                 return c.getOldPath();
             }
         });
@@ -278,7 +279,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
 
             @Override
             public String getText(Object element) {
-                PgOverride c = (PgOverride) element;
+                ObjectOverride c = (ObjectOverride) element;
                 return c.getNewPath();
             }
         });

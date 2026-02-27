@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.search.ui.text.AbstractTextSearchResult;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.libraries.AbstractLibrary;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
@@ -109,7 +109,7 @@ public class ReferenceContentProvider implements ITreeContentProvider {
             return resource.getParent();
         }
 
-        if (element instanceof PgObjLocation loc) {
+        if (element instanceof ObjectLocation loc) {
             String filePath = loc.getFilePath();
             if (filePath.contains(LibraryUtils.META_PATH.toString())) {
                 return LibraryStorage.getLibrary(loc.getFilePath());

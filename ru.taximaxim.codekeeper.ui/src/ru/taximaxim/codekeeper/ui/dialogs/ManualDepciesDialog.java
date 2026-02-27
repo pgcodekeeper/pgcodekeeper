@@ -24,34 +24,34 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class ManualDepciesDialog extends TrayDialog {
 
-    private final List<Entry<PgStatement, PgStatement>> depciesSource;
-    private final List<Entry<PgStatement, PgStatement>> depciesTarget;
-    private final Map<String, PgStatement> objectsSource;
-    private final Map<String, PgStatement> objectsTarget;
+    private final List<Entry<IStatement, IStatement>> depciesSource;
+    private final List<Entry<IStatement, IStatement>> depciesTarget;
+    private final Map<String, IStatement> objectsSource;
+    private final Map<String, IStatement> objectsTarget;
     private final String groupSourceName;
     private final String groupTargetName;
 
     private ManualDepciesGroup depcyGroupSource;
     private ManualDepciesGroup depcyGroupTarget;
 
-    public List<Entry<PgStatement, PgStatement>> getDepciesSourceList() {
+    public List<Entry<IStatement, IStatement>> getDepciesSourceList() {
         return depcyGroupSource.getDepciesList();
     }
 
-    public List<Entry<PgStatement, PgStatement>> getDepciesTargetList() {
+    public List<Entry<IStatement, IStatement>> getDepciesTargetList() {
         return depcyGroupTarget.getDepciesList();
     }
 
     public ManualDepciesDialog(Shell shell,
-            List<Entry<PgStatement, PgStatement>> depciesSource,
-            List<Entry<PgStatement, PgStatement>> depciesTarget,
-            Map<String, PgStatement> objectsSource, Map<String, PgStatement> objectsTarget,
+            List<Entry<IStatement, IStatement>> depciesSource,
+            List<Entry<IStatement, IStatement>> depciesTarget,
+            Map<String, IStatement> objectsSource, Map<String, IStatement> objectsTarget,
             String groupSourceName, String groupTargetName) {
         super(shell);
 

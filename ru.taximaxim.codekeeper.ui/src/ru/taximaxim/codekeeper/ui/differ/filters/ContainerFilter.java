@@ -17,9 +17,9 @@ package ru.taximaxim.codekeeper.ui.differ.filters;
 
 import java.util.Map;
 
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
@@ -34,7 +34,7 @@ public final class ContainerFilter extends AbstractFilter {
 
     @Override
     public boolean checkElement(TreeElement el, Map<TreeElement, ElementMetaInfo> elementInfoMap,
-            AbstractDatabase dbProject, AbstractDatabase dbRemote, ISettings settings) {
+            IDatabase dbProject, IDatabase dbRemote, ISettings settings) {
 
         String container = el.getContainerQName();
         if (!container.isEmpty()) {

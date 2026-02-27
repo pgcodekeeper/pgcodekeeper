@@ -35,8 +35,9 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.PgDiffUtils;
+import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
+
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 

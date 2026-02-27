@@ -110,15 +110,14 @@ import org.eclipse.ui.progress.IProgressConstants2;
 import org.eclipse.ui.statushandlers.StatusManager;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 import org.pgcodekeeper.core.model.graph.DepcyTreeExtender;
 import org.pgcodekeeper.core.monitor.IMonitor;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgOverride;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.ObjectOverride;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -194,8 +193,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private DiffPaneViewer diffPane;
     private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
-    private List<Entry<PgStatement, PgStatement>> manualDepciesOldDb = new ArrayList<>();
-    private List<Entry<PgStatement, PgStatement>> manualDepciesNewDb = new ArrayList<>();
+    private List<Entry<IStatement, IStatement>> manualDepciesOldDb = new ArrayList<>();
+    private List<Entry<IStatement, IStatement>> manualDepciesNewDb = new ArrayList<>();
 
     private DatabaseType dbType;
     private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
@@ -345,8 +344,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         if (isDBLoaded){
             ManualDepciesDialog dialog = new ManualDepciesDialog(parent.getShell(),
                     manualDepciesOldDb, manualDepciesNewDb,
-                    AbstractDatabase.listPgObjects(dbRemote.getDbObject()),
-                    AbstractDatabase.listPgObjects(dbProject.getDbObject()),
+                    dbRemote.getDbObject().listObjects(),
+                    dbProject.getDbObject().listObjects(),
                     Messages.database, Messages.ProjectEditorDiffer_project);
             if (dialog.open() == Window.OK) {
                 manualDepciesOldDb = dialog.getDepciesSourceList();
@@ -576,7 +575,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     }
 
     private boolean showOverrideView(DbSource dbProject) {
-        List<PgOverride> overrides = dbProject.getDbObject().getOverrides();
+        Collection<ObjectOverride> overrides = dbProject.getDbObject().getOverrides();
         if (overrides.isEmpty()) {
             return true;
         }
@@ -634,7 +633,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         }
 
         try {
-            PgStatement st = el.getPgStatement(dbProject.getDbObject());
+            IStatement st = el.getStatement(dbProject.getDbObject());
             IProject project = getProject();
             FileUtilsUi.openFileInSqlEditor(
                     st.getLocation(), project.getName(), ProjectUtils.getDatabaseType(project), st.isLib());

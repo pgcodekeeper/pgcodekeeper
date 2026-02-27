@@ -27,11 +27,10 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import org.pgcodekeeper.core.loader.PgDumpLoader;
 import org.pgcodekeeper.core.monitor.IMonitor;
-import org.pgcodekeeper.core.parsers.antlr.base.AntlrError;
-import org.pgcodekeeper.core.parsers.antlr.base.ErrorTypes;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.base.parser.AntlrError;
+import org.pgcodekeeper.core.database.base.parser.ErrorTypes;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.Log;
@@ -82,7 +81,7 @@ public final class PgUIDumpLoader extends PgDumpLoader {
         this(ifile, settings, new NullProgressMonitor(), 0);
     }
 
-    public AbstractDatabase loadFile(AbstractDatabase db) throws InterruptedException, IOException {
+    public IDatabase loadFile(IDatabase db) throws InterruptedException, IOException {
         loadDatabase(db, antlrTasks);
         finishLoaders();
         return db;

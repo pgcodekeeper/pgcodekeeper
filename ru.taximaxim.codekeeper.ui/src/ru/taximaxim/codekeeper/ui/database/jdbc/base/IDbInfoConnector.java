@@ -20,7 +20,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Properties;
 
-import org.pgcodekeeper.core.database.base.jdbc.IJdbcConnector;
+import org.pgcodekeeper.core.database.api.jdbc.IJdbcConnector;
 
 import ru.taximaxim.codekeeper.ui.database.jdbc.ch.ChDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.database.jdbc.ms.MsDbInfoConnector;

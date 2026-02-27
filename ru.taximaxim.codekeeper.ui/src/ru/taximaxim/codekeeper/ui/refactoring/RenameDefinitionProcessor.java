@@ -33,13 +33,13 @@ import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.Utils;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.model.exporter.ModelExporter;
-import org.pgcodekeeper.core.schema.PgObjLocation;
-import org.pgcodekeeper.core.schema.PgObjLocation.LocationType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation.LocationType;
+import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
 import org.pgcodekeeper.core.utils.FileUtils;
+import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
@@ -52,11 +52,11 @@ public class RenameDefinitionProcessor extends RenameProcessor {
 
     private String newName;
 
-    private final PgObjLocation selection;
+    private final ObjectLocation selection;
     private final DatabaseType dbType;
     private final IFile file;
 
-    public RenameDefinitionProcessor(PgObjLocation selection) {
+    public RenameDefinitionProcessor(ObjectLocation selection) {
         this.selection = selection;
         this.file = FileUtilsUi.getFileForLocation(selection);
         this.dbType = file != null ? ProjectUtils.getDatabaseType(file.getProject()) : DatabaseType.PG;
@@ -71,7 +71,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         return getReferences().toArray();
     }
 
-    private Stream<PgObjLocation> getReferences() {
+    private Stream<ObjectLocation> getReferences() {
         if (file == null) {
             return Stream.empty();
         }
@@ -137,7 +137,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         MultiTextEdit multiEdit = null;
         List<RenameDefinitionChange> fileRenames = new ArrayList<>();
 
-        for (PgObjLocation ref : Utils.streamIterator(getReferences())) {
+        for (ObjectLocation ref : Utils.streamIterator(getReferences())) {
             IFile mfile = FileUtilsUi.getFileForLocation(ref);
 
             if (mfile == null) {
@@ -166,7 +166,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         return change;
     }
 
-    private void addFileRenames(IFile file, PgObjLocation ref, List<RenameDefinitionChange> fileRenames) {
+    private void addFileRenames(IFile file, ObjectLocation ref, List<RenameDefinitionChange> fileRenames) {
         if (ref.getColumn() != null) {
             return;
         }
@@ -174,7 +174,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         switch (dbType) {
         case PG:
             fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
-                    ModelExporter.getExportedFilenameSql(newName)));
+                    AbstractModelExporter.getExportedFilenameSql(newName)));
             if (ref.getType() == DbObjType.SCHEMA) {
                 // rename schema folder for PG
                 fileRenames.add(new RenameDefinitionChange(file.getParent().getFullPath(),
@@ -190,7 +190,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
             }
 
             fileRenames.add(new RenameDefinitionChange(file.getFullPath(),
-                    ModelExporter.getExportedFilenameSql(name)));
+                    AbstractModelExporter.getExportedFilenameSql(name)));
             break;
         default:
             throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);

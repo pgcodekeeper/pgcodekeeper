@@ -19,19 +19,18 @@ import java.util.Collection;
 
 import org.eclipse.core.runtime.CoreException;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.utils.ProjectUpdater;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 
 public final class UIProjectUpdater extends ProjectUpdater {
 
-    public UIProjectUpdater(AbstractDatabase dbNew, PgDbProject proj) throws CoreException {
+    public UIProjectUpdater(IDatabase dbNew, PgDbProject proj) throws CoreException {
         this(dbNew, null, null, proj, false);
     }
 
-    public UIProjectUpdater(AbstractDatabase dbNew, AbstractDatabase dbOld,
+    public UIProjectUpdater(IDatabase dbNew, IDatabase dbOld,
             Collection<TreeElement> changedObjects, PgDbProject proj,
             boolean overridesOnly) throws CoreException {
         super(dbNew, dbOld, changedObjects,

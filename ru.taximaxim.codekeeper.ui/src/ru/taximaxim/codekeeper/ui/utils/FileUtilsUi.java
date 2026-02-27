@@ -37,8 +37,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.ContextLocation;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
@@ -66,7 +66,7 @@ public final class FileUtilsUi {
         }
     }
 
-    public static void openFileInSqlEditor(PgObjLocation loc, String project,
+    public static void openFileInSqlEditor(ObjectLocation loc, String project,
             DatabaseType dbType, boolean isReadOnly) throws PartInitException {
         if (loc != null && loc.getFilePath() != null) {
             IEditorPart part = openFileInSqlEditor(

@@ -23,17 +23,17 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import org.pgcodekeeper.core.schema.PgObjLocation;
-import org.pgcodekeeper.core.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
 
 class ProjectReferencesStorage implements Serializable {
 
     private static final long serialVersionUID = 2641369996771272168L;
 
     private final Map<String, List<MetaStatement>> objDefinitions = new ConcurrentHashMap<>();
-    private final Map<String, Set<PgObjLocation>> objReferences = new ConcurrentHashMap<>();
+    private final Map<String, Set<ObjectLocation>> objReferences = new ConcurrentHashMap<>();
 
-    Set<PgObjLocation> getObjReferencesForPath(String pathToFile) {
+    Set<ObjectLocation> getObjReferencesForPath(String pathToFile) {
         return objReferences.getOrDefault(pathToFile, Collections.emptySet());
     }
 
@@ -45,15 +45,15 @@ class ProjectReferencesStorage implements Serializable {
         return objDefinitions.values().stream().flatMap(List<MetaStatement>::stream);
     }
 
-    Stream<PgObjLocation> getAllObjReferences() {
-        return objReferences.values().stream().flatMap(Set<PgObjLocation>::stream);
+    Stream<ObjectLocation> getAllObjReferences() {
+        return objReferences.values().stream().flatMap(Set<ObjectLocation>::stream);
     }
 
     Map<String, List<MetaStatement>> getObjDefinitions() {
         return objDefinitions;
     }
 
-    Map<String, Set<PgObjLocation>> getObjReferences() {
+    Map<String, Set<ObjectLocation>> getObjReferences() {
         return objReferences;
     }
 
@@ -63,7 +63,7 @@ class ProjectReferencesStorage implements Serializable {
     }
 
     void putReferences(Map<String, List<MetaStatement>> objDefinitions,
-            Map<String, Set<PgObjLocation>> objReferences) {
+            Map<String, Set<ObjectLocation>> objReferences) {
         this.objDefinitions.putAll(objDefinitions);
         this.objReferences.putAll(objReferences);
     }

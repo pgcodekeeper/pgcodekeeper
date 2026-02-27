@@ -29,13 +29,14 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.Utils;
-import org.pgcodekeeper.core.WorkDirs;
-import org.pgcodekeeper.core.library.PgLibrary;
-import org.pgcodekeeper.core.library.PgLibrarySource;
+import org.pgcodekeeper.core.database.pg.project.PgWorkDirs;
+
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.library.Library;
+import org.pgcodekeeper.core.library.LibrarySource;
+import org.pgcodekeeper.core.library.LibraryXmlStore;
 import org.pgcodekeeper.core.utils.FileUtils;
-import org.pgcodekeeper.core.xmlstore.DependenciesXmlStore;
+import org.pgcodekeeper.core.utils.Utils;
 
 public class UiLibraryLoader {
 
@@ -64,19 +65,19 @@ public class UiLibraryLoader {
         this.xmlPath = xmlPath;
     }
 
-    public RootLibrary load(List<PgLibrary> libs) throws IOException {
+    public RootLibrary load(List<Library> libs) throws IOException {
         RootLibrary root = RootLibrary.getRootLib(project);
         LibraryStorage.clean(root);
         root.clearChildren();
 
-        for (PgLibrary lib : libs) {
+        for (Library lib : libs) {
             readLib(root, lib);
         }
 
         return root;
     }
 
-    private void readLib(AbstractLibrary root, PgLibrary lib) throws IOException {
+    private void readLib(AbstractLibrary root, Library lib) throws IOException {
         readLib(root, lib.path());
     }
 
@@ -85,7 +86,7 @@ public class UiLibraryLoader {
             return;
         }
 
-        switch (PgLibrarySource.getSource(path)) {
+        switch (LibrarySource.getSource(path)) {
         case JDBC:
             new JdbcLibrary(root, path);
             break;
@@ -153,7 +154,7 @@ public class UiLibraryLoader {
     }
 
     private void readProject(AbstractLibrary parent, Path path) throws IOException {
-        for (String name : WorkDirs.getDirectoryNames(DatabaseType.PG)) {
+        for (String name : PgWorkDirs.getDirectoryNames()) {
             Path dirPath = path.resolve(name);
             if (Files.exists(dirPath)) {
                 readPath(parent, dirPath);
@@ -168,14 +169,14 @@ public class UiLibraryLoader {
             parent = parent.getParent();
         }
 
-        Path xml = path.resolve(DependenciesXmlStore.FILE_NAME);
+        Path xml = path.resolve(LibraryXmlStore.FILE_NAME);
 
-        DependenciesXmlStore xmlStore = new DependenciesXmlStore(xml);
-        List<PgLibrary> libs = xmlStore.readObjects();
+        LibraryXmlStore xmlStore = new LibraryXmlStore(xml);
+        List<Library> libs = xmlStore.readObjects();
         boolean oldLoadNested = loadNested;
         try {
             loadNested = xmlStore.readLoadNestedFlag();
-            for (PgLibrary lib : libs) {
+            for (Library lib : libs) {
                 readLib(parent, lib);
             }
         } finally {

@@ -19,11 +19,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
 import org.eclipse.text.edits.TextEdit;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.formatter.FileFormatter;
-import org.pgcodekeeper.core.formatter.FormatConfiguration;
-import org.pgcodekeeper.core.formatter.FormatConfiguration.IndentType;
-import org.pgcodekeeper.core.formatter.FormatItem;
+import org.pgcodekeeper.core.database.api.formatter.FormatItem;
+import org.pgcodekeeper.core.database.api.formatter.IndentType;
+import org.pgcodekeeper.core.database.base.formatter.FormatConfiguration;
+
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
@@ -60,7 +60,7 @@ public class Formatter {
 
         TextEdit edit = new MultiTextEdit(offset, length);
         for (FormatItem item : list) {
-            edit.addChild(new ReplaceEdit(item.getStart(), item.getLength(), item.getText()));
+            edit.addChild(new ReplaceEdit(item.start(), item.length(), item.text()));
         }
         return edit;
     }

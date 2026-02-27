@@ -18,7 +18,6 @@ package ru.taximaxim.codekeeper.ui;
 import java.util.List;
 
 import org.eclipse.jface.viewers.LabelProvider;
-import org.pgcodekeeper.core.DatabaseType;
 
 public interface UIConsts {
 
@@ -64,7 +63,7 @@ public interface UIConsts {
     }
 
     interface VIEW {
-        String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".pgoverrideview"; //$NON-NLS-1$
+        String OVERRIDE_VIEW = PLUGIN_ID.THIS + ".objectoverrideview"; //$NON-NLS-1$
         String RESULT_SET_VIEW = PLUGIN_ID.THIS + ".resultsetview"; //$NON-NLS-1$
     }
 

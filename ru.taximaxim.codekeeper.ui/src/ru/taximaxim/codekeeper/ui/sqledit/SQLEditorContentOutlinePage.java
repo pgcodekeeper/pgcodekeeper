@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.sqledit;
 
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 import org.eclipse.jface.action.Action;
@@ -40,8 +41,8 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.views.contentoutline.ContentOutlinePage;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -219,18 +220,18 @@ public final class SQLEditorContentOutlinePage extends ContentOutlinePage {
 
         @Override
         public Object[] getElements(Object inputElement) {
-            Stream<PgObjLocation> stream = sqlEditor.getParser().getObjsForEditor(
+            Stream<ObjectLocation> stream = sqlEditor.getParser().getObjsForEditor(
                     sqlEditor.getEditorInput()).stream()
                     .filter(e -> e.getAction() != null)
                     .filter(loc -> loc.getObjLength() >= 0); // broken context
 
             if (filterDangerous) {
-                stream = stream.filter(PgObjLocation::isDanger);
+                stream = stream.filter(ObjectLocation::isDanger);
             }
             if (sortStatements) {
-                stream = stream.sorted((a,b) -> a.getObjName().compareTo(b.getObjName()));
+                stream = stream.sorted(Comparator.comparing(ObjectLocation::getName));
             } else {
-                stream = stream.sorted((a,b) -> Integer.compare(a.getOffset(), b.getOffset()));
+                stream = stream.sorted(Comparator.comparing(ObjectLocation::getOffset));
             }
 
             return stream.map(Segments::new).toArray();

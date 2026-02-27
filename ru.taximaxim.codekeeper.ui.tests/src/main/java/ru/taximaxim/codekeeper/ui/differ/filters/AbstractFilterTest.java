@@ -19,7 +19,7 @@ import java.util.Map;
 
 import org.mockito.Mock;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.TestUiSettings;
@@ -38,9 +38,9 @@ abstract class AbstractFilterTest {
     @Mock
     protected Map<TreeElement, ElementMetaInfo> elementInfoMap;
     @Mock
-    protected AbstractDatabase dbProject;
+    protected IDatabase dbProject;
     @Mock
-    protected AbstractDatabase dbRemote;
+    protected IDatabase dbRemote;
 
     protected AbstractFilter filter;
 

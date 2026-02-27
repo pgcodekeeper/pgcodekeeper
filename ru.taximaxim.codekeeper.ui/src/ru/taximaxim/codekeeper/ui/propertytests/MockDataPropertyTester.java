@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.ui.propertytests;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.core.resources.IFile;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 

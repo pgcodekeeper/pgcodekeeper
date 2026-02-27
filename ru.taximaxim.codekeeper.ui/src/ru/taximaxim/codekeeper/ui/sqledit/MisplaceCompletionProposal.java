@@ -24,8 +24,8 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.texteditor.MarkerAnnotation;
-import org.pgcodekeeper.core.model.exporter.ModelExporter;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -34,7 +34,7 @@ import ru.taximaxim.codekeeper.ui.refactoring.PgRefactory;
 
 public class MisplaceCompletionProposal implements ICompletionProposal{
 
-    private final PgObjLocation pgObjLocation;
+    private final ObjectLocation objectLocation;
 
     public static boolean isMisplaceError(Annotation annotation) {
         if (annotation instanceof MarkerAnnotation markerAnnotation) {
@@ -49,21 +49,21 @@ public class MisplaceCompletionProposal implements ICompletionProposal{
         return false;
     }
 
-    public static MisplaceCompletionProposal[] getMisplaceProposals(Annotation annotation, PgObjLocation pgObjLocation) {
+    public static MisplaceCompletionProposal[] getMisplaceProposals(Annotation annotation, ObjectLocation objectLocation) {
         if (isMisplaceError(annotation)) {
-            return new MisplaceCompletionProposal[] { new MisplaceCompletionProposal(pgObjLocation)};
+            return new MisplaceCompletionProposal[] { new MisplaceCompletionProposal(objectLocation)};
         }
         return null;
     }
 
-    public MisplaceCompletionProposal(PgObjLocation pgObjLocation) {
-        this.pgObjLocation = pgObjLocation;
+    public MisplaceCompletionProposal(ObjectLocation objectLocation) {
+        this.objectLocation = objectLocation;
     }
 
     @Override
     public void apply(IDocument document) {
         try {
-            PgRefactory.getInstance().fixFileName(pgObjLocation);
+            PgRefactory.getInstance().fixFileName(objectLocation);
         } catch (CoreException e) {
             ExceptionNotifier.notifyCoreException(e);
         }
@@ -81,7 +81,8 @@ public class MisplaceCompletionProposal implements ICompletionProposal{
 
     @Override
     public String getDisplayString() {
-        return Messages.MisplaceCompletionProposal_rename_file_to + ModelExporter.getExportedFilenameSql(pgObjLocation.getBareName());
+        return Messages.MisplaceCompletionProposal_rename_file_to +
+                AbstractModelExporter.getExportedFilenameSql(objectLocation.getBareName());
     }
 
     @Override

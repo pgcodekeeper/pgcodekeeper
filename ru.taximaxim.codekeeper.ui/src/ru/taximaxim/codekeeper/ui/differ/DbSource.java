@@ -32,14 +32,11 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.SubMonitor;
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
-import org.pgcodekeeper.core.loader.DatabaseLoader;
-import org.pgcodekeeper.core.loader.LoaderFactory;
-import org.pgcodekeeper.core.loader.PgDumpLoader;
-import org.pgcodekeeper.core.loader.ProjectLoader;
 import org.pgcodekeeper.core.reporter.IProgressReporter;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.utils.InputStreamProvider;
 
 import ru.taximaxim.codekeeper.ui.Log;
@@ -59,7 +56,7 @@ import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 public abstract class DbSource {
 
     private final String origin;
-    private AbstractDatabase dbObject;
+    private IDatabase dbObject;
     private List<Object> errors = Collections.emptyList();
 
     public String getOrigin() {
@@ -73,7 +70,7 @@ public abstract class DbSource {
         return null;
     }
 
-    public AbstractDatabase getDbObject() {
+    public IDatabase getDbObject() {
         if (dbObject == null) {
             throw new IllegalStateException(
                     Messages.dbSource_db_is_not_loaded_yet_object_is_null);
@@ -81,7 +78,7 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    public AbstractDatabase get(SubMonitor monitor)
+    public IDatabase get(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException {
         Log.log(Log.LOG_INFO, "Loading DB from " + origin); //$NON-NLS-1$
 
@@ -89,7 +86,7 @@ public abstract class DbSource {
         return dbObject;
     }
 
-    protected AbstractDatabase load(DatabaseLoader loader) throws IOException, InterruptedException {
+    protected IDatabase load(ILoader loader) throws IOException, InterruptedException {
         try {
             return loader.loadAndAnalyze();
         } finally {
@@ -109,7 +106,7 @@ public abstract class DbSource {
         this.origin = origin;
     }
 
-    protected abstract AbstractDatabase loadInternal(SubMonitor monitor)
+    protected abstract IDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException, CoreException;
 
     public static DbSource fromDirTree(String dirTreePath, Map<String, Boolean> oneTimePrefs) {
@@ -148,7 +145,7 @@ public abstract class DbSource {
         return fromDbInfo(dbinfo, charset, timezone, proj, null);
     }
 
-    public static DbSource fromDbObject(AbstractDatabase db, String origin) {
+    public static DbSource fromDbObject(IDatabase db, String origin) {
         return new DbSourceFromDbObject(db, origin);
     }
 
@@ -173,7 +170,7 @@ class DbSourceDirTree extends DbSource {
     }
 
     @Override
-    protected AbstractDatabase loadInternal(SubMonitor monitor)
+    protected IDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
 
@@ -193,7 +190,7 @@ class DbSourceProject extends DbSource {
     }
 
     @Override
-    protected AbstractDatabase loadInternal(SubMonitor monitor)
+    protected IDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, CoreException, IOException {
         monitor.subTask(Messages.dbSource_loading_tree);
         IProject project = proj.getProject();
@@ -232,7 +229,7 @@ class DbSourceFile extends DbSource {
     }
 
     @Override
-    protected AbstractDatabase loadInternal(SubMonitor monitor)
+    protected IDatabase loadInternal(SubMonitor monitor)
             throws InterruptedException, IOException {
         monitor.subTask(Messages.dbSource_loading_dump);
 
@@ -304,7 +301,7 @@ class DbSourceDb extends DbSource {
     }
 
     @Override
-    protected AbstractDatabase loadInternal(SubMonitor monitor)
+    protected IDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         SubMonitor pm = SubMonitor.convert(monitor, 2);
 
@@ -351,7 +348,7 @@ class DbSourceJdbc extends DbSource {
     }
 
     @Override
-    protected AbstractDatabase loadInternal(SubMonitor monitor)
+    protected IDatabase loadInternal(SubMonitor monitor)
             throws IOException, InterruptedException {
         monitor.subTask(Messages.reading_db_from_jdbc);
 
@@ -367,15 +364,15 @@ class DbSourceJdbc extends DbSource {
 }
 class DbSourceFromDbObject extends DbSource {
 
-    AbstractDatabase db;
+    IDatabase db;
 
-    protected DbSourceFromDbObject(AbstractDatabase db, String origin) {
+    protected DbSourceFromDbObject(IDatabase db, String origin) {
         super(origin);
         this.db = db;
     }
 
     @Override
-    protected AbstractDatabase loadInternal(SubMonitor monitor) throws IOException {
+    protected IDatabase loadInternal(SubMonitor monitor) throws IOException {
         return db;
     }
 }

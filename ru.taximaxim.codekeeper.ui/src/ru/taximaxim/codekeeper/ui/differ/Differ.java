@@ -28,12 +28,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.PgDiff;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.monitor.IMonitor;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -43,8 +42,8 @@ import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class Differ implements IRunnableWithProgress {
 
-    private final AbstractDatabase oldDb;
-    private final AbstractDatabase newDb;
+    private final IDatabase oldDb;
+    private final IDatabase newDb;
     private final TreeElement root;
     private final String timezone;
     private final DatabaseType dbType;
@@ -53,22 +52,22 @@ public final class Differ implements IRunnableWithProgress {
 
     private String diffDirect;
 
-    private List<Entry<PgStatement, PgStatement>> additionalDepciesOldDb;
-    private List<Entry<PgStatement, PgStatement>> additionalDepciesNewDb;
+    private List<Entry<IStatement, IStatement>> additionalDepciesOldDb;
+    private List<Entry<IStatement, IStatement>> additionalDepciesNewDb;
 
 
     public void setAdditionalDepciesOldDb(
-            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+            List<Entry<IStatement, IStatement>> additionalDepcies) {
         this.additionalDepciesOldDb = additionalDepcies;
     }
 
     public void setAdditionalDepciesNewDb(
-            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+            List<Entry<IStatement, IStatement>> additionalDepcies) {
         this.additionalDepciesNewDb = additionalDepcies;
     }
 
     public void addAdditionalDepciesOldDb(
-            List<Entry<PgStatement, PgStatement>> additionalDepcies) {
+            List<Entry<IStatement, IStatement>> additionalDepcies) {
         if (this.additionalDepciesOldDb == null) {
             setAdditionalDepciesOldDb(additionalDepcies);
         } else {
@@ -76,11 +75,11 @@ public final class Differ implements IRunnableWithProgress {
         }
     }
 
-    public List<Entry<PgStatement, PgStatement>> getAdditionalDepciesOldDb() {
+    public List<Entry<IStatement, IStatement>> getAdditionalDepciesOldDb() {
         return additionalDepciesOldDb;
     }
 
-    public Differ(AbstractDatabase oldDb, AbstractDatabase newDb, TreeElement root,
+    public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root,
             String timezone, IProject proj, Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
         this.oldDb = oldDb;
         this.newDb = newDb;
@@ -91,7 +90,7 @@ public final class Differ implements IRunnableWithProgress {
         this.oneTimePrefs = oneTimePrefs;
     }
 
-    public Differ(AbstractDatabase oldDb, AbstractDatabase newDb, TreeElement root,
+    public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root,
             String timezone, IProject proj) {
         this(oldDb, newDb, root, timezone, proj, null, null);
     }

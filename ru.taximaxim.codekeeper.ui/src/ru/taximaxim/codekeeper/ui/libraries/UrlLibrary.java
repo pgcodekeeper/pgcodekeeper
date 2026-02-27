@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.net.URI;
 
 import org.eclipse.swt.graphics.Image;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;

@@ -40,9 +40,9 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.WorkDirs;
-import org.pgcodekeeper.core.model.exporter.ModelExporter;
+import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
+
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -97,7 +97,7 @@ public final class ConvertProject extends AbstractHandler {
 
         Path markerFile = path.resolve(Consts.FILENAME_WORKING_DIR_MARKER);
         if (Files.notExists(markerFile)) {
-            ModelExporter.writeProjVersion(markerFile);
+            AbstractModelExporter.writeProjVersion(markerFile);
         }
         return true;
     }

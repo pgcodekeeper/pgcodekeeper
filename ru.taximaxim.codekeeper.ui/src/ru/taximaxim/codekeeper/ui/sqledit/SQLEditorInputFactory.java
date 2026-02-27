@@ -20,7 +20,7 @@ import java.nio.file.Paths;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
-import org.pgcodekeeper.core.DatabaseType;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 public class SQLEditorInputFactory implements IElementFactory {
 

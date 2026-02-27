@@ -98,19 +98,19 @@ implements IInformationControlExtension2 {
     }
 
     protected void deferredCreateContent() {
-        if (input.pgObjLocation == null) {
+        if (input.objectLocation == null) {
             return;
         }
 
         MisplaceCompletionProposal[] misplaceCompletionProposals = MisplaceCompletionProposal
-                .getMisplaceProposals(input.annotation, input.pgObjLocation);
+                .getMisplaceProposals(input.annotation, input.objectLocation);
         if (misplaceCompletionProposals != null) {
             createAnnotationInformation(input.annotation.getText());
             createCompletionProposalsControl(misplaceCompletionProposals);
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append(input.pgObjLocation.getQualifiedName())
-            .append(" (").append(input.pgObjLocation.getType()).append(')'); //$NON-NLS-1$
+            sb.append(input.objectLocation.getQualifiedName())
+            .append(" (").append(input.objectLocation.getType()).append(')'); //$NON-NLS-1$
             if (!input.comment.isBlank()) {
                 sb.append(" - ").append(input.comment); //$NON-NLS-1$
             }

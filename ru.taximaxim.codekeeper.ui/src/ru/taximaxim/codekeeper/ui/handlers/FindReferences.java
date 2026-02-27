@@ -25,7 +25,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.search.ReferenceSearchQuery;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
@@ -46,7 +46,7 @@ public class FindReferences extends AbstractHandler {
                 proj = ResourcesPlugin.getWorkspace().getRoot().getProject(s.getProject());
             }
 
-            PgObjLocation ref = editor.getCurrentReference();
+            ObjectLocation ref = editor.getCurrentReference();
             if (ref != null && proj != null) {
                 NewSearchUI.activateSearchResultView();
                 NewSearchUI.runQueryInBackground(new ReferenceSearchQuery(ref, proj));

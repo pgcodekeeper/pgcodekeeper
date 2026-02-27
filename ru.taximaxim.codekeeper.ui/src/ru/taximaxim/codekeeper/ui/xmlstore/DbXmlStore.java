@@ -52,8 +52,9 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
-import org.pgcodekeeper.core.DatabaseType;
-import org.pgcodekeeper.core.Utils;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+
+import org.pgcodekeeper.core.utils.Utils;
 import org.pgcodekeeper.core.xmlstore.XmlStore;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

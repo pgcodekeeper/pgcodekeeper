@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.pgcodekeeper.core.schema.AbstractDatabase;
+import org.pgcodekeeper.core.database.api.schema.IDatabase;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -67,7 +67,7 @@ public final class InitProjectFromSource implements IRunnableWithProgress {
     CoreException, IOException {
         SubMonitor taskpm = pm.newChild(25); // 50
 
-        AbstractDatabase db = src.get(taskpm);
+        IDatabase db = src.get(taskpm);
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
         new UIProjectUpdater(db, proj).updateFull(false);
     }

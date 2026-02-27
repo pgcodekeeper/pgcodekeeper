@@ -19,13 +19,13 @@ import java.util.Objects;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IAdaptable;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 public class SegmentsWithParent extends Segments implements IAdaptable {
 
     private final IFile parentFile;
 
-    public SegmentsWithParent(PgObjLocation loc, IFile parentFile) {
+    public SegmentsWithParent(ObjectLocation loc, IFile parentFile) {
         super(loc);
         this.parentFile = parentFile;
     }

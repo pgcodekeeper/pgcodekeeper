@@ -29,7 +29,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
@@ -63,7 +63,7 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
 
             @Override
             public int compare(Viewer viewer, Object e1, Object e2) {
-                if (e1 instanceof PgObjLocation firstLoc && e2 instanceof PgObjLocation secondLoc) {
+                if (e1 instanceof ObjectLocation firstLoc && e2 instanceof ObjectLocation secondLoc) {
                     int x = firstLoc.getOffset();
                     int y = secondLoc.getOffset();
                     return Integer.compare(x, y);
@@ -76,7 +76,7 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
 
     @Override
     protected void showMatch(Match match, int offset, int length, boolean activate) throws PartInitException {
-        PgObjLocation loc = (PgObjLocation) match.getElement();
+        ObjectLocation loc = (ObjectLocation) match.getElement();
 
         String filePath = loc.getFilePath();
         if (filePath.contains(LibraryUtils.META_PATH.toString())) {

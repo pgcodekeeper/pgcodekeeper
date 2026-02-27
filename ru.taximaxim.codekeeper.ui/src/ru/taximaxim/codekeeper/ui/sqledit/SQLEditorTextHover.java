@@ -30,7 +30,7 @@ import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.ui.editors.text.EditorsUI;
-import org.pgcodekeeper.core.schema.PgObjLocation;
+import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 
@@ -47,7 +47,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
 
     @Override
     public IRegion getHoverRegion(ITextViewer textViewer, int offset) {
-        PgObjLocation obj = editor.getObjectAtOffset(offset, false);
+        ObjectLocation obj = editor.getObjectAtOffset(offset, false);
         if (obj == null) {
             return new Region(offset, 0);
         }
@@ -81,10 +81,10 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
             return null;
         }
 
-        PgObjLocation pgObjLocation = null;
+        ObjectLocation objectLocation = null;
         String comment = null;
         if (hoverRegion instanceof SQLEditorMyRegion sqlEditorMyRegion) {
-            pgObjLocation = sqlEditorMyRegion.getPgObjLocation();
+            objectLocation = sqlEditorMyRegion.getObjectLocation();
             comment = sqlEditorMyRegion.getComment();
         }
 
@@ -96,7 +96,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
                 Position p = model.getPosition(a);
                 if (p != null && p.overlapsWith(hoverRegion.getOffset(),
                         hoverRegion.getLength())) {
-                    sqlHoverInfo = new SQLHoverInfo(a, textViewer, pgObjLocation, comment);
+                    sqlHoverInfo = new SQLHoverInfo(a, textViewer, objectLocation, comment);
                     if (!a.getType().equals(MARKER.OBJECT_OCCURRENCE)) {
                         break;
                     }
@@ -105,7 +105,7 @@ final class SQLEditorTextHover extends DefaultTextHover implements ITextHoverExt
         }
 
         if (sqlHoverInfo == null && comment != null && !comment.isEmpty()) {
-            sqlHoverInfo = new SQLHoverInfo(null, textViewer, pgObjLocation, comment);
+            sqlHoverInfo = new SQLHoverInfo(null, textViewer, objectLocation, comment);
         }
         return sqlHoverInfo;
     }

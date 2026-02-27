@@ -23,9 +23,9 @@ import org.eclipse.compare.CompareConfiguration;
 import org.eclipse.compare.CompareEditorInput;
 import org.eclipse.compare.structuremergeviewer.DiffNode;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
-import org.pgcodekeeper.core.schema.PgOverride;
-import org.pgcodekeeper.core.schema.PgStatement;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.api.schema.ObjectOverride;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -38,11 +38,11 @@ public final class CompareInput extends CompareEditorInput {
     private CompareItem right;
     private final DiffNode diffNode ;
 
-    public CompareInput(PgOverride override, ISettings settings) {
+    public CompareInput(ObjectOverride override, ISettings settings) {
         super(new CompareConfiguration());
 
-        PgStatement oldStatement = override.getOldStatement();
-        PgStatement newStatement = override.getNewStatement();
+        IStatement oldStatement = override.getOldStatement();
+        IStatement newStatement = override.getNewStatement();
 
         String oldPath = oldStatement.getLocation().getFilePath();
         String newPath = newStatement.getLocation().getFilePath();
@@ -55,7 +55,7 @@ public final class CompareInput extends CompareEditorInput {
         setTitle(TITLE.formatted(oldPath, newPath));
     }
 
-    public CompareInput(String name, DbObjType type, PgStatement project, PgStatement remote, ISettings settings) {
+    public CompareInput(String name, DbObjType type, IStatement project, IStatement remote, ISettings settings) {
         super(new CompareConfiguration());
 
         getCompareConfiguration().setLeftLabel(Messages.database);
@@ -66,7 +66,7 @@ public final class CompareInput extends CompareEditorInput {
         setTitle("Compare " + type + ' ' + name); //$NON-NLS-1$
     }
 
-    private DiffNode getFormattedContents(String oldPath, String newPath, PgStatement project, PgStatement remote,
+    private DiffNode getFormattedContents(String oldPath, String newPath, IStatement project, IStatement remote,
             ISettings settings) {
         String contentsLeft = project == null ? "" : project.getSQL(true, settings); //$NON-NLS-1$
         String contentsRight = remote == null ? "" : remote.getSQL(true, settings); //$NON-NLS-1$

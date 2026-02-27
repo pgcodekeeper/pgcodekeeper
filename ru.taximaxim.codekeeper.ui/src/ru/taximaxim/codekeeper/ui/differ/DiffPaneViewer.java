@@ -27,11 +27,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.pgcodekeeper.core.model.difftree.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
-import org.pgcodekeeper.core.schema.PgStatement;
-import org.pgcodekeeper.core.schema.ms.MsAssembly;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.ms.schema.MsAssembly;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -163,7 +163,7 @@ public final class DiffPaneViewer extends Composite {
         }
 
         DbSource db = isProject ? dbProject : dbRemote;
-        PgStatement st = el.getPgStatement(db.getDbObject());
+        IStatement st = el.getStatement(db.getDbObject());
         ISettings settings = new UISettings(project, null);
         if (st.getStatementType() == DbObjType.ASSEMBLY) {
             return ((MsAssembly) st).getPreview(settings);
