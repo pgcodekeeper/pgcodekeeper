@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.database.jdbc.base;
+package ru.taximaxim.codekeeper.ui.database.base.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
@@ -22,9 +22,9 @@ import java.util.Properties;
 
 import org.pgcodekeeper.core.database.api.jdbc.IJdbcConnector;
 
-import ru.taximaxim.codekeeper.ui.database.jdbc.ch.ChDbInfoConnector;
-import ru.taximaxim.codekeeper.ui.database.jdbc.ms.MsDbInfoConnector;
-import ru.taximaxim.codekeeper.ui.database.jdbc.pg.PgDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.ch.jdbc.ChDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.ms.jdbc.MsDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.pg.jdbc.PgDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
 public interface IDbInfoConnector extends IJdbcConnector {

@@ -15,25 +15,29 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui;
 
-import org.pgcodekeeper.core.database.api.IDatabaseProvider;
-import org.pgcodekeeper.core.database.ch.ChDatabaseProvider;
-import org.pgcodekeeper.core.database.ms.MsDatabaseProvider;
-import org.pgcodekeeper.core.database.pg.PgDatabaseProvider;
+import ru.taximaxim.codekeeper.ui.database.base.IUiDatabaseProvider;
+import ru.taximaxim.codekeeper.ui.database.ch.ChUiDatabaseProvider;
+import ru.taximaxim.codekeeper.ui.database.ms.MsUiDatabaseProvider;
+import ru.taximaxim.codekeeper.ui.database.pg.PgUiDatabaseProvider;
 
 public enum DatabaseType {
 
-    PG(new PgDatabaseProvider()),
-    MS(new MsDatabaseProvider()),
-    CH(new ChDatabaseProvider());
+    PG(new PgUiDatabaseProvider()),
+    MS(new MsUiDatabaseProvider()),
+    CH(new ChUiDatabaseProvider());
 
-    private final IDatabaseProvider databaseProvider;
+    private final IUiDatabaseProvider databaseProvider;
 
-    DatabaseType(IDatabaseProvider databaseProvider) {
+    DatabaseType(IUiDatabaseProvider databaseProvider) {
         this.databaseProvider = databaseProvider;
     }
 
     public String getDbTypeName() {
         return databaseProvider.getFullName();
+    }
+
+    public IUiDatabaseProvider getDatabaseProvider() {
+        return databaseProvider;
     }
 
     /**

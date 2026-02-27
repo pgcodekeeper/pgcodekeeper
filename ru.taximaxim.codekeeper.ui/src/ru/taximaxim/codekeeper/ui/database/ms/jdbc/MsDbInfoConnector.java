@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.database.jdbc.ch;
+package ru.taximaxim.codekeeper.ui.database.ms.jdbc;
 
 import java.io.IOException;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.util.Properties;
 
-import org.pgcodekeeper.core.database.ch.jdbc.ChJdbcConnector;
+import org.pgcodekeeper.core.database.ms.jdbc.MsJdbcConnector;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 
-public class ChDbInfoConnector extends ChJdbcConnector implements IDbInfoConnector {
+public class MsDbInfoConnector extends MsJdbcConnector implements IDbInfoConnector {
 
     private final DbInfo dbInfo;
     private final int timeoutSeconds;
 
-    public ChDbInfoConnector(DbInfo dbInfo, int timeoutSeconds) {
-        super(dbInfo.getDbHost(), dbInfo.getDbPort(), dbInfo.getDbName());
+    public MsDbInfoConnector(DbInfo dbInfo, int timeoutSeconds) {
+        super(dbInfo.getDbHost(), dbInfo.getDbPort(), isDbNameEscapable(dbInfo) ? dbInfo.getDbName() : null);
         this.dbInfo = dbInfo;
         this.timeoutSeconds = timeoutSeconds;
     }
@@ -41,33 +39,31 @@ public class ChDbInfoConnector extends ChJdbcConnector implements IDbInfoConnect
     @Override
     public Connection getConnection() throws IOException {
         Log.log(Log.LOG_INFO, getMessage(dbInfo));
-        try {
-            loadDriver();
-            var con = DriverManager.getConnection(getUrl(), makeProperties());
-            setReadOnly(con, dbInfo);
-
-            // FIXME when the connection() method of the clickhouse driver throws an
-            // exception
-            // when trying to connect to a non-existent database.
-
-            // check connection catch and throw exception if false
-            con.createStatement().executeQuery("SELECT 1");
-            return con;
-        } catch (SQLException e) {
-            throw new IOException(e.getLocalizedMessage(), e);
-        }
-    }
-
-    @Override
-    protected void loadDriver() {
-        com.clickhouse.jdbc.Driver.load();
+        var con = super.getConnection();
+        setReadOnly(con, dbInfo);
+        return con;
     }
 
     @Override
     protected Properties makeProperties() {
         Properties props = super.makeProperties();
         makeDefaultDbInfoProps(props, dbInfo);
-        props.setProperty("connect_timeout", String.valueOf(timeoutSeconds * 1000)); //$NON-NLS-1$
+        props.setProperty("loginTimeout", String.valueOf(timeoutSeconds)); //$NON-NLS-1$
+        if (!isDbNameEscapable(dbInfo)) {
+            props.setProperty("databaseName", dbInfo.getDbName()); //$NON-NLS-1$
+        }
+        var domain = dbInfo.getDomain();
+        if (dbInfo.isWinAuth()) {
+            props.setProperty("integratedSecurity", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+        } else if (domain != null && !"".equals(domain)) { //$NON-NLS-1$
+            props.setProperty("authenticationScheme", "NTLM"); //$NON-NLS-1$ //$NON-NLS-2$
+            props.setProperty("integratedSecurity", "true"); //$NON-NLS-1$ //$NON-NLS-2$
+            props.setProperty("domain", domain); //$NON-NLS-1$
+        }
         return props;
+    }
+
+    private static boolean isDbNameEscapable(DbInfo dbInfo) {
+        return dbInfo.getDbName().indexOf('}') < 0;
     }
 }

@@ -62,7 +62,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.database.jdbc.base.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DbSource;
@@ -173,7 +173,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        boolean isSchemaFile = ProjectUtils.isSchemaFile(file.getProjectRelativePath(), dbType);
+        boolean isSchemaFile = dbType.getDatabaseProvider().isSchemaFile(file.getProjectRelativePath());
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 

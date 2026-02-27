@@ -19,7 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IStartup;
-import org.pgcodekeeper.core.database.base.parser.AntlrParser;
+import org.pgcodekeeper.core.database.ch.parser.ChParserUtils;
+import org.pgcodekeeper.core.database.ms.parser.MsParserUtils;
+import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -48,7 +50,9 @@ public class ParserCacheCleaner implements IStartup {
                 long cleaningInterval = TimeUnit.MINUTES
                         .toMillis(mainPrefs.getInt(PREF.PARSER_CACHE_CLEANING_INTERVAL));
                 if (cleaningInterval != 0) {
-                    AntlrParser.checkToClean(cleaningInterval);
+                    PgParserUtils.checkToClean(cleaningInterval);
+                    MsParserUtils.checkToClean(cleaningInterval);
+                    ChParserUtils.checkToCleanChParser(cleaningInterval);
                 }
             }
         });

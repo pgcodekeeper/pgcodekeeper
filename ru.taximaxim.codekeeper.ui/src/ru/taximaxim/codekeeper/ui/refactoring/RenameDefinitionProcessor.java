@@ -130,7 +130,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
         } else if (selection.getType() == DbObjType.USER_MAPPING || selection.getType() == DbObjType.CAST ) {
             quotedName = newName;
         } else {
-            quotedName = Utils.getQuotedName(newName, dbType);
+            quotedName = dbType.getDatabaseProvider().getQuotedName(newName);
         }
 
         IFile file = null;
