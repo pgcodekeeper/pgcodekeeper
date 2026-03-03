@@ -48,6 +48,7 @@ import org.pgcodekeeper.core.database.api.schema.ObjectOverride;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareAction;
 import ru.taximaxim.codekeeper.ui.comparetools.CompareInput;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -210,7 +211,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
                     IStatement st = openOldFile ? ov.oldStatement() : ov.newStatement();
                     ObjectLocation loc = st.getLocation();
                     String proj = project == null ? null : project.getName();
-                    FileUtilsUi.openFileInSqlEditor(loc, proj, st.getDbType(), st.isLib());
+                    FileUtilsUi.openFileInSqlEditor(loc, proj, DatabaseType.fromStatement(st), st.isLib());
                 } catch (PartInitException ex) {
                     ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                 }

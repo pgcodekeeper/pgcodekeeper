@@ -53,6 +53,7 @@ import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
@@ -133,7 +134,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
                         && ss.getFirstElement() instanceof IStatement st) {
                     try {
                         FileUtilsUi.openFileInSqlEditor(
-                                st.getLocation(), currentProject.getName(), st.getDbType(), st.isLib());
+                                st.getLocation(), currentProject.getName(), DatabaseType.fromStatement(st), st.isLib());
                     } catch (PartInitException ex) {
                         ExceptionNotifier.notifyDefault(ex.getLocalizedMessage(), ex);
                     }

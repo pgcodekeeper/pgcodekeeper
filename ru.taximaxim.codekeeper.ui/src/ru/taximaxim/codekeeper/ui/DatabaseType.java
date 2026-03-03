@@ -15,6 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui;
 
+import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.ch.schema.ChAbstractStatement;
+import org.pgcodekeeper.core.database.ms.schema.MsAbstractStatement;
+import org.pgcodekeeper.core.database.pg.schema.PgAbstractStatement;
+
 import ru.taximaxim.codekeeper.ui.database.base.IUiDatabaseProvider;
 import ru.taximaxim.codekeeper.ui.database.ch.ChUiDatabaseProvider;
 import ru.taximaxim.codekeeper.ui.database.ms.MsUiDatabaseProvider;
@@ -55,6 +60,21 @@ public enum DatabaseType {
         }
 
         throw new IllegalArgumentException("Unsupported database type: " + dbTypeText);
+    }
+
+    public static DatabaseType fromStatement(IStatement st) {
+        // FIXME temporary solution
+        if (st instanceof PgAbstractStatement) {
+            return PG;
+        }
+        if (st instanceof MsAbstractStatement) {
+            return MS;
+        }
+        if (st instanceof ChAbstractStatement) {
+            return CH;
+        }
+
+        throw new IllegalArgumentException("Unsupported class: " + st.getClass());
     }
 
 }
