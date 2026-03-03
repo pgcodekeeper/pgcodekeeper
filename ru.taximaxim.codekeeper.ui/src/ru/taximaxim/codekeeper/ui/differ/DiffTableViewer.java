@@ -553,7 +553,7 @@ public class DiffTableViewer extends Composite {
 
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {
-            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, settings.getDbType()); //$NON-NLS-1$
+            FileUtilsUi.saveOpenTmpSqlEditor(content, "dependencies_for_" + objName, dbType); //$NON-NLS-1$
         } catch (IOException | CoreException ex) {
             ExceptionNotifier.notifyDefault(Messages.DiffTableViewer_error_creating_graph, ex);
         }

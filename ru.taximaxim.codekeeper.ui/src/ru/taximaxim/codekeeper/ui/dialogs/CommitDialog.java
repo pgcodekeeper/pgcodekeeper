@@ -50,6 +50,7 @@ import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeFlattener;
 import org.pgcodekeeper.core.settings.ISettings;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -120,7 +121,7 @@ public final class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        var dbType = dbProject.getDbObject().getDbType();
+        var dbType = DatabaseType.fromStatement(dbProject.getDbObject());
         ISettings settings = new UISettings(proj.getProject(), null);
         DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, dbType, settings);
         gd = new GridData(GridData.FILL_BOTH);

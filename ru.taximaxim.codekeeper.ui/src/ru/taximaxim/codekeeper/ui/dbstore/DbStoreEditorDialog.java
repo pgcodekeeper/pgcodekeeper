@@ -61,20 +61,21 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.swt.widgets.Text;
-import org.pgcodekeeper.core.Consts;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.IntegerVerifyListener;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.CMD_VARS;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.UiSync;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
 import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 
 public final class DbStoreEditorDialog extends TrayDialog {
+
+    private static final String TRUST_CERT = "trustServerCertificate";
 
     private final String action;
 
@@ -175,7 +176,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     txtDumpFile.setText(dbInitial.getPgdumpExePath());
                     txtDumpParameters.setText(dbInitial.getPgdumpCustomParams());
                     if (dbType == DatabaseType.MS) {
-                        String msTrustCert = dbInitial.getProperties().get(Consts.TRUST_CERT);
+                        String msTrustCert = dbInitial.getProperties().get(TRUST_CERT);
                         btnMsCert.setSelection(msTrustCert == null || Boolean.parseBoolean(msTrustCert));
                     }
                     cmbDbType.setSelection(new StructuredSelection(dbType));
@@ -612,7 +613,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
         Map<String, String> properties = propertyListEditor.getList().stream()
                 .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
         if (dbType == DatabaseType.MS) {
-            properties.put(Consts.TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
+            properties.put(TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
         }
 
         String exePath;

@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IContainer;
@@ -35,8 +34,8 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.Version;
 import org.pgcodekeeper.core.Consts;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -46,6 +45,8 @@ public final class ProjectUtils {
     public static final String NATURE_ID = UIConsts.PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
     public static final String NATURE_MS = UIConsts.PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
     public static final String NATURE_CH = UIConsts.PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
+
+    private static final String OVERRIDES_DIR = "OVERRIDES";
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
@@ -57,7 +58,7 @@ public final class ProjectUtils {
     }
 
     public static boolean isOverridesFolder(IResourceDelta delta) {
-        return WorkDirs.OVERRIDES.equals(delta.getProjectRelativePath().segment(0));
+        return OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
     }
 
     public static boolean isInProject(IResource resource) {
@@ -77,7 +78,7 @@ public final class ProjectUtils {
      */
     public static boolean isInProject(IPath path, DatabaseType dbType) {
         String dir = path.segment(0);
-        return dir != null && (WorkDirs.OVERRIDES.equals(dir)
+        return dir != null && (OVERRIDES_DIR.equals(dir)
                 || dbType.getDatabaseProvider().getDirectoryNames().stream().anyMatch(dir::equals));
     }
 
