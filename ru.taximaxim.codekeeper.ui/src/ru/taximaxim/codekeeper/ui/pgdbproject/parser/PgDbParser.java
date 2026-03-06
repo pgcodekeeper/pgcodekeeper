@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -42,6 +43,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.SubMonitor;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
@@ -49,23 +52,32 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.actions.BuildAction;
+import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.ResourceUtil;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
-
+import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.parser.ParserListenerMode;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
+import org.pgcodekeeper.core.database.base.loader.AbstractDumpLoader;
+import org.pgcodekeeper.core.database.base.parser.AntlrError;
+import org.pgcodekeeper.core.database.base.parser.ErrorTypes;
 import org.pgcodekeeper.core.database.base.parser.FullAnalyze;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaUtils;
-import org.pgcodekeeper.core.database.pg.loader.PgDumpLoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.database.base.UiApiRegistry;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
@@ -90,27 +102,26 @@ public final class PgDbParser implements IResourceChangeListener {
         java.util.Map$Entry;\
         org.codekeeper.core.ContextLocation;\
         org.codekeeper.core.DangerStatement;\
-        org.codekeeper.core.model.difftree.DbObjType;\
-        org.codekeeper.core.schema.ArgMode;\
-        org.codekeeper.core.schema.Argument;\
-        org.codekeeper.core.schema.GenericColumn;\
-        org.codekeeper.core.schema.ICast$CastContext;\
-        org.codekeeper.core.schema.meta.MetaCast;\
-        org.codekeeper.core.schema.meta.MetaCompositeType;\
-        org.codekeeper.core.schema.meta.MetaConstraint;\
-        org.codekeeper.core.schema.meta.MetaContainer;\
-        org.codekeeper.core.schema.meta.MetaFunction;\
-        org.codekeeper.core.schema.meta.MetaOperator;\
-        org.codekeeper.core.schema.meta.MetaRelation;\
-        org.codekeeper.core.schema.meta.MetaStatement;\
-        org.codekeeper.core.schema.ObjectLocation$LocationType;\
-        org.codekeeper.core.schema.ObjectLocation;\
-        org.codekeeper.core.schema.ObjectLocation.LocationType;\
+        org.codekeeper.core.model.graph.DbObjType;\
+        org.codekeeper.core.database.api.schema.ArgMode;\
+        org.codekeeper.core.schema.database.base.Argument;\
+        org.codekeeper.core.database.api.schema.ObjectReference;\
+        org.codekeeper.core.database.api.schema.ICast$CastContext;\
+        org.codekeeper.core.database.base.schema.meta.MetaCast;\
+        org.codekeeper.core.database.base.schema.meta.MetaCompositeType;\
+        org.codekeeper.core.database.base.schema.meta.MetaConstraint;\
+        org.codekeeper.core.database.base.schema.meta.MetaContainer;\
+        org.codekeeper.core.database.base.schema.meta.MetaFunction;\
+        org.codekeeper.core.database.base.schema.meta.MetaOperator;\
+        org.codekeeper.core.database.base.schema.meta.MetaRelation;\
+        org.codekeeper.core.database.base.schema.meta.MetaStatement;\
+        org.codekeeper.core.database.api.schema.ObjectLocation$LocationType;\
+        org.codekeeper.core.database.api.schema.ObjectLocation;\
+        org.codekeeper.core.database.api.schema.ObjectLocation.LocationType;\
         org.codekeeper.core.utils.ModPair;\
         org.codekeeper.core.utils.Pair;\
         ru.taximaxim.codekeeper.ui.pgdbproject.parser.ProjectReferencesStorage;\
         !*""";
-
     private static final ObjectInputFilter DESERIALIZATION_FILTER = ObjectInputFilter.Config
         .createFilter(FILTER_PATTERN);
 
@@ -172,25 +183,33 @@ public final class PgDbParser implements IResourceChangeListener {
     public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
             throws InterruptedException, IOException {
         ISettings settings = new UISettings(file.getProject(), null);
-        PgUIDumpLoader loader = new PgUIDumpLoader(file, settings, monitor);
+        var provider = ProjectUtils.getDatabaseType(file.getProject()).getDatabaseProvider();
+        IDumpLoader loader = provider.getDumpLoader(file.getLocation().toFile().toPath(),
+                new DiffSettings(settings, new UIMonitor(monitor)));
         loader.setMode(ParserListenerMode.REF);
-        IDatabase db = loader.loadFile(DatabaseLoader.createDb(settings));
+        IDatabase db = loader.load();
+        clearMarkers(List.of(file));
+        markErrors(loader.getErrors());
         removeResFromRefs(file);
         referencesStorage.putReferences(MetaUtils.getObjDefinitions(db), db.getObjReferences());
         notifyListeners();
     }
 
-    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
+    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, String dbTypeName)
             throws InterruptedException, IOException, CoreException {
-        IDatabase db = UIProjectLoader.buildFiles(files, dbType, monitor);
+        if (files.isEmpty()) {
+            return;
+        }
+        IProject proj = files.iterator().next().getProject();
+        var loader = DatabaseType.getValue(dbTypeName).getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj),
+                new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor)));
+        IDatabase db = loader.load();
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        List<Object> errors = new ArrayList<>();
-        FullAnalyze.fullAnalyze(db,
-                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), dbType, db.getVersion()),
-                errors);
-        UIProjectLoader.markErrors(errors);
+        FullAnalyze.fullAnalyze(db, loader.getErrors());
+        clearMarkers(files);
+        markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
         notifyListeners();
     }
@@ -199,17 +218,75 @@ public final class PgDbParser implements IResourceChangeListener {
             throws InterruptedException, IOException, CoreException {
         SubMonitor mon = SubMonitor.convert(monitor, ProjectUtils.countFiles(proj));
         UISettings settings = new UISettings(proj, null);
-        DatabaseLoader loader = new UIProjectLoader(proj, settings, mon);
+        var provider = ProjectUtils.getDatabaseType(proj).getDatabaseProvider();
+        ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj),
+                new DiffSettings(settings, new UIMonitor(monitor)));
         IDatabase db = loader.load();
         referencesStorage.clear();
-
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db,
-                MetaUtils.createTreeFromDefs(getAllObjDefinitions(), settings.getDbType(), db.getVersion()),
-                loader.getErrors());
+        FullAnalyze.fullAnalyze(db, loader.getErrors());
+        clearMarkers(proj);
+        markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
         notifyListeners();
+    }
+
+    private static void clearMarkers(Collection<IFile> files) {
+        for (IFile file : files) {
+            try {
+                file.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_ZERO);
+            } catch (CoreException ex) {
+                Log.log(ex);
+            }
+        }
+    }
+
+    private static void clearMarkers(IProject proj) {
+        try {
+            proj.deleteMarkers(MARKER.ERROR, false, IResource.DEPTH_INFINITE);
+        } catch (CoreException ex) {
+            Log.log(ex);
+        }
+    }
+
+    private static void markErrors(List<Object> errors) {
+        for (Object error : errors) {
+            if (error instanceof AntlrError antlrError) {
+                IFile file = FileUtilsUi.getFileForLocation(antlrError);
+                if (file != null) {
+                    addMarker(file, antlrError);
+                }
+            }
+        }
+    }
+
+    private static void addMarker(IFile file, AntlrError antlrError) {
+        try {
+            IMarker marker = file.createMarker(MARKER.ERROR);
+            int line = antlrError.getLineNumber();
+            marker.setAttribute(IMarker.LINE_NUMBER, line);
+            marker.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+            marker.setAttribute(IMarker.MESSAGE, antlrError.getMsg());
+            marker.setAttribute(IMarker.BOOKMARK, antlrError.getMsg());
+            if (antlrError.getErrorType() == ErrorTypes.MISPLACEERROR) {
+                marker.setAttribute(MARKER.ERROR_TYPE, MARKER.MISPLACE_ERROR);
+            }
+            int start = antlrError.getStart();
+            int stop = antlrError.getStop();
+            if (start == -1 || stop == -1) {
+                IDocumentProvider provider = new TextFileDocumentProvider();
+                provider.connect(file);
+                IDocument doc = provider.getDocument(file);
+                int lineOffset = doc.getLineOffset(line - 1);
+                start = lineOffset + antlrError.getCharPositionInLine();
+                stop = start;
+            }
+            marker.setAttribute(IMarker.CHAR_START, start);
+            marker.setAttribute(IMarker.CHAR_END, stop + 1);
+        } catch (BadLocationException | CoreException ex) {
+            Log.log(ex);
+        }
     }
 
     public void removeResFromRefs(IResource res) {
@@ -219,8 +296,9 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void fillRefsFromInputStream(InputStream input, String fileName, IProgressMonitor monitor, IProject project)
             throws InterruptedException, IOException {
-        PgDumpLoader loader = new PgDumpLoader(() -> input, fileName, new UISettings(project, null),
-                new UIMonitor(monitor));
+        var provider = ProjectUtils.getDatabaseType(project).getDatabaseProvider();
+        AbstractDumpLoader<IDatabase> loader = (AbstractDumpLoader<IDatabase>) provider.getDumpLoader(() -> input,
+                fileName, new DiffSettings(new UISettings(project, null), new UIMonitor(monitor)));
         loader.setMode(ParserListenerMode.REF);
         IDatabase db = loader.load();
         referencesStorage.clear();

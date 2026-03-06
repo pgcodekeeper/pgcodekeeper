@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IContainer;
@@ -45,8 +47,11 @@ public final class ProjectUtils {
     public static final String NATURE_ID = UIConsts.PLUGIN_ID.THIS + ".nature"; //$NON-NLS-1$
     public static final String NATURE_MS = UIConsts.PLUGIN_ID.THIS + ".msnature"; //$NON-NLS-1$
     public static final String NATURE_CH = UIConsts.PLUGIN_ID.THIS + ".chnature"; //$NON-NLS-1$
+    private static final String OVERRIDES = "OVERRIDES"; //$NON-NLS-1$
 
-    private static final String OVERRIDES_DIR = "OVERRIDES";
+    public static Path getPath(IProject project) {
+        return Paths.get(project.getLocationURI());
+    }
 
     public static boolean isInProject(IEditorInput editorInput) {
         IResource res = ResourceUtil.getResource(editorInput);
@@ -58,8 +63,9 @@ public final class ProjectUtils {
     }
 
     public static boolean isOverridesFolder(IResourceDelta delta) {
-        return OVERRIDES_DIR.equals(delta.getProjectRelativePath().segment(0));
+        return OVERRIDES.equals(delta.getProjectRelativePath().segment(0));
     }
+
 
     public static boolean isInProject(IResource resource) {
         IProject project = resource.getProject();
@@ -67,7 +73,7 @@ public final class ProjectUtils {
             return false;
         }
 
-        DatabaseType dbType = getDatabaseType(project);
+        var dbType = getDatabaseType(project);
         return isInProject(resource.getProjectRelativePath(), dbType);
     }
 
@@ -78,7 +84,7 @@ public final class ProjectUtils {
      */
     public static boolean isInProject(IPath path, DatabaseType dbType) {
         String dir = path.segment(0);
-        return dir != null && (OVERRIDES_DIR.equals(dir)
+        return dir != null && (OVERRIDES.equals(dir)
                 || dbType.getDatabaseProvider().getDirectoryNames().stream().anyMatch(dir::equals));
     }
 
@@ -164,9 +170,8 @@ public final class ProjectUtils {
             Properties props = new Properties();
             props.load(stream);
 
-            String verStr = props.getProperty(
-                    Consts.VERSION_PROP_NAME, "") //$NON-NLS-1$
-                .trim();
+            String verStr = props.getProperty(Consts.VERSION_PROP_NAME, "").trim(); //$NON-NLS-1$
+
             if (verStr.isEmpty()) {
                 message.append(Messages.OpenProjectUtils_unknown_proj_version);
                 return true;
