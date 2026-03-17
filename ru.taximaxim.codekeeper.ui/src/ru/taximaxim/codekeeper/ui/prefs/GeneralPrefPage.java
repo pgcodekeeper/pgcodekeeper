@@ -93,6 +93,10 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
         new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
             .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
+        addField(new BooleanFieldEditor(PREF.PARALLEL_LOADING,
+                Messages.GeneralPrefPage_use_parallel_load,
+                getFieldEditorParent()));
+
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
                 Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary,
                 getFieldEditorParent()));
