@@ -167,4 +167,9 @@ public final class TestUiSettings implements ISettings {
     public boolean isParallelLoad() {
         return true;
     }
+
+    @Override
+    public boolean isDisableAutoLoad() {
+        return false;
+    }
 }
