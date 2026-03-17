@@ -45,7 +45,12 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
+
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -80,7 +85,13 @@ public final class NormalizeProject extends AbstractHandler {
                 try {
                     boolean projectOnly = true;
                     Map<String, Boolean> oneTimePrefs = Map.of(Consts.PROJECT_ONLY, projectOnly);
-                    IDatabase db = DbSource.fromProject(proj, oneTimePrefs).get(mon.newChild(1));
+                    IDatabaseProvider provider = ProjectUtils.getDatabaseType(proj.getProject()).getDatabaseProvider();
+                    DiffSettings diffSettings = new DiffSettings(
+                            new UISettings(proj.getProject(), oneTimePrefs),
+                            new UIMonitor(mon.newChild(1)));
+                    ILoader loader = provider.getProjectLoader(
+                            proj.getProject().getLocation().toFile().toPath(), diffSettings);
+                    IDatabase db = loader.loadAndAnalyze();
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     new UIProjectUpdater(db, proj).updateFull(projectOnly);
                 } catch (IOException | CoreException ex) {

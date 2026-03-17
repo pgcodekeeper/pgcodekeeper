@@ -60,7 +60,6 @@ import org.eclipse.ui.wizards.newresource.BasicNewResourceWizard;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
-import org.pgcodekeeper.core.database.pg.schema.PgDatabase;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 
@@ -77,7 +76,6 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.handlers.OpenEditor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
@@ -150,8 +148,7 @@ implements IExecutableExtension, INewWizard {
                 }
             }
 
-            getContainer().run(true, true, new InitProjectFromSource(
-                    props, getDbSource(props)));
+            getContainer().run(true, true, new InitProjectFromSource(props, pageDb));
             initSuccess = true;
 
             props.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -181,28 +178,6 @@ implements IExecutableExtension, INewWizard {
             }
         }
         return initSuccess;
-    }
-
-    private DbSource getDbSource(PgDbProject props) throws CoreException {
-        DbSource src;
-        DbInfo dbinfo = pageDb.getDbInfo();
-        File dump;
-
-        String charset = props.getProjectCharset();
-        String timezone = props.getPrefs().get(PROJ_PREF.TIMEZONE, Consts.UTC);
-
-        if (!pageDb.isInit()) {
-            src = DbSource.fromDbObject(new PgDatabase(), "Empty DB"); //$NON-NLS-1$
-        } else if (dbinfo != null) {
-            src = DbSource.fromDbInfo(dbinfo, charset, timezone, props.getProject());
-        } else if ((dump = pageDb.getDumpPath()) != null) {
-            src = DbSource.fromFile(dump, props.getProject());
-        } else {
-            // should be prevented by page completion state
-            throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
-        }
-
-        return src;
     }
 
     @Override

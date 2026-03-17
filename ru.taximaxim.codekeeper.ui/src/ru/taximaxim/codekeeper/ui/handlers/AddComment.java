@@ -44,8 +44,8 @@ import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
@@ -111,8 +111,8 @@ public final class AddComment extends AbstractHandler {
             return;
         }
 
-        DbSource oldDbSource = DbSource.fromDbObject(oldDb, "old");
-        DbSource newDbSource = DbSource.fromDbObject(newDb, "new");
+        var oldDbSource = new StubDatabaseLoader(oldDb, "old"); //$NON-NLS-1$
+        var newDbSource = new StubDatabaseLoader(newDb, "new"); //$NON-NLS-1$
 
         var project = file.getProject();
         var settings = new UISettings(project, null);

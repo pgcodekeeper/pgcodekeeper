@@ -58,7 +58,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
@@ -105,8 +105,8 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     public void handlePageChanging(PageChangingEvent e) {
         if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
             var settings = new UISettings(null, pageDiff.getOneTimePrefs(), pageDiff.getSelectedDbType());
-            DbSource newDb = pageDiff.getNewDb();
-            DbSource oldDb = pageDiff.getOldDb();
+            ILoader newDb = pageDiff.getNewDb();
+            ILoader oldDb = pageDiff.getOldDb();
             TreeDiffer treediffer = new TreeDiffer(settings, oldDb, newDb);
 
             try {
@@ -141,9 +141,9 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     public boolean performFinish() {
         try {
             TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            IDatabase oldDb = treediffer.getOldDb().getDbObject();
+            IDatabase oldDb = treediffer.getOldDb().getDatabase();
 
-            Differ differ = new Differ(oldDb, treediffer.getNewDb().getDbObject(), treediffer.getDiffTree(), pageDiff.getTimezone(),
+            Differ differ = new Differ(oldDb, treediffer.getNewDb().getDatabase(), treediffer.getDiffTree(), pageDiff.getTimezone(),
                     null, pageDiff.getOneTimePrefs(), pagePartial.getDbType());
             getContainer().run(true, true, differ);
 
@@ -184,11 +184,11 @@ final class PageDiff extends WizardPage implements Listener {
         setDescription(Messages.diffwizard_diffpage_select);
     }
 
-    public DbSource getNewDb() {
+    public ILoader getNewDb() {
         return newDb.getDbSource(getOneTimePrefs());
     }
 
-    public DbSource getOldDb() {
+    public ILoader getOldDb() {
         return oldDb.getDbSource(getOneTimePrefs());
     }
 
@@ -383,10 +383,10 @@ final class PagePartial extends WizardPage {
 
     public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList, DatabaseType dbType) {
         this.treeDiffer = treeDiffer;
-        DbSource oldDb = treeDiffer.getOldDb();
-        DbSource newDb = treeDiffer.getNewDb();
-        lblNewDb.setText(newDb.getOrigin());
-        lblOldDb.setText(oldDb.getOrigin());
+        ILoader oldDb = treeDiffer.getOldDb();
+        ILoader newDb = treeDiffer.getNewDb();
+        lblNewDb.setText(newDb.getDatabaseName());
+        lblOldDb.setText(oldDb.getDatabaseName());
         lblNewDb.getParent().layout();
         diffTable.setInput(oldDb, newDb, treeDiffer.getDiffTree(), ignoreList);
         diffTable.setDbType(dbType);

@@ -108,6 +108,7 @@ import org.eclipse.ui.ISharedImages;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
 import org.pgcodekeeper.core.library.LibrarySource;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.DiffTree;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
@@ -190,8 +191,8 @@ public class DiffTableViewer extends Composite {
     private TreeViewerColumn columnLocation;
     private TreeViewerColumn columnLibrary;
 
-    private DbSource dbProject;
-    private DbSource dbRemote;
+    private ILoader dbProject;
+    private ILoader dbRemote;
     private DatabaseType dbType;
     private final ISettings settings;
 
@@ -508,9 +509,9 @@ public class DiffTableViewer extends Composite {
                 TreeElement el = (TreeElement)
                         ((IStructuredSelection) viewer.getSelection()).getFirstElement();
                 IStatement remote = el.getSide() == DiffSide.LEFT ? null
-                        : el.getStatement(dbRemote.getDbObject());
+                        : el.getStatement(dbRemote.getDatabase());
                 IStatement project = el.getSide() == DiffSide.RIGHT ? null
-                        : el.getStatement(dbProject.getDbObject());
+                        : el.getStatement(dbProject.getDatabase());
                 CompareAction.openCompareEditor(new CompareInput(el.getName(),
                         el.getType(), remote, project, settings));
             }
@@ -546,7 +547,7 @@ public class DiffTableViewer extends Composite {
         if (graphDlg.open() != Window.OK) {
             return;
         }
-        IDatabase source = graphDlg.isProject() ? dbProject.getDbObject() : dbRemote.getDbObject();
+        IDatabase source = graphDlg.isProject() ? dbProject.getDatabase() : dbRemote.getDatabase();
         IStatement st = el.getStatement(source);
         List<String> deps = DepcyFinder.byStatement(graphDlg.getGraphDepth(), graphDlg.isReverse(),
                 graphDlg.getObjTypes(), st);
@@ -864,7 +865,7 @@ public class DiffTableViewer extends Composite {
         this.dbType = dbType;
     }
 
-    public void setInput(DbSource dbProject, DbSource dbRemote,
+    public void setInput(ILoader dbProject, ILoader dbRemote,
             TreeElement diffTree, IgnoreList ignoreList) {
         List<TreeElement> selected;
         Set<TreeElement> tabs;
@@ -872,11 +873,11 @@ public class DiffTableViewer extends Composite {
             selected = Collections.emptyList();
             tabs = Collections.emptySet();
         } else {
-            IDatabase source = dbProject.getDbObject();
-            IDatabase target = dbRemote.getDbObject();
+            IDatabase source = dbProject.getDatabase();
+            IDatabase target = dbRemote.getDatabase();
             selected = new TreeFlattener()
                     .onlyEdits(source, target)
-                    .useIgnoreList(ignoreList, dbRemote.getDbName())
+                    .useIgnoreList(ignoreList, dbRemote.getDatabaseName())
                     .flatten(diffTree);
             tabs = DiffTree.getTablesWithChangedColumns(source, target, selected);
         }
@@ -889,7 +890,7 @@ public class DiffTableViewer extends Composite {
      * @param collection элементы для показа
      */
     public void setInputCollection(Collection<TreeElement> collection,
-            DbSource dbProject, DbSource dbRemote, Set<TreeElement> tables) {
+            ILoader dbProject, ILoader dbRemote, Set<TreeElement> tables) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
 
@@ -933,7 +934,7 @@ public class DiffTableViewer extends Composite {
                 continue;
             }
 
-            IStatement st = entry.getKey().getStatement(dbProject.getDbObject());
+            IStatement st = entry.getKey().getStatement(dbProject.getDatabase());
             if (!st.isLib()) {
                 continue;
             }
@@ -973,7 +974,7 @@ public class DiffTableViewer extends Composite {
     private void readDbUsers() {
         elementInfoMap.forEach((k,v) -> {
             if (k.getSide() != DiffSide.LEFT) {
-                String author = k.getStatement(dbRemote.getDbObject()).getAuthor();
+                String author = k.getStatement(dbRemote.getDatabase()).getAuthor();
                 v.setDbUser(author);
                 if (author != null) {
                     showDbUser = true;
@@ -993,7 +994,7 @@ public class DiffTableViewer extends Composite {
                     elementInfoMap.forEach((k,v) -> {
                         if (k.getSide() != DiffSide.RIGHT && v.getLibLocation() == null) {
                             Path fullPath = location.resolve(ModelExporter.getRelativeFilePath(
-                                    k.getStatement(dbProject.getDbObject())));
+                                    k.getStatement(dbProject.getDatabase())));
                             // git always uses linux paths
                             // since all paths here are relative it's ok to simply
                             // join their elements with forward slashes
@@ -1106,7 +1107,7 @@ public class DiffTableViewer extends Composite {
     public boolean checkLibChange() {
         for (TreeElement el : elements) {
             if (el.isSelected() && el.getSide() != DiffSide.RIGHT
-                    && el.getStatement(dbProject.getDbObject()).isLib()) {
+                    && el.getStatement(dbProject.getDatabase()).isLib()) {
                 return true;
             }
         }
@@ -1524,8 +1525,8 @@ public class DiffTableViewer extends Composite {
                 return false;
             }
 
-            return (codeFilter.isEmpty() || codeFilter.checkElement(el, elementInfoMap, dbProject.getDbObject(),
-                    dbRemote.getDbObject(), settings));
+            return (codeFilter.isEmpty() || codeFilter.checkElement(el, elementInfoMap, dbProject.getDatabase(),
+                    dbRemote.getDatabase(), settings));
         }
 
         private boolean checkType(TreeElement el, boolean isSubElement) {

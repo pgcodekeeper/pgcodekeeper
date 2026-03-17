@@ -15,14 +15,14 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.views;
 
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 
 public class DBPair {
 
-    final DbSource dbProject;
-    final DbSource dbRemote;
+    final ILoader dbProject;
+    final ILoader dbRemote;
 
-    public DBPair(DbSource dbProject, DbSource dbRemote) {
+    public DBPair(ILoader dbProject, ILoader dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
     }

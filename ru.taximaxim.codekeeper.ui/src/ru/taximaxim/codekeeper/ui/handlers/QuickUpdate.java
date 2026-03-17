@@ -65,7 +65,11 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
+
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
@@ -196,21 +200,30 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         var settings = new UISettings(null, null);
-        DbSource dbRemote = DbSource.fromDbInfo(dbInfo, proj.getProjectCharset(), timezone, proj.getProject());
-        DbSource dbProject = DbSource.fromProject(proj);
+        IDatabaseProvider provider = dbType.getDatabaseProvider();
+        DiffSettings diffSettings = new DiffSettings(
+                new UISettings(proj.getProject(), null, dbType),
+                new UIMonitor(monitor));
+
+        ILoader dbRemote = provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
+        dbRemote.loadAndAnalyze();
+
+        ILoader dbProject = provider.getProjectLoader(
+                proj.getProject().getLocation().toFile().toPath(), diffSettings);
+        dbProject.loadAndAnalyze();
 
         TreeDiffer treediffer = new TreeDiffer(settings, dbRemote, dbProject);
         treediffer.run(monitor.newChild(1));
         TreeElement treeFull = treediffer.getDiffTree();
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
-                listPgObjectsFragment, dbRemote.getDbObject(), dbProject.getDbObject());
+                listPgObjectsFragment, dbRemote.getDatabase(), dbProject.getDatabase());
 
         if (checked.isEmpty()) {
             Log.log(Log.LOG_INFO, "No object changes found when comparing to DB"); //$NON-NLS-1$
             return;
         }
 
-        Differ differ = new Differ(dbRemote.getDbObject(), dbProject.getDbObject(), treeFull, timezone, proj.getProject());
+        Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), treeFull, timezone, proj.getProject());
         differ.run(monitor.newChild(1));
 
         checkFileModified();
@@ -238,12 +251,12 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(settings, DbSource.fromDbObject(dbProject), dbRemote);
+        TreeDiffer treedifferAfter = new TreeDiffer(settings, new StubDatabaseLoader(dbProject.getDatabase(), dbProject.getOrigin()), dbRemote);
         treedifferAfter.run(monitor.newChild(1));
         TreeElement treeAfter = treedifferAfter.getDiffTree();
 
         Collection<TreeElement> checkedAfter = setCheckedFromFragment(treeAfter,
-                listPgObjectsFragment, dbProject.getDbObject(), dbRemote.getDbObject());
+                listPgObjectsFragment, dbProject.getDatabase(), dbRemote.getDatabase());
         if (checkedAfter.isEmpty()) {
             // success, no export needed, Postgres didn't make any alterations
             return;
@@ -253,8 +266,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
-        var updater = new UIProjectUpdater(dbRemote.getDbObject(),
-                dbProject.getDbObject(), checkedAfter,
+        var updater = new UIProjectUpdater(dbRemote.getDatabase(),
+                dbProject.getDatabase(), checkedAfter,
                 proj, false);
         updater.updatePartial();
 

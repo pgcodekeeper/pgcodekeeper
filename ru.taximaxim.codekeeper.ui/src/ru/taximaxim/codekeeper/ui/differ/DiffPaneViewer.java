@@ -27,6 +27,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -50,8 +51,8 @@ public final class DiffPaneViewer extends Composite {
     private static final String PREF_SWAP = "org.eclipse.compare.Swapped";
 
     private final TextMergeViewer diffPane;
-    private DbSource dbProject;
-    private DbSource dbRemote;
+    private ILoader dbProject;
+    private ILoader dbRemote;
 
     private TreeElement currentEl;
     private Collection<TreeElement> availableElements;
@@ -63,7 +64,7 @@ public final class DiffPaneViewer extends Composite {
     private final PrefChangeAction swapAction;
     private final PrefChangeAction showFullCodeAction;
 
-    public void setDbSources(DbSource dbProject, DbSource dbRemote) {
+    public void setLoaders(ILoader dbProject, ILoader dbRemote) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
     }
@@ -162,8 +163,8 @@ public final class DiffPaneViewer extends Composite {
             return null;
         }
 
-        DbSource db = isProject ? dbProject : dbRemote;
-        IStatement st = el.getStatement(db.getDbObject());
+        ILoader db = isProject ? dbProject : dbRemote;
+        IStatement st = el.getStatement(db.getDatabase());
         ISettings settings = new UISettings(project, null);
         if (st.getStatementType() == DbObjType.ASSEMBLY) {
             return ((MsAssembly) st).getPreview(settings);
