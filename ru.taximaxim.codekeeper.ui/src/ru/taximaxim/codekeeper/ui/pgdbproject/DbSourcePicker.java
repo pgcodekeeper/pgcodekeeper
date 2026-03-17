@@ -38,10 +38,17 @@ import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.jdbc.IJdbcConnector;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
+
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 class DbSourcePicker extends Composite {
@@ -107,21 +114,21 @@ class DbSourcePicker extends Composite {
         return cmbEncoding.getCombo().getText();
     }
 
-    public DbSource getDbSource(Map<String, Boolean> oneTimePrefs) {
+    public ILoader getDbSource(Map<String, Boolean> oneTimePrefs) {
+        IDatabaseProvider provider = pageDiff.getSelectedDbType().getDatabaseProvider();
+        DiffSettings diffSettings = new DiffSettings(
+                new UISettings(null, oneTimePrefs, pageDiff.getSelectedDbType()),
+                new UIMonitor(null));
+
         DbInfo dbInfo;
         File file;
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
-            return DbSource.fromDbInfo(dbInfo, getEncoding(), pageDiff.getTimezone(), null, oneTimePrefs);
+            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
         } else if ((file = storePicker.getPathOfFile()) != null) {
-            return DbSource.fromFile(file, null, oneTimePrefs, pageDiff.getSelectedDbType());
+            return provider.getDumpLoader(file.toPath(), diffSettings);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
-            PgDbProject project = getProjectFromDir(dir);
-            if (project != null) {
-                return DbSource.fromProject(project, oneTimePrefs);
-            } else {
-                return DbSource.fromDirTree(dir.getAbsolutePath(), oneTimePrefs);
-            }
+            return provider.getProjectLoader(dir.toPath(), diffSettings);
         }
         return null;
     }

@@ -216,7 +216,6 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException, CoreException {
-        SubMonitor mon = SubMonitor.convert(monitor, ProjectUtils.countFiles(proj));
         UISettings settings = new UISettings(proj, null);
         var provider = ProjectUtils.getDatabaseType(proj).getDatabaseProvider();
         ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj),
@@ -297,7 +296,7 @@ public final class PgDbParser implements IResourceChangeListener {
     public void fillRefsFromInputStream(InputStream input, String fileName, IProgressMonitor monitor, IProject project)
             throws InterruptedException, IOException {
         var provider = ProjectUtils.getDatabaseType(project).getDatabaseProvider();
-        AbstractDumpLoader<IDatabase> loader = (AbstractDumpLoader<IDatabase>) provider.getDumpLoader(() -> input,
+        var loader = provider.getDumpLoader(() -> input,
                 fileName, new DiffSettings(new UISettings(project, null), new UIMonitor(monitor)));
         loader.setMode(ParserListenerMode.REF);
         IDatabase db = loader.load();

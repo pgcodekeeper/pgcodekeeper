@@ -90,7 +90,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
             return;
         }
 
-        IDatabase db = dbPair.dbProject.getDbObject();
+        IDatabase db = dbPair.dbProject.getDatabase();
 
         Collection<ObjectOverride> overrides = db.getOverrides();
 

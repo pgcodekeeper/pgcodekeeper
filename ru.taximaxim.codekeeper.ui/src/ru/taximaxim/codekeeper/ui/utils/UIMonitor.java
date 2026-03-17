@@ -28,14 +28,14 @@ public class UIMonitor implements IMonitor {
     }
 
     @Override
-    public void setCanceled(boolean cancelled) {
+    public void setCancelled(boolean cancelled) {
         if (monitor != null) {
             this.monitor.setCanceled(cancelled);
         }
     }
 
     @Override
-    public boolean isCanceled() {
+    public boolean isCancelled() {
         return monitor != null && monitor.isCanceled();
     }
 
@@ -55,6 +55,13 @@ public class UIMonitor implements IMonitor {
     public void setWorkRemaining(int size) {
         if (monitor instanceof SubMonitor sub) {
             sub.setWorkRemaining(size);
+        }
+    }
+
+    @Override
+    public void setTaskName(String name) {
+        if (monitor != null) {
+            monitor.setTaskName(name);
         }
     }
 }

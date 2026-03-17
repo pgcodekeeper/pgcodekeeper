@@ -15,29 +15,37 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.database.pg.schema.PgDatabase;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
+import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class InitProjectFromSource implements IRunnableWithProgress {
 
-    private final DbSource src;
     private final PgDbProject proj;
+    private final PageDb pageDb;
 
-    public InitProjectFromSource(PgDbProject proj, DbSource src) {
+    public InitProjectFromSource(PgDbProject proj, PageDb pageDb) {
         this.proj = proj;
-        this.src = src;
+        this.pageDb = pageDb;
     }
 
     @Override
@@ -59,16 +67,37 @@ public final class InitProjectFromSource implements IRunnableWithProgress {
         }
     }
 
-    /**
-     * clean repository, generate new file structure, preserve and fix repo
-     * metadata, repo rm/add, commit new revision
-     */
     private void initRepoFromSource(SubMonitor pm) throws InterruptedException,
     CoreException, IOException {
-        SubMonitor taskpm = pm.newChild(25); // 50
+        SubMonitor taskpm = pm.newChild(25);
 
-        IDatabase db = src.get(taskpm);
-        pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model); // 75
+        ILoader loader = createLoader(taskpm);
+        IDatabase db = loader.loadAndAnalyze();
+
+        pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model);
         new UIProjectUpdater(db, proj).updateFull(false);
+    }
+
+    private ILoader createLoader(SubMonitor monitor) {
+    	IDatabaseProvider provider = pageDb.getDbType().getDatabaseProvider();
+        if (!pageDb.isInit()) {
+            return new StubDatabaseLoader(provider.createDatabase(), "Empty DB"); //$NON-NLS-1$
+        }
+
+        DbInfo dbinfo = pageDb.getDbInfo();
+        DiffSettings diffSettings = new DiffSettings(
+                new UISettings(proj.getProject(), null, pageDb.getDbType()),
+                new UIMonitor(monitor));
+
+        if (dbinfo != null) {
+            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbinfo), diffSettings);
+        }
+
+        File dump = pageDb.getDumpPath();
+        if (dump != null) {
+            return provider.getDumpLoader(dump.toPath(), diffSettings);
+        }
+
+        throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);
     }
 }

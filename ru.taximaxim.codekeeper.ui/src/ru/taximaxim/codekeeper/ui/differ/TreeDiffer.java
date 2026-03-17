@@ -17,10 +17,8 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.text.MessageFormat;
 import java.util.stream.Stream;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ProgressMonitorWrapper;
@@ -28,6 +26,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.model.difftree.DiffTree;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.monitor.IMonitor;
@@ -45,13 +44,13 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private static final int JOB_CHECK_MS = 20;
 
-    private final DbSource oldDb;
-    private final DbSource newDb;
+    private final ILoader oldDb;
+    private final ILoader newDb;
     private final ISettings settings;
 
     private TreeElement diffTree;
 
-    public TreeDiffer(ISettings settings, DbSource oldDb, DbSource newDb) {
+    public TreeDiffer(ISettings settings, ILoader oldDb, ILoader newDb) {
         this.settings = settings;
         this.oldDb = oldDb;
         this.newDb = newDb;
@@ -62,11 +61,11 @@ public class TreeDiffer implements IRunnableWithProgress {
                 .flatMap(s -> s == null ? Stream.empty() : s.getErrors().stream());
     }
 
-    public DbSource getOldDb() {
+    public ILoader getOldDb() {
         return oldDb;
     }
 
-    public DbSource getNewDb() {
+    public ILoader getNewDb() {
         return newDb;
     }
 
@@ -101,12 +100,12 @@ public class TreeDiffer implements IRunnableWithProgress {
             finishJobs(newDbJob, oldDbJob);
         }
 
-        Log.log(Log.LOG_INFO, "Generating diff tree between oldDb: " + oldDb.getOrigin() //$NON-NLS-1$
-        + " newDb: " + newDb.getOrigin()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, "Generating diff tree between oldDb: " + oldDb.getDatabaseName() //$NON-NLS-1$
+        + " newDb: " + newDb.getDatabaseName()); //$NON-NLS-1$
 
         pm.newChild(15).subTask(Messages.treeDiffer_building_diff_tree); // 95
         var uiMon = new UIMonitor(pm);
-        diffTree = DiffTree.create(settings, oldDb.getDbObject(), newDb.getDbObject(), uiMon);
+        diffTree = DiffTree.create(settings, oldDb.getDatabase(), newDb.getDatabase(), uiMon);
         IMonitor.checkCancelled(uiMon);
         monitor.done();
     }
@@ -146,12 +145,12 @@ public class TreeDiffer implements IRunnableWithProgress {
 
     private static class DbSourceJob extends Job {
 
-        private final DbSource s;
+        private final ILoader loader;
         private final SubMonitor m;
 
-        public DbSourceJob(DbSource s, SubMonitor m) {
-            super(Messages.TreeDiffer_loading_schema_from.formatted(s.getOrigin()));
-            this.s = s;
+        public DbSourceJob(ILoader loader, SubMonitor m) {
+            super(Messages.TreeDiffer_loading_schema_from.formatted(loader.getDatabaseName()));
+            this.loader = loader;
             this.m = m;
         }
 
@@ -159,10 +158,10 @@ public class TreeDiffer implements IRunnableWithProgress {
         protected IStatus run(IProgressMonitor monitor) {
             MultiProgressMonitor mpm = new MultiProgressMonitor(monitor, m);
             try {
-                s.get(SubMonitor.convert(mpm, Messages.TreeDiffer_loading_schema, 1));
+                loader.loadAndAnalyze();
             } catch (InterruptedException ex) {
                 return Status.CANCEL_STATUS;
-            } catch (IOException | CoreException ex) {
+            } catch (IOException ex) {
                 return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.TreeDiffer_schema_load_error, ex);
             } finally {
                 mpm.done();

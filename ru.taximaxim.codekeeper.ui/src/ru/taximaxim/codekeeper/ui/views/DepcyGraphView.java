@@ -184,7 +184,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
-        IDatabase newDb = showProject ? dbPair.dbProject.getDbObject() : dbPair.dbRemote.getDbObject();
+        IDatabase newDb = showProject ? dbPair.dbProject.getDatabase() : dbPair.dbRemote.getDatabase();
         IDatabase currentDb = newDb;
         depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
         if (currentDb == null || depRes == null) {

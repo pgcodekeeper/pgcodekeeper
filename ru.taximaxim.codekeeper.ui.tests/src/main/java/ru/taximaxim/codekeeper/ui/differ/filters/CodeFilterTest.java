@@ -164,7 +164,6 @@ class CodeFilterTest extends AbstractFilterTest{
         statement = mock(IStatement.class);
 
         when(treeElement.getStatement(any(IDatabase.class))).thenReturn(statement);
-        when(statement.getDbType()).thenReturn(DatabaseType.PG);
         if (hasCreationSql) {
             setCreationSql(statement);
         }
@@ -174,7 +173,6 @@ class CodeFilterTest extends AbstractFilterTest{
         whenStatementIsNotNull(false);
         when(treeElement.isSubElement()).thenReturn(true);
         when(statement.getParent()).thenReturn(isParentNull ? null : parent);
-        when(parent.getDbType()).thenReturn(DatabaseType.PG);
         setCreationSql(parent);
     }
 
@@ -189,7 +187,6 @@ class CodeFilterTest extends AbstractFilterTest{
         when(treeElement.isContainer()).thenReturn(true);
         when(treeElement.getChildren()).thenReturn(Arrays.asList(childElement));
         when(childElement.getStatement(any(IDatabase.class))).thenReturn(isChildNull ? null : child);
-        when(child.getDbType()).thenReturn(DatabaseType.PG);
         setCreationSql(child);
     }
 

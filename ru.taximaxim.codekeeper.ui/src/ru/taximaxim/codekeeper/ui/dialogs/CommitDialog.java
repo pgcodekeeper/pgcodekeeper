@@ -55,7 +55,7 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import ru.taximaxim.codekeeper.ui.differ.DbSource;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
@@ -69,8 +69,8 @@ public final class CommitDialog extends TrayDialog {
     private final boolean forceOverridesOnly;
     private final boolean initialOverrides;
 
-    private final DbSource dbProject;
-    private final DbSource dbRemote;
+    private final ILoader dbProject;
+    private final ILoader dbRemote;
     private final TreeElement diffTree;
     private final Set<TreeElement> depcyElementsSet;
     private final PgDbProject proj;
@@ -79,7 +79,7 @@ public final class CommitDialog extends TrayDialog {
     private Label warningLbl;
 
     public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
-            DbSource dbProject, DbSource dbRemote, TreeElement diffTree,
+            ILoader dbProject, ILoader dbRemote, TreeElement diffTree,
             IPreferenceStore mainPrefs, boolean egitCommitAvailable,
             boolean forceOverridesOnly, boolean initialOverrides, PgDbProject proj) {
         super(parentShell);
@@ -121,7 +121,7 @@ public final class CommitDialog extends TrayDialog {
         gTop.setLayoutData(gd);
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
-        var dbType = DatabaseType.fromStatement(dbProject.getDbObject());
+        var dbType = DatabaseType.fromStatement(dbProject.getDatabase());
         ISettings settings = new UISettings(proj.getProject(), null);
         DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, dbType, settings);
         gd = new GridData(GridData.FILL_BOTH);
@@ -312,9 +312,9 @@ public final class CommitDialog extends TrayDialog {
             try {
                 Collection<TreeElement> checked = new TreeFlattener()
                         .onlySelected()
-                        .onlyEdits(dbProject.getDbObject(), dbRemote.getDbObject())
+                        .onlyEdits(dbProject.getDatabase(), dbRemote.getDatabase())
                         .flatten(diffTree);
-                new UIProjectUpdater(dbRemote.getDbObject(), dbProject.getDbObject(),
+                new UIProjectUpdater(dbRemote.getDatabase(), dbProject.getDatabase(),
                         checked,  proj, isOverridesOnly).updatePartial();
                 monitor.done();
             } catch (IOException | CoreException e) {
