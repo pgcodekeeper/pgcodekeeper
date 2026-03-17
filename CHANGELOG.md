@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added a setting for selecting database loading modes (`Window -> Preferences -> pgCodeKeeper -> Use parallel database loading`).
+
 ### Changed
 
 - Updated the JUnit library version from 5.x to version 6.

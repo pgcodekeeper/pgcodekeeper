@@ -162,4 +162,9 @@ public final class TestUiSettings implements ISettings {
     public String getClusterName() {
         return null;
     }
+
+    @Override
+    public boolean isParallelLoad() {
+        return true;
+    }
 }

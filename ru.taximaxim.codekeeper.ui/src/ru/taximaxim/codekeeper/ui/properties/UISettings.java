@@ -171,6 +171,11 @@ public final class UISettings implements ISettings {
     }
 
     @Override
+    public boolean isParallelLoad() {
+        return getBooleanOfRootPref(PREF.PARALLEL_LOADING);
+    }
+
+    @Override
     public boolean isSimplifyView() {
         return getBooleanOfRootPref(PREF.SIMPLIFY_VIEW);
     }
