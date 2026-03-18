@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added group name to auto-generated connection name.
 - Added a setting for selecting database loading modes (`Window -> Preferences -> pgCodeKeeper -> Use parallel database loading`).
 
 ### Changed

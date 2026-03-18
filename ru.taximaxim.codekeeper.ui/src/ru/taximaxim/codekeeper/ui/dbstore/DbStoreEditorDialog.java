@@ -208,6 +208,11 @@ public final class DbStoreEditorDialog extends TrayDialog {
     private String generateEntryName() {
         StringBuilder entryNameSb = new StringBuilder();
 
+        String dbGroup = cmbGroups.getCombo().getText();
+        if (!dbGroup.isEmpty()) {
+            entryNameSb.append(dbGroup).append("/");
+        }
+
         String dbUser = txtDbUser.getText();
         if (!dbUser.isEmpty()) {
             entryNameSb.append(dbUser).append('@');
