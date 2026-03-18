@@ -13,7 +13,6 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Updated the JUnit library version from 5.x to version 6.
 - The clickhouse-jdbc driver has been updated. All connections to ClickHouse must now include the required `password` parameter.
 
 ### Fixed
