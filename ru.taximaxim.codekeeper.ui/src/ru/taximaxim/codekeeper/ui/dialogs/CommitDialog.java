@@ -310,7 +310,7 @@ public final class CommitDialog extends TrayDialog {
 
                 var provider = DatabaseType.fromStatement(dbProject.getDatabase()).getDatabaseProvider();
                 var settings = new UISettings(proj.getProject(), null);
-                PgCodeKeeperApi.exportToProject(provider, dbRemote.getDatabase(), dbProject.getDatabase(),
+                PgCodeKeeperApi.exportToProject(provider, dbProject.getDatabase(), dbRemote.getDatabase(),
                         checked, proj.getPathToProject(), isOverridesOnly, settings);
 
                 monitor.done();
