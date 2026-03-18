@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import java.text.MessageFormat;
-
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.AbstractInformationControl;
 import org.eclipse.jface.text.IDocument;
@@ -109,7 +107,7 @@ implements IInformationControlExtension2 {
             createCompletionProposalsControl(misplaceCompletionProposals);
         } else {
             StringBuilder sb = new StringBuilder();
-            sb.append(input.objectLocation.getQualifiedName())
+            sb.append(input.objectLocation.getObjectReference().getFullName())
             .append(" (").append(input.objectLocation.getType()).append(')'); //$NON-NLS-1$
             if (!input.comment.isBlank()) {
                 sb.append(" - ").append(input.comment); //$NON-NLS-1$

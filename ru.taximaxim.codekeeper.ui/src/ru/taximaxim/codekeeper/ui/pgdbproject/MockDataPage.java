@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -69,7 +68,9 @@ import ru.taximaxim.codekeeper.ui.generators.DataType;
 import ru.taximaxim.codekeeper.ui.generators.DbData;
 import ru.taximaxim.codekeeper.ui.generators.IntegerData;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
@@ -757,8 +758,13 @@ public final class MockDataPage extends WizardPage {
             ITable table = null;
             try {
                 dbType = ProjectUtils.getDatabaseType(file.getProject());
-                table = (ITable) UIProjectLoader.parseStatement(file, Arrays.asList(DbObjType.TABLE));
-            } catch (InterruptedException | IOException | CoreException e) {
+                IDumpLoader loader = dbType.getDatabaseProvider().getDumpLoader(
+                        file.getLocation().toFile().toPath(),
+                        new DiffSettings(new UISettings(file.getProject(), null)));
+                table = (ITable) loader.loadAndAnalyze().getDescendants()
+                        .filter(e -> e.getStatementType() == DbObjType.TABLE)
+                        .findAny().orElse(null);
+            } catch (InterruptedException | IOException e) {
                 Log.log(Log.LOG_ERROR, "Error parsing file: " + file.getName(), e); //$NON-NLS-1$
             }
             if (table != null) {

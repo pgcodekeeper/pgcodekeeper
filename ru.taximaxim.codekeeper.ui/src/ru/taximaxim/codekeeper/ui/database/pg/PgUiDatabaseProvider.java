@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.database.pg;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import org.eclipse.core.runtime.IPath;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.formatter.IFormatConfiguration;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
 import org.pgcodekeeper.core.database.pg.PgDatabaseProvider;
@@ -140,6 +142,11 @@ public class PgUiDatabaseProvider extends PgDatabaseProvider implements IUiDatab
             fileRenames.add(
                     new RenameDefinitionChange(file.getParent().getFullPath(), FileUtils.getValidFilename(newName)));
         }
+    }
+
+    @Override
+    public Path getRelativeFilePath(IStatement st) {
+        return PgWorkDirs.getRelativeFilePath(st);
     }
 
     @Override

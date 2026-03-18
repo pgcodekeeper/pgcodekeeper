@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.database.ms;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.pgcodekeeper.core.database.api.formatter.IFormatConfiguration;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
 import org.pgcodekeeper.core.database.ms.MsDatabaseProvider;
@@ -136,6 +138,11 @@ public class MsUiDatabaseProvider extends MsDatabaseProvider implements IUiDatab
         fileRenames
                 .add(new RenameDefinitionChange(file.getFullPath(),
                         AbstractModelExporter.getExportedFilenameSql(newName)));
+    }
+
+    @Override
+    public Path getRelativeFilePath(IStatement st) {
+        return MsWorkDirs.getRelativeFilePath(st);
     }
 
     @Override

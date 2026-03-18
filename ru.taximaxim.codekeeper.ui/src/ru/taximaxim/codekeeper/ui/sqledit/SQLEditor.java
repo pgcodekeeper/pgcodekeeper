@@ -99,10 +99,12 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.DangerStatement;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
 import org.pgcodekeeper.core.reporter.IProgressReporter;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
@@ -633,8 +635,12 @@ implements IResourceChangeListener, ITextErrorReporter {
         ScriptParser[] parsers = new ScriptParser[1];
         IRunnableWithProgress runnable = monitor -> {
             try {
-                ScriptParser scriptParser = new ScriptParser(
-                        getEditorInput().getName(), textRetrieved, new UISettings(null, null, dbInfo.getDbType()));
+                var scriptSettings = new UISettings(null, null, dbInfo.getDbType());
+                IDumpLoader scriptLoader = dbInfo.getDbType().getDatabaseProvider().getDumpLoader(
+                        () -> new ByteArrayInputStream(textRetrieved.getBytes(StandardCharsets.UTF_8)),
+                        getEditorInput().getName(), new DiffSettings(scriptSettings, new UIMonitor(monitor)));
+                ScriptParser scriptParser = new ScriptParser(scriptLoader,
+                        getEditorInput().getName(), textRetrieved);
                 String error = scriptParser.getErrorMessage();
                 if (error != null) {
                     UiProgressReporter.writeSingleError(error);

@@ -132,8 +132,6 @@ public final class Messages extends NLS {
 
     public static String UiProgressReporter_warning;
 
-    public static String UIProjectLoader_error_loading_structure;
-
     public static String UpdateDdl_read_only_db_message;
 
     public static String UpdateDdl_read_only_db_title;
@@ -172,10 +170,6 @@ public final class Messages extends NLS {
     public static String dbStoreEditorDialog_empty_name;
 
     // ui.differ
-    public static String dbSource_db_is_not_loaded_yet_object_is_null;
-    public static String dbSource_executing_pg_dump;
-    public static String dbSource_loading_dump;
-    public static String dbSource_loading_tree;
     public static String differ_direct_diff;
     public static String differ_get_differ;
     public static String differ_reverse_diff;
@@ -202,7 +196,6 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_expand_all;
     public static String diffTreeViewer_expand_subtree;
     public static String diffTreeViewer_select_subtree;
-    public static String treeDiffer_building_diff_tree;
     public static String reading_db_from_jdbc;
 
     // change perspective
@@ -955,14 +948,6 @@ public final class Messages extends NLS {
     public static String StoragePrefListEditor_open_snapshot;
 
     public static String Duration_expected_format;
-
-    public static String TreeDiffer_unknown_error;
-
-    public static String TreeDiffer_loading_schema;
-
-    public static String TreeDiffer_loading_schema_from;
-
-    public static String TreeDiffer_schema_load_error;
 
     public static String edit;
 

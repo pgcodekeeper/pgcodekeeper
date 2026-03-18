@@ -74,7 +74,6 @@ import org.pgcodekeeper.core.database.ch.schema.ChFunction;
 import org.pgcodekeeper.core.database.ms.project.MsWorkDirs;
 import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
 import org.pgcodekeeper.core.utils.FileUtils;
-import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -82,7 +81,9 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.ObjectLevel;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
@@ -181,8 +182,14 @@ public final class NewObjectPage extends WizardPage {
 
         IStatement st = null;
         try {
-            st = UIProjectLoader.parseStatement((IFile) resource, types);
-        } catch (IOException | InterruptedException | CoreException ex) {
+            IFile iFile = (IFile) resource;
+            IDumpLoader loader = dbType.getDatabaseProvider().getDumpLoader(
+                    iFile.getLocation().toFile().toPath(),
+                    new DiffSettings(new UISettings(iFile.getProject(), null)));
+            st = loader.loadAndAnalyze().getDescendants()
+                    .filter(e -> types.contains(e.getStatementType()))
+                    .findAny().orElse(null);
+        } catch (IOException | InterruptedException ex) {
             Log.log(Log.LOG_ERROR, "Error while parsing selection", ex); //$NON-NLS-1$
         }
         if (st == null) {
@@ -476,9 +483,9 @@ public final class NewObjectPage extends WizardPage {
 
     private void openFileInEditor(IFile file, String tmplId, String schema,
             String object, String parent) throws CoreException {
-        String schemaName = schema != null ? Utils.getQuotedName(schema, dbType) : null;
+        String schemaName = schema != null ? dbType.getDatabaseProvider().getQuotedName(schema) : null;
         String objectName = type.in(DbObjType.OPERATOR, DbObjType.CAST, DbObjType.USER_MAPPING) ? object
-                : Utils.getQuotedName(object, dbType);
+                : dbType.getDatabaseProvider().getQuotedName(object);
 
         Template newObjTmpl = SQLEditorTemplateManager.getInstance().getTemplateStore().findTemplateById(tmplId);
         ITextViewer textViewer = (ITextViewer) openFileInEditor(file).getAdapter(ITextOperationTarget.class);
@@ -504,7 +511,7 @@ public final class NewObjectPage extends WizardPage {
                 new SqlEditorTemplateProposal(newObjTmpl,
                         new DocumentTemplateContext(new SQLEditorTemplateContextType(), doc, new Position(offset, 0)),
                         new Region(offset, 0), null, 0)
-                .fillTmplAndInsertToViewer(schemaName, objectName, Utils.getQuotedName(parent, dbType), textViewer, 0);
+                .fillTmplAndInsertToViewer(schemaName, objectName, dbType.getDatabaseProvider().getQuotedName(parent), textViewer, 0);
             } catch (BadLocationException e) {
                 Log.log(Log.LOG_ERROR, "File with location exception: " + file.getName(), e); //$NON-NLS-1$
             } finally {
@@ -538,7 +545,7 @@ public final class NewObjectPage extends WizardPage {
         if (!file.exists()) {
             StringBuilder sb = new StringBuilder();
             String schemaText = (isClickHouseDb() ? CH_PATTERN : PATTERN).formatted(
-                    Utils.getQuotedName(name, dbType));
+                    dbType.getDatabaseProvider().getQuotedName(name));
             sb.append(schemaText);
             file.create(new ByteArrayInputStream(sb.toString().getBytes(
                     Charset.forName(file.getCharset()))), false, null);

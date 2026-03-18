@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -46,6 +45,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.pgcodekeeper.core.api.PgCodeKeeperApi;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeFlattener;
 import org.pgcodekeeper.core.settings.ISettings;
@@ -55,12 +56,10 @@ import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
-import org.pgcodekeeper.core.database.api.loader.ILoader;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
-import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class CommitDialog extends TrayDialog {
 
@@ -78,10 +77,9 @@ public final class CommitDialog extends TrayDialog {
     private Button btnSaveOverrides;
     private Label warningLbl;
 
-    public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet,
-            ILoader dbProject, ILoader dbRemote, TreeElement diffTree,
-            IPreferenceStore mainPrefs, boolean egitCommitAvailable,
-            boolean forceOverridesOnly, boolean initialOverrides, PgDbProject proj) {
+    public CommitDialog(Shell parentShell, Set<TreeElement> depcyElementsSet, ILoader dbProject, ILoader dbRemote,
+            TreeElement diffTree, IPreferenceStore mainPrefs, boolean egitCommitAvailable, boolean forceOverridesOnly,
+            boolean initialOverrides, PgDbProject proj) {
         super(parentShell);
         this.depcyElementsSet = depcyElementsSet;
         this.dbProject = dbProject;
@@ -112,8 +110,7 @@ public final class CommitDialog extends TrayDialog {
         container.setLayout(gl);
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        new Label(container, SWT.NONE).setText(
-                Messages.commitPartDescr_the_following_changes_be_included_in_commit);
+        new Label(container, SWT.NONE).setText(Messages.commitPartDescr_the_following_changes_be_included_in_commit);
 
         Group gTop = new Group(container, SWT.NONE);
         gTop.setLayout(new GridLayout());
@@ -130,8 +127,7 @@ public final class CommitDialog extends TrayDialog {
         dtvTop.setLayoutData(gd);
 
         dtvTop.setAutoExpand(true);
-        List<TreeElement> result = new TreeFlattener().onlySelected()
-                .flatten(diffTree);
+        List<TreeElement> result = new TreeFlattener().onlySelected().flatten(diffTree);
         dtvTop.setInputCollection(result, dbProject, dbRemote, Collections.emptySet());
 
         Group gBottom = new Group(container, SWT.NONE);
@@ -147,7 +143,7 @@ public final class CommitDialog extends TrayDialog {
         gd.widthHint = 1000;
         dtvBottom.setLayoutData(gd);
 
-        // выбрать все зависимые элементы для наката
+        // select all dependent elements for applying
         for (TreeElement el : depcyElementsSet) {
             el.setSelected(true);
         }
@@ -193,8 +189,7 @@ public final class CommitDialog extends TrayDialog {
         getButton(IDialogConstants.CANCEL_ID).setEnabled(false);
 
         Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
-        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project,
-                btnSaveOverrides.getSelection());
+        Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, btnSaveOverrides.getSelection());
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
@@ -236,11 +231,11 @@ public final class CommitDialog extends TrayDialog {
         for (TreeElement el : depcyElementsSet) {
             if (!el.isSelected()) {
                 switch (el.getSide()) {
-                // удаляется
+                // being deleted
                 case LEFT:
                     showWarning = hasSelectedParent(el);
                     break;
-                    // создается
+                // being created
                 case RIGHT:
                     showWarning = el.isSubTreeSelected();
                     break;
@@ -277,10 +272,11 @@ public final class CommitDialog extends TrayDialog {
     }
 
     /**
-     * Задача этого класса - смотреть на снятие галочки с элемента и если
-     * галочка снимается то проверить следующее: <br>
-     * 1. Элемент удаляется: если есть выбранные родители - показать предупреждение; <br>
-     * 2. Элемент создается: если есть выбранные дети - показать предупреждение
+     * This class monitors element unchecking and validates the following: <br>
+     * 1. Element is being deleted: if there are selected parents - show warning;
+     * <br>
+     * 2. Element is being created: if there are selected children - show warning
+     *
      * @author botov_av
      */
     private class ValidationCheckStateListener implements ICheckStateListener {
@@ -302,24 +298,24 @@ public final class CommitDialog extends TrayDialog {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
-            SubMonitor pm = SubMonitor.convert(
-                    monitor, Messages.commitPartDescr_commiting, 2);
+            SubMonitor pm = SubMonitor.convert(monitor, Messages.commitPartDescr_commiting, 2);
 
             Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
             pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
 
             try {
-                Collection<TreeElement> checked = new TreeFlattener()
-                        .onlySelected()
-                        .onlyEdits(dbProject.getDatabase(), dbRemote.getDatabase())
-                        .flatten(diffTree);
-                new UIProjectUpdater(dbRemote.getDatabase(), dbProject.getDatabase(),
-                        checked,  proj, isOverridesOnly).updatePartial();
+                List<TreeElement> checked = new TreeFlattener().onlySelected()
+                        .onlyEdits(dbProject.getDatabase(), dbRemote.getDatabase()).flatten(diffTree);
+
+                var provider = DatabaseType.fromStatement(dbProject.getDatabase()).getDatabaseProvider();
+                var settings = new UISettings(proj.getProject(), null);
+                PgCodeKeeperApi.exportToProject(provider, dbRemote.getDatabase(), dbProject.getDatabase(),
+                        checked, proj.getPathToProject(), isOverridesOnly, settings);
+
                 monitor.done();
-            } catch (IOException | CoreException e) {
-                return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
-                        Messages.ProjectEditorDiffer_commit_error, e);
+            } catch (IOException e) {
+                return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.ProjectEditorDiffer_commit_error, e);
             }
             return Status.OK_STATUS;
         }

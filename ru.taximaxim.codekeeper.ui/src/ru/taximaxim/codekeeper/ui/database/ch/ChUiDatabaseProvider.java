@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.database.ch;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
@@ -22,6 +23,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.IPath;
 import org.pgcodekeeper.core.database.api.formatter.IFormatConfiguration;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.ch.ChDatabaseProvider;
 import org.pgcodekeeper.core.database.ch.formatter.ChFormatter;
@@ -130,6 +132,11 @@ public class ChUiDatabaseProvider extends ChDatabaseProvider implements IUiDatab
     @Override
     public void addRenames(List<RenameDefinitionChange> fileRenames, IFile file, String newName, ObjectLocation ref) {
         throw new UnsupportedOperationException(Messages.DatabaseType_unsupported_type + getFullName());
+    }
+
+    @Override
+    public Path getRelativeFilePath(IStatement st) {
+        return ChWorkDirs.getRelativeFilePath(st);
     }
 
     @Override

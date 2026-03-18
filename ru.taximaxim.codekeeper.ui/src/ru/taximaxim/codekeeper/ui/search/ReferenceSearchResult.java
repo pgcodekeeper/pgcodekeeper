@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.search;
 
-import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -51,7 +50,7 @@ implements IEditorMatchAdapter, IFileMatchAdapter {
 
     @Override
     public String getLabel() {
-        return RESULT_LABEL.formatted(query.getReference().getQualifiedName(), getMatchCount());
+        return RESULT_LABEL.formatted(query.getReference().getObjectReference().getFullName(), getMatchCount());
     }
 
     @Override
