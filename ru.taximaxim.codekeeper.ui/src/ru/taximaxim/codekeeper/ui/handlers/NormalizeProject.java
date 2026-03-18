@@ -38,7 +38,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 
 import ru.taximaxim.codekeeper.ui.Log;
@@ -54,9 +53,10 @@ import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
-import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class NormalizeProject extends AbstractHandler {
+
+    private static final String PROJECT_ONLY = "projectOnly"; //$NON-NLS-1$
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -84,7 +84,7 @@ public final class NormalizeProject extends AbstractHandler {
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
                     boolean projectOnly = true;
-                    Map<String, Boolean> oneTimePrefs = Map.of(Consts.PROJECT_ONLY, projectOnly);
+                    Map<String, Boolean> oneTimePrefs = Map.of(PROJECT_ONLY, projectOnly);
                     IDatabaseProvider provider = ProjectUtils.getDatabaseType(proj.getProject()).getDatabaseProvider();
                     DiffSettings diffSettings = new DiffSettings(
                             new UISettings(proj.getProject(), oneTimePrefs),
@@ -93,8 +93,11 @@ public final class NormalizeProject extends AbstractHandler {
                             proj.getProject().getLocation().toFile().toPath(), diffSettings);
                     IDatabase db = loader.loadAndAnalyze();
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
-                    new UIProjectUpdater(db, proj).updateFull(projectOnly);
-                } catch (IOException | CoreException ex) {
+                    var updaterSettings = new UISettings(proj.getProject(), null);
+                    provider.getProjectUpdater(db, null, null,
+                            proj.getProject().getLocation().toFile().toPath(), updaterSettings)
+                            .updateFull(projectOnly);
+                } catch (IOException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
                 } catch (InterruptedException e) {

@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.database.base;
 
+import java.nio.file.Path;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
@@ -135,6 +136,12 @@ public interface IUiDatabaseProvider extends IDatabaseProvider {
      * @return SQL formatter
      */
     IFormatter getFormatter(String source, int offset, int length, IFormatConfiguration config);
+
+    /**
+     * @param st statement to get the relative path for
+     * @return relative file path for the given statement within the project
+     */
+    Path getRelativeFilePath(IStatement st);
 
     @Override
     default IJdbcConnector getJdbcConnector(String url) {

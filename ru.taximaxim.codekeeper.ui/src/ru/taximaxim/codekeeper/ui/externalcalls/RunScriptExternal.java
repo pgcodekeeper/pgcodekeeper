@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.ui.externalcalls;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.file.Path;
 
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.utils.TempFile;
@@ -42,7 +43,7 @@ public final class RunScriptExternal implements Runnable {
     @Override
     public void run() {
         final StdStreamRedirector sr = new StdStreamRedirector(reporter);
-        try (TempFile tempFile = new TempFile("tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$
+        try (TempFile tempFile = new TempFile(Path.of(System.getProperty("java.io.tmpdir")), "tmp_migration_", ".sql")) { //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
             File outFile = tempFile.get().toFile();
             try (PrintWriter writer = new PrintWriter(outFile, Consts.UTF_8)) {
                 writer.write(script);

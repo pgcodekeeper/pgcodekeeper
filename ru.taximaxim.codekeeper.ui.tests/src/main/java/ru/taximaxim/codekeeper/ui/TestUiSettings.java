@@ -129,6 +129,11 @@ public final class TestUiSettings implements ISettings {
     }
 
     @Override
+    public boolean isParallelLoad() {
+        return true;
+    }
+
+    @Override
     public FormatConfiguration getFormatConfiguration() {
         throw new UnsupportedOperationException();
     }
@@ -161,11 +166,6 @@ public final class TestUiSettings implements ISettings {
     @Override
     public String getClusterName() {
         return null;
-    }
-
-    @Override
-    public boolean isParallelLoad() {
-        return true;
     }
 
     @Override

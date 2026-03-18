@@ -25,15 +25,15 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.monitor.IMonitor;
+import org.pgcodekeeper.core.api.PgCodeKeeperApi;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -55,19 +55,15 @@ public final class Differ implements IRunnableWithProgress {
     private List<Entry<IStatement, IStatement>> additionalDepciesOldDb;
     private List<Entry<IStatement, IStatement>> additionalDepciesNewDb;
 
-
-    public void setAdditionalDepciesOldDb(
-            List<Entry<IStatement, IStatement>> additionalDepcies) {
+    public void setAdditionalDepciesOldDb(List<Entry<IStatement, IStatement>> additionalDepcies) {
         this.additionalDepciesOldDb = additionalDepcies;
     }
 
-    public void setAdditionalDepciesNewDb(
-            List<Entry<IStatement, IStatement>> additionalDepcies) {
+    public void setAdditionalDepciesNewDb(List<Entry<IStatement, IStatement>> additionalDepcies) {
         this.additionalDepciesNewDb = additionalDepcies;
     }
 
-    public void addAdditionalDepciesOldDb(
-            List<Entry<IStatement, IStatement>> additionalDepcies) {
+    public void addAdditionalDepciesOldDb(List<Entry<IStatement, IStatement>> additionalDepcies) {
         if (this.additionalDepciesOldDb == null) {
             setAdditionalDepciesOldDb(additionalDepcies);
         } else {
@@ -79,8 +75,8 @@ public final class Differ implements IRunnableWithProgress {
         return additionalDepciesOldDb;
     }
 
-    public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root,
-            String timezone, IProject proj, Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
+    public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root, String timezone, IProject proj,
+            Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
         this.oldDb = oldDb;
         this.newDb = newDb;
         this.root = root;
@@ -88,11 +84,6 @@ public final class Differ implements IRunnableWithProgress {
         this.dbType = dbType;
         this.proj = proj;
         this.oneTimePrefs = oneTimePrefs;
-    }
-
-    public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root,
-            String timezone, IProject proj) {
-        this(oldDb, newDb, root, timezone, proj, null, null);
     }
 
     public Job getDifferJob() {
@@ -103,8 +94,7 @@ public final class Differ implements IRunnableWithProgress {
                 try {
                     Differ.this.run(monitor);
                 } catch (InvocationTargetException e) {
-                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
-                            Messages.error_in_the_project_modifier_thread, e);
+                    return new Status(IStatus.ERROR, PLUGIN_ID.THIS, Messages.error_in_the_project_modifier_thread, e);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 }
@@ -125,25 +115,22 @@ public final class Differ implements IRunnableWithProgress {
     }
 
     @Override
-    public void run(IProgressMonitor monitor) throws InvocationTargetException,
-    InterruptedException {
-        SubMonitor pm = SubMonitor.convert(monitor, Messages.calculating_diff, 100); // 0
-
+    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         Log.log(Log.LOG_INFO, "Diff from: " + oldDb.getName() //$NON-NLS-1$
-        + " to: " + newDb.getName()); //$NON-NLS-1$
+                + " to: " + newDb.getName()); //$NON-NLS-1$
+        UIMonitor uiMonitor = new UIMonitor(monitor);
 
-        pm.newChild(25).subTask(Messages.differ_direct_diff); // 75
         try {
             UISettings settings = new UISettings(proj, oneTimePrefs, dbType);
-            diffDirect = new PgDiff(settings).diff(
-                    root,
-                    oldDb, newDb,
-                    additionalDepciesOldDb, additionalDepciesNewDb, null);
+            DiffSettings diffSettings = new DiffSettings(settings, uiMonitor);
+            diffSettings.addAdditionalDependencies(additionalDepciesOldDb);
+            diffSettings.addAdditionalDependencies(additionalDepciesNewDb);
+
+            diffDirect = PgCodeKeeperApi.diff(dbType.getDatabaseProvider(), oldDb, newDb, diffSettings, root);
         } catch (IOException e) {
             throw new InvocationTargetException(e, e.getLocalizedMessage());
         }
 
-        IMonitor.checkCancelled(new UIMonitor(monitor));
         monitor.done();
     }
 }

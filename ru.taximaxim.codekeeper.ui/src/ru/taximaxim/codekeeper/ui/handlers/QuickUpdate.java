@@ -15,9 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.handlers;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
@@ -49,39 +51,37 @@ import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.progress.IProgressConstants2;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.DangerStatement;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.api.PgCodeKeeperApi;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
-import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.IFunction;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.PgCodekeeperUIException;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.database.base.IUiDatabaseProvider;
 import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import org.pgcodekeeper.core.database.api.IDatabaseProvider;
-import org.pgcodekeeper.core.database.api.loader.ILoader;
-import org.pgcodekeeper.core.settings.DiffSettings;
-
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.QuickUpdateJobTester;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
-import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class QuickUpdate extends AbstractHandler {
 
@@ -89,7 +89,7 @@ public final class QuickUpdate extends AbstractHandler {
     public Object execute(ExecutionEvent event) {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         DbInfo dbInfo = editor.getCurrentDb();
-        if (dbInfo == null){
+        if (dbInfo == null) {
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
             return null;
         }
@@ -130,7 +130,7 @@ public final class QuickUpdate extends AbstractHandler {
     @Override
     public boolean isEnabled() {
         IEditorPart editor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-        return editor instanceof SQLEditor && ProjectUtils.isInProject(editor.getEditorInput());
+        return (editor instanceof SQLEditor) && ProjectUtils.isInProject(editor.getEditorInput());
     }
 }
 
@@ -169,8 +169,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         return Status.OK_STATUS;
     }
 
-    private void doRun() throws IOException, InterruptedException,
-    CoreException, PgCodekeeperUIException, InvocationTargetException {
+    private void doRun() throws IOException, InterruptedException, CoreException, PgCodekeeperUIException,
+            InvocationTargetException {
         DatabaseType dbType = ProjectUtils.getDatabaseType(proj.getProject());
 
         if (dbInfo.getDbType() != dbType) {
@@ -181,8 +181,9 @@ class QuickUpdateJob extends SingletonEditorJob {
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 
-        IDatabase dbProjectFragment = UIProjectLoader
-                .buildFiles(Arrays.asList(file), dbType, monitor.newChild(1));
+        IDumpLoader fileLoader = dbType.getDatabaseProvider().getDumpLoader(file.getLocation().toFile().toPath(),
+                new DiffSettings(new UISettings(proj.getProject(), null, dbType), new UIMonitor(monitor)));
+        IDatabase dbProjectFragment = fileLoader.loadAndAnalyze();
         List<IStatement> listPgObjectsFragment = new ArrayList<>();
         dbProjectFragment.getDescendants().forEach(listPgObjectsFragment::add);
 
@@ -190,8 +191,8 @@ class QuickUpdateJob extends SingletonEditorJob {
         if (schemaCount > 1) {
             // more than 1 schema, shoudln't happen
             throw new PgCodekeeperUIException(Messages.QuickUpdate_multiple_schemas);
-        } else if (listPgObjectsFragment.isEmpty() ||
-                (schemaCount == listPgObjectsFragment.size() && !isSchemaFile)) {
+        } else if (listPgObjectsFragment.isEmpty()
+                || ((schemaCount == listPgObjectsFragment.size()) && !isSchemaFile)) {
             // no objects (schemaCount == 0), or
             // only schema loaded but not a schema file: probably a search_path-only file
             throw new PgCodekeeperUIException(Messages.QuickUpdate_empty_script);
@@ -199,31 +200,24 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        var settings = new UISettings(null, null);
-        IDatabaseProvider provider = dbType.getDatabaseProvider();
-        DiffSettings diffSettings = new DiffSettings(
-                new UISettings(proj.getProject(), null, dbType),
+        IUiDatabaseProvider provider = dbType.getDatabaseProvider();
+        DiffSettings diffSettings = new DiffSettings(new UISettings(proj.getProject(), null, dbType),
                 new UIMonitor(monitor));
 
-        ILoader dbRemote = provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
-        dbRemote.loadAndAnalyze();
+        ILoader dbRemote = provider.getDbInfoJdbcLoader(dbInfo, diffSettings);
+        ILoader dbProject = provider.getProjectLoader(proj.getProject().getLocation().toFile().toPath(), diffSettings);
 
-        ILoader dbProject = provider.getProjectLoader(
-                proj.getProject().getLocation().toFile().toPath(), diffSettings);
-        dbProject.loadAndAnalyze();
-
-        TreeDiffer treediffer = new TreeDiffer(settings, dbRemote, dbProject);
-        treediffer.run(monitor.newChild(1));
-        TreeElement treeFull = treediffer.getDiffTree();
-        Collection<TreeElement> checked = setCheckedFromFragment(treeFull,
-                listPgObjectsFragment, dbRemote.getDatabase(), dbProject.getDatabase());
+        TreeElement treeFull = PgCodeKeeperApi.createTree(dbRemote, dbProject, diffSettings);
+        Collection<TreeElement> checked = setCheckedFromFragment(treeFull, listPgObjectsFragment,
+                dbRemote.getDatabase(), dbProject.getDatabase());
 
         if (checked.isEmpty()) {
             Log.log(Log.LOG_INFO, "No object changes found when comparing to DB"); //$NON-NLS-1$
             return;
         }
 
-        Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), treeFull, timezone, proj.getProject());
+        Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), treeFull, timezone,
+                proj.getProject(), null, dbType);
         differ.run(monitor.newChild(1));
 
         checkFileModified();
@@ -233,8 +227,10 @@ class QuickUpdateJob extends SingletonEditorJob {
         IDbInfoConnector connector = IDbInfoConnector.createConnector(dbInfo);
 
         try {
-            ScriptParser parser = new ScriptParser(file.getName(), differ.getDiffDirect(),
-                    new UISettings(proj.getProject(), null));
+            IDumpLoader scriptLoader = provider.getDumpLoader(
+                    () -> new ByteArrayInputStream(differ.getDiffDirect().getBytes(StandardCharsets.UTF_8)),
+                    file.getName(), diffSettings);
+            ScriptParser parser = new ScriptParser(scriptLoader, file.getName(), differ.getDiffDirect());
             String error = parser.getErrorMessage();
             if (error != null) {
                 throw new PgCodekeeperUIException(error);
@@ -251,51 +247,43 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
-        TreeDiffer treedifferAfter = new TreeDiffer(settings, new StubDatabaseLoader(dbProject.getDatabase(), dbProject.getOrigin()), dbRemote);
-        treedifferAfter.run(monitor.newChild(1));
-        TreeElement treeAfter = treedifferAfter.getDiffTree();
+        TreeElement treeAfter = PgCodeKeeperApi.createTree(
+                new StubDatabaseLoader(dbProject.getDatabase(), dbProject.getDatabaseName()), dbRemote, diffSettings);
 
-        Collection<TreeElement> checkedAfter = setCheckedFromFragment(treeAfter,
-                listPgObjectsFragment, dbProject.getDatabase(), dbRemote.getDatabase());
+        Collection<TreeElement> checkedAfter = setCheckedFromFragment(treeAfter, listPgObjectsFragment,
+                dbProject.getDatabase(), dbRemote.getDatabase());
         if (checkedAfter.isEmpty()) {
             // success, no export needed, Postgres didn't make any alterations
             return;
         }
 
-
         checkFileModified();
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
-        var updater = new UIProjectUpdater(dbRemote.getDatabase(),
-                dbProject.getDatabase(), checkedAfter,
-                proj, false);
-        updater.updatePartial();
+        provider.getProjectUpdater(dbRemote.getDatabase(), dbProject.getDatabase(), checkedAfter,
+                proj.getPathToProject(), false, new UISettings(proj.getProject(), null)).updatePartial();
 
         file.refreshLocal(IResource.DEPTH_INFINITE, monitor.newChild(1));
     }
 
     /**
-     * элементы в объекте TreeElement treeFull, совпадающие с
-     * переданными в Map<String, IStatement> listPgObjectsFragment
-     * помечаются как выбранные.
+     * элементы в объекте TreeElement treeFull, совпадающие с переданными в
+     * Map<String, IStatement> listPgObjectsFragment помечаются как выбранные.
      *
-     * @return возвращает коллекцию содержащую TreeElement'ы, которые
-     * были помечены как выбранные.
+     * @return возвращает коллекцию содержащую TreeElement'ы, которые были помечены
+     *         как выбранные.
      */
     private Collection<TreeElement> setCheckedFromFragment(TreeElement treeFull,
             Collection<IStatement> listPgObjectsFragment, IDatabase left, IDatabase right) {
         // mark schemas only when there are no schema-nested objects
-        boolean markSchemas = listPgObjectsFragment.stream()
-                .map(IStatement::getStatementType)
-                .allMatch(ty -> ty == DbObjType.SCHEMA
-                || ty == DbObjType.EXTENSION
-                || ty == DbObjType.CAST
-                || ty == DbObjType.EVENT_TRIGGER);
+        boolean markSchemas = listPgObjectsFragment.stream().map(IStatement::getStatementType)
+                .allMatch(ty -> (ty == DbObjType.SCHEMA) || (ty == DbObjType.EXTENSION) || (ty == DbObjType.CAST)
+                        || (ty == DbObjType.EVENT_TRIGGER));
 
         Set<TreeElement> checked = new HashSet<>();
-        for (IStatement st : listPgObjectsFragment){
+        for (IStatement st : listPgObjectsFragment) {
             TreeElement el = treeFull.findElement(st);
-            if(el == null){
+            if (el == null) {
                 continue;
             }
             // mark all objects sharing same files:
@@ -309,12 +297,12 @@ class QuickUpdateJob extends SingletonEditorJob {
                     child.setSelected(true);
                     checked.add(child);
                 });
-            break;
+                break;
             default:
                 break;
             }
 
-            if (el.getType() != DbObjType.SCHEMA || markSchemas) {
+            if ((el.getType() != DbObjType.SCHEMA) || markSchemas) {
                 el.setSelected(true);
                 checked.add(el);
             }
@@ -323,21 +311,22 @@ class QuickUpdateJob extends SingletonEditorJob {
         return checked;
     }
 
-    private void markFunctions(IFunction func, TreeElement elFunc, Set<TreeElement> checked,
-            IDatabase left, IDatabase right) {
+    private void markFunctions(IFunction func, TreeElement elFunc, Set<TreeElement> checked, IDatabase left,
+            IDatabase right) {
         // check every "adjacent" element for overload changes
-        elFunc.getParent().getChildren().stream()
-        .filter(el -> el.getType() == DbObjType.FUNCTION)
-        .filter(el -> func.getBareName().equals(el.getStatementSide(left, right).getBareName()))
-        .forEach(overload -> {
-            overload.setSelected(true);
-            checked.add(overload);
-        });
+        elFunc.getParent().getChildren().stream().filter(el -> el.getType() == DbObjType.FUNCTION)
+                .filter(el -> func.getBareName().equals(el.getStatementSide(left, right).getBareName()))
+                .forEach(overload -> {
+                    overload.setSelected(true);
+                    checked.add(overload);
+                });
     }
 
     /**
      * Use before major job steps to avoid time waste.
-     * @throws PgCodekeeperUIException when file on disk differs from {@link #textSnapshot}
+     *
+     * @throws PgCodekeeperUIException when file on disk differs from
+     *                                 {@link #textSnapshot}
      */
     private void checkFileModified() throws IOException, PgCodekeeperUIException {
         if (!Arrays.equals(textSnapshot, Files.readAllBytes(Paths.get(file.getLocationURI())))) {

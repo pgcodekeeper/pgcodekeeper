@@ -25,7 +25,6 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
@@ -34,26 +33,27 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.FileEditorInput;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
-import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.utils.Utils;
+import org.pgcodekeeper.core.api.PgCodeKeeperApi;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.utils.Utils;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.pgdbproject.parser.UIProjectLoader;
+import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
-import ru.taximaxim.codekeeper.ui.utils.UIProjectUpdater;
 
 public final class AddComment extends AbstractHandler {
 
@@ -73,11 +73,13 @@ public final class AddComment extends AbstractHandler {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         ObjectLocation location = editor.getCurrentReference();
         IFile file = FileUtilsUi.getFileForLocation(location);
-        if (file == null || !IDE.saveAllEditors(new IResource[] { file.getProject() }, true)) {
+        if ((file == null) || !IDE.saveAllEditors(new IResource[] { file.getProject() }, true)) {
             return;
         }
 
-        IDatabase oldDb = UIProjectLoader.buildFiles(List.of(file), DatabaseType.PG, null);
+        IDumpLoader fileLoader = ProjectUtils.getDatabaseType(file.getProject()).getDatabaseProvider().getDumpLoader(
+                file.getLocation().toFile().toPath(), new DiffSettings(new UISettings(file.getProject(), null)));
+        IDatabase oldDb = fileLoader.loadAndAnalyze();
         IDatabase newDb = (IDatabase) oldDb.deepCopy();
 
         IStatement statement = newDb.getStatement(location.getObjectReference());
@@ -92,8 +94,8 @@ public final class AddComment extends AbstractHandler {
             oldComment = PgDiffUtils.unquoteQuotedString(oldComment, 1);
         }
 
-        InputDialog dialog = new InputDialog(HandlerUtil.getActiveShell(event),
-                Messages.AddCommentDialogTitle, Messages.AddCommentDialogMessage, oldComment, null);
+        InputDialog dialog = new InputDialog(HandlerUtil.getActiveShell(event), Messages.AddCommentDialogTitle,
+                Messages.AddCommentDialogMessage, oldComment, null);
 
         if (dialog.open() != Window.OK) {
             return;
@@ -115,13 +117,14 @@ public final class AddComment extends AbstractHandler {
         var newDbSource = new StubDatabaseLoader(newDb, "new"); //$NON-NLS-1$
 
         var project = file.getProject();
-        var settings = new UISettings(project, null);
-        TreeDiffer treeDiffer = new TreeDiffer(settings, newDbSource, oldDbSource);
-        treeDiffer.run(new NullProgressMonitor());
-        TreeElement el = treeDiffer.getDiffTree().findElement(statement);
+        IDatabaseProvider provider = ProjectUtils.getDatabaseType(project).getDatabaseProvider();
+        DiffSettings diffSettings = new DiffSettings(new UISettings(project, null));
+        TreeElement el = PgCodeKeeperApi.createTree(newDbSource, oldDbSource, diffSettings).findElement(statement);
 
         PgDbProject proj = new PgDbProject(project);
-        new UIProjectUpdater(newDb, oldDb, List.of(el), proj, false).updatePartial();
+        var updaterSettings = new UISettings(project, null);
+        provider.getProjectUpdater(newDb, oldDb, List.of(el), proj.getPathToProject(), false, updaterSettings)
+                .updatePartial();
         file.refreshLocal(IResource.DEPTH_INFINITE, null);
         openFileInEditor(file);
     }

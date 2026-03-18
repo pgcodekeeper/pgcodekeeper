@@ -75,7 +75,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.database.base.UiApiRegistry;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -195,13 +194,13 @@ public final class PgDbParser implements IResourceChangeListener {
         notifyListeners();
     }
 
-    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, String dbTypeName)
+    public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
             throws InterruptedException, IOException, CoreException {
         if (files.isEmpty()) {
             return;
         }
         IProject proj = files.iterator().next().getProject();
-        var loader = DatabaseType.getValue(dbTypeName).getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj),
+        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj),
                 new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor)));
         IDatabase db = loader.load();
         files.forEach(this::removeResFromRefs);

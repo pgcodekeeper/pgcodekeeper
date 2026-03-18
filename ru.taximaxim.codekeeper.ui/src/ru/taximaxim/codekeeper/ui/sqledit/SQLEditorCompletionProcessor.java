@@ -39,7 +39,7 @@ import org.eclipse.swt.graphics.Image;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
 import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
-import org.pgcodekeeper.core.sql.Keyword;
+import org.pgcodekeeper.core.database.pg.utils.PgKeyword;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -67,7 +67,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         this.editor = editor;
         this.assistant = assistant;
 
-        keywords = Keyword.KEYWORDS.keySet().stream()
+        keywords = PgKeyword.getKeywords().keySet().stream()
                 .sorted()
                 .map(s -> s.toUpperCase(Locale.ROOT))
                 .toList();

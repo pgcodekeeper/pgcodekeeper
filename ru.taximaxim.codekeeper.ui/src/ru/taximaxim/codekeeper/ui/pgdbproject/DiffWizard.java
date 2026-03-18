@@ -45,11 +45,14 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.pgcodekeeper.core.Consts;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.api.PgCodeKeeperApi;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
-import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.model.difftree.TreeElement;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -58,10 +61,8 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import org.pgcodekeeper.core.database.api.loader.ILoader;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
-import ru.taximaxim.codekeeper.ui.differ.TreeDiffer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
 import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
@@ -103,14 +104,21 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public void handlePageChanging(PageChangingEvent e) {
-        if (e.getCurrentPage() == pageDiff && e.getTargetPage() == pagePartial) {
-            var settings = new UISettings(null, pageDiff.getOneTimePrefs(), pageDiff.getSelectedDbType());
+        if ((e.getCurrentPage() == pageDiff) && (e.getTargetPage() == pagePartial)) {
             ILoader newDb = pageDiff.getNewDb();
             ILoader oldDb = pageDiff.getOldDb();
-            TreeDiffer treediffer = new TreeDiffer(settings, oldDb, newDb);
+            DatabaseType dbType = pageDiff.getSelectedDbType();
+            DiffSettings diffSettings = new DiffSettings(new UISettings(null, pageDiff.getOneTimePrefs(), dbType));
+            final TreeElement[] diffTree = new TreeElement[1];
 
             try {
-                getContainer().run(true, true, treediffer);
+                getContainer().run(true, true, monitor -> {
+                    try {
+                        diffTree[0] = PgCodeKeeperApi.createTree(oldDb, newDb, diffSettings);
+                    } catch (IOException ex) {
+                        throw new InvocationTargetException(ex);
+                    }
+                });
             } catch (InvocationTargetException ex) {
                 MessageBox mb = new MessageBox(getContainer().getShell(), SWT.ERROR);
                 mb.setText(Messages.error_in_differ_thread);
@@ -125,7 +133,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
                 return;
             }
 
-            pagePartial.setData(treediffer, pageDiff.getIgnoreList(), pageDiff.getSelectedDbType());
+            pagePartial.setData(oldDb, newDb, diffTree[0], pageDiff.getIgnoreList(), dbType);
         }
     }
 
@@ -140,11 +148,9 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public boolean performFinish() {
         try {
-            TreeDiffer treediffer = pagePartial.getTreeDiffer();
-            IDatabase oldDb = treediffer.getOldDb().getDatabase();
-
-            Differ differ = new Differ(oldDb, treediffer.getNewDb().getDatabase(), treediffer.getDiffTree(), pageDiff.getTimezone(),
-                    null, pageDiff.getOneTimePrefs(), pagePartial.getDbType());
+            Differ differ = new Differ(pagePartial.getOldDb().getDatabase(), pagePartial.getNewDb().getDatabase(),
+                    pagePartial.getDiffTree(), pageDiff.getTimezone(), null, pageDiff.getOneTimePrefs(),
+                    pagePartial.getDbType());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(), "diff_wizard_result", //$NON-NLS-1$
@@ -275,16 +281,16 @@ final class PageDiff extends WizardPage implements Listener {
 
         fieldEditorStore = new FieldEditorStore();
 
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.NO_PRIVILEGES,
-                Messages.dbUpdatePrefPage_ignore_privileges, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.NO_PRIVILEGES, Messages.dbUpdatePrefPage_ignore_privileges,
+                container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
                 Messages.GeneralPrefPage_ignore_column_order, container, mainPrefs::getBoolean));
         var bodyDepBtn = new TempBooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
                 Messages.GeneralPrefPage_enable_body_dependencies, container, mainPrefs::getBoolean);
         bodyDepBtn.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
         fieldEditorStore.add(bodyDepBtn);
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW,
-                Messages.GeneralPrefPage_simplify_view, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW, Messages.GeneralPrefPage_simplify_view,
+                container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(PROJ_PREF.USE_GLOBAL_IGNORE_LIST,
                 Messages.ProjectProperties_use_global_ignore_list, container, true));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
@@ -376,24 +382,35 @@ final class PageDiff extends WizardPage implements Listener {
 
 final class PagePartial extends WizardPage {
 
-    private TreeDiffer treeDiffer;
+    private ILoader oldDb;
+    private ILoader newDb;
+    private TreeElement diffTree;
     private Label lblNewDb;
     private Label lblOldDb;
     private DiffTableViewer diffTable;
 
-    public void setData(TreeDiffer treeDiffer, IgnoreList ignoreList, DatabaseType dbType) {
-        this.treeDiffer = treeDiffer;
-        ILoader oldDb = treeDiffer.getOldDb();
-        ILoader newDb = treeDiffer.getNewDb();
+    public void setData(ILoader oldDb, ILoader newDb, TreeElement diffTree, IgnoreList ignoreList,
+            DatabaseType dbType) {
+        this.oldDb = oldDb;
+        this.newDb = newDb;
+        this.diffTree = diffTree;
         lblNewDb.setText(newDb.getDatabaseName());
         lblOldDb.setText(oldDb.getDatabaseName());
         lblNewDb.getParent().layout();
-        diffTable.setInput(oldDb, newDb, treeDiffer.getDiffTree(), ignoreList);
+        diffTable.setInput(oldDb, newDb, diffTree, ignoreList);
         diffTable.setDbType(dbType);
     }
 
-    public TreeDiffer getTreeDiffer() {
-        return treeDiffer;
+    public ILoader getOldDb() {
+        return oldDb;
+    }
+
+    public ILoader getNewDb() {
+        return newDb;
+    }
+
+    public TreeElement getDiffTree() {
+        return diffTree;
     }
 
     public DatabaseType getDbType() {

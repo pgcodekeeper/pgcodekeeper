@@ -15,8 +15,10 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.sqledit;
 
-import org.pgcodekeeper.core.sql.Keyword;
-import org.pgcodekeeper.core.sql.Keyword.KeywordCategory;
+import java.util.Map;
+
+import org.pgcodekeeper.core.database.pg.utils.PgKeyword;
+import org.pgcodekeeper.core.sql.KeywordCategory;
 
 public class SqlPostgresSyntax {
 
@@ -24,14 +26,14 @@ public class SqlPostgresSyntax {
             "--" //$NON-NLS-1$
     };
 
-    private final String[] reserved = Keyword.KEYWORDS.values().stream()
-            .filter(e -> KeywordCategory.RESERVED_KEYWORD.equals(e.getCategory()))
-            .map(Keyword::getKeyword)
+    private final String[] reserved = PgKeyword.getKeywords().entrySet().stream()
+            .filter(e -> KeywordCategory.RESERVED_KEYWORD == e.getValue())
+            .map(Map.Entry::getKey)
             .toArray(String[]::new);
 
-    private final String[] unreserved = Keyword.KEYWORDS.values().stream()
-            .filter(e -> KeywordCategory.UNRESERVED_KEYWORD.equals(e.getCategory()))
-            .map(Keyword::getKeyword)
+    private final String[] unreserved = PgKeyword.getKeywords().entrySet().stream()
+            .filter(e -> KeywordCategory.UNRESERVED_KEYWORD == e.getValue())
+            .map(Map.Entry::getKey)
             .toArray(String[]::new);
 
     private static final String[] TYPES = {

@@ -100,7 +100,7 @@ public class ReferenceSearchQuery implements ISearchQuery {
 
     @Override
     public String getLabel() {
-        return "Searching for '" + ref.getQualifiedName() + '\''; //$NON-NLS-1$
+        return "Searching for '" + ref.getObjectReference().getFullName() + '\''; //$NON-NLS-1$
     }
 
     @Override
