@@ -122,10 +122,10 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
             } catch (InvocationTargetException ex) {
                 MessageBox mb = new MessageBox(getContainer().getShell(), SWT.ERROR);
                 mb.setText(Messages.error_in_differ_thread);
-                mb.setMessage(ex.getLocalizedMessage());
+                mb.setMessage(ex.getCause().getLocalizedMessage());
                 mb.open();
                 e.doit = false;
-                ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex);
+                ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex.getCause());
                 return;
             } catch (InterruptedException ex) {
                 // cancelled
