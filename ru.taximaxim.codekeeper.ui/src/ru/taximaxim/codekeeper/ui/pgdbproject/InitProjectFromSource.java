@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
@@ -39,11 +41,18 @@ import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 public final class InitProjectFromSource implements IRunnableWithProgress {
 
     private final PgDbProject proj;
-    private final PageDb pageDb;
+    private final DatabaseType dbType;
+    private final boolean isInit;
+    private final DbInfo dbInfo;
+    private final File dumpPath;
 
     public InitProjectFromSource(PgDbProject proj, PageDb pageDb) {
         this.proj = proj;
-        this.pageDb = pageDb;
+        // cache UI values on the UI thread to avoid SWT "Invalid thread access"
+        this.dbType = pageDb.getDbType();
+        this.isInit = pageDb.isInit();
+        this.dbInfo = pageDb.getDbInfo();
+        this.dumpPath = pageDb.getDumpPath();
     }
 
     @Override
@@ -69,28 +78,26 @@ public final class InitProjectFromSource implements IRunnableWithProgress {
         IDatabase db = loader.loadAndAnalyze();
 
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model);
-        var provider = pageDb.getDbType().getDatabaseProvider();
-        var settings = new UISettings(proj.getProject(), null, pageDb.getDbType());
+        var provider = dbType.getDatabaseProvider();
+        var settings = new UISettings(proj.getProject(), null, dbType);
         provider.getProjectUpdater(db, null, null, proj.getPathToProject(), settings).updateFull(false);
     }
 
     private ILoader createLoader(SubMonitor monitor) {
-        IDatabaseProvider provider = pageDb.getDbType().getDatabaseProvider();
-        if (!pageDb.isInit()) {
+        IDatabaseProvider provider = dbType.getDatabaseProvider();
+        if (!isInit) {
             return new StubDatabaseLoader(provider.createDatabase(), "Empty DB"); //$NON-NLS-1$
         }
 
-        DbInfo dbinfo = pageDb.getDbInfo();
-        DiffSettings diffSettings = new DiffSettings(new UISettings(proj.getProject(), null, pageDb.getDbType()),
+        DiffSettings diffSettings = new DiffSettings(new UISettings(proj.getProject(), null, dbType),
                 new UIMonitor(monitor));
 
-        if (dbinfo != null) {
-            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbinfo), diffSettings);
+        if (dbInfo != null) {
+            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
         }
 
-        File dump = pageDb.getDumpPath();
-        if (dump != null) {
-            return provider.getDumpLoader(dump.toPath(), diffSettings);
+        if (dumpPath != null) {
+            return provider.getDumpLoader(dumpPath.toPath(), diffSettings);
         }
 
         throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);

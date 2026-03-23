@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,6 +151,7 @@ import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.GetChangesCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
@@ -473,7 +475,9 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         IDatabaseProvider provider = dbType.getDatabaseProvider();
         DiffSettings diffSettings = new DiffSettings(settings);
 
-        ILoader oldDb = provider.getProjectLoader(getProject().getLocation().toFile().toPath(), diffSettings);
+        ILoader oldDb = provider.getProjectLoader(getProject().getLocation().toFile().toPath(), diffSettings,
+                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                LibraryUtils.META_PATH);
 
         ILoader newDb;
         if (isDbInfo) {
@@ -549,7 +553,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                     }
                 });
 
-                if (mainPrefs.getBoolean(PG_EDIT_PREF.SHOW_DIFF_ERRORS)) {
+                if (event.getResult().isOK() && mainPrefs.getBoolean(PG_EDIT_PREF.SHOW_DIFF_ERRORS)) {
                     diffSettings.getErrors().forEach(e -> StatusManager.getManager()
                             .handle(new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()), StatusManager.SHOW));
                 }

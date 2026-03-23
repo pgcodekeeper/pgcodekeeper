@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -50,6 +51,7 @@ import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -90,7 +92,9 @@ public final class NormalizeProject extends AbstractHandler {
                             new UISettings(proj.getProject(), oneTimePrefs),
                             new UIMonitor(mon.newChild(1)));
                     ILoader loader = provider.getProjectLoader(
-                            proj.getProject().getLocation().toFile().toPath(), diffSettings);
+                            proj.getProject().getLocation().toFile().toPath(), diffSettings,
+                            Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                            LibraryUtils.META_PATH);
                     IDatabase db = loader.loadAndAnalyze();
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     var updaterSettings = new UISettings(proj.getProject(), null);
