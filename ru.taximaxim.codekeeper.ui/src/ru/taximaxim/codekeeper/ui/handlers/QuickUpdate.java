@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +75,7 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
@@ -205,7 +207,9 @@ class QuickUpdateJob extends SingletonEditorJob {
                 new UIMonitor(monitor));
 
         ILoader dbRemote = provider.getDbInfoJdbcLoader(dbInfo, diffSettings);
-        ILoader dbProject = provider.getProjectLoader(proj.getProject().getLocation().toFile().toPath(), diffSettings);
+        ILoader dbProject = provider.getProjectLoader(proj.getProject().getLocation().toFile().toPath(), diffSettings,
+                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                LibraryUtils.META_PATH);
 
         TreeElement treeFull = PgCodeKeeperApi.createTree(dbRemote, dbProject, diffSettings);
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull, listPgObjectsFragment,

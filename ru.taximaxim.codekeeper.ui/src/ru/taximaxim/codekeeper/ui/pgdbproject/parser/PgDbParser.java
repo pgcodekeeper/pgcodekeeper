@@ -74,6 +74,7 @@ import org.pgcodekeeper.core.utils.Utils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
@@ -201,7 +202,9 @@ public final class PgDbParser implements IResourceChangeListener {
         }
         IProject proj = files.iterator().next().getProject();
         var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj),
-                new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor)));
+                new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor)),
+                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                LibraryUtils.META_PATH);
         IDatabase db = loader.load();
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
@@ -218,7 +221,9 @@ public final class PgDbParser implements IResourceChangeListener {
         UISettings settings = new UISettings(proj, null);
         var provider = ProjectUtils.getDatabaseType(proj).getDatabaseProvider();
         ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj),
-                new DiffSettings(settings, new UIMonitor(monitor)));
+                new DiffSettings(settings, new UIMonitor(monitor)),
+                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                LibraryUtils.META_PATH);
         IDatabase db = loader.load();
         referencesStorage.clear();
         // fill definitions, view columns will be filled in the analysis

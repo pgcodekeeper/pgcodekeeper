@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.pgdbproject;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
@@ -34,6 +35,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.pgcodekeeper.core.Consts;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -128,7 +130,9 @@ class DbSourcePicker extends Composite {
         } else if ((file = storePicker.getPathOfFile()) != null) {
             return provider.getDumpLoader(file.toPath(), diffSettings);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
-            return provider.getProjectLoader(dir.toPath(), diffSettings);
+            return provider.getProjectLoader(dir.toPath(), diffSettings,
+                    Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
+                    LibraryUtils.META_PATH);
         }
         return null;
     }
