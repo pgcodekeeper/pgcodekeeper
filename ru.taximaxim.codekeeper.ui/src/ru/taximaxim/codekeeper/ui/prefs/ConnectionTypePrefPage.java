@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.io.IOException;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.Dialog;

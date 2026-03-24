@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.search;
 
-import java.text.MessageFormat;
-
 import org.eclipse.jface.viewers.DelegatingStyledCellLabelProvider.IStyledLabelProvider;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.StyledString;

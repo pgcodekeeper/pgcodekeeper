@@ -42,7 +42,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -60,7 +59,6 @@ import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.parser.ParserListenerMode;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
-import org.pgcodekeeper.core.database.base.loader.AbstractDumpLoader;
 import org.pgcodekeeper.core.database.base.parser.AntlrError;
 import org.pgcodekeeper.core.database.base.parser.ErrorTypes;
 import org.pgcodekeeper.core.database.base.parser.FullAnalyze;
@@ -195,7 +193,7 @@ public final class PgDbParser implements IResourceChangeListener {
     }
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, IOException {
         if (files.isEmpty()) {
             return;
         }
@@ -214,7 +212,7 @@ public final class PgDbParser implements IResourceChangeListener {
     }
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
-            throws InterruptedException, IOException, CoreException {
+            throws InterruptedException, IOException {
         UISettings settings = new UISettings(proj, null);
         var provider = ProjectUtils.getDatabaseType(proj).getDatabaseProvider();
         ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj),

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import java.text.MessageFormat;
 import java.util.ListIterator;
 
 import org.eclipse.jface.viewers.ColumnViewer;

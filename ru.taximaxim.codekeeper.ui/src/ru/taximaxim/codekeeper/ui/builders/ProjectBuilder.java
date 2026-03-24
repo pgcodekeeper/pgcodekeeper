@@ -55,8 +55,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
             int[] buildType = { kind };
             PgDbParser parser = PgDbParser.getParserForBuilder(proj, buildType);
             switch (buildType[0]) {
-            case IncrementalProjectBuilder.AUTO_BUILD:
-            case IncrementalProjectBuilder.INCREMENTAL_BUILD:
+            case IncrementalProjectBuilder.AUTO_BUILD, IncrementalProjectBuilder.INCREMENTAL_BUILD:
                 IResourceDelta delta = getDelta(proj);
                 buildIncrement(delta, parser, monitor, ProjectUtils.getDatabaseType(proj));
                 break;

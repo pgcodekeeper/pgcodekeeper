@@ -43,7 +43,6 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import org.pgcodekeeper.core.database.api.IDatabaseProvider;
-import org.pgcodekeeper.core.database.api.jdbc.IJdbcConnector;
 import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
