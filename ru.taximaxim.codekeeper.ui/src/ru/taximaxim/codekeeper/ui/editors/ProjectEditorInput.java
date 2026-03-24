@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.editors;
 
-import java.text.MessageFormat;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -73,7 +71,7 @@ public class ProjectEditorInput extends PlatformObject implements IEditorInput, 
                     if (proj.isOpen()) {
                         try {
                             return proj.members();
-                        } catch (CoreException ex) {
+                        } catch (CoreException ce) {
                             // return empty array
                         }
                     }

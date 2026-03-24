@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.ui.reports;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.text.MessageFormat;
 
 import org.eclipse.core.runtime.Platform;
 

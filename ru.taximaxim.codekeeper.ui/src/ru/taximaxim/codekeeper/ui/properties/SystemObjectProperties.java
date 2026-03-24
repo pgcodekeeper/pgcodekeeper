@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.properties;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 

@@ -15,8 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.views.navigator;
 
-import java.text.MessageFormat;
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -84,8 +82,9 @@ public class NavigatorRootActionProvider extends CommonActionProvider {
 
         @Override
         public void run() {
-            if (!isEnabled())
+            if (!isEnabled()) {
                 return;
+            }
 
             try {
                 OpenEditor.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), proj);

@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.generators;
 
-import java.text.MessageFormat;
 import java.time.DateTimeException;
 import java.time.Duration;
 import java.time.LocalDate;
