@@ -9,15 +9,37 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [14.1.1] - 2026-03-25
+
+### Added
+
+- Added comments processing for NOT NULL constraints in PostgreSQL.
+- Added support for MS SQL and ClickHouse keywords.
 - Added group name to auto-generated connection name.
 - Added a setting for selecting database loading modes (`Window -> Preferences -> pgCodeKeeper -> Use parallel database loading`).
 
 ### Changed
 
 - The clickhouse-jdbc driver has been updated. All connections to ClickHouse must now include the required `password` parameter.
+- Improved parser rules for ClickHouse.
+- Improved function analyze in PostgreSQL.
 
 ### Fixed
 
+- Fixed default name generation for CONSTRAINT and SEQUENCE objects in PostgreSQL.
+- Fixed logic for normalizing views for ClickHouse.
+- Fixed parser errors for partitioned tables in MS SQL.
+- Fixed a false difference for the STATISTICS object in MS SQL.
+- Fixed reading of column length and precision for binary, datetime2, datetimeoffset, and time types in MS SQL database.
+- Fixed creating tables with NOT NULL constraints in PostgreSQL.
+- Fixed a migration script generation error with the `Print DROP before CREATE` option.
+- Fixed a bug in the generation of the migration script when data migration when recreating tables with serial-type fields for PostgreSQL.
+- Fixed a bug with searching for dependencies for the LATERAL function in PostgreSQL.
+- Fixed a bug with automatic object code formatting.
 - Fixed display of ClickHouse collections in query results.
 
 ## [12.2.0] - 2025-11-18
@@ -2396,7 +2418,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...HEAD
+[14.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...v14.1.1
 [12.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.0.0...v12.1.0
 [12.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v11.1.2...v12.0.0
