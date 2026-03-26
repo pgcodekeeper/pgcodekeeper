@@ -56,7 +56,7 @@ jobs:
           security find-identity build.keychain
 
       - name: build
-        run: mvn clean deploy -DskipTests -P code-sign -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
+        run: mvn clean -ntp deploy -DskipTests -P code-sign -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
 
       - name: set version
         run: echo "RELEASE_VERSION=$(echo ${GITHUB_REF#refs/*/} | cut -c 2-)" >> $GITHUB_ENV
