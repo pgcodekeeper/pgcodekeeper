@@ -39,22 +39,21 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import org.pgcodekeeper.core.database.api.IDatabaseProvider;
-import org.pgcodekeeper.core.database.api.loader.ILoader;
-import org.pgcodekeeper.core.settings.DiffSettings;
-
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
-import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class NormalizeProject extends AbstractHandler {
 
@@ -77,7 +76,7 @@ public final class NormalizeProject extends AbstractHandler {
             return null;
         }
 
-        Log.log(Log.LOG_INFO, "Normalizing project " + proj.getProjectName()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.NormalizeProject_normalizing_project_projName.formatted(proj.getProjectName()));
         Job job = new Job(Messages.NormalizeProject_normalizing_project) {
 
             @Override

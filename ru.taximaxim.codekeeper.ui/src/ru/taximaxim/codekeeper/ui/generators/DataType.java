@@ -28,7 +28,6 @@ import java.util.function.Supplier;
 import org.pgcodekeeper.core.database.ms.utils.MsDiffUtils;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
-
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public enum DataType {
@@ -122,7 +121,7 @@ public enum DataType {
                 DataType.REAL, DataType.NUMERIC,
                 DataType.DATETIME, DataType.TIME,
                 DataType.TEXT, DataType.OTHER);
-        default -> throw new IllegalArgumentException("Unsupported database type: " + dbType);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
         };
     }
 
@@ -162,7 +161,7 @@ public enum DataType {
             case MS -> getMsType(dataType);
             case PG -> getPgType(dataType);
             case CH -> getChType(dataType);
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
             };
         }
         if (t == null) {

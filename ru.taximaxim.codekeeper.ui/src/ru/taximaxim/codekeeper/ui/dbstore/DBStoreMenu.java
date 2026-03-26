@@ -198,7 +198,7 @@ public final class DBStoreMenu {
             case MS -> ProjectIcon.MS_ICON;
             case PG -> ProjectIcon.PG_ICON;
             case CH -> ProjectIcon.CH_ICON;
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbInfo.getDbType());
+            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbInfo.getDbType()));
         };
         dbAction.setImageDescriptor(Activator.getRegisteredDescriptor(projectIcon));
         if (dbInfo.equals(selection)) {

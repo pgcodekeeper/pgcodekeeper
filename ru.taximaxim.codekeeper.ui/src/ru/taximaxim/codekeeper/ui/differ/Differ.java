@@ -116,8 +116,7 @@ public final class Differ implements IRunnableWithProgress {
 
     @Override
     public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        Log.log(Log.LOG_INFO, "Diff from: " + oldDb.getName() //$NON-NLS-1$
-                + " to: " + newDb.getName()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.Differ_diff.formatted(oldDb.getName(), newDb.getName()));
         UIMonitor uiMonitor = new UIMonitor(monitor);
 
         try {

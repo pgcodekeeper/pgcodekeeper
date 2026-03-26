@@ -110,7 +110,7 @@ public class IgnoreListProperties extends PropertyPage {
                     }
                     new IgnoreListEditorDialog(getShell(), path, editor).open();
                 } catch (IOException ex) {
-                    Log.log(Log.LOG_ERROR, "Error while create file", ex); //$NON-NLS-1$
+                    Log.log(Log.LOG_ERROR, Messages.IgnoreListProperties_create_file_error, ex);
                 }
             }
         });

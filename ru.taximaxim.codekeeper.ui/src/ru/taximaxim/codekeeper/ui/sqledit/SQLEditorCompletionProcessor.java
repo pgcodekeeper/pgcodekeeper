@@ -84,7 +84,7 @@ public class SQLEditorCompletionProcessor implements IContentAssistProcessor {
         try {
             part = viewer.getDocument().get(0, offset);
         } catch (BadLocationException ex) {
-            Log.log(Log.LOG_ERROR, "Document doesn't contain such offset", ex); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.SQLEditorCompletionProcessor_offset_error, ex);
             return null;
         }
 

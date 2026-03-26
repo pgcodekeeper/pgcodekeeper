@@ -27,6 +27,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.DiffWizard;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 
@@ -38,7 +39,7 @@ public class Diff extends AbstractHandler {
         PgDbProject proj = PgDbProject.getProject(sel);
         Shell shell = HandlerUtil.getActiveShell(event);
         IPreferenceStore prefStore = Activator.getDefault().getPreferenceStore();
-        Log.log(Log.LOG_DEBUG, "Diff wizard about to show"); //$NON-NLS-1$
+        Log.log(Log.LOG_DEBUG, Messages.Diff_diff_debug);
 
         WizardDialog dialog = new WizardDialog(
                 shell, new DiffWizard(proj, prefStore));

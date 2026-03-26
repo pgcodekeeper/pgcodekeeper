@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.views.DBPair;
 
 public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
@@ -100,7 +101,8 @@ public class ProjectEditorSelectionProvider implements IPostSelectionProvider {
             return defaultSelectionEvent;
         }
         if (!(selection instanceof IStructuredSelection)) {
-            Log.log(Log.LOG_WARNING, "Cannot handle this selection type: " + selection.toString()); //$NON-NLS-1$
+            Log.log(Log.LOG_WARNING,
+                    Messages.ProjectEditorSelectionProvider_handle_type_error.formatted(selection.toString()));
             // no way to deal with empty/other types of selections
             return defaultSelectionEvent;
         }

@@ -33,6 +33,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.BUILDER;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class AddBuilder extends AbstractHandler implements IHandler {
 
@@ -66,7 +67,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
             description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
             project.setDescription(description, null);
         } catch (final CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot add builder", e); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.AddBuilder_add_builder_error, e);
         }
     }
 
@@ -88,7 +89,7 @@ public class AddBuilder extends AbstractHandler implements IHandler {
                 }
             }
         } catch (final CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot determine project builder", e); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.AddBuilder_determine_builder_error, e);
         }
 
         return false;

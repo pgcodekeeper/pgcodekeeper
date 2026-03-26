@@ -72,7 +72,7 @@ public final class OpenEditor extends AbstractHandler {
     }
 
     public static void openEditor(IWorkbenchPage page, IProject proj) throws PartInitException {
-        Log.log(Log.LOG_INFO, "Opening editor for project: " + proj.getName()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.OpenEditor_opening_editor_for_project.formatted(proj.getName()));
         Shell shell = page.getWorkbenchWindow().getShell();
         if (ProjectUtils.checkVersionAndWarn(proj, shell, true)) {
             ProjectEditorInput input = new ProjectEditorInput(proj.getName());

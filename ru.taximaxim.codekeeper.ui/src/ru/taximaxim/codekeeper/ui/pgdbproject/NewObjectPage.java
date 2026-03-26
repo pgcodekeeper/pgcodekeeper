@@ -62,7 +62,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.api.schema.ISearchPath;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
@@ -72,16 +72,16 @@ import org.pgcodekeeper.core.database.ch.parser.ChParserUtils;
 import org.pgcodekeeper.core.database.ch.schema.ChFunction;
 import org.pgcodekeeper.core.database.ms.project.MsWorkDirs;
 import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
+import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.ObjectLevel;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
-import org.pgcodekeeper.core.settings.DiffSettings;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
@@ -597,7 +597,7 @@ public final class NewObjectPage extends WizardPage {
         case CH -> SQLEditorTemplateContextType.CONTEXT_TYPE_CH;
         case MS -> SQLEditorTemplateContextType.CONTEXT_TYPE_MS;
         case PG -> SQLEditorTemplateContextType.CONTEXT_TYPE_PG;
-        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
         };
     }
 

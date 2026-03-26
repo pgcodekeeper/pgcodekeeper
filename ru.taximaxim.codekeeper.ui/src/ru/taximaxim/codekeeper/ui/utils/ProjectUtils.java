@@ -132,7 +132,7 @@ public final class ProjectUtils {
             case PG -> new String[] { NATURE_ID };
             case MS -> new String[] { NATURE_ID, NATURE_MS };
             case CH -> new String[] { NATURE_ID, NATURE_CH };
-            default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+        default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
         };
     }
 
@@ -156,7 +156,8 @@ public final class ProjectUtils {
         try {
             return proj != null && proj.exists() && proj.isOpen() && proj.hasNature(NATURE_ID);
         } catch (CoreException ex) {
-            Log.log(Log.LOG_ERROR, "Project nature identifier error" + ex.getLocalizedMessage(), ex); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.ProjectUtils_nature_identifier_error.formatted(ex.getLocalizedMessage()),
+                    ex);
             return false;
         }
     }

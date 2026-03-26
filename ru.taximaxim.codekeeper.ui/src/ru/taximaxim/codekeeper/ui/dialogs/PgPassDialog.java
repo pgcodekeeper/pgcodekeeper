@@ -139,7 +139,7 @@ public final class PgPassDialog extends Dialog {
         try {
             return PgPass.getAll(Paths.get(path));
         } catch (PgPassException ex) {
-            Log.log(Log.LOG_ERROR, "Error reading pgpass file", ex); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.PgPassDialog_error_reading_pgpass, ex); // $NON-NLS-1$
             return new ArrayList<>();
         }
     }

@@ -98,15 +98,15 @@ import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.DangerStatement;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
-import org.pgcodekeeper.core.reporter.IProgressReporter;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
+import org.pgcodekeeper.core.reporter.IProgressReporter;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.IPartAdapter2;
 import ru.taximaxim.codekeeper.ui.ITextErrorReporter;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -719,7 +719,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         private IStatus runInternal(IProgressMonitor monitor) {
-            Log.log(Log.LOG_INFO, "Running DDL update using JDBC"); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, Messages.SQLEditor_dll_update_jdbc);
 
             IDbInfoConnector connector = IDbInfoConnector.createConnector(dbInfo);
 
@@ -741,7 +741,7 @@ implements IResourceChangeListener, ITextErrorReporter {
         }
 
         private IStatus runExternal(IProgressMonitor monitor) {
-            Log.log(Log.LOG_INFO, "Running DDL update using external command"); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, Messages.SQLEditor_dll_update_exct_cmd);
 
             Thread scriptThread = null;
             try (UiProgressReporter reporter = new UiProgressReporter(monitor, SQLEditor.this)) {
@@ -756,7 +756,7 @@ implements IResourceChangeListener, ITextErrorReporter {
                     Thread.sleep(20);
                     if (monitor.isCanceled()) {
                         reporter.writeMessage(Messages.sqlScriptDialog_script_execution_interrupted);
-                        Log.log(Log.LOG_INFO, "Script execution interrupted by user"); //$NON-NLS-1$
+                        Log.log(Log.LOG_INFO, Messages.SQLEditor_script_execution_interrupted_by_user);
 
                         scriptThread.interrupt();
                         return Status.CANCEL_STATUS;
@@ -912,7 +912,7 @@ implements IResourceChangeListener, ITextErrorReporter {
 
     private void deleteFile(IFile f) {
         try {
-            Log.log(Log.LOG_INFO, "Deleting file " + f.getName()); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, Messages.SQLEditor_deleting_file.formatted(f.getName()));
             f.delete(true, null);
         } catch (CoreException ex) {
             Log.log(ex);

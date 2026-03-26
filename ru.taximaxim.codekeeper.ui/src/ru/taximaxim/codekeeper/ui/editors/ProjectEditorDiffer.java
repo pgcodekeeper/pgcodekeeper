@@ -493,7 +493,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             return;
         }
 
-        Log.log(Log.LOG_INFO, "Getting changes for diff"); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_getting_changes);
 
         reset();
         hideNotificationArea();
@@ -612,7 +612,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         try {
             site.getWorkbenchWindow().getWorkbench().showPerspective(PERSPECTIVE.MAIN, site.getWorkbenchWindow());
         } catch (WorkbenchException e) {
-            Log.log(Log.LOG_ERROR, "Can't change perspective", e); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.ProjectEditorDiffer_change_perspective_error, e);
         }
     }
 
@@ -639,7 +639,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         if ((currentRemote == null) || (currentRemote instanceof DbInfo) || (currentRemote instanceof File)) {
             this.currentRemote = currentRemote;
         } else {
-            throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+            throw new IllegalArgumentException(Messages.ProjectEditorDiffer_remote_db_error);
         }
 
         updateWorkWith();
@@ -685,7 +685,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     }
 
     public void diff() {
-        Log.log(Log.LOG_INFO, "Started DB update"); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_started_db_update);
         if ((warnCheckedElements() < 1) || !ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
@@ -701,8 +701,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
 
             @Override
             public void done(IJobChangeEvent event) {
-                Log.log(Log.LOG_INFO, "Differ job finished with status " + //$NON-NLS-1$
-                        event.getResult().getSeverity());
+                Log.log(Log.LOG_INFO,
+                        Messages.ProjectEditorDiffer_job_finished.formatted(event.getResult().getSeverity()));
                 if (event.getResult().isOK()) {
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
@@ -817,7 +817,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     }
 
     private IEditorInput createProjectScriptFile(String content, String filename) throws CoreException, IOException {
-        Log.log(Log.LOG_INFO, "Creating file " + filename); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_creating_file.formatted(filename));
         IFolder folder = getProject().getFolder(PROJ_PATH.MIGRATION_DIR);
         if (!folder.exists()) {
             folder.create(IResource.NONE, true, null);
@@ -858,7 +858,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     }
 
     public void commit() {
-        Log.log(Log.LOG_INFO, "Started project update"); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_started_project_update);
         if ((warnCheckedElements() < 1) || !ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
             return;
         }
@@ -895,11 +895,11 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         }
 
         TreeElement treeCopy = diffTree.getCopy();
-        Log.log(Log.LOG_INFO, "Processing depcies for project update"); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_processing_depcies_for_project_update);
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(dbProject.getDatabase(), dbRemote.getDatabase(),
                 treeCopy).getDepcies();
 
-        Log.log(Log.LOG_INFO, "Querying user for project update"); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_querying_user_for_project_update);
         // display commit dialog
         CommitDialog cd = new CommitDialog(parent.getShell(), sumNewAndDelete, dbProject, dbRemote, treeCopy, mainPrefs,
                 isCommitCommandAvailable, forceSave, saveOverrides, proj);
@@ -917,7 +917,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             getSite().getSelectionProvider().setSelection(new StructuredSelection(getProject()));
             getSite().getService(IHandlerService.class).executeCommand(COMMAND.COMMIT_COMMAND_ID, null);
         } catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
-            Log.log(Log.LOG_WARNING, "Could not execute command " + COMMAND.COMMIT_COMMAND_ID, e); //$NON-NLS-1$
+            Log.log(Log.LOG_WARNING,
+                    Messages.ProjectEditorDiffer_command_execute_error.formatted(COMMAND.COMMIT_COMMAND_ID), e);
             ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_failed_egit_commit, e);
         }
     }
@@ -995,7 +996,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         if (remote instanceof File file) {
             return file.getName();
         }
-        throw new IllegalArgumentException("Remote is not a File or DbInfo!"); //$NON-NLS-1$
+        throw new IllegalArgumentException(Messages.ProjectEditorDiffer_remote_db_error);
     }
 
     private class DiffTable extends DiffTableViewer {

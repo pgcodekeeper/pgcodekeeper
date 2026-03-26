@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.CoreException;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.BUILDER;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class RemoveBuilder extends AbstractHandler implements IHandler {
 
@@ -61,7 +62,7 @@ public class RemoveBuilder extends AbstractHandler implements IHandler {
             description.setBuildSpec(commands.toArray(new ICommand[commands.size()]));
             project.setDescription(description, null);
         } catch (final CoreException e) {
-            Log.log(Log.LOG_ERROR, "Cannot remove builder", e); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.RemoveBuilder_error, e);
         }
     }
 }

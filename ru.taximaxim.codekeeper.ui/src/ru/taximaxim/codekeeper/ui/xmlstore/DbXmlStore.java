@@ -52,8 +52,6 @@ import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
-
 import org.pgcodekeeper.core.utils.Utils;
 import org.pgcodekeeper.core.xmlstore.XmlStore;
 import org.w3c.dom.Document;
@@ -63,9 +61,11 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class DbXmlStore extends XmlStore<DbInfo> {
 
@@ -284,7 +284,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             try {
                 dbPass = securePrefs.get(object.get(Tags.NAME), dbPass);
             } catch (StorageException e) {
-                Log.log(Log.LOG_ERROR, "Error reading from secure storage: " + e); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR, Messages.DbXmlStore_error_reading_from_secure_storage.formatted(e));
             }
         }
 
@@ -430,7 +430,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         try (InputStream in = Files.newInputStream(path)) {
             byte[] iv = new byte[IV_LENGTH];
             if (in.read(iv) != IV_LENGTH) {
-                throw new IOException("IV not found or invalid!"); //$NON-NLS-1$
+                throw new IOException(Messages.DbXmlStore_iv_found_error);
             }
             Cipher cipher = createCipher(secret, algorithm, iv, Cipher.DECRYPT_MODE);
 

@@ -157,7 +157,7 @@ class QuickUpdateJob extends SingletonEditorJob {
     @Override
     protected IStatus run(IProgressMonitor monitor) {
         try {
-            Log.log(Log.LOG_INFO, "QuickUpdate starting"); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, Messages.QuickUpdateJob_QuickUpdate_starting);
             this.monitor = SubMonitor.convert(monitor, STEPS);
 
             doRun();
@@ -216,7 +216,7 @@ class QuickUpdateJob extends SingletonEditorJob {
                 dbRemote.getDatabase(), dbProject.getDatabase());
 
         if (checked.isEmpty()) {
-            Log.log(Log.LOG_INFO, "No object changes found when comparing to DB"); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, Messages.QuickUpdateJob_no_found_changes);
             return;
         }
 

@@ -18,6 +18,8 @@ package ru.taximaxim.codekeeper.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public final class Log {
 
     public static final int LOG_ERROR = IStatus.ERROR;
@@ -33,7 +35,7 @@ public final class Log {
      * Log an exception at {@link IStatus#ERROR} level.
      */
     public static void log(Throwable ex) {
-        logInternal(IStatus.ERROR, "Unexpected Exception", ex); //$NON-NLS-1$
+        logInternal(IStatus.ERROR, Messages.Log_unexpected_exception, ex); // $NON-NLS-1$
     }
 
     public static void log(int level, String msg, Throwable ex) {

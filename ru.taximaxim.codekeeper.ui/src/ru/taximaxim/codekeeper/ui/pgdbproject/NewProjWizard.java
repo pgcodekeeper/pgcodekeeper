@@ -61,9 +61,8 @@ import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 
-import ru.taximaxim.codekeeper.ui.DatabaseType;
-
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -144,7 +143,7 @@ implements IExecutableExtension, INewWizard {
                     props.getPrefs().flush();
                     props.getDbBindPrefs().flush();
                 } catch (BackingStoreException e) {
-                    Log.log(Log.LOG_WARNING, "Error while flushing project properties!", e); //$NON-NLS-1$
+                    Log.log(Log.LOG_WARNING, Messages.NewProjWizard_flushing_properties_error, e);
                 }
             }
 
