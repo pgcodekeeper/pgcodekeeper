@@ -33,6 +33,7 @@ import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 
 import ru.taximaxim.codekeeper.ui.libraries.LibraryStorage;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -109,6 +110,6 @@ public class ReferenceResultPage extends AbstractTextSearchViewPage {
 
     @Override
     protected void configureTableViewer(TableViewer viewer) {
-        throw new IllegalStateException("Doesn't support table mode."); //$NON-NLS-1$
+        throw new IllegalStateException(Messages.ReferenceResultPage_unsupport_table_mode);
     }
 }

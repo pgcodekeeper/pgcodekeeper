@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
 
 import org.eclipse.jface.preference.IPreferenceStore;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 public final class FieldEditorStore {
 
     private final List<TempBooleanFieldEditor> list = new ArrayList<>();
@@ -70,7 +72,6 @@ public final class FieldEditorStore {
     }
 
     private IllegalArgumentException throwUnknownParamException(String prefName) {
-        return new IllegalArgumentException(
-                String.format("Button with preference: %s do not contains in this page", prefName)); //$NON-NLS-1$
+        return new IllegalArgumentException(Messages.FieldEditorStore_unknown_param_exception.formatted(prefName));
     }
 }

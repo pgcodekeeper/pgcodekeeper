@@ -35,6 +35,7 @@ import java.util.stream.Stream;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
  * Represents a register of tracking event types.
@@ -129,7 +130,7 @@ public class EventRegister {
             result.countEventLabel = preferenceProperties.countEventLabel;
             result.okToSend = true;
         } else {
-            Log.log(Log.LOG_ERROR, "Event type [" + event.toString() + "] is not registered and will be ignored."); //$NON-NLS-1$ //$NON-NLS-2$
+            Log.log(Log.LOG_ERROR, Messages.EventRegister_error.formatted(event.toString()));
         }
         return result;
     }

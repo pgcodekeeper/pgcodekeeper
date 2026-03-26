@@ -24,6 +24,7 @@ import org.eclipse.ui.texteditor.templates.TemplatePreferencePage;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
 
 public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
@@ -36,7 +37,7 @@ public class SQLEditorTemplatePrefPage extends TemplatePreferencePage {
             setContextTypeRegistry(SQLEditorTemplateManager.getInstance()
                     .getContributionContextTypeRegistry());
         } catch (Exception ex) {
-            Log.log(Log.LOG_ERROR, "Cannot get sql templates", ex); //$NON-NLS-1$
+            Log.log(Log.LOG_ERROR, Messages.SQLEditorTemplatePrefPage_cannot_get_sql_templates, ex);
         }
     }
 

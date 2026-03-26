@@ -188,14 +188,14 @@ public final class CommitDialog extends TrayDialog {
         getButton(IDialogConstants.OK_ID).setEnabled(false);
         getButton(IDialogConstants.CANCEL_ID).setEnabled(false);
 
-        Log.log(Log.LOG_INFO, "Updating project " + proj.getProjectName()); //$NON-NLS-1$
+        Log.log(Log.LOG_INFO, Messages.CommitDialog_updating_project.formatted(proj.getProjectName()));
         Job job = new JobProjectUpdater(Messages.projectEditorDiffer_save_project, btnSaveOverrides.getSelection());
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
             public void done(IJobChangeEvent event) {
-                Log.log(Log.LOG_INFO, "Project updater job finished with status " + //$NON-NLS-1$
-                        event.getResult().getSeverity());
+                Log.log(Log.LOG_INFO,
+                        Messages.CommitDialog_project_updater_job_finished.formatted(event.getResult().getSeverity()));
 
                 try {
                     proj.getProject().refreshLocal(IResource.DEPTH_INFINITE, null);
@@ -300,7 +300,7 @@ public final class CommitDialog extends TrayDialog {
         protected IStatus run(IProgressMonitor monitor) {
             SubMonitor pm = SubMonitor.convert(monitor, Messages.commitPartDescr_commiting, 2);
 
-            Log.log(Log.LOG_INFO, "Applying diff tree to db"); //$NON-NLS-1$
+            Log.log(Log.LOG_INFO, Messages.CommitDialog_applying_diff_tree_to_db);
             pm.newChild(1).subTask(Messages.commitPartDescr_modifying_db_model); // 1
             pm.newChild(1).subTask(Messages.commitPartDescr_exporting_db_model); // 2
 

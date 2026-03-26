@@ -547,7 +547,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
         DbInfo testDbInfo = generateDbInfo();
         getButton(IDialogConstants.CLIENT_ID).setEnabled(false);
 
-        String title = "Connection test for: " + testDbInfo.getName(); //$NON-NLS-1$
+        String title = Messages.DbStoreEditorDialog_connnection_test.formatted(testDbInfo.getName());
         Job job = new Job(title) {
 
             @Override

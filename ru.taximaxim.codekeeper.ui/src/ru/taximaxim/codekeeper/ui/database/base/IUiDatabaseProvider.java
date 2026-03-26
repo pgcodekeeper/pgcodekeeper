@@ -34,6 +34,7 @@ import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.differ.ObjectLevel;
 import ru.taximaxim.codekeeper.ui.generators.DataType;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.refactoring.RenameDefinitionChange;
 
 /**
@@ -145,11 +146,13 @@ public interface IUiDatabaseProvider extends IDatabaseProvider {
 
     @Override
     default IJdbcConnector getJdbcConnector(String url) {
-        throw new UnsupportedOperationException("Use getDbInfoJdbcConnector"); //$NON-NLS-1$
+        throw new UnsupportedOperationException(
+                Messages.IUiDatabaseProvider_unsuported_operation_exception.formatted("getDbInfoJdbcConnector")); //$NON-NLS-1$
     }
 
     @Override
     default IJdbcLoader getJdbcLoader(String url, DiffSettings diffSettings) {
-        throw new UnsupportedOperationException("Use getDbInfoJdbcLoader"); //$NON-NLS-1$
+        throw new UnsupportedOperationException(
+                Messages.IUiDatabaseProvider_unsuported_operation_exception.formatted("getDbInfoJdbcLoader")); //$NON-NLS-1$
     }
 }

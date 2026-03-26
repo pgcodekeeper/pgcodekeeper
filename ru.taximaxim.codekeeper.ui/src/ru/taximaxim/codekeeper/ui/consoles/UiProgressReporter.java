@@ -81,7 +81,7 @@ public class UiProgressReporter implements IProgressReporter {
 
     @Override
     public void writeDbName() {
-        console.write("Execute script on " + dbName); //$NON-NLS-1$
+        console.write(Messages.UiProgressReporter_execute_script_on.formatted(dbName));
     }
 
     @Override

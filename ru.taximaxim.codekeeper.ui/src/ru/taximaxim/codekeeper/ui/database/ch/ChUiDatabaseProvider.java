@@ -131,7 +131,7 @@ public class ChUiDatabaseProvider extends ChDatabaseProvider implements IUiDatab
 
     @Override
     public void addRenames(List<RenameDefinitionChange> fileRenames, IFile file, String newName, ObjectLocation ref) {
-        throw new UnsupportedOperationException(Messages.DatabaseType_unsupported_type + getFullName());
+        throw new UnsupportedOperationException(Messages.DatabaseType_unsupported_type.formatted(getFullName()));
     }
 
     @Override

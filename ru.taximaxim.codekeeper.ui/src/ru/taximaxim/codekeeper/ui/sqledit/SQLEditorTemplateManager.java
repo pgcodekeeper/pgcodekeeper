@@ -26,6 +26,7 @@ import org.eclipse.ui.editors.text.templates.ContributionTemplateStore;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorTemplateManager {
 
@@ -56,7 +57,7 @@ public class SQLEditorTemplateManager {
             try {
                 fStore.load();
             } catch (IOException e) {
-                Log.log(Log.LOG_ERROR, "Cannot load templates", e); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR, Messages.SQLEditorTemplateManager_load_templates_error, e);
             }
         }
         return fStore;

@@ -17,6 +17,8 @@ package ru.taximaxim.codekeeper.ui.reports;
 
 import org.eclipse.core.runtime.Assert;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 /**
  * Represents an event type
  */
@@ -36,9 +38,9 @@ public class UsageEventType {
      */
     public UsageEventType(String componentName, String componentVersion,
             String actionName, String valueDescription) {
-        Assert.isLegal(componentName!=null, "Component name may not be null"); //$NON-NLS-1$
-        Assert.isLegal(componentVersion!=null, "Component version may not be null"); //$NON-NLS-1$
-        Assert.isLegal(actionName != null, "Action name may not be null"); //$NON-NLS-1$
+        Assert.isLegal(componentName != null, Messages.UsageEventType_name_null_error);
+        Assert.isLegal(componentVersion != null, Messages.UsageEventType_version_null_error);
+        Assert.isLegal(actionName != null, Messages.UsageEventType_action_name_null_error);
         this.componentName = componentName.replaceAll("\\s", "-"); //$NON-NLS-1$ //$NON-NLS-2$
         this.componentVersion = componentVersion;
         this.actionName = actionName.replaceAll("\\s", "-"); //$NON-NLS-1$ //$NON-NLS-2$

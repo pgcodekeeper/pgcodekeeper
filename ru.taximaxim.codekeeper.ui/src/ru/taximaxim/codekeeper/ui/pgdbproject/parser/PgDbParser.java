@@ -74,6 +74,7 @@ import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -150,7 +151,7 @@ public final class PgDbParser implements IResourceChangeListener {
             Files.createDirectories(path.getParent());
             Utils.serialize(path, referencesStorage);
         } catch (IOException e) {
-            Log.log(Log.LOG_DEBUG, "Error while serialize parser!", e); //$NON-NLS-1$
+            Log.log(Log.LOG_DEBUG, Messages.PgDbParser_serialize_error, e);
         }
     }
 
@@ -164,7 +165,7 @@ public final class PgDbParser implements IResourceChangeListener {
             notifyListeners();
             return true;
         } catch (ClassNotFoundException | IOException | ClassCastException e) {
-            Log.log(Log.LOG_DEBUG, "Error while deserialize parser!", e); //$NON-NLS-1$
+            Log.log(Log.LOG_DEBUG, Messages.PgDbParser_deserialize_error, e);
             return false;
         }
     }
@@ -411,7 +412,7 @@ public final class PgDbParser implements IResourceChangeListener {
             Path path = getPathToObject(name);
             Files.deleteIfExists(path);
         } catch (IOException e) {
-            Log.log(Log.LOG_DEBUG, "Error while clean parser!", e); //$NON-NLS-1$
+            Log.log(Log.LOG_DEBUG, Messages.PgDbParser_clean_parser_error, e);
         }
     }
 
@@ -420,7 +421,7 @@ public final class PgDbParser implements IResourceChangeListener {
             Path path = getPathToFolder();
             FileUtils.deleteRecursive(path);
         } catch (IOException e) {
-            Log.log(Log.LOG_DEBUG, "Error while clean parser!", e); //$NON-NLS-1$
+            Log.log(Log.LOG_DEBUG, Messages.PgDbParser_clean_parser_error, e);
         }
     }
 

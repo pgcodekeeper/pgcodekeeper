@@ -33,7 +33,6 @@ import org.eclipse.ltk.core.refactoring.participants.RenameProcessor;
 import org.eclipse.ltk.core.refactoring.participants.SharableParticipants;
 import org.eclipse.text.edits.MultiTextEdit;
 import org.eclipse.text.edits.ReplaceEdit;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation.LocationType;
@@ -41,6 +40,7 @@ import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
 import org.pgcodekeeper.core.utils.FileUtils;
 import org.pgcodekeeper.core.utils.Utils;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.PgDbParser;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
@@ -193,7 +193,7 @@ public class RenameDefinitionProcessor extends RenameProcessor {
                     AbstractModelExporter.getExportedFilenameSql(name)));
             break;
         default:
-            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+            throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
         }
     }
 

@@ -50,9 +50,9 @@ import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
@@ -195,7 +195,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                     case PG -> ProjectIcon.PG_ICON;
                     case MS -> ProjectIcon.MS_ICON;
                     case CH -> ProjectIcon.CH_ICON;
-                    default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+                default -> throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
                 };
                 return Activator.getRegisteredImage(projectIcon);
             }

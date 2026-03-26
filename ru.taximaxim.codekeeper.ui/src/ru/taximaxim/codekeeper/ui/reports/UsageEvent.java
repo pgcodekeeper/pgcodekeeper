@@ -15,6 +15,8 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.reports;
 
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
+
 /**
  *  Represents a data which will be send to Google Analytics to track the user's event
  */
@@ -26,11 +28,11 @@ public class UsageEvent {
 
     public UsageEvent(UsageEventType type, String label, Integer value) {
         if (type == null) {
-            throw new IllegalArgumentException("Type name may not be null"); //$NON-NLS-1$
+            throw new IllegalArgumentException(Messages.UsageEvent_type_error);
         }
         this.type = type;
         if (type.getValueDescription() == null && value != null) {
-            throw new IllegalArgumentException("The value of this event may not be null since its event type has a value description"); //$NON-NLS-1$
+            throw new IllegalArgumentException(Messages.UsageEvent_value_error);
         }
         this.label = label;
         this.value = value;

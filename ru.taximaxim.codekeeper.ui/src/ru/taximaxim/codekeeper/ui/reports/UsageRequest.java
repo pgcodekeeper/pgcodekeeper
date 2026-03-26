@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Platform;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 /**
  * @see based on <a href="https://github.com/siddii/jgoogleanalytics">https://github.com/siddii/jgoogleanalytics</a>
@@ -99,15 +100,13 @@ public class UsageRequest {
             urlConnection.connect();
             int responseCode = urlConnection.getResponseCode();
             if (responseCode == HttpURLConnection.HTTP_NO_CONTENT) {
-                Log.log(Log.LOG_DEBUG, "HTTP POST to url \"%s\" successfull!".formatted(url)); //$NON-NLS-1$
+                Log.log(Log.LOG_DEBUG, Messages.UsageRequest_post_successfull.formatted(url));
                 return true;
             } else {
-                Log.log(Log.LOG_ERROR,
-                        "HTTP POST to \"%s\" failed, response code received \"%s\"".formatted(url, responseCode)); //$NON-NLS-1$
+                Log.log(Log.LOG_ERROR, Messages.UsageRequest_post_response_error.formatted(url, responseCode));
             }
         } catch (Exception e) {
-            Log.log(Log.LOG_DEBUG,
-                    "HTTP POST to \"%s\" failed, exception occured: \"%s\"".formatted(url, e)); //$NON-NLS-1$
+            Log.log(Log.LOG_DEBUG, Messages.UsageRequest_post_exception_error.formatted(url, e));
         }
         return false;
 

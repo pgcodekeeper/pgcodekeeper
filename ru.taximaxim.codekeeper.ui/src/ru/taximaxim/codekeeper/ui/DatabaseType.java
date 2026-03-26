@@ -24,6 +24,7 @@ import ru.taximaxim.codekeeper.ui.database.base.IUiDatabaseProvider;
 import ru.taximaxim.codekeeper.ui.database.ch.ChUiDatabaseProvider;
 import ru.taximaxim.codekeeper.ui.database.ms.MsUiDatabaseProvider;
 import ru.taximaxim.codekeeper.ui.database.pg.PgUiDatabaseProvider;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public enum DatabaseType {
 
@@ -59,7 +60,7 @@ public enum DatabaseType {
             }
         }
 
-        throw new IllegalArgumentException("Unsupported database type: " + dbTypeText);
+        throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbTypeText));
     }
 
     public static DatabaseType fromStatement(IStatement st) {
@@ -74,7 +75,7 @@ public enum DatabaseType {
             return CH;
         }
 
-        throw new IllegalArgumentException("Unsupported class: " + st.getClass());
+        throw new IllegalArgumentException(Messages.DatabaseType_unsupported_class.formatted(st.getClass()));
     }
 
 }

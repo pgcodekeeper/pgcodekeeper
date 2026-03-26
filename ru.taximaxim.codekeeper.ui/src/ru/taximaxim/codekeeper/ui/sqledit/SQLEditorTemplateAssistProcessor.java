@@ -38,7 +38,6 @@ import org.eclipse.ui.PlatformUI;
 import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
-
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcessor {
@@ -68,7 +67,7 @@ public class SQLEditorTemplateAssistProcessor extends TemplateCompletionProcesso
             case CH:
                 return SQLEditorTemplateContextType.CONTEXT_TYPE_CH;
             default:
-                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type + dbType);
+                throw new IllegalArgumentException(Messages.DatabaseType_unsupported_type.formatted(dbType));
             }
         }
 

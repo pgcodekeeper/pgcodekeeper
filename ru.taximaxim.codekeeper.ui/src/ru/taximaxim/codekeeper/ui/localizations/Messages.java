@@ -46,9 +46,25 @@ public final class Messages extends NLS {
     public static String delete;
 
     // ui
+    public static String AddBuilder_add_builder_error;
+    public static String AddBuilder_determine_builder_error;
+
     public static String AddCommentDialogMessage;
     public static String AddCommentDialogTitle;
     public static String sqlScriptDialog_exception_during_script_execution;
+
+    public static String SQLEditorTemplateManager_load_templates_error;
+
+    public static String SQLEditorTemplatePrefPage_cannot_get_sql_templates;
+
+    public static String SQLEditor_deleting_file;
+
+    public static String SQLEditor_dll_update_exct_cmd;
+
+    public static String SQLEditor_dll_update_jdbc;
+
+    public static String SQLEditor_script_execution_interrupted_by_user;
+
     public static String ShowConsoleParticipant_remove;
 
     public static String ShowConsoleParticipant_remove_all;
@@ -105,6 +121,7 @@ public final class Messages extends NLS {
     public static String SqlEditor_script_delete_dialog_title;
     public static String SqlEditor_selected_text_error;
 
+    public static String SQLEditorCompletionProcessor_offset_error;
     public static String SQLEditorCompletionProcessor_show_templates;
     public static String SQLEditorCompletionProcessor_show_keywords;
 
@@ -130,6 +147,7 @@ public final class Messages extends NLS {
 
     public static String SqlEditor_update_ddl;
 
+    public static String UiProgressReporter_execute_script_on;
     public static String UiProgressReporter_warning;
 
     public static String UpdateDdl_read_only_db_message;
@@ -138,6 +156,15 @@ public final class Messages extends NLS {
 
     public static String UpdateDdl_select_source;
     public static String UpdateDdl_select_source_msg;
+
+    public static String UsageEventType_action_name_null_error;
+
+    public static String UsageEventType_name_null_error;
+
+    public static String UsageEventType_version_null_error;
+
+    public static String UsageEvent_type_error;
+    public static String UsageEvent_value_error;
 
     public static String sqlScriptDialog_script_contains_statements_that_may_modify_data;
     public static String sqlScriptDialog_script_execution_interrupted;
@@ -225,6 +252,7 @@ public final class Messages extends NLS {
     public static String commitPartDescr_the_following_changes_be_included_in_commit;
 
     public static String copy;
+    public static String DatabaseType_unsupported_class;
     public static String DatabaseType_unsupported_type;
 
     public static String CodeFilter_search_by_code;
@@ -233,11 +261,17 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_comments_to_end;
 
+    public static String CommitDialog_applying_diff_tree_to_db;
+
     public static String CommitDialog_privileges_must_be_saved;
+
+    public static String CommitDialog_project_updater_job_finished;
 
     public static String CommitDialog_save_privileges;
 
     public static String CommitDialog_unchecked_objects_can_occur_unexpected_errors;
+
+    public static String CommitDialog_updating_project;
 
     public static String ConvertProject_convert_dialog_message;
 
@@ -322,6 +356,8 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_connection_properties;
 
     public static String DbStoreEditorDialog_connection_type;
+
+    public static String DbStoreEditorDialog_connnection_test;
 
     public static String DbStoreEditorDialog_dump_custom_parameters;
 
@@ -446,6 +482,10 @@ public final class Messages extends NLS {
     public static String DepcyGraphView_remote;
 
     public static String DepcyGraphView_show_columns;
+
+    public static String DbXmlStore_iv_found_error;
+
+    public static String DbXmlStore_error_reading_from_secure_storage;
 
     public static String DependencyEditorDialog_name;
 
@@ -574,6 +614,10 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_target;
 
+    public static String Diff_diff_debug;
+
+    public static String Differ_diff;
+
     public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
 
     public static String ProjectProperties_force_unix_newlines;
@@ -618,11 +662,15 @@ public final class Messages extends NLS {
 
     public static String IgnoredSchemaPrefListEditor_white_list_schema_ignor;
 
+    public static String IgnoreListProperties_create_file_error;
+
     public static String IgnoreListProperties_create_new_file;
 
     public static String IgnoreListProperties_default_ignore_tooltip;
 
     public static String IgnoreListProperties_edit_pgcodekeeperignore;
+
+    public static String IUiDatabaseProvider_unsuported_operation_exception;
 
     public static String IgnoreListEditorDialog_excluded_objects_list_editor;
     public static String IgnoreListEditorDialog_save;
@@ -713,6 +761,8 @@ public final class Messages extends NLS {
 
     public static String NewProjWizard_error_tz_query;
 
+    public static String NewProjWizard_flushing_properties_error;
+
     public static String NewProjWizard_cannot_delete_project;
 
     public static String NewProjWizard_create_project;
@@ -744,6 +794,8 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_normalizing_project;
 
+    public static String NormalizeProject_normalizing_project_projName;
+
     public static String NormalizeProject_project_normalized;
 
     public static String NormalizeProject_project_normalized_success;
@@ -755,6 +807,7 @@ public final class Messages extends NLS {
     public static String SqlMergeViewer_compare_label;
 
     public static String OpenEditor_error_open_project_editor;
+    public static String OpenEditor_opening_editor_for_project;
     public static String OpenProjectUtils_file;
 
     public static String OpenProjectUtils_high_proj_version;
@@ -777,7 +830,13 @@ public final class Messages extends NLS {
 
     public static String OpenProjectUtils_version_error;
 
+    public static String PgDbParser_clean_parser_error;
+
+    public static String PgDbParser_deserialize_error;
+
     public static String PgDbParser_error_loading_db;
+
+    public static String PgDbParser_serialize_error;
 
     public static String PgImport_error_default_name;
 
@@ -831,6 +890,8 @@ public final class Messages extends NLS {
 
     public static String PgPassDialog_close;
 
+    public static String PgPassDialog_error_reading_pgpass;
+
     public static String PgPassDialog_import;
 
     public static String PgPassDialog_title;
@@ -851,10 +912,14 @@ public final class Messages extends NLS {
 
     public static String ProjectEditorDiffer_apply_to;
 
+    public static String ProjectEditorDiffer_change_perspective_error;
+
     public static String ProjectEditorDiffer_changed_direction_of_roll_on_title;
     public static String ProjectEditorDiffer_changed_direction_of_roll_on;
 
+    public static String ProjectEditorDiffer_command_execute_error;
     public static String ProjectEditorDiffer_commit_error;
+    public static String ProjectEditorDiffer_creating_file;
     public static String ProjectEditorDiffer_error_bad_input_type;
 
     public static String ProjectEditorDiffer_error_creating_file;
@@ -864,6 +929,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_error_refreshing_project;
 
     public static String ProjectEditorDiffer_failed_egit_commit;
+    public static String ProjectEditorDiffer_getting_changes;
+    public static String ProjectEditorDiffer_job_finished;
     public static String ProjectEditorDiffer_lib_change_error_message;
 
     public static String ProjectEditorDiffer_lib_change_warning_message;
@@ -879,9 +946,16 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_database;
 
     public static String ProjectEditorDiffer_project;
+    public static String ProjectEditorDiffer_querying_user_for_project_update;
     public static String ProjectEditorDiffer_script_creation_message;
 
     public static String ProjectEditorDiffer_script_creation_title;
+
+    public static String ProjectEditorDiffer_remote_db_error;
+
+    public static String ProjectEditorDiffer_started_db_update;
+
+    public static String ProjectEditorDiffer_started_project_update;
 
     public static String ProjectEditorDiffer_different_types;
     public static String ProjectEditorDiffer_different_types_msg;
@@ -891,6 +965,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorDiffer_override_objects;
 
     public static String ProjectEditorDiffer_override_privileges;
+
+    public static String ProjectEditorDiffer_processing_depcies_for_project_update;
 
     public static String ProjectEditorDiffer_work_with;
 
@@ -905,6 +981,8 @@ public final class Messages extends NLS {
     public static String ProjectEditorPrefPage_action_update;
 
     public static String ProjectEditorPrefPage_show_git_user;
+
+    public static String ProjectEditorSelectionProvider_handle_type_error;
 
     public static String ProjectOverrideView_link_with_editor;
 
@@ -936,6 +1014,8 @@ public final class Messages extends NLS {
 
     public static String ProjectProperties_disable_parser_in_external_files;
 
+    public static String ProjectUtils_nature_identifier_error;
+
     public static String sqlScriptDialog_script_select_storage;
     public static String StdStreamRedirector_error_reading_std;
     public static String StdStreamRedirector_error_reading_std_external;
@@ -964,6 +1044,8 @@ public final class Messages extends NLS {
     public static String BuildDepsGraphDialog_search_dep;
 
     public static String BuildDepsGraphDialog_show;
+
+    public static String FieldEditorStore_unknown_param_exception;
 
     public static String FilterDialog_cancel;
 
@@ -1055,8 +1137,16 @@ public final class Messages extends NLS {
     public static String LabelPicker_choice_db;
 
     public static String LibraryContainer_root;
+    public static String Log_unexpected_exception;
 
     public static String UsageReport_Reporting_Usage;
+
+    public static String UsageRequest_post_exception_error;
+
+    public static String UsageRequest_post_response_error;
+
+    public static String UsageRequest_post_successfull;
+
     public static String UsageReport_Querying_Enablement;
 
     public static String UsageReportPreferencePage_Description;
@@ -1087,6 +1177,10 @@ public final class Messages extends NLS {
     public static String UsageReportPreferencePage_EventAction;
     public static String UsageReportPreferencePage_EventValue;
 
+    public static String QuickUpdateJob_QuickUpdate_starting;
+
+    public static String QuickUpdateJob_no_found_changes;
+
     public static String QuickUpdate_danger;
 
     public static String QuickUpdate_different_types;
@@ -1109,13 +1203,19 @@ public final class Messages extends NLS {
 
     public static String QuickUpdate_updating_project;
 
+    public static String ReferenceResultPage_unsupport_table_mode;
+
     public static String ReferenceSearchResult_matches;
+
+    public static String RemoveBuilder_error;
 
     public static String RenameDefinitionChange_error_resource_already_exists;
 
     public static String RenameDefinitionProcessor_rename_object;
 
     public static String ErrorMessageDialog_dialog_title;
+
+    public static String EventRegister_error;
 
     // SONAR-ON
 
