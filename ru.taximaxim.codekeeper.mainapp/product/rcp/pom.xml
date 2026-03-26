@@ -197,7 +197,7 @@
                         <id>prepare</id>
                         <phase>prepare-package</phase>
                         <configuration>
-                            <tasks>
+                            <target>
                                 <gunzip src="${mac.folder}/aarch64.tar.gz"
                                         dest="${mac.folder}/aarch64.tar"/>
                                 <untar src="${mac.folder}/aarch64.tar"
@@ -215,7 +215,7 @@
                                 <copy todir="${mac.folder}/x86_64/Pgcodekeeper.app/Contents/Eclipse/jre">
                                       <fileset dir="${mac.folder}/jre_x64_mac/jdk-17.0.14+7-jre"/>
                                 </copy>
-                            </tasks>
+                            </target>
                         </configuration>
                         <goals>
                             <goal>run</goal>
