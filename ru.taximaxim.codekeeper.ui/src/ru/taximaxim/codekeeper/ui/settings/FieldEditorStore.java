@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.prefs;
+package ru.taximaxim.codekeeper.ui.settings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +50,7 @@ public final class FieldEditorStore {
         list.forEach(e -> e.setVisible(visible));
     }
 
-    public Map<String, Boolean> getPrefs() {
+    public Map<String, Object> getPrefs() {
         return list.stream().collect(
                 Collectors.toMap(TempBooleanFieldEditor::getPreferenceName, TempBooleanFieldEditor::getBooleanValue));
     }

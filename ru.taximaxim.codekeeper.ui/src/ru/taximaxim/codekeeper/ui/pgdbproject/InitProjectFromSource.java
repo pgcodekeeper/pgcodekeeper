@@ -35,7 +35,7 @@ import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class InitProjectFromSource implements IRunnableWithProgress {

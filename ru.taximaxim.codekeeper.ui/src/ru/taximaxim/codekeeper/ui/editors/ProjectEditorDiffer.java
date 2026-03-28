@@ -160,8 +160,8 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
@@ -201,7 +201,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private List<Entry<IStatement, IStatement>> manualDepciesNewDb = new ArrayList<>();
 
     private DatabaseType dbType;
-    private final Map<String, Boolean> oneTimePrefs = new HashMap<>();
+    private final Map<String, Object> oneTimePrefs = new HashMap<>();
 
     public IProject getProject() {
         return proj.getProject();

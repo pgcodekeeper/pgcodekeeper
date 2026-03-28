@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
@@ -50,10 +50,10 @@ public class GetChangesCustomDialog extends Dialog {
     private final OverridablePrefs prefs;
     private final DatabaseType dbType;
 
-    private final Map<String, Boolean> customSettings;
+    private final Map<String, Object> customSettings;
 
     public GetChangesCustomDialog(Shell parentShell, OverridablePrefs prefs,
-            DatabaseType dbType, Map<String, Boolean> customSettings) {
+            DatabaseType dbType, Map<String, Object> customSettings) {
         super(parentShell);
         this.customSettings = customSettings;
         this.prefs = prefs;

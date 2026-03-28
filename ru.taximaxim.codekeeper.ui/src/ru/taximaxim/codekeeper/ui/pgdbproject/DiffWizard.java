@@ -64,10 +64,10 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 
 public final class DiffWizard extends Wizard implements IPageChangingListener {
@@ -368,7 +368,7 @@ final class PageDiff extends WizardPage implements Listener {
         getWizard().getContainer().updateMessage();
     }
 
-    public Map<String, Boolean> getOneTimePrefs() {
+    public Map<String, Object> getOneTimePrefs() {
         return fieldEditorStore.getPrefs();
     }
 

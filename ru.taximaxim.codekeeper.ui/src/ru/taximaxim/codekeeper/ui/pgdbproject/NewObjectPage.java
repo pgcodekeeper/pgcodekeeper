@@ -82,7 +82,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.differ.ObjectLevel;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateAssistProcessor;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateContextType;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorTemplateManager;
@@ -101,7 +101,7 @@ public final class NewObjectPage extends WizardPage {
     private static final String EXPECTED_OP_NAME = "=+*";
 
     private static final String PATTERN = "CREATE SCHEMA %s;"; //$NON-NLS-1$
-    private static final String CH_PATTERN = "CREATE DATABASE %\nENGINE = Atomic;"; //$NON-NLS-1$
+    private static final String CH_PATTERN = "CREATE DATABASE %s\nENGINE = Atomic;"; //$NON-NLS-1$
     private static final String CREATE_POSTFIX = ".create"; //$NON-NLS-1$
 
     private final List<DbObjType> allowedTypes = new ArrayList<>();

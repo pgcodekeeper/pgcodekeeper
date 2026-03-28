@@ -9,9 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to specify a cluster for tables in ClickHouse projects (`Project -> Properties -> pgCodeKeeper -> DB update -> Add ON CLUSTER for tables (experimental)`).
+
 ### Changed
 
 ### Fixed
+
+- Fixed an error when creating a ClickHouse schema through the object creation wizard.
 
 ## [14.1.1] - 2026-03-25
 

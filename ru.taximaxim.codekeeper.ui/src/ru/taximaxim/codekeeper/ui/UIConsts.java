@@ -127,6 +127,8 @@ public interface UIConsts {
         String GENERATE_EXIST_DO_BLOCK = "prefGenerateExistDoBlock"; //$NON-NLS-1$
         String DROP_BEFORE_CREATE = "prefDropBeforeCreate"; //$NON-NLS-1$
         String COMMENTS_TO_END = "prefCommmentsToEnd"; //$NON-NLS-1$
+        String CLUSTER_NAME = "prefClusterName"; //$NON-NLS-1$
+        String PROJECT_ONLY = "projectOnly"; //$NON-NLS-1$
     }
 
     interface PG_EDIT_PREF {

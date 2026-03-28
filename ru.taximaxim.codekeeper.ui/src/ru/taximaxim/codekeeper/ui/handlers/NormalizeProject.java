@@ -45,19 +45,18 @@ import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Log;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class NormalizeProject extends AbstractHandler {
-
-    private static final String PROJECT_ONLY = "projectOnly"; //$NON-NLS-1$
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -85,7 +84,7 @@ public final class NormalizeProject extends AbstractHandler {
                         Messages.NormalizeProject_normalizing_project, 2);
                 try {
                     boolean projectOnly = true;
-                    Map<String, Boolean> oneTimePrefs = Map.of(PROJECT_ONLY, projectOnly);
+                    Map<String, Object> oneTimePrefs = Map.of(DB_UPDATE_PREF.PROJECT_ONLY, projectOnly);
                     IDatabaseProvider provider = ProjectUtils.getDatabaseType(proj.getProject()).getDatabaseProvider();
                     DiffSettings diffSettings = new DiffSettings(
                             new UISettings(proj.getProject(), oneTimePrefs),

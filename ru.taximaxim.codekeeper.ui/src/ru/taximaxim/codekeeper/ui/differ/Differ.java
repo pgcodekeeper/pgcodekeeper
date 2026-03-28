@@ -37,7 +37,7 @@ import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class Differ implements IRunnableWithProgress {
@@ -48,7 +48,7 @@ public final class Differ implements IRunnableWithProgress {
     private final String timezone;
     private final DatabaseType dbType;
     private final IProject proj;
-    private final Map<String, Boolean> oneTimePrefs;
+    private final Map<String, Object> oneTimePrefs;
 
     private String diffDirect;
 
@@ -76,7 +76,7 @@ public final class Differ implements IRunnableWithProgress {
     }
 
     public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root, String timezone, IProject proj,
-            Map<String, Boolean> oneTimePrefs, DatabaseType dbType) {
+            Map<String, Object> oneTimePrefs, DatabaseType dbType) {
         this.oldDb = oldDb;
         this.newDb = newDb;
         this.root = root;

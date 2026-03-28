@@ -49,12 +49,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.api.schema.IColumn;
 import org.pgcodekeeper.core.database.api.schema.IConstraint;
 import org.pgcodekeeper.core.database.api.schema.IConstraintPk;
 import org.pgcodekeeper.core.database.api.schema.ITable;
 import org.pgcodekeeper.core.database.ms.utils.MsDiffUtils;
+import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -68,9 +70,7 @@ import ru.taximaxim.codekeeper.ui.generators.DataType;
 import ru.taximaxim.codekeeper.ui.generators.DbData;
 import ru.taximaxim.codekeeper.ui.generators.IntegerData;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
-import org.pgcodekeeper.core.settings.DiffSettings;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 

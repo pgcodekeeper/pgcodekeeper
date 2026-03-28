@@ -15,11 +15,11 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.properties;
 
-
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -30,21 +30,22 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class DbUpdateProperties extends PropertyPage {
 
     private Button btnEnableProjPref;
     private FieldEditorStore fieldEditorStore;
+    private StringFieldEditor clusterNameField;
     private DatabaseType dbType;
 
     private IEclipsePreferences prefs;
@@ -113,6 +114,10 @@ public class DbUpdateProperties extends PropertyPage {
                     Messages.DbUpdatePrefPage_generate_exist_do_block, btnsPanel, prefs::getBoolean));
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
                     Messages.DbUpdatePrefPage_comments_to_end, btnsPanel, prefs::getBoolean));
+        } else if (DatabaseType.CH == dbType) {
+            clusterNameField = new StringFieldEditor(DB_UPDATE_PREF.CLUSTER_NAME,
+                    Messages.DbUpdatePrefPage_cluster_name, panel);
+            clusterNameField.setStringValue(prefs.get(DB_UPDATE_PREF.CLUSTER_NAME, null));
         }
 
         fieldEditorStore.setEnable(overridePref);
@@ -124,6 +129,10 @@ public class DbUpdateProperties extends PropertyPage {
         btnEnableProjPref.setSelection(false);
         fieldEditorStore.performDefaults(Activator.getDefault().getPreferenceStore());
         fieldEditorStore.setEnable(false);
+        if (null != clusterNameField) {
+            clusterNameField.setStringValue(null);
+            prefs.put(DB_UPDATE_PREF.CLUSTER_NAME, null);
+        }
 
         try {
             fillPrefs();
@@ -149,7 +158,10 @@ public class DbUpdateProperties extends PropertyPage {
 
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, btnEnableProjPref.getSelection());
-        fieldEditorStore.getPrefs().forEach((k, v) -> prefs.putBoolean(k, v));
+        fieldEditorStore.getPrefs().forEach((k, v) -> prefs.putBoolean(k, (Boolean) v));
+        if (null != clusterNameField) {
+            prefs.put(DB_UPDATE_PREF.CLUSTER_NAME, clusterNameField.getStringValue());
+        }
         prefs.flush();
         setValid(true);
         setErrorMessage(null);
