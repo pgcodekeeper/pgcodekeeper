@@ -34,8 +34,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.database.api.IDatabaseProvider;
+import org.pgcodekeeper.core.database.api.loader.ILoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
+
 import ru.taximaxim.codekeeper.ui.DatabaseType;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -44,13 +47,10 @@ import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
-import org.pgcodekeeper.core.database.api.IDatabaseProvider;
-import org.pgcodekeeper.core.database.api.loader.ILoader;
-import org.pgcodekeeper.core.settings.DiffSettings;
-
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
-import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 class DbSourcePicker extends Composite {
 
@@ -115,7 +115,7 @@ class DbSourcePicker extends Composite {
         return cmbEncoding.getCombo().getText();
     }
 
-    public ILoader getDbSource(Map<String, Boolean> oneTimePrefs) {
+    public ILoader getDbSource(Map<String, Object> oneTimePrefs) {
         IDatabaseProvider provider = pageDiff.getSelectedDbType().getDatabaseProvider();
         DiffSettings diffSettings = new DiffSettings(
                 new UISettings(null, oneTimePrefs, pageDiff.getSelectedDbType()),

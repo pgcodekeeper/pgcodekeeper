@@ -33,12 +33,12 @@ public class OverridablePrefs {
 
     private final IPreferenceStore mainPS;
     private final IEclipsePreferences projPS;
-    private final Map<String, Boolean> oneTimePS;
+    private final Map<String, Object> oneTimePS;
 
     private final boolean isEnableProjPrefRoot;
     private final boolean isEnableProjPrefDbUpdate;
 
-    public OverridablePrefs(IProject project, Map<String, Boolean> oneTimePS) {
+    public OverridablePrefs(IProject project, Map<String, Object> oneTimePS) {
         mainPS = Activator.getDefault().getPreferenceStore();
         if (project != null) {
             projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
@@ -54,13 +54,12 @@ public class OverridablePrefs {
 
     public boolean isUseGlobalIgnoreList() {
         if (oneTimePS != null) {
-            Boolean value = oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
+            Boolean value = (Boolean) oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
             if (value != null) {
                 return value;
             }
         }
-        return !isEnableProjPrefRoot ||
-                projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
+        return !isEnableProjPrefRoot || projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
     }
 
     public boolean getBooleanOfRootPref(String key) {
@@ -70,10 +69,25 @@ public class OverridablePrefs {
     public boolean getBooleanOfDbUpdatePref(String key) {
         return getBoolean(key, isEnableProjPrefDbUpdate);
     }
+    
+    public String getStringOfDbUpdatePref(String key) {
+        return getString(key, isEnableProjPrefDbUpdate);
+    }
+
+    private String getString(String key, boolean isEnableProjPref) {
+        if (null != oneTimePS) {
+            String value = (String) oneTimePS.get(key);
+            if (null != value) {
+                return value;
+            }
+        }
+
+        return isEnableProjPref ? projPS.get(key, null) : mainPS.getString(key);
+    }
 
     private boolean getBoolean(String key, boolean isEnableProjPref) {
         if (oneTimePS != null) {
-            Boolean value = oneTimePS.get(key);
+            Boolean value = (Boolean) oneTimePS.get(key);
             if (value != null) {
                 return value;
             }

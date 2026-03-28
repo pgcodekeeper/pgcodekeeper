@@ -43,7 +43,7 @@ import ru.taximaxim.codekeeper.ui.comparetools.CompareItem;
 import ru.taximaxim.codekeeper.ui.comparetools.SqlMergeViewer;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefChangeAction;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 
 public final class DiffPaneViewer extends Composite {
 

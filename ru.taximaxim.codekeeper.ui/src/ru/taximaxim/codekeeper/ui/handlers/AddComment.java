@@ -50,7 +50,7 @@ import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.pgdbproject.parser.StubDatabaseLoader;
-import ru.taximaxim.codekeeper.ui.properties.UISettings;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditor;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;

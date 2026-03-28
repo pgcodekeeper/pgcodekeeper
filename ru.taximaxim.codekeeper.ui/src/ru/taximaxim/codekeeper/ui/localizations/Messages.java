@@ -469,6 +469,8 @@ public final class Messages extends NLS {
 
     public static String DbUpdatePrefPage_update_statement;
 
+    public static String DbUpdatePrefPage_cluster_name;
+
     public static String dbUpdatePrefPage_create_script_project_directory;
 
     public static String dbUpdatePrefPage_status_alway_create;

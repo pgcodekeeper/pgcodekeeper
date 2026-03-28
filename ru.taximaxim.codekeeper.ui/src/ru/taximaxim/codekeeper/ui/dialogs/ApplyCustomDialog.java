@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -28,14 +29,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
+import org.eclipse.swt.widgets.Text;
 
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
+import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
 
 /**
  * Dialog box for filling in one-time preferences that will be used
@@ -44,14 +46,15 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 public class ApplyCustomDialog extends Dialog {
 
     private FieldEditorStore fieldEditorStore;
+    private StringFieldEditor clusterNameField;
 
     private final OverridablePrefs prefs;
     private final DatabaseType dbType;
 
-    private final Map<String, Boolean> customSettings;
+    private final Map<String, Object> customSettings;
 
     public ApplyCustomDialog(Shell parentShell, OverridablePrefs prefs,
-            DatabaseType dbType, Map<String, Boolean> customSettings) {
+            DatabaseType dbType, Map<String, Object> customSettings) {
         super(parentShell);
         this.customSettings = customSettings;
         this.prefs = prefs;
@@ -106,6 +109,18 @@ public class ApplyCustomDialog extends Dialog {
                     Messages.DbUpdatePrefPage_generate_exist_do_block, btnsPanel, prefs::getBooleanOfDbUpdatePref));
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
                     Messages.DbUpdatePrefPage_comments_to_end, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        } else if (DatabaseType.CH == dbType) {
+            var panelString = new Composite(panel, SWT.NONE);
+            clusterNameField = new StringFieldEditor(DB_UPDATE_PREF.CLUSTER_NAME,
+                    Messages.DbUpdatePrefPage_cluster_name, panelString);
+            clusterNameField.setStringValue(prefs.getStringOfDbUpdatePref(DB_UPDATE_PREF.CLUSTER_NAME));
+
+            Text textControl = clusterNameField.getTextControl(panelString);
+            if (textControl != null) {
+                gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
+                gd.widthHint = 200;
+                textControl.setLayoutData(gd);
+            }
         }
 
         return panel;
@@ -123,6 +138,10 @@ public class ApplyCustomDialog extends Dialog {
     protected void okPressed() {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, true);
         customSettings.putAll(fieldEditorStore.getPrefs());
+        if (null != clusterNameField) {
+            customSettings.put(DB_UPDATE_PREF.CLUSTER_NAME, clusterNameField.getStringValue());
+        }
+
         super.okPressed();
     }
 }

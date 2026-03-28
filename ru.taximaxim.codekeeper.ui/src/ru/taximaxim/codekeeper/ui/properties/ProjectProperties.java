@@ -37,9 +37,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
 import org.osgi.service.prefs.BackingStoreException;
 import org.pgcodekeeper.core.Consts;
-import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Activator;
+import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
@@ -48,8 +48,8 @@ import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.prefs.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.prefs.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
+import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class ProjectProperties extends PropertyPage {
@@ -283,7 +283,7 @@ public class ProjectProperties extends PropertyPage {
 
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
-        fieldEditorStore.getPrefs().forEach((k, v) -> prefs.putBoolean(k, v));
+        fieldEditorStore.getPrefs().forEach((k, v) -> prefs.putBoolean(k, (Boolean) v));
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         dbBindPrefs.put(DB_BIND_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$

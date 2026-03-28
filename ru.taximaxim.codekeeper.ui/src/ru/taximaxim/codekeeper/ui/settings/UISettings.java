@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.properties;
+package ru.taximaxim.codekeeper.ui.settings;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -54,11 +54,11 @@ public final class UISettings implements ISettings {
     private IEclipsePreferences projPS;
 
     private final IProject project;
-    private final Map<String, Boolean> oneTimePS;
+    private final Map<String, Object> oneTimePS;
     private final DatabaseType dbType;
     private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
 
-    public UISettings(IProject project, Map<String, Boolean> oneTimePS, DatabaseType dbType) {
+    public UISettings(IProject project, Map<String, Object> oneTimePS, DatabaseType dbType) {
         this.project = project;
         this.oneTimePS = oneTimePS;
         if (project != null) {
@@ -77,7 +77,7 @@ public final class UISettings implements ISettings {
         }
     }
 
-    public UISettings(IProject project, Map<String, Boolean> oneTimePS) {
+    public UISettings(IProject project, Map<String, Object> oneTimePS) {
         this(project, oneTimePS, null);
     }
 
@@ -172,7 +172,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isParallelLoad() {
-        return getBooleanOfRootPref(PREF.PARALLEL_LOADING);
+        return mainPS.getBoolean(PREF.PARALLEL_LOADING);
     }
 
     @Override
@@ -221,8 +221,13 @@ public final class UISettings implements ISettings {
         return addPathsIfExists(FILE.POST_DIR, FILE.POST_SCRIPT);
     }
 
-    private Map<String, Boolean> createTempPrefs() {
-        Map<String, Boolean> temp = new HashMap<>();
+    @Override
+    public String getClusterName() {
+        return getString(DB_UPDATE_PREF.CLUSTER_NAME, true);
+    }
+
+    private Map<String, Object> createTempPrefs() {
+        Map<String, Object> temp = new HashMap<>();
         if (null != oneTimePS) {
             temp.putAll(oneTimePS);
         }
@@ -231,7 +236,7 @@ public final class UISettings implements ISettings {
 
     public boolean isUseGlobalIgnoreList() {
         if (oneTimePS != null) {
-            Boolean value = oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
+            Boolean value = (Boolean) oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
             if (value != null) {
                 return value;
             }
@@ -253,12 +258,22 @@ public final class UISettings implements ISettings {
 
     private boolean getBoolean(String key, boolean isEnableProjPref) {
         if (oneTimePS != null) {
-            Boolean value = oneTimePS.get(key);
+            Boolean value = (Boolean) oneTimePS.get(key);
             if (value != null) {
                 return value;
             }
         }
         return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
+    }
+
+    private String getString(String key, boolean isEnableProjPref) {
+        if (null != oneTimePS) {
+            String value = (String) oneTimePS.get(key);
+            if (null != value) {
+                return value;
+            }
+        }
+        return isEnableProjPref ? projPS.get(key, null) : mainPS.getString(key);
     }
 
     private List<String> addPathsIfExists(String dir, String script) {
@@ -288,11 +303,6 @@ public final class UISettings implements ISettings {
 
     public void setCharsetName(String inCharsetName) {
         this.inCharsetName = inCharsetName;
-    }
-
-    @Override
-    public String getClusterName() {
-        return null;
     }
 
     @Override

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *******************************************************************************/
-package ru.taximaxim.codekeeper.ui.prefs;
+package ru.taximaxim.codekeeper.ui.settings;
 
 import java.util.function.BiPredicate;
 import java.util.function.Predicate;
