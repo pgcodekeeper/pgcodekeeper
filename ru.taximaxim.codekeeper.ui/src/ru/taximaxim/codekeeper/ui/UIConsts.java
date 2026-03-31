@@ -129,6 +129,7 @@ public interface UIConsts {
         String COMMENTS_TO_END = "prefCommmentsToEnd"; //$NON-NLS-1$
         String CLUSTER_NAME = "prefClusterName"; //$NON-NLS-1$
         String PROJECT_ONLY = "projectOnly"; //$NON-NLS-1$
+        String USE_ACTUAL_VERSION_SYNTAX = "useActualVersionSyntax"; //$NON-NLS-1$
     }
 
     interface PG_EDIT_PREF {

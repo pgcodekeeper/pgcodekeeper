@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Added
 
 - Added the ability to specify a cluster for tables in ClickHouse projects (`Project -> Properties -> pgCodeKeeper -> DB update -> Add ON CLUSTER for tables (experimental)`).
+- Added the setting for generating a migration script based on the current version of the database (there are currently no syntax changes, but these will be added later). By default, the syntax specific to the minimum supported version is used.
 
 ### Changed
 

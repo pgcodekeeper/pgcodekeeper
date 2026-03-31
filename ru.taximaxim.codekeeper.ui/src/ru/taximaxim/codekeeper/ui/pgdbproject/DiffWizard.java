@@ -315,6 +315,8 @@ final class PageDiff extends WizardPage implements Listener {
                 Messages.DbUpdatePrefPage_generate_exist_do_block, container, mainPrefs::getBoolean));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
                 Messages.DbUpdatePrefPage_comments_to_end, container, mainPrefs::getBoolean));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX,
+                Messages.dbUpdatePrefPage_use_actual_version_syntax, container, mainPrefs::getBoolean));
 
         fieldEditorStore.setVisible(false);
 

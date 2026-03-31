@@ -309,4 +309,9 @@ public final class UISettings implements ISettings {
     public boolean isDisableAutoLoad() {
         return false;
     }
+
+    @Override
+    public boolean isUseActualVersionSyntax() {
+        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX);
+    }
 }

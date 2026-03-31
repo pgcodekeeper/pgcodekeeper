@@ -172,4 +172,9 @@ public final class TestUiSettings implements ISettings {
     public boolean isDisableAutoLoad() {
         return false;
     }
+
+    @Override
+    public boolean isUseActualVersionSyntax() {
+        return false;
+    }
 }
