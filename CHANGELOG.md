@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed an error when creating a ClickHouse schema through the object creation wizard.
+- Fixed a bug with displaying a message when exporting connections on macOS.
 
 ## [14.1.1] - 2026-03-25
 

@@ -233,7 +233,7 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 var box = new MessageBox(getShell(), SWT.YES | SWT.NO | SWT.CANCEL | SWT.ICON_QUESTION);
-                box.setText(Messages.DbStorePrefPage_export_dialog);
+                box.setMessage(Messages.DbStorePrefPage_export_dialog);
                 int result = box.open();
                 if (SWT.NO != result && SWT.YES != result) {
                     return;
