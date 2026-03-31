@@ -105,6 +105,9 @@ public final class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX,
+                Messages.dbUpdatePrefPage_use_actual_version_syntax, getFieldEditorParent()));
+
         StringFieldEditor cmdUpdate = new StringFieldEditor(DB_UPDATE_PREF.MIGRATION_COMMAND,
                 Messages.dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script
                 + CMD_VARS.SCRIPT_PLACEHOLDER + ' '

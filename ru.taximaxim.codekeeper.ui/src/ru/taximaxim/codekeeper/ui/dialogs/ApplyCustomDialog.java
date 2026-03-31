@@ -97,6 +97,8 @@ public class ApplyCustomDialog extends Dialog {
                 Messages.DbUpdatePrefPage_add_pre_post_script, btnsPanel, prefs::getBooleanOfDbUpdatePref));
         fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
                 Messages.DbUpdatePrefPage_allow_data_movement, btnsPanel, prefs::getBooleanOfDbUpdatePref));
+        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX,
+                Messages.dbUpdatePrefPage_use_actual_version_syntax, btnsPanel, prefs::getBooleanOfDbUpdatePref));
 
         if (DatabaseType.PG == dbType) {
             fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
