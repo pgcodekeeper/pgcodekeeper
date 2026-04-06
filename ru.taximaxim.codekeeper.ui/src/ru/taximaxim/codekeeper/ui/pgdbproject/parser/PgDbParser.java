@@ -72,10 +72,10 @@ import org.pgcodekeeper.core.utils.Utils;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.UIConsts.MARKER;
-import ru.taximaxim.codekeeper.ui.settings.UISettings;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
@@ -200,15 +200,15 @@ public final class PgDbParser implements IResourceChangeListener {
             return;
         }
         IProject proj = files.iterator().next().getProject();
-        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj),
-                new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor)),
+        DiffSettings diffSettings = new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor));
+        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj), diffSettings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
         IDatabase db = loader.load();
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, loader.getErrors());
+        FullAnalyze.fullAnalyze(db, loader.getErrors(), diffSettings.getVersion());
         clearMarkers(files);
         markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
@@ -219,15 +219,15 @@ public final class PgDbParser implements IResourceChangeListener {
             throws InterruptedException, IOException {
         UISettings settings = new UISettings(proj, null);
         var provider = ProjectUtils.getDatabaseType(proj).getDatabaseProvider();
-        ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj),
-                new DiffSettings(settings, new UIMonitor(monitor)),
+        DiffSettings diffSettings = new DiffSettings(settings, new UIMonitor(monitor));
+        ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj), diffSettings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
         IDatabase db = loader.load();
         referencesStorage.clear();
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, loader.getErrors());
+        FullAnalyze.fullAnalyze(db, loader.getErrors(), diffSettings.getVersion());
         clearMarkers(proj);
         markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
