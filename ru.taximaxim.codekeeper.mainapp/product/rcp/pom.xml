@@ -39,7 +39,7 @@
                         <!-- Signing an application with a key from github actions -->
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.2.1</version>
+                        <version>3.6.3</version>
                         <executions>
                             <execution>
                                 <id>exec</id>
