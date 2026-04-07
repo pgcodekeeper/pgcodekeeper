@@ -9,10 +9,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added localization of missing lines.
 - Added the ability to specify a cluster for tables in ClickHouse projects (`Project -> Properties -> pgCodeKeeper -> DB update -> Add ON CLUSTER for tables (experimental)`).
-- Added the setting for generating a migration script based on the current version of the database (there are currently no syntax changes, but these will be added later). By default, the syntax specific to the minimum supported version is used.
+- Added the setting for generating a migration script based on the current version of the database (`Window -> Preferences -> pgCodeKeeper -> Update DB -> Use the current database version syntax to generate the migration script`) (there are currently no syntax changes, but these will be added later). By default, the syntax specific to the minimum supported version is used.
 
 ### Changed
+
+- Reduced the number of line breaks and indents added when formatting code.
 
 ### Fixed
 
@@ -2425,7 +2428,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...HEAD
+[14.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...v14.2.0
 [14.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...v14.1.1
 [12.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...v12.2.0
 [12.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.0.0...v12.1.0
