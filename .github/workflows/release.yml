@@ -53,6 +53,7 @@ jobs:
           security unlock-keychain -p "" build.keychain
           security import certificate.p12 -k build.keychain -P ${{ secrets.MAC_CERT_PASS }} -A
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          security list-keychains -d user -s build.keychain login.keychain
           security find-identity -v -p codesigning build.keychain
 
       - name: build
