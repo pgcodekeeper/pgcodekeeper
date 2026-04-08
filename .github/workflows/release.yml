@@ -51,10 +51,9 @@ jobs:
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P ${{ secrets.MAC_CERT_PASS }} -A
+          security import certificate.p12 -k build.keychain -P ${{ secrets.MAC_CERT_PASS }} -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
-          security list-keychains -d user -s build.keychain login.keychain
-          security find-identity -v -p codesigning build.keychain
+          security find-identity build.keychain
 
       - name: build
         run: mvn clean -ntp deploy -DskipTests -P code-sign -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
