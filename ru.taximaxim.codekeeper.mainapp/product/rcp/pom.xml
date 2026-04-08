@@ -54,6 +54,8 @@
                                         <argument>--force</argument>
                                         <argument>--verify</argument>
                                         <argument>--verbose</argument>
+                                        <argument>--keychain</argument>
+                                        <argument>build.keychain-db</argument>
                                         <argument>--sign</argument>
                                         <argument>TAXTELECOM LLC</argument>
                                         <argument>${mac.folder}/aarch64/pgCodeKeeper.app</argument>
@@ -73,6 +75,8 @@
                                         <argument>--force</argument>
                                         <argument>--verify</argument>
                                         <argument>--verbose</argument>
+                                        <argument>--keychain</argument>
+                                        <argument>build.keychain-db</argument>
                                         <argument>--sign</argument>
                                         <argument>TAXTELECOM LLC</argument>
                                         <argument>${mac.folder}/x86_64/pgCodeKeeper.app</argument>
