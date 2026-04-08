@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [14.2.0] - 2026-04-26
+
+### Added
+
 - Added localization of missing lines.
 - Added the ability to specify a cluster for tables in ClickHouse projects (`Project -> Properties -> pgCodeKeeper -> DB update -> Add ON CLUSTER for tables (experimental)`).
 - Added the setting for generating a migration script based on the current version of the database (`Window -> Preferences -> pgCodeKeeper -> Update DB -> Use the current database version syntax to generate the migration script`) (there are currently no syntax changes, but these will be added later). By default, the syntax specific to the minimum supported version is used.
