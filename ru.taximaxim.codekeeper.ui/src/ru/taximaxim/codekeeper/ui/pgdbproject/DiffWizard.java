@@ -114,6 +114,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
             try {
                 getContainer().run(true, true, monitor -> {
                     try {
+                        // FIXME loaders have their own DiffSettings and we lose some information
                         diffTree[0] = PgCodeKeeperApi.createTree(oldDb, newDb, diffSettings);
                     } catch (IOException ex) {
                         throw new InvocationTargetException(ex);
@@ -133,7 +134,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
                 return;
             }
 
-            pagePartial.setData(oldDb, newDb, diffTree[0], pageDiff.getIgnoreList(), dbType);
+            pagePartial.setData(oldDb, newDb, diffTree[0], diffSettings, pageDiff.getIgnoreList(), dbType);
         }
     }
 
@@ -150,7 +151,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             Differ differ = new Differ(pagePartial.getOldDb().getDatabase(), pagePartial.getNewDb().getDatabase(),
                     pagePartial.getDiffTree(), pageDiff.getTimezone(), null, pageDiff.getOneTimePrefs(),
-                    pagePartial.getDbType());
+                    pagePartial.getDbType(), pagePartial.getDiffSettings());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(), "diff_wizard_result", //$NON-NLS-1$
@@ -390,12 +391,14 @@ final class PagePartial extends WizardPage {
     private Label lblNewDb;
     private Label lblOldDb;
     private DiffTableViewer diffTable;
+    private DiffSettings diffSettings;
 
-    public void setData(ILoader oldDb, ILoader newDb, TreeElement diffTree, IgnoreList ignoreList,
-            DatabaseType dbType) {
+    public void setData(ILoader oldDb, ILoader newDb, TreeElement diffTree, DiffSettings diffSettings,
+            IgnoreList ignoreList, DatabaseType dbType) {
         this.oldDb = oldDb;
         this.newDb = newDb;
         this.diffTree = diffTree;
+        this.diffSettings = diffSettings;
         lblNewDb.setText(newDb.getDatabaseName());
         lblOldDb.setText(oldDb.getDatabaseName());
         lblNewDb.getParent().layout();
@@ -413,6 +416,10 @@ final class PagePartial extends WizardPage {
 
     public TreeElement getDiffTree() {
         return diffTree;
+    }
+
+    public DiffSettings getDiffSettings() {
+        return diffSettings;
     }
 
     public DatabaseType getDbType() {

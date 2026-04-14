@@ -38,12 +38,6 @@
         </command>
         <command
             categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
-            defaultHandler="ru.taximaxim.codekeeper.ui.handlers.AddDepcy"
-            id="ru.taximaxim.codekeeper.ui.command.AddDepcy"
-            name="%command.commandname.AddDepcy">
-        </command>
-        <command
-            categoryId="ru.taximaxim.codekeeper.ui.categoryPgCodeKeeper"
             id="ru.taximaxim.codekeeper.ui.command.GetChanges"
             name="%command.commandname.GetChanges">
         </command>
@@ -839,7 +833,7 @@
         </page>
         <page
             category="ru.taximaxim.codekeeper.ui.proj_properties"
-            class="ru.taximaxim.codekeeper.ui.properties.DependencyProperties"
+            class="ru.taximaxim.codekeeper.ui.properties.LibraryProperties"
             id="ru.taximaxim.codekeeper.ui.dependencies"
             name="%page.name.libraryDependencies">
             <enabledWhen>
@@ -878,6 +872,24 @@
             class="ru.taximaxim.codekeeper.ui.properties.IgnoredSchemasProperties"
             id="ru.taximaxim.codekeeper.ui.ignored_schema"
             name="%page.name.ignored_schema">
+            <enabledWhen>
+                <and>
+                    <instanceof value="org.eclipse.core.resources.IProject">
+                    </instanceof>
+                    <adapt type="org.eclipse.core.resources.IProject">
+                    </adapt>
+                    <test
+                        property="org.eclipse.core.resources.projectNature"
+                        value="ru.taximaxim.codekeeper.ui.nature">
+                    </test>
+                </and>
+            </enabledWhen>
+        </page>
+        <page
+            category="ru.taximaxim.codekeeper.ui.proj_properties"
+            class="ru.taximaxim.codekeeper.ui.properties.DependencyProperties"
+            id="ru.taximaxim.codekeeper.ui.dependencies_list"
+            name="%page.name.dependencies_list">
             <enabledWhen>
                 <and>
                     <instanceof value="org.eclipse.core.resources.IProject">

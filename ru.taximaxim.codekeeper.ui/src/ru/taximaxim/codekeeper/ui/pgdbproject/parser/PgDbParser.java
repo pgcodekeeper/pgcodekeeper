@@ -296,9 +296,10 @@ public final class PgDbParser implements IResourceChangeListener {
         referencesStorage.remove(path);
     }
 
-    public void fillRefsFromInputStream(InputStream input, String fileName, IProgressMonitor monitor, IProject project)
+    public void fillRefsFromInputStream(InputStream input, String fileName, IProgressMonitor monitor, IProject project,
+            DatabaseType dbType)
             throws InterruptedException, IOException {
-        var provider = ProjectUtils.getDatabaseType(project).getDatabaseProvider();
+        var provider = dbType.getDatabaseProvider();
         var loader = provider.getDumpLoader(() -> input,
                 fileName, new DiffSettings(new UISettings(project, null), new UIMonitor(monitor)));
         loader.setMode(ParserListenerMode.REF);

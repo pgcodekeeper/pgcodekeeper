@@ -27,10 +27,10 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.pgcodekeeper.core.database.base.loader.AbstractProjectLoader;
 import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
 import org.pgcodekeeper.core.ignorelist.IgnoredObject;
 
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.IgnoredObjectPrefListEditor;
@@ -50,7 +50,7 @@ public class IgnoredSchemasProperties extends PropertyPage {
 
     @Override
     protected Control createContents(Composite parent) {
-        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        Path listFile = Paths.get(proj.getLocationURI()).resolve(AbstractProjectLoader.IGNORE_SCHEMA_FILE);
         ignoreSchemaList = InternalIgnoreList.getIgnoreSchemaList(listFile);
 
         listEditor = IgnoredObjectPrefListEditor.createIgnoreSchemaEditor(parent, ignoreSchemaList);
@@ -85,7 +85,7 @@ public class IgnoredSchemasProperties extends PropertyPage {
             list.add(rule);
         }
         byte[] out = list.getListCode().getBytes(StandardCharsets.UTF_8);
-        Path listFile = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_SCHEMA);
+        Path listFile = Paths.get(proj.getLocationURI()).resolve(AbstractProjectLoader.IGNORE_SCHEMA_FILE);
         Files.createDirectories(listFile.getParent());
         Files.write(listFile, out);
     }

@@ -40,11 +40,11 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.dialogs.PropertyPage;
+import org.pgcodekeeper.core.database.base.loader.AbstractProjectLoader;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.IgnoreListEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
@@ -104,7 +104,7 @@ public class IgnoreListProperties extends PropertyPage {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 try {
-                    Path path = Paths.get(proj.getLocationURI()).resolve(FILE.IGNORED_OBJECTS);
+                    Path path = Paths.get(proj.getLocationURI()).resolve(AbstractProjectLoader.IGNORE_FILE);
                     if (Files.notExists(path)) {
                         Files.write(path, "SHOW ALL".getBytes(StandardCharsets.UTF_8)); //$NON-NLS-1$
                     }

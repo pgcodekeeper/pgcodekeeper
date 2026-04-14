@@ -23,12 +23,12 @@ import java.nio.file.Paths;
 
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Platform;
+import org.pgcodekeeper.core.database.base.loader.AbstractProjectLoader;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
 import org.pgcodekeeper.core.ignorelist.IgnoreParser;
 import org.pgcodekeeper.core.ignorelist.IgnoreSchemaList;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -99,7 +99,7 @@ public final class InternalIgnoreList {
      */
     static Path getInternalIgnoreFile() {
         return Paths.get(Platform.getStateLocation(Activator.getContext().getBundle())
-                .append(FILE.IGNORED_OBJECTS).toString());
+                .append(AbstractProjectLoader.IGNORE_FILE).toString());
     }
 
     public static IgnoreSchemaList getIgnoreSchemaList(Path listFile) {
