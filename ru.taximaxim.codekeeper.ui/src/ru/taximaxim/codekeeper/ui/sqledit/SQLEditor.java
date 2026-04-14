@@ -528,7 +528,7 @@ implements IResourceChangeListener, ITextErrorReporter {
             InputStream stream = new ByteArrayInputStream(document.get().getBytes(StandardCharsets.UTF_8));
             String name = Paths.get(uriInput.getURI()).toString();
             IProject project = res != null ? res.getProject() : null;
-            parser.fillRefsFromInputStream(stream, name, monitor, project);
+            parser.fillRefsFromInputStream(stream, name, monitor, project, dbType);
         }
     }
 

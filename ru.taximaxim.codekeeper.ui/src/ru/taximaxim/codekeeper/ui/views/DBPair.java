@@ -16,14 +16,8 @@
 package ru.taximaxim.codekeeper.ui.views;
 
 import org.pgcodekeeper.core.database.api.loader.ILoader;
+import org.pgcodekeeper.core.settings.DiffSettings;
 
-public class DBPair {
+public record DBPair(ILoader dbProject, ILoader dbRemote, DiffSettings diffSettings) {
 
-    final ILoader dbProject;
-    final ILoader dbRemote;
-
-    public DBPair(ILoader dbProject, ILoader dbRemote) {
-        this.dbProject = dbProject;
-        this.dbRemote = dbRemote;
-    }
 }

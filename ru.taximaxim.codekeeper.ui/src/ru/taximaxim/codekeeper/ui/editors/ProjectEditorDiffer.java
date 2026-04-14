@@ -21,13 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -115,6 +112,7 @@ import org.pgcodekeeper.core.database.api.IDatabaseProvider;
 import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectOverride;
+import org.pgcodekeeper.core.database.base.loader.AbstractProjectLoader;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -132,7 +130,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts.CONTEXT;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.EDITOR;
-import ru.taximaxim.codekeeper.ui.UIConsts.FILE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PERSPECTIVE;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
@@ -150,7 +147,6 @@ import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.GetChangesCustomDialog;
-import ru.taximaxim.codekeeper.ui.dialogs.ManualDepciesDialog;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
@@ -184,6 +180,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private ILoader dbProject;
     private ILoader dbRemote;
     private TreeElement diffTree;
+    private DiffSettings diffSettings;
     private Object loadedRemote;
 
     private Composite contNotifications;
@@ -195,10 +192,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     private Action getChangesAction;
     private DiffTable diffTable;
     private DiffPaneViewer diffPane;
-    private boolean isDBLoaded;
     private boolean isCommitCommandAvailable;
-    private List<Entry<IStatement, IStatement>> manualDepciesOldDb = new ArrayList<>();
-    private List<Entry<IStatement, IStatement>> manualDepciesNewDb = new ArrayList<>();
 
     private DatabaseType dbType;
     private final Map<String, Object> oneTimePrefs = new HashMap<>();
@@ -266,8 +260,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         diffTable.getViewer().addDoubleClickListener(
                 e -> openElementInEditor((TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement()));
 
-        diffTable.getViewer()
-                .addPostSelectionChangedListener(e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote)));
+        diffTable.getViewer().addPostSelectionChangedListener(
+                e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote, diffSettings)));
 
         diffPane = new DiffPaneViewer(sashOuter, getProject());
 
@@ -342,18 +336,6 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         diffTable.layout(true, true);
     }
 
-    public void addDependency() {
-        if (isDBLoaded) {
-            ManualDepciesDialog dialog = new ManualDepciesDialog(parent.getShell(), manualDepciesOldDb,
-                    manualDepciesNewDb, dbRemote.getDatabase().listObjects(), dbProject.getDatabase().listObjects(),
-                    Messages.database, Messages.ProjectEditorDiffer_project);
-            if (dialog.open() == Window.OK) {
-                manualDepciesOldDb = dialog.getDepciesSourceList();
-                manualDepciesNewDb = dialog.getDepciesTargetList();
-            }
-        }
-    }
-
     @Override
     public boolean isDirty() {
         return false;
@@ -370,7 +352,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         if (dbProject != null) {
             ISelection selection = diffTable.getViewer().getSelection();
             if (selection.isEmpty()) {
-                DBPair pair = new DBPair(dbProject, dbRemote);
+                DBPair pair = new DBPair(dbProject, dbRemote, diffSettings);
                 sp.fireSelectionChanged(new SelectionChangedEvent(sp, new StructuredSelection(pair)), pair);
             }
         }
@@ -516,7 +498,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
                             loadedRemote = currentRemote;
-                            setInput(oldDb, newDb, diffTree);
+                            setInput(oldDb, newDb, diffTree, diffSettings);
                             if (diffTable.getElements().isEmpty()) {
                                 showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
                             }
@@ -692,9 +674,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
 
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), diffTree.getRevertedCopy(),
-                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType);
-        differ.setAdditionalDepciesOldDb(manualDepciesOldDb);
-        differ.setAdditionalDepciesNewDb(manualDepciesNewDb);
+                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType, diffSettings);
 
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {
@@ -724,12 +704,13 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         job.schedule();
     }
 
-    private void setInput(ILoader dbProject, ILoader dbRemote, TreeElement diffTree) {
+    private void setInput(ILoader dbProject, ILoader dbRemote, TreeElement diffTree, DiffSettings diffSettings) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
+        this.diffSettings = diffSettings;
 
-        if ((dbProject != null) && !showOverrideView(dbProject)) {
+        if (dbProject != null && !showOverrideView(dbProject)) {
             return;
         }
 
@@ -741,7 +722,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             boolean isGlobal = new OverridablePrefs(getProject(), oneTimePrefs).isUseGlobalIgnoreList();
             ignoreList = isGlobal ? InternalIgnoreList.readInternalList() : new IgnoreList();
 
-            InternalIgnoreList.readAppendList(proj.getPathToProject().resolve(FILE.IGNORED_OBJECTS), ignoreList);
+            InternalIgnoreList.readAppendList(proj.getPathToProject().resolve(AbstractProjectLoader.IGNORE_FILE), ignoreList);
 
             if (loadedRemote instanceof DbInfo info) {
                 info.appendIgnoreFiles(ignoreList);
@@ -756,18 +737,10 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             }
         }
         diffTable.setInput(dbProject, dbRemote, diffTree, ignoreList);
-        if (diffTree != null) {
-            isDBLoaded = true;
-            manualDepciesOldDb.clear();
-            manualDepciesNewDb.clear();
-        }
     }
 
     private void reset() {
-        isDBLoaded = false;
-        manualDepciesOldDb.clear();
-        manualDepciesNewDb.clear();
-        setInput(null, null, null);
+        setInput(null, null, null, null);
     }
 
     private void hideNotificationArea() {
@@ -897,7 +870,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
         TreeElement treeCopy = diffTree.getCopy();
         Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_processing_depcies_for_project_update);
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(dbProject.getDatabase(), dbRemote.getDatabase(),
-                treeCopy).getDepcies();
+                treeCopy, diffSettings.getAdditionalDependencies()).getDepcies();
 
         Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_querying_user_for_project_update);
         // display commit dialog

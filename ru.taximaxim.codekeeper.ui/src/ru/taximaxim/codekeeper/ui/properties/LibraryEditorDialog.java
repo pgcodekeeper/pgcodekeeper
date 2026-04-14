@@ -42,7 +42,7 @@ import org.pgcodekeeper.core.library.LibrarySource;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
-public class DependencyEditorDialog extends TrayDialog {
+public class LibraryEditorDialog extends TrayDialog {
 
     private String action;
     private Library initialLibrary;
@@ -55,7 +55,7 @@ public class DependencyEditorDialog extends TrayDialog {
     private Text txtOwner;
     private Button btnIgnorePriv;
 
-    protected DependencyEditorDialog(Shell shell, Library initialLibrary, String action, String defaultPath,
+    protected LibraryEditorDialog(Shell shell, Library initialLibrary, String action, String defaultPath,
             Path xmlStorePath) {
         super(shell);
         this.initialLibrary = initialLibrary;

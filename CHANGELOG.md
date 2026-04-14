@@ -9,9 +9,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to add additional dependencies in the project settings (`Project -> Properties -> pgCodeKeeper -> Additional dependencies`).
+
 ### Changed
 
 ### Fixed
+
+- Fixed a bug when generating a script in `Diff wizard`.
+
+### Removed
+
+- Removed the ability to add additional dependencies to the current comparison.
 
 ## [14.2.0] - 2026-04-26
 

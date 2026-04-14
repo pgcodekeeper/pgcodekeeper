@@ -543,10 +543,11 @@ public class DiffTableViewer extends Composite {
         if (graphDlg.open() != Window.OK) {
             return;
         }
-        IDatabase source = graphDlg.isProject() ? dbProject.getDatabase() : dbRemote.getDatabase();
+        ILoader sourceLoader = graphDlg.isProject() ? dbProject : dbRemote;
+        IDatabase source = sourceLoader.getDatabase();
         IStatement st = el.getStatement(source);
         List<String> deps = DepcyFinder.byStatement(graphDlg.getGraphDepth(), graphDlg.isReverse(),
-                graphDlg.getObjTypes(), st);
+                graphDlg.getObjTypes(), st, sourceLoader.getDiffSettings().getAdditionalDependencies());
 
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {

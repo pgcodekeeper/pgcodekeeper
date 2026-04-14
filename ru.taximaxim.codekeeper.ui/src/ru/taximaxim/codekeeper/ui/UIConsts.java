@@ -76,8 +76,6 @@ public interface UIConsts {
          * EGit commit command id (value of org.eclipse.egit.ui.internal.actions.ActionCommands.COMMIT_ACTION)
          */
         String COMMIT_COMMAND_ID = "org.eclipse.egit.ui.team.Commit"; //$NON-NLS-1$
-
-        String ADD_DEPCY = PLUGIN_ID.THIS + ".command.AddDepcy"; //$NON-NLS-1$
     }
 
     interface PREF_PAGE {
@@ -209,8 +207,6 @@ public interface UIConsts {
     }
 
     interface FILE {
-        String IGNORED_OBJECTS = ".pgcodekeeperignore"; //$NON-NLS-1$
-        String IGNORED_SCHEMA = ".pgcodekeeperignoreschema"; //$NON-NLS-1$
 
         String IGNORE_LISTS_STORE = PLUGIN_ID.THIS + ".ignoreliststore"; //$NON-NLS-1$
 

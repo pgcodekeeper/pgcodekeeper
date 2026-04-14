@@ -23,7 +23,6 @@ public enum ProjectIcon {
     APP_BIG("/icons/app_icon128.png"), //$NON-NLS-1$
     BALL_BLUE("/icons/ball_blue.png"), //$NON-NLS-1$
     BALL_GREEN("/icons/ball_green.png"), //$NON-NLS-1$
-    ADD_DEP("/icons/add_dep.png"), //$NON-NLS-1$
     COLUMN("/icons/columns.png"), //$NON-NLS-1$
     PGPASS("/icons/pg_pass.png"), //$NON-NLS-1$
     ZIP("/icons/zip.png"), //$NON-NLS-1$

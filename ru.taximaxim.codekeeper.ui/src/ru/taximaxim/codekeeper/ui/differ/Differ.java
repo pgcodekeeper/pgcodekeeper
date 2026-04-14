@@ -17,10 +17,7 @@ package ru.taximaxim.codekeeper.ui.differ;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
+import java.util.*;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -28,8 +25,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.pgcodekeeper.core.api.PgCodeKeeperApi;
-import org.pgcodekeeper.core.database.api.schema.IDatabase;
-import org.pgcodekeeper.core.database.api.schema.IStatement;
+import org.pgcodekeeper.core.database.api.schema.*;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
@@ -37,7 +33,6 @@ import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class Differ implements IRunnableWithProgress {
@@ -47,43 +42,18 @@ public final class Differ implements IRunnableWithProgress {
     private final TreeElement root;
     private final String timezone;
     private final DatabaseType dbType;
-    private final IProject proj;
-    private final Map<String, Object> oneTimePrefs;
+    private final DiffSettings diffSettings;
 
     private String diffDirect;
 
-    private List<Entry<IStatement, IStatement>> additionalDepciesOldDb;
-    private List<Entry<IStatement, IStatement>> additionalDepciesNewDb;
-
-    public void setAdditionalDepciesOldDb(List<Entry<IStatement, IStatement>> additionalDepcies) {
-        this.additionalDepciesOldDb = additionalDepcies;
-    }
-
-    public void setAdditionalDepciesNewDb(List<Entry<IStatement, IStatement>> additionalDepcies) {
-        this.additionalDepciesNewDb = additionalDepcies;
-    }
-
-    public void addAdditionalDepciesOldDb(List<Entry<IStatement, IStatement>> additionalDepcies) {
-        if (this.additionalDepciesOldDb == null) {
-            setAdditionalDepciesOldDb(additionalDepcies);
-        } else {
-            this.additionalDepciesOldDb.addAll(additionalDepcies);
-        }
-    }
-
-    public List<Entry<IStatement, IStatement>> getAdditionalDepciesOldDb() {
-        return additionalDepciesOldDb;
-    }
-
     public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root, String timezone, IProject proj,
-            Map<String, Object> oneTimePrefs, DatabaseType dbType) {
+            Map<String, Object> oneTimePrefs, DatabaseType dbType, DiffSettings diffSettings) {
         this.oldDb = oldDb;
         this.newDb = newDb;
         this.root = root;
         this.timezone = timezone;
         this.dbType = dbType;
-        this.proj = proj;
-        this.oneTimePrefs = oneTimePrefs;
+        this.diffSettings = diffSettings;
     }
 
     public Job getDifferJob() {
@@ -120,11 +90,7 @@ public final class Differ implements IRunnableWithProgress {
         UIMonitor uiMonitor = new UIMonitor(monitor);
 
         try {
-            UISettings settings = new UISettings(proj, oneTimePrefs, dbType);
-            DiffSettings diffSettings = new DiffSettings(settings, uiMonitor);
-            diffSettings.addAdditionalDependencies(additionalDepciesOldDb);
-            diffSettings.addAdditionalDependencies(additionalDepciesNewDb);
-
+            diffSettings.setMonitor(uiMonitor);
             diffDirect = PgCodeKeeperApi.diff(dbType.getDatabaseProvider(), oldDb, newDb, diffSettings, root);
         } catch (IOException e) {
             throw new InvocationTargetException(e, e.getLocalizedMessage());

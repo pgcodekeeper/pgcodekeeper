@@ -221,7 +221,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         }
 
         Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), treeFull, timezone,
-                proj.getProject(), null, dbType);
+                proj.getProject(), null, dbType, diffSettings);
         differ.run(monitor.newChild(1));
 
         checkFileModified();

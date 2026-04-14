@@ -36,8 +36,6 @@ import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.menus.CommandContributionItem;
-import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
 import org.eclipse.zest.core.viewers.GraphViewer;
@@ -55,7 +53,6 @@ import org.pgcodekeeper.core.database.api.schema.IStatement;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
-import ru.taximaxim.codekeeper.ui.UIConsts.COMMAND;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
@@ -88,12 +85,6 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         super.init(site);
 
         IToolBarManager toolman = getViewSite().getActionBars().getToolBarManager();
-
-        CommandContributionItemParameter param = new CommandContributionItemParameter(
-                getViewSite(), null, COMMAND.ADD_DEPCY, CommandContributionItem.STYLE_PUSH);
-        param.icon = Activator.getRegisteredDescriptor(ProjectIcon.ADD_DEP);
-
-        toolman.add(new CommandContributionItem(param));
 
         toolman.add(new ActionContributionItem(addColumnAction));
 
@@ -184,9 +175,10 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         currentProject = selectedProj;
 
         boolean showProject = projectAction.isChecked();
-        IDatabase newDb = showProject ? dbPair.dbProject.getDatabase() : dbPair.dbRemote.getDatabase();
+        IDatabase newDb = showProject ? dbPair.dbProject().getDatabase() : dbPair.dbRemote().getDatabase();
         IDatabase currentDb = newDb;
-        depRes = new SimpleDepcyResolver(currentDb, isShowColumns);
+        depRes = new SimpleDepcyResolver(currentDb, null, isShowColumns,
+                dbPair.diffSettings().getAdditionalDependencies());
         if (currentDb == null || depRes == null) {
             gv.setInput(null);
             return;

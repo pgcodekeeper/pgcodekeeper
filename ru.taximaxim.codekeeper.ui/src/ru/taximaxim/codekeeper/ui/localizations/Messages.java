@@ -30,7 +30,6 @@ public final class Messages extends NLS {
     public static String entry_name;
     public static String domain;
     public static String pgpass_passwords_supported;
-    public static String calculating_diff;
     public static String runnable_has_not_finished;
     public static String select_all;
     public static String select_none;
@@ -197,9 +196,7 @@ public final class Messages extends NLS {
     public static String dbStoreEditorDialog_empty_name;
 
     // ui.differ
-    public static String differ_direct_diff;
     public static String differ_get_differ;
-    public static String differ_reverse_diff;
     public static String diffTableViewer_change_type_for_database;
     public static String diffTableViewer_change_type_for_project;
     public static String diffTableViewer_container;
@@ -223,7 +220,6 @@ public final class Messages extends NLS {
     public static String diffTreeViewer_expand_all;
     public static String diffTreeViewer_expand_subtree;
     public static String diffTreeViewer_select_subtree;
-    public static String reading_db_from_jdbc;
 
     // change perspective
     public static String remember_choice_toggle;
@@ -291,11 +287,8 @@ public final class Messages extends NLS {
     public static String diffWizard_diff_parameters;
     public static String diffWizard_diff_tree;
     public static String diffWizard_target_encoding;
-    public static String ignoredObjectPrefListEditor_ignore_contents;
 
     public static String ignoredObjectPrefListEditor_name;
-
-    public static String ignoredObjectPrefListEditor_regular;
 
     public static String ignoredObjectPrefListEditor_type;
 
@@ -346,8 +339,6 @@ public final class Messages extends NLS {
     public static String DbStoreCombo_db_binding_property;
     public static String DbStoreCombo_db_binding_property_title;
 
-    public static String DbStoreEditorDialog_failed_connection;
-
     public static String DbStoreEditorDialog_failed_connection_reason;
 
     public static String DbStoreEditorDialog_ignore_file_list;
@@ -389,8 +380,6 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_ms_cert;
 
     public static String DbStoreEditorDialog_select_ignore_file;
-
-    public static String DbStoreEditorDialog_success;
 
     public static String DbStoreEditorDialog_successfull_connection;
 
@@ -445,14 +434,6 @@ public final class Messages extends NLS {
     public static String DbStorePrefPage_pg_pass_file_select_title;
 
     public static String DbStorePrefPage_pg_pass_import_tooltip;
-
-    public static String DbStorePrefPage_secure_storage_error_text_linux;
-
-    public static String DbStorePrefPage_secure_storage_error_text_other;
-
-    public static String DbStorePrefPage_secure_storage_error;
-
-    public static String DbStorePrefPage_secure_storage_error_title;
 
     public static String DbUpdatePrefPage_add_pre_post_script;
 
@@ -534,6 +515,18 @@ public final class Messages extends NLS {
 
     public static String DependencyProperties_select_directory;
 
+    public static String DependenciesEditorDialog_cannot_save;
+
+    public static String DependenciesEditorDialog_depcy_name;
+
+    public static String DependenciesEditorDialog_source_depends_on_target;
+
+    public static String DependenciesEditorDialog_must_filled;
+
+    public static String DependenciesEditorDialog_parent_name;
+
+    public static String DependenciesProperties_error_save;
+
     public static String DiffPaneViewer_btn_switch;
     public static String DiffPaneViewer_project;
 
@@ -543,7 +536,6 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_refresh_link;
     public static String DiffPresentationPane_close_link;
-    public static String DiffPresentationPane_error_loading_changes;
 
     public static String DiffPresentationPane_project_modified;
 
@@ -647,8 +639,6 @@ public final class Messages extends NLS {
     public static String IgnoredObjectPrefListEditor_object_name;
 
     public static String IgnoredObjectPrefListEditor_pattern;
-
-    public static String IgnoredObjectPrefListEditor_qualified;
 
     public static String IgnoredObjectPrefListEditor_qualified_name;
 
@@ -821,15 +811,9 @@ public final class Messages extends NLS {
 
     public static String OpenProjectUtils_proj_version_warn;
 
-    public static String OpenProjectUtils_schema_convert_error;
-
     public static String OpenProjectUtils_unexpected_version_error;
 
     public static String OpenProjectUtils_unknown_proj_version;
-
-    public static String OpenProjectUtils_update_format;
-
-    public static String OpenProjectUtils_updating_project;
 
     public static String OpenProjectUtils_version_error;
 
@@ -1106,17 +1090,7 @@ public final class Messages extends NLS {
 
     public static String GeneralPrefPage_format_object_code_automatically;
 
-    public static String GeneralPrefPage_number_of_loading_threads;
-
-    public static String GeneralPrefPage_number_of_loading_threads_updated;
-
-    public static String GeneralPrefPage_with;
-
-    public static String GeneralPrefPage_number_of_thread;
-
     public static String GeneralPrefPage_reuse_open_compare_editor;
-
-    public static String GeneralPrefPage_save_in_security_storage;
 
     public static String GeneralPrefPage_show_diff_errors;
 
@@ -1125,12 +1099,6 @@ public final class Messages extends NLS {
     public static String GetChanges_select_source;
 
     public static String GetChanges_select_source_msg;
-
-    public static String GetSystemObjects_save_dialog_title;
-
-    public static String GetSystemObjects_save_success_message;
-
-    public static String GetSystemObjects_save_success_title;
 
     public static String GitUserReader_error_reading_local_changes;
 
@@ -1215,8 +1183,6 @@ public final class Messages extends NLS {
     public static String RenameDefinitionChange_error_resource_already_exists;
 
     public static String RenameDefinitionProcessor_rename_object;
-
-    public static String ErrorMessageDialog_dialog_title;
 
     public static String EventRegister_error;
 

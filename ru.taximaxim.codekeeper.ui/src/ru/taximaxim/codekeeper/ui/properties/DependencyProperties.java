@@ -16,177 +16,86 @@
 package ru.taximaxim.codekeeper.ui.properties;
 
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
+import java.nio.file.*;
 import java.util.List;
-
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PropertyPage;
-import org.eclipse.ui.navigator.CommonNavigator;
-import org.osgi.service.prefs.BackingStoreException;
-import org.pgcodekeeper.core.library.Library;
-import org.pgcodekeeper.core.library.LibraryXmlStore;
-import org.pgcodekeeper.core.utils.FileUtils;
-import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.Log;
-import ru.taximaxim.codekeeper.ui.ProjectIcon;
-import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
-import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
+import org.pgcodekeeper.core.database.base.loader.AbstractProjectLoader;
+import org.pgcodekeeper.core.dependencieslist.DependenciesReader;
+import org.pgcodekeeper.core.dependencieslist.Dependency;
+import ru.taximaxim.codekeeper.ui.*;
+import ru.taximaxim.codekeeper.ui.dialogs.DependencyEditorDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.prefs.PrefListEditor;
+import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public class DependencyProperties extends PropertyPage {
-
-    private final String defaultPath = ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString();
-    private Path xmlStorePath;
-    private LibraryXmlStore store;
-    private IEclipsePreferences prefs;
+public final class DependencyProperties extends PropertyPage {
 
     private DependenciesListEditor editor;
-    private Button btnSafeMode;
-    private Button btnLoadNested;
+    private Path depsFilePath;
     private IProject proj;
 
     @Override
     public void setElement(IAdaptable element) {
         super.setElement(element);
         proj = element.getAdapter(IProject.class);
-        xmlStorePath = Paths.get(proj.getLocation().append(LibraryXmlStore.FILE_NAME).toString());
-        store = new LibraryXmlStore(xmlStorePath);
-        prefs = new ProjectScope(proj).getNode(UIConsts.PLUGIN_ID.THIS);
+        depsFilePath = Paths.get(proj.getLocationURI()).resolve(AbstractProjectLoader.ADDITIONAL_DEPENDENCIES_FILE);
     }
 
     @Override
     protected Control createContents(Composite parent) {
-        Composite area = new Composite(parent, SWT.NONE);
-        area.setLayout(new GridLayout());
+        DatabaseType dbType = ProjectUtils.getDatabaseType(proj);
+        editor = new DependenciesListEditor(parent, dbType);
 
-        List<Library> input;
-        boolean loadNested;
-        try {
-            input = store.readObjects();
-            loadNested = store.readLoadNestedFlag();
-        } catch (IOException e) {
-            Log.log(e);
-            input = new ArrayList<>();
-            loadNested = false;
-        }
-
-        editor = new DependenciesListEditor(area);
-        editor.setLayoutData(new GridData(GridData.FILL_BOTH));
-        editor.setInputList(input);
-
-        btnSafeMode = new Button(area, SWT.CHECK);
-        btnSafeMode.setText(Messages.DependencyProperties_safe_mode);
-        btnSafeMode.setToolTipText(Messages.DependencyProperties_safe_mode_desc);
-        btnSafeMode.setSelection(prefs.getBoolean(PROJ_PREF.LIB_SAFE_MODE, true));
-
-        btnLoadNested = new Button(area, SWT.CHECK);
-        btnLoadNested.setText(Messages.DependencyProperties_load_nested);
-        btnLoadNested.setToolTipText(Messages.DependencyProperties_load_dependencies);
-        btnLoadNested.setSelection(loadNested);
-
-        return area;
+        List<Dependency> list = readObjects();
+        editor.setInputList(list);
+        return editor;
     }
 
     @Override
     public boolean performOk() {
         try {
-            prefs.putBoolean(PROJ_PREF.LIB_SAFE_MODE, btnSafeMode.getSelection());
-            prefs.flush();
-            store.writeDependencies(editor.getList(), btnLoadNested.getSelection());
-            refreshProject();
+            writeObjects(editor.getList());
             setValid(true);
             setErrorMessage(null);
-        } catch (IOException | BackingStoreException e) {
-            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
-                    e.getLocalizedMessage()));
+        } catch (IOException e) {
+            setErrorMessage(Messages.DependenciesProperties_error_save + e.getLocalizedMessage());
             setValid(false);
             return false;
         }
         return true;
     }
 
-    @Override
-    protected void contributeButtons(Composite parent) {
-        ((GridLayout) parent.getLayout()).numColumns++;
-        Button button = new Button(parent, SWT.PUSH);
-        button.setText(Messages.DependencyProperties_clear_libraries_cache);
-        button.addSelectionListener(new SelectionAdapter() {
-
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                MessageBox mbQuestion = new MessageBox(getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-                mbQuestion.setText(Messages.DependencyProperties_clear_cache);
-                mbQuestion.setMessage(Messages.DependencyProperties_clear_cache_descr);
-                if (mbQuestion.open() != SWT.YES) {
-                    return;
-                }
-
-                try {
-                    FileUtils.deleteRecursive(LibraryUtils.META_PATH);
-                } catch (IOException ex) {
-                    ExceptionNotifier.notifyDefault(Messages.DependencyProperties_clear_cache_error, ex);
-                }
-            }
-        });
+    private List<Dependency> readObjects() {
+        return DependenciesReader.getDependencies(depsFilePath);
     }
 
-    private void refreshProject() {
-        CommonNavigator view = (CommonNavigator)PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-                .getActivePage().findView(IPageLayout.ID_PROJECT_EXPLORER);
-        if (view != null) {
-            view.getCommonViewer().refresh(proj);
-        }
+    private void writeObjects(List<Dependency> list) throws IOException {
+        List<String> lines = list.stream()
+                .map(Dependency::toString)
+                .toList();
+        Files.write(depsFilePath, lines);
     }
 
-    private class DependenciesListEditor extends PrefListEditor<Library> {
+    private static class DependenciesListEditor extends PrefListEditor<Dependency> {
 
         private String action;
+        private DatabaseType dbType;
 
-        public DependenciesListEditor(Composite parent) {
+        public DependenciesListEditor(Composite parent, DatabaseType dbType) {
             super(parent);
+            this.dbType = dbType;
             getViewer().addDoubleClickListener(event -> editObject());
-        }
-
-        @Override
-        public boolean checkDuplicate(Library o1, Library o2) {
-            return o1.getTitle().equals(o2.getTitle());
-        }
-
-        @Override
-        protected Library getNewObject(Library oldObject) {
-            DependencyEditorDialog dialog = new DependencyEditorDialog(getShell(), oldObject, action,
-                    defaultPath, xmlStorePath);
-            return dialog.open() == Window.OK ? dialog.getLibrary() : null;
-        }
-
-        @Override
-        protected String errorAlreadyExists(Library obj) {
-            return Messages.DbStorePrefPage_already_present.formatted(obj.path());
         }
 
         @Override
@@ -196,10 +105,24 @@ public class DependencyProperties extends PropertyPage {
 
                 @Override
                 public String getText(Object element) {
-                    Library obj = (Library) element;
-                    return obj.getTitle();
+                    Dependency obj = (Dependency) element;
+                    return obj.toString();
                 }
             });
+        }
+
+        @Override
+        protected Dependency getNewObject(Dependency oldObject) {
+            DependencyEditorDialog dialog = new DependencyEditorDialog(getShell(), oldObject, action, dbType);
+            if (dialog.open() == Window.OK) {
+                return dialog.getResult();
+            }
+            return null;
+        }
+
+        @Override
+        protected String errorAlreadyExists(Dependency obj) {
+            return Messages.DbStorePrefPage_already_present.formatted(obj.toString());
         }
 
         @Override
@@ -213,19 +136,29 @@ public class DependencyProperties extends PropertyPage {
         @Override
         protected void editObject() {
             action = Messages.DependencyProperties_edit_dependency;
-            super.editObject();
+
+            IStructuredSelection sel = getViewer().getStructuredSelection();
+            if (!sel.isEmpty() && sel.getFirstElement() instanceof Dependency dep) {
+                DependencyEditorDialog dialog = new DependencyEditorDialog(getShell(), dep, action, dbType);
+                if (dialog.open() == Window.OK) {
+                    Dependency result = dialog.getResult();
+                    List<Dependency> list = getList();
+                    list.set(list.indexOf(dep), result);
+                    refresh();
+                }
+            }
+        }
+
+        @Override
+        public void addNewObject(Dependency oldObject) {
+            action = Messages.DependencyProperties_create_new_dependency;
+            super.addNewObject(oldObject);
         }
 
         @Override
         protected void copyObject() {
             action = Messages.DependencyProperties_copy_dependency;
             super.copyObject();
-        }
-
-        @Override
-        public void addNewObject(Library oldObject) {
-            action = Messages.DependencyProperties_create_new_dependency;
-            super.addNewObject(oldObject);
         }
     }
 }
