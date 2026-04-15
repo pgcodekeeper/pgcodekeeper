@@ -9,10 +9,16 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [14.3.0] - 2026-04-15
+
+### Добавлено
+
 - Добавлена возможность добавления дополнительных зависимостей в настройках проекта (`Project -> Properties -> pgCodeKeeper -> Дополнительные зависимости`).
 - Добавлена опция для упрощенного чтения ограничений NOT NULL через JDBC для PostgreSQL 18+ (`Window -> Preferences -> pgCodeKeeper -> Упрощенное чтение ограничений NOT NULL через JDBC (только для PostgreSQL 18+)`).
-
-### Изменено
 
 ### Исправлено
 
@@ -2445,7 +2451,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...HEAD
+[14.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...14.3.0
 [14.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...v14.2.0
 [14.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...v14.1.1
 [12.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.1.0...v12.2.0
