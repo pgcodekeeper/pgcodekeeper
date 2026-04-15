@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed a bug when generating a script in `Diff wizard`.
+- Fixed an error in project builder.
 
 ### Removed
 

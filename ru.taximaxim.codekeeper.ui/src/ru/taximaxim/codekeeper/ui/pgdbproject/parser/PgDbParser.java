@@ -208,7 +208,7 @@ public final class PgDbParser implements IResourceChangeListener {
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, loader.getErrors(), diffSettings.getVersion());
+        FullAnalyze.fullAnalyze(db, diffSettings.getErrors(), diffSettings.getVersion());
         clearMarkers(files);
         markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
@@ -227,7 +227,7 @@ public final class PgDbParser implements IResourceChangeListener {
         referencesStorage.clear();
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, loader.getErrors(), diffSettings.getVersion());
+        FullAnalyze.fullAnalyze(db, diffSettings.getErrors(), diffSettings.getVersion());
         clearMarkers(proj);
         markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
