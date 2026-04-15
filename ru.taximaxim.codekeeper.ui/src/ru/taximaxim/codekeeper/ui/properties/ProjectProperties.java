@@ -190,6 +190,8 @@ public class ProjectProperties extends PropertyPage {
         if (DatabaseType.PG == dbType) {
             fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW, Messages.GeneralPrefPage_simplify_view,
                     btnsPanel, prefs::getBoolean));
+            fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_NOT_NULL,
+                    Messages.GeneralPrefPage_simplify_not_null, btnsPanel, prefs::getBoolean));
         }
         fieldEditorStore.add(new TempBooleanFieldEditor(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY,
                 Messages.GeneralPrefPage_format_object_code_automatically, btnsPanel, prefs::getBoolean));

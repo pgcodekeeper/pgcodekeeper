@@ -177,4 +177,9 @@ public final class TestUiSettings implements ISettings {
     public boolean isUseActualVersionSyntax() {
         return false;
     }
+
+    @Override
+    public boolean isSimplifyNotNull() {
+        throw new UnsupportedOperationException();
+    }
 }

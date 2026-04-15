@@ -78,6 +78,9 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
                 Messages.dbUpdatePrefPage_ignore_privileges,
                 getFieldEditorParent()));
 
+        addField(new BooleanFieldEditor(PREF.SIMPLIFY_NOT_NULL,
+                Messages.GeneralPrefPage_simplify_not_null, getFieldEditorParent()));
+
         addField(new BooleanFieldEditor(PREF.SIMPLIFY_VIEW,
                 Messages.GeneralPrefPage_simplify_view,
                 getFieldEditorParent()));
