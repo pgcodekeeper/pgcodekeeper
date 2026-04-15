@@ -101,6 +101,7 @@ public interface UIConsts {
         String PARSER_CACHE_CLEANING_INTERVAL = "parserCacheCleaningInterval"; //$NON-NLS-1$
         String HEAP_SIZE_WARNING = "heapSizeWarning"; //$NON-NLS-1$
         String FORMAT_OBJECT_CODE_AUTOMATICALLY = "formatObjectCodeAutomatically"; //$NON-NLS-1$
+        String SIMPLIFY_NOT_NULL = "isSimplifyNotNull"; //$NON-NLS-1$
     }
 
     interface DB_UPDATE_PREF {

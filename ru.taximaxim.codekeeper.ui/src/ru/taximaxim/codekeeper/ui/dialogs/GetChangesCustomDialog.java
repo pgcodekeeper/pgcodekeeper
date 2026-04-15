@@ -46,6 +46,7 @@ public class GetChangesCustomDialog extends Dialog {
     private Button btnEnableFuncDep;
     private Button btnSimplifyView;
     private Button btnUseGlobalIgnoreList;
+    private Button btnSimplifyNotNull;
 
     private final OverridablePrefs prefs;
     private final DatabaseType dbType;
@@ -104,6 +105,14 @@ public class GetChangesCustomDialog extends Dialog {
             gd.horizontalIndent = 10;
             btnSimplifyView.setLayoutData(gd);
             btnSimplifyView.setSelection(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
+
+            btnSimplifyNotNull = new Button(panel, SWT.CHECK);
+            btnSimplifyNotNull.setText(Messages.GeneralPrefPage_simplify_not_null);
+            gd = new GridData();
+            gd.horizontalIndent = 10;
+            btnSimplifyNotNull.setLayoutData(gd);
+            btnSimplifyNotNull
+                    .setSelection(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_NOT_NULL));
         }
 
         btnAutoFormatCode = new Button(panel, SWT.CHECK);
@@ -140,6 +149,7 @@ public class GetChangesCustomDialog extends Dialog {
         customSettings.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
         if (dbType == DatabaseType.PG) {
             customSettings.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
+            customSettings.put(PREF.SIMPLIFY_NOT_NULL, btnSimplifyNotNull.getSelection());
         }
         customSettings.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
         super.okPressed();
