@@ -38,11 +38,11 @@
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
         <sonar.exclusions>**/*.sql, **/*.xml, **/generated/**, **/Messages.java</sonar.exclusions>
+        <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/ru.taximaxim.codekeeper.mainapp/report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
         <java.version>17</java.version>
         <tycho.version>4.0.13</tycho.version>
-        <jacoco.version>0.8.12</jacoco.version>
-        <antlr.version>4.13.1</antlr.version>
+        <jacoco.version>0.8.14</jacoco.version>
         <maven.surefire.version>3.5.5</maven.surefire.version>
         <maven.enforcer.version>3.6.2</maven.enforcer.version>
         <maven.jarsigner.version>3.1.0</maven.jarsigner.version>
@@ -104,16 +104,6 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-plugin</artifactId>
-                        <version>${maven.surefire.version}</version>
-                    </plugin>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-surefire-report-plugin</artifactId>
-                        <version>${maven.surefire.version}</version>
                     </plugin>
                     <plugin>
                         <groupId>org.sonarsource.scanner.maven</groupId>
@@ -178,9 +168,24 @@
                     <pomDependencies>consider</pomDependencies>
                     <environments>
                         <environment>
+                            <os>win32</os>
+                            <ws>win32</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
                             <os>linux</os>
                             <ws>gtk</ws>
                             <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>x86_64</arch>
+                        </environment>
+                        <environment>
+                            <os>macosx</os>
+                            <ws>cocoa</ws>
+                            <arch>aarch64</arch>
                         </environment>
                     </environments>
                     <dependency-resolution>
