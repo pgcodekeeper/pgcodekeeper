@@ -43,8 +43,8 @@
         <tycho.version>4.0.13</tycho.version>
         <jacoco.version>0.8.12</jacoco.version>
         <antlr.version>4.13.1</antlr.version>
-        <maven.surefire.version>3.5.2</maven.surefire.version>
-        <maven.enforcer.version>3.5.0</maven.enforcer.version>
+        <maven.surefire.version>3.5.5</maven.surefire.version>
+        <maven.enforcer.version>3.6.2</maven.enforcer.version>
         <maven.jarsigner.version>3.1.0</maven.jarsigner.version>
     </properties>
 
