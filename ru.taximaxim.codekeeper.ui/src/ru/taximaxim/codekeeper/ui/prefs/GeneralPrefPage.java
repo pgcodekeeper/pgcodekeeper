@@ -54,59 +54,26 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.REUSE_OPEN_COMPARE_EDITOR,
-                Messages.GeneralPrefPage_reuse_open_compare_editor,
-                getFieldEditorParent()));
-
-        new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-
-        addField(new BooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
-                Messages.GeneralPrefPage_ignore_column_order,
-                getFieldEditorParent()));
-
-        BooleanFieldEditor bodyDeps = new BooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
-                Messages.GeneralPrefPage_enable_body_dependencies,
-                getFieldEditorParent());
-        addField(bodyDeps);
-        bodyDeps.getDescriptionControl(getFieldEditorParent()).setToolTipText(
-                Messages.GeneralPrefPage_body_depcy_tooltip);
-
-        new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-
-        addField(new BooleanFieldEditor(PREF.NO_PRIVILEGES,
-                Messages.dbUpdatePrefPage_ignore_privileges,
-                getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(PREF.SIMPLIFY_NOT_NULL,
-                Messages.GeneralPrefPage_simplify_not_null, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(PREF.SIMPLIFY_VIEW,
-                Messages.GeneralPrefPage_simplify_view,
-                getFieldEditorParent()));
+                Messages.GeneralPrefPage_reuse_open_compare_editor, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.IGNORE_CONCURRENT_MODIFICATION,
-                Messages.GeneralPrefPage_ignore_concurrent_modification,
-                getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY,
-                Messages.GeneralPrefPage_format_object_code_automatically,
-                getFieldEditorParent()));
-
-        new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-            .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+                Messages.GeneralPrefPage_ignore_concurrent_modification, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.PARALLEL_LOADING,
-                Messages.GeneralPrefPage_use_parallel_load,
-                getFieldEditorParent()));
+                Messages.GeneralPrefPage_use_parallel_load, getFieldEditorParent()));
 
         addField(new BooleanFieldEditor(PREF.HEAP_SIZE_WARNING,
-                Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary,
-                getFieldEditorParent()));
+                Messages.GeneralPrefPage_alert_if_heap_size_less_than_necessary, getFieldEditorParent()));
 
         addField(new IntegerFieldEditor(PREF.PARSER_CACHE_CLEANING_INTERVAL,
-                Messages.GeneralPrefPage_time_to_clean_parser_cache,
-                getFieldEditorParent(), 3));
+                Messages.GeneralPrefPage_time_to_clean_parser_cache, getFieldEditorParent(), 3));
+
+        new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
+                .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+
+        Preferences
+            .build(PreferenceScope.GLOBAL, PreferenceCategory.MAIN, getFieldEditorParent(), null)
+            .forEach(this::addField);
 
         Button button = new Button(getFieldEditorParent(), SWT.PUSH);
         button.setText(Messages.GeneralPrefPage_clean_parser_cache);

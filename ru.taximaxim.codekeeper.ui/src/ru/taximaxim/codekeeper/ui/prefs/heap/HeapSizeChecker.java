@@ -42,8 +42,8 @@ public class HeapSizeChecker implements IStartup {
     @Override
     public void earlyStartup() {
         IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
-        if (!mainPrefs.getBoolean(PREF.HEAP_SIZE_WARNING) ||
-                MINIMAL_XMX_SIZE_BYTE < Runtime.getRuntime().maxMemory()) {
+        if (!mainPrefs.getBoolean(PREF.HEAP_SIZE_WARNING)
+                || MINIMAL_XMX_SIZE_BYTE < Runtime.getRuntime().maxMemory()) {
             return;
         }
 

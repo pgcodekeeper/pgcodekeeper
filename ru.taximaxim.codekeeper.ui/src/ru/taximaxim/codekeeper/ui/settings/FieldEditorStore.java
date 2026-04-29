@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.settings;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -27,7 +28,7 @@ import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public final class FieldEditorStore {
 
-    private final List<TempBooleanFieldEditor> list = new ArrayList<>();
+    private final List<ICustomFieldEditor<?>> list = new ArrayList<>();
 
     /**
      * Method set default preference in project properties from pgCodeKeeper global preference
@@ -35,10 +36,14 @@ public final class FieldEditorStore {
      * @param prefs - preference store which store pgCodeKeeper global preference
      */
     public void performDefaults(IPreferenceStore prefs) {
-        list.forEach(e -> e.setSelection(prefs.getBoolean(e.getPreferenceName())));
+        list.forEach(e -> e.setValue(prefs));
     }
 
-    public void add(TempBooleanFieldEditor btn) {
+    public List<ICustomFieldEditor<?>> getFields() {
+        return Collections.unmodifiableList(list);
+    }
+
+    public void add(ICustomFieldEditor<?> btn) {
         list.add(btn);
     }
 
@@ -51,24 +56,16 @@ public final class FieldEditorStore {
     }
 
     public Map<String, Object> getPrefs() {
-        return list.stream().collect(
-                Collectors.toMap(TempBooleanFieldEditor::getPreferenceName, TempBooleanFieldEditor::getBooleanValue));
+        return list.stream()
+                .collect(Collectors.toMap(ICustomFieldEditor::getPreferenceName, ICustomFieldEditor::getValue));
     }
 
-    public boolean getValue(String prefName) {
+    public Object getValue(String prefName) {
         return list.stream()
                 .filter(e -> Objects.equals(prefName, e.getPreferenceName()))
                 .findAny()
                 .orElseThrow(() -> throwUnknownParamException(prefName))
-                .getBooleanValue();
-    }
-
-    public void setValue(String prefName, boolean value) {
-        list.stream()
-        .filter(e -> Objects.equals(prefName, e.getPreferenceName()))
-        .findAny()
-        .orElseThrow(() -> throwUnknownParamException(prefName))
-        .setSelection(value);
+                .getValue();
     }
 
     private IllegalArgumentException throwUnknownParamException(String prefName) {

@@ -24,7 +24,11 @@ import org.eclipse.jface.preference.IPreferenceStore;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.UIConsts;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
+import ru.taximaxim.codekeeper.ui.prefs.AbstractPreference;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
+import ru.taximaxim.codekeeper.ui.prefs.Preferences;
 
 /**
  * Gives the ability to override the global preferences by project preferences.
@@ -52,26 +56,24 @@ public class OverridablePrefs {
         this.oneTimePS = oneTimePS;
     }
 
-    public boolean isUseGlobalIgnoreList() {
-        if (oneTimePS != null) {
-            Boolean value = (Boolean) oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
-            if (value != null) {
-                return value;
-            }
+    public Object get(String preferenceName) {
+        return get(Preferences.getCategory(preferenceName), preferenceName);
+    }
+
+    public Object get(AbstractPreference<?> preference) {
+        return get(preference.getCategory(), preference.getPreferenceName());
+    }
+
+    public Object get(PreferenceCategory category, String preferenceName) {
+        if (PreferenceCategory.MAIN == category) {
+            return getBoolean(preferenceName, isEnableProjPrefRoot);
         }
-        return !isEnableProjPrefRoot || projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
-    }
 
-    public boolean getBooleanOfRootPref(String key) {
-        return getBoolean(key, isEnableProjPrefRoot);
-    }
+        if (DB_UPDATE_PREF.CLUSTER_NAME.equals(preferenceName)) {
+            return getString(preferenceName, isEnableProjPrefDbUpdate);
+        }
 
-    public boolean getBooleanOfDbUpdatePref(String key) {
-        return getBoolean(key, isEnableProjPrefDbUpdate);
-    }
-    
-    public String getStringOfDbUpdatePref(String key) {
-        return getString(key, isEnableProjPrefDbUpdate);
+        return getBoolean(preferenceName, isEnableProjPrefDbUpdate);
     }
 
     private String getString(String key, boolean isEnableProjPref) {
@@ -82,16 +84,25 @@ public class OverridablePrefs {
             }
         }
 
-        return isEnableProjPref ? projPS.get(key, null) : mainPS.getString(key);
+        var globalValue = mainPS.getString(key);
+        if (isEnableProjPref) {
+            return projPS.get(key, globalValue);
+        }
+        return globalValue;
     }
 
-    private boolean getBoolean(String key, boolean isEnableProjPref) {
+    public boolean getBoolean(String key, boolean isEnableProjPref) {
         if (oneTimePS != null) {
             Boolean value = (Boolean) oneTimePS.get(key);
             if (value != null) {
                 return value;
             }
         }
-        return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
+
+        var globalValue = mainPS.getBoolean(key);
+        if (isEnableProjPref && projPS != null) {
+            return projPS.getBoolean(key, globalValue);
+        }
+        return globalValue;
     }
 }

@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -30,9 +31,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.AbstractPreference;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceScope;
+import ru.taximaxim.codekeeper.ui.prefs.Preferences;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 
 /**
@@ -40,14 +44,7 @@ import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
  */
 public class GetChangesCustomDialog extends Dialog {
 
-    private Button btnNoPrivileges;
-    private Button btnAutoFormatCode;
-    private Button btnIgnoreColumnOrder;
-    private Button btnEnableFuncDep;
-    private Button btnSimplifyView;
-    private Button btnUseGlobalIgnoreList;
-    private Button btnSimplifyNotNull;
-
+    private final Map<String, Button> buttons = new HashMap<>();
     private final OverridablePrefs prefs;
     private final DatabaseType dbType;
 
@@ -76,60 +73,21 @@ public class GetChangesCustomDialog extends Dialog {
                 .format(Messages.getChangesCustomDialog_custom_prefs_description,
                         Messages.DiffTableViewer_get_changes));
 
-        btnIgnoreColumnOrder = new Button(panel, SWT.CHECK);
-        btnIgnoreColumnOrder.setText(Messages.GeneralPrefPage_ignore_column_order);
-        GridData gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnIgnoreColumnOrder.setLayoutData(gd);
-        btnIgnoreColumnOrder.setSelection(prefs.getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER));
-
-        btnEnableFuncDep = new Button(panel, SWT.CHECK);
-        btnEnableFuncDep.setText(Messages.GeneralPrefPage_enable_body_dependencies);
-        btnEnableFuncDep.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnEnableFuncDep.setLayoutData(gd);
-        btnEnableFuncDep.setSelection(prefs.getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES));
-
-        btnNoPrivileges = new Button(panel, SWT.CHECK);
-        btnNoPrivileges.setText(Messages.dbUpdatePrefPage_ignore_privileges);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnNoPrivileges.setLayoutData(gd);
-        btnNoPrivileges.setSelection(prefs.getBooleanOfRootPref(PREF.NO_PRIVILEGES));
-
-        if (dbType == DatabaseType.PG) {
-            btnSimplifyView = new Button(panel, SWT.CHECK);
-            btnSimplifyView.setText(Messages.GeneralPrefPage_simplify_view);
-            gd = new GridData();
-            gd.horizontalIndent = 10;
-            btnSimplifyView.setLayoutData(gd);
-            btnSimplifyView.setSelection(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_VIEW));
-
-            btnSimplifyNotNull = new Button(panel, SWT.CHECK);
-            btnSimplifyNotNull.setText(Messages.GeneralPrefPage_simplify_not_null);
-            gd = new GridData();
-            gd.horizontalIndent = 10;
-            btnSimplifyNotNull.setLayoutData(gd);
-            btnSimplifyNotNull
-                    .setSelection(prefs.getBooleanOfRootPref(PREF.SIMPLIFY_NOT_NULL));
-        }
-
-        btnAutoFormatCode = new Button(panel, SWT.CHECK);
-        btnAutoFormatCode.setText(Messages.GeneralPrefPage_format_object_code_automatically);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnAutoFormatCode.setLayoutData(gd);
-        btnAutoFormatCode.setSelection(prefs.getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY));
-
-        btnUseGlobalIgnoreList = new Button(panel, SWT.CHECK);
-        btnUseGlobalIgnoreList.setText(Messages.ProjectProperties_use_global_ignore_list);
-        gd = new GridData();
-        gd.horizontalIndent = 10;
-        btnUseGlobalIgnoreList.setLayoutData(gd);
-        btnUseGlobalIgnoreList.setSelection(prefs.isUseGlobalIgnoreList());
+        Preferences.getPreferencesForScope(PreferenceCategory.MAIN, PreferenceScope.CUSTOM_GET_CHANGES, dbType)
+                .forEach(e -> createButton(e, panel));
 
         return panel;
+    }
+
+    private Button createButton(AbstractPreference<?> preference, Composite panel) {
+        Button btn = new Button(panel, SWT.CHECK);
+        btn.setText(preference.getLabel());
+        GridData gd = new GridData();
+        gd.horizontalIndent = 10;
+        btn.setLayoutData(gd);
+        btn.setSelection((boolean) prefs.get(preference));
+        buttons.put(preference.getPreferenceName(), btn);
+        return btn;
     }
 
     @Override
@@ -143,15 +101,7 @@ public class GetChangesCustomDialog extends Dialog {
     @Override
     protected void okPressed() {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, true);
-        customSettings.put(PREF.NO_PRIVILEGES, btnNoPrivileges.getSelection());
-        customSettings.put(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, btnAutoFormatCode.getSelection());
-        customSettings.put(PREF.IGNORE_COLUMN_ORDER, btnIgnoreColumnOrder.getSelection());
-        customSettings.put(PREF.ENABLE_BODY_DEPENDENCIES, btnEnableFuncDep.getSelection());
-        if (dbType == DatabaseType.PG) {
-            customSettings.put(PREF.SIMPLIFY_VIEW, btnSimplifyView.getSelection());
-            customSettings.put(PREF.SIMPLIFY_NOT_NULL, btnSimplifyNotNull.getSelection());
-        }
-        customSettings.put(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, btnUseGlobalIgnoreList.getSelection());
+        buttons.forEach((k, v) -> customSettings.put(k, v.getSelection()));
         super.okPressed();
     }
 }
