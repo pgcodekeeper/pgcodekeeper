@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed the behavior of the text field when using the New Object Wizard.
+
 ## [14.3.0] - 2026-04-15
 
 ### Added
