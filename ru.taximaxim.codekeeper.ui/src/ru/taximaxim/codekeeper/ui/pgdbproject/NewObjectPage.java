@@ -53,6 +53,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -231,9 +232,7 @@ public final class NewObjectPage extends WizardPage {
         gd = new GridData(SWT.FILL, SWT.DEFAULT, false, false, 1, 1);
         lblObj.setLayoutData(gd);
         lblObj.setText(Messages.PgObject_object_name);
-        // in windows the beginning of long text disappears
-        int style = SWT.getPlatform().contains("win") ? SWT.MULTI | SWT.BORDER : SWT.BORDER;
-        txtName = new Text(area, style);
+        txtName = new Text(area, SWT.SINGLE | SWT.BORDER);
         txtName.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
 
         txtName.addModifyListener(e -> {
@@ -379,7 +378,11 @@ public final class NewObjectPage extends WizardPage {
             return;
         }
         txtName.setText(path);
-        txtName.setSelection(path.length());
+        Display.getDefault().asyncExec(() -> {
+            if (!txtName.isDisposed()) {
+                txtName.setSelection(path.length());
+            }
+        });
     }
 
     @Override
