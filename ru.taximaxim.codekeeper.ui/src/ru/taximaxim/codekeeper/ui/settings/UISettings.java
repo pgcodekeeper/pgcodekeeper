@@ -27,14 +27,11 @@ import java.util.Map;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ProjectScope;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.base.formatter.FormatConfiguration;
 import org.pgcodekeeper.core.settings.ISettings;
 
-import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
@@ -43,28 +40,27 @@ import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.formatter.Formatter;
 import ru.taximaxim.codekeeper.ui.prefs.PrePostScriptPrefPage;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
+import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public final class UISettings implements ISettings {
 
     private String timeZone;
     private String inCharsetName = Consts.UTF_8;
-    private boolean isEnableProjPrefRoot;
-    private boolean isEnableProjPrefDbUpdate;
-    private IEclipsePreferences projPS;
 
     private final IProject project;
     private final Map<String, Object> oneTimePS;
     private final DatabaseType dbType;
-    private final IPreferenceStore mainPS = Activator.getDefault().getPreferenceStore();
+    private final OverridablePrefs overridablePrefs;
 
     public UISettings(IProject project, Map<String, Object> oneTimePS, DatabaseType dbType) {
         this.project = project;
         this.oneTimePS = oneTimePS;
+        this.overridablePrefs = new OverridablePrefs(project, oneTimePS);
+
         if (project != null) {
-            this.projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
-            this.isEnableProjPrefRoot = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, false);
-            this.isEnableProjPrefDbUpdate = projPS.getBoolean(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, false);
+            var projPS = new ProjectScope(project).getNode(UIConsts.PLUGIN_ID.THIS);
             this.timeZone = projPS.get(PROJ_PREF.TIMEZONE, Consts.UTC);
         }
 
@@ -83,76 +79,72 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isConcurrentlyMode() {
-        return getBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY);
     }
 
     @Override
     public boolean isAddTransaction() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION);
     }
 
     @Override
     public boolean isGenerateExists() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXISTS);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.GENERATE_EXISTS);
     }
 
     @Override
     public boolean isGenerateConstraintNotValid() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID);
     }
 
     @Override
     public boolean isGenerateExistDoBlock() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK);
     }
 
     @Override
     public boolean isPrintUsing() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.PRINT_USING);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.PRINT_USING);
     }
 
     @Override
     public boolean isKeepNewlines() {
-        if (null == projPS) {
-            return false;
-        }
-
-        return !projPS.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
+        return !overridablePrefs.getBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, true);
     }
 
     @Override
     public boolean isCommentsToEnd() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.COMMENTS_TO_END);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.COMMENTS_TO_END);
     }
 
     @Override
     public boolean isAutoFormatObjectCode() {
-        return getBooleanOfRootPref(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY);
+        return getMainBoolean(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY);
     }
 
     @Override
     public boolean isIgnorePrivileges() {
-        return getBooleanOfRootPref(PREF.NO_PRIVILEGES);
+        return getMainBoolean(PREF.NO_PRIVILEGES);
     }
 
     @Override
     public boolean isIgnoreColumnOrder() {
-        return getBooleanOfRootPref(PREF.IGNORE_COLUMN_ORDER);
+        return getMainBoolean(PREF.IGNORE_COLUMN_ORDER);
     }
 
     @Override
     public boolean isEnableFunctionBodiesDependencies() {
-        return getBooleanOfRootPref(PREF.ENABLE_BODY_DEPENDENCIES);
+        return getMainBoolean(PREF.ENABLE_BODY_DEPENDENCIES);
     }
 
     @Override
     public boolean isDataMovementMode() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DATA_MOVEMENT_MODE);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.DATA_MOVEMENT_MODE);
     }
 
     @Override
     public boolean isDropBeforeCreate() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DROP_BEFORE_CREATE);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.DROP_BEFORE_CREATE);
     }
 
     @Override
@@ -162,22 +154,22 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isSelectedOnly() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS);
     }
 
     @Override
     public boolean isIgnoreConcurrentModification() {
-        return getBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION);
+        return getMainBoolean(PREF.IGNORE_CONCURRENT_MODIFICATION);
     }
 
     @Override
     public boolean isParallelLoad() {
-        return mainPS.getBoolean(PREF.PARALLEL_LOADING);
+        return getMainBoolean(PREF.PARALLEL_LOADING);
     }
 
     @Override
     public boolean isSimplifyView() {
-        return getBooleanOfRootPref(PREF.SIMPLIFY_VIEW);
+        return getMainBoolean(PREF.SIMPLIFY_VIEW);
     }
 
     @Override
@@ -202,12 +194,12 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isDisableCheckFunctionBodies() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES);
     }
 
     @Override
     public Collection<String> getPreFilePath() {
-        if (!getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
+        if (!getDbUpdateBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
             return Collections.emptyList();
         }
         return addPathsIfExists(FILE.PRE_DIR, FILE.PRE_SCRIPT);
@@ -215,7 +207,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public Collection<String> getPostFilePath() {
-        if (!getBooleanOfDbUpdatePref(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
+        if (!getDbUpdateBoolean(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT)) {
             return Collections.emptyList();
         }
         return addPathsIfExists(FILE.POST_DIR, FILE.POST_SCRIPT);
@@ -223,7 +215,7 @@ public final class UISettings implements ISettings {
 
     @Override
     public String getClusterName() {
-        return getString(DB_UPDATE_PREF.CLUSTER_NAME, true);
+        return (String) overridablePrefs.get(PreferenceCategory.DB_UPDATE, DB_UPDATE_PREF.CLUSTER_NAME);
     }
 
     private Map<String, Object> createTempPrefs() {
@@ -234,46 +226,12 @@ public final class UISettings implements ISettings {
         return temp;
     }
 
-    public boolean isUseGlobalIgnoreList() {
-        if (oneTimePS != null) {
-            Boolean value = (Boolean) oneTimePS.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
-            if (value != null) {
-                return value;
-            }
-        }
-        return !isEnableProjPrefRoot || projPS.getBoolean(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
+    private boolean getMainBoolean(String key) {
+        return (boolean) overridablePrefs.get(PreferenceCategory.MAIN, key);
     }
 
-    private boolean getBooleanOfRootPref(String key) {
-        return getBoolean(key, isEnableProjPrefRoot);
-    }
-
-    private boolean getBooleanOfDbUpdatePref(String key) {
-        return getBoolean(key, isEnableProjPrefDbUpdate);
-    }
-
-    private boolean getBoolean(String key) {
-        return getBoolean(key, false);
-    }
-
-    private boolean getBoolean(String key, boolean isEnableProjPref) {
-        if (oneTimePS != null) {
-            Boolean value = (Boolean) oneTimePS.get(key);
-            if (value != null) {
-                return value;
-            }
-        }
-        return isEnableProjPref ? projPS.getBoolean(key, false) : mainPS.getBoolean(key);
-    }
-
-    private String getString(String key, boolean isEnableProjPref) {
-        if (null != oneTimePS) {
-            String value = (String) oneTimePS.get(key);
-            if (null != value) {
-                return value;
-            }
-        }
-        return isEnableProjPref ? projPS.get(key, null) : mainPS.getString(key);
+    private boolean getDbUpdateBoolean(String key) {
+        return (boolean) overridablePrefs.get(PreferenceCategory.DB_UPDATE, key);
     }
 
     private List<String> addPathsIfExists(String dir, String script) {
@@ -285,7 +243,7 @@ public final class UISettings implements ISettings {
         return paths;
     }
 
-    private static void addPathIfExists(List<String> paths, Path path) {
+    private void addPathIfExists(List<String> paths, Path path) {
         if (Files.exists(path)) {
             paths.add(path.toString());
         }
@@ -312,11 +270,11 @@ public final class UISettings implements ISettings {
 
     @Override
     public boolean isUseActualVersionSyntax() {
-        return getBooleanOfDbUpdatePref(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX);
+        return getDbUpdateBoolean(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX);
     }
 
     @Override
     public boolean isSimplifyNotNull() {
-        return getBooleanOfRootPref(PREF.SIMPLIFY_NOT_NULL);
+        return getMainBoolean(PREF.SIMPLIFY_NOT_NULL);
     }
 }

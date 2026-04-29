@@ -42,14 +42,16 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_BIND_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbMenuStorePicker;
 import ru.taximaxim.codekeeper.ui.dbstore.IStorePicker;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceScope;
+import ru.taximaxim.codekeeper.ui.prefs.Preferences;
 import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.settings.ICustomFieldEditor;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class ProjectProperties extends PropertyPage {
@@ -178,25 +180,14 @@ public class ProjectProperties extends PropertyPage {
 
         fieldEditorStore = new FieldEditorStore();
 
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
-                Messages.GeneralPrefPage_ignore_column_order, btnsPanel, prefs::getBoolean));
+        Preferences
+            .build(PreferenceScope.PROJECT, PreferenceCategory.MAIN, btnsPanel, dbType)
+            .forEach(e -> {
+                var f = (ICustomFieldEditor<?>) e;
+                fieldEditorStore.add(f);
+                f.setValue(prefs);
+            });
 
-        var bodyBepBtn = new TempBooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
-                Messages.GeneralPrefPage_enable_body_dependencies, btnsPanel, prefs::getBoolean);
-        bodyBepBtn.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        fieldEditorStore.add(bodyBepBtn);
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.NO_PRIVILEGES, Messages.dbUpdatePrefPage_ignore_privileges,
-                btnsPanel, prefs::getBoolean));
-        if (DatabaseType.PG == dbType) {
-            fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW, Messages.GeneralPrefPage_simplify_view,
-                    btnsPanel, prefs::getBoolean));
-            fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_NOT_NULL,
-                    Messages.GeneralPrefPage_simplify_not_null, btnsPanel, prefs::getBoolean));
-        }
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY,
-                Messages.GeneralPrefPage_format_object_code_automatically, btnsPanel, prefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(PROJ_PREF.USE_GLOBAL_IGNORE_LIST,
-                Messages.ProjectProperties_use_global_ignore_list, btnsPanel, prefs::getBoolean, true));
         fieldEditorStore.setEnable(overridePref);
 
         return panel;
@@ -215,8 +206,7 @@ public class ProjectProperties extends PropertyPage {
 
     private void timeZoneWarn(String tz) {
         GridData data = (GridData) lblWarnPosix.getLayoutData();
-        if ((!Consts.UTC.equals(tz)
-                && tz.startsWith(Consts.UTC)) == data.exclude) {
+        if ((!Consts.UTC.equals(tz) && tz.startsWith(Consts.UTC)) == data.exclude) {
             lblWarnPosix.setVisible(data.exclude);
             data.exclude = !data.exclude;
             lblWarnPosix.getParent().layout();
@@ -228,7 +218,6 @@ public class ProjectProperties extends PropertyPage {
         // overridable preferences
         btnEnableProjPref.setSelection(false);
         fieldEditorStore.performDefaults(Activator.getDefault().getPreferenceStore());
-        fieldEditorStore.setValue(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, true);
         fieldEditorStore.setEnable(false);
 
         // project preferences
@@ -242,8 +231,8 @@ public class ProjectProperties extends PropertyPage {
         try {
             fillPrefs();
         } catch (BackingStoreException e) {
-            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
-                    e.getLocalizedMessage()));
+            setErrorMessage(
+                    Messages.projectProperties_error_occurs_while_saving_properties.formatted(e.getLocalizedMessage()));
             setValid(false);
         }
     }
@@ -269,8 +258,8 @@ public class ProjectProperties extends PropertyPage {
                 activateEditor();
             }
         } catch (BackingStoreException e) {
-            setErrorMessage(Messages.projectProperties_error_occurs_while_saving_properties.formatted(
-                    e.getLocalizedMessage()));
+            setErrorMessage(
+                    Messages.projectProperties_error_occurs_while_saving_properties.formatted(e.getLocalizedMessage()));
             setValid(false);
             return false;
         }
@@ -285,7 +274,7 @@ public class ProjectProperties extends PropertyPage {
 
     private void fillPrefs() throws BackingStoreException {
         prefs.putBoolean(PROJ_PREF.ENABLE_PROJ_PREF_ROOT, btnEnableProjPref.getSelection());
-        fieldEditorStore.getPrefs().forEach((k, v) -> prefs.putBoolean(k, (Boolean) v));
+        fieldEditorStore.getFields().forEach(e -> e.fillValue(prefs));
         prefs.putBoolean(PROJ_PREF.DISABLE_PARSER_IN_EXTERNAL_FILES, btnDisableParser.getSelection());
         prefs.putBoolean(PROJ_PREF.FORCE_UNIX_NEWLINES, btnForceUnixNewlines.getSelection());
         dbBindPrefs.put(DB_BIND_PREF.NAME_OF_BOUND_DB, dbForBind != null ? dbForBind.getName() : ""); //$NON-NLS-1$
@@ -299,8 +288,7 @@ public class ProjectProperties extends PropertyPage {
     }
 
     private void activateEditor() {
-        IWorkbenchPage activePage = PlatformUI.getWorkbench()
-                .getActiveWorkbenchWindow().getActivePage();
+        IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
         IEditorPart activeEditor = activePage.getActiveEditor();
         // it's need to do for refresh state and content DbCombo
         // of opened and active sql/project editor, after setting of the binding

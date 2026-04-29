@@ -147,11 +147,11 @@ import ru.taximaxim.codekeeper.ui.dialogs.ApplyCustomDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.CommitDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.GetChangesCustomDialog;
-import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.differ.DiffPaneViewer;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
+import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
@@ -719,7 +719,8 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
 
         IgnoreList ignoreList = null;
         if (diffTree != null) {
-            boolean isGlobal = new OverridablePrefs(getProject(), oneTimePrefs).isUseGlobalIgnoreList();
+            var op = new OverridablePrefs(getProject(), oneTimePrefs);
+            boolean isGlobal = (boolean) op.get(PROJ_PREF.USE_GLOBAL_IGNORE_LIST);
             ignoreList = isGlobal ? InternalIgnoreList.readInternalList() : new IgnoreList();
 
             InternalIgnoreList.readAppendList(proj.getPathToProject().resolve(AbstractProjectLoader.IGNORE_FILE), ignoreList);

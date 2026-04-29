@@ -55,8 +55,6 @@ import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.UIConsts;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -64,9 +62,12 @@ import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.differ.DiffTableViewer;
 import ru.taximaxim.codekeeper.ui.differ.Differ;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceScope;
+import ru.taximaxim.codekeeper.ui.prefs.Preferences;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.settings.ICustomFieldEditor;
 import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
 
@@ -200,7 +201,7 @@ final class PageDiff extends WizardPage implements Listener {
     }
 
     public IgnoreList getIgnoreList() {
-        if (fieldEditorStore.getValue(PROJ_PREF.USE_GLOBAL_IGNORE_LIST)) {
+        if ((boolean) fieldEditorStore.getValue(PROJ_PREF.USE_GLOBAL_IGNORE_LIST)) {
             return InternalIgnoreList.readInternalList();
         }
 
@@ -282,43 +283,11 @@ final class PageDiff extends WizardPage implements Listener {
 
         fieldEditorStore = new FieldEditorStore();
 
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.NO_PRIVILEGES, Messages.dbUpdatePrefPage_ignore_privileges,
-                container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.IGNORE_COLUMN_ORDER,
-                Messages.GeneralPrefPage_ignore_column_order, container, mainPrefs::getBoolean));
-        var bodyDepBtn = new TempBooleanFieldEditor(PREF.ENABLE_BODY_DEPENDENCIES,
-                Messages.GeneralPrefPage_enable_body_dependencies, container, mainPrefs::getBoolean);
-        bodyDepBtn.setToolTipText(Messages.GeneralPrefPage_body_depcy_tooltip);
-        fieldEditorStore.add(bodyDepBtn);
-        fieldEditorStore.add(new TempBooleanFieldEditor(PREF.SIMPLIFY_VIEW, Messages.GeneralPrefPage_simplify_view,
-                container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(PROJ_PREF.USE_GLOBAL_IGNORE_LIST,
-                Messages.ProjectProperties_use_global_ignore_list, container, true));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.DbUpdatePrefPage_script_add_transaction, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.DbUpdatePrefPage_print_index_with_concurrently, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                Messages.DbUpdatePrefPage_script_from_selected_objs, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
-                Messages.DbUpdatePrefPage_option_if_exists, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                Messages.DbUpdatePrefPage_option_drop_object, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                Messages.DbUpdatePrefPage_allow_data_movement, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
-                Messages.dbUpdatePrefPage_check_function_bodies, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_USING,
-                Messages.dbUpdatePrefPage_switch_on_off_using, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                Messages.ApplyCustomDialog_constraint_not_valid, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
-                Messages.DbUpdatePrefPage_generate_exist_do_block, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
-                Messages.DbUpdatePrefPage_comments_to_end, container, mainPrefs::getBoolean));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX,
-                Messages.dbUpdatePrefPage_use_actual_version_syntax, container, mainPrefs::getBoolean));
-
+        Preferences.build(PreferenceScope.DIFF_WIZARD, PreferenceCategory.MAIN, container, null)
+                .forEach(e -> fieldEditorStore.add((ICustomFieldEditor<?>) e));
+        Preferences.build(PreferenceScope.DIFF_WIZARD, PreferenceCategory.DB_UPDATE, container, null)
+                .forEach(e -> fieldEditorStore.add((ICustomFieldEditor<?>) e));
+        fieldEditorStore.getFields().forEach(e -> e.setValue(mainPrefs));
         fieldEditorStore.setVisible(false);
 
         if (proj != null) {

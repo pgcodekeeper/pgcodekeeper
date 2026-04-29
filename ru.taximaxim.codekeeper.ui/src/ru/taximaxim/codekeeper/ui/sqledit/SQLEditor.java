@@ -714,8 +714,8 @@ implements IResourceChangeListener, ITextErrorReporter {
         @Override
         protected IStatus run(IProgressMonitor monitor) {
             SubMonitor.convert(monitor).setTaskName(Messages.SqlEditor_update_ddl);
-            return mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE) ?
-                    runExternal(monitor) : runInternal(monitor);
+            return mainPrefs.getBoolean(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE) ? runExternal(monitor)
+                    : runInternal(monitor);
         }
 
         private IStatus runInternal(IProgressMonitor monitor) {

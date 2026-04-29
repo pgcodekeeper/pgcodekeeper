@@ -20,7 +20,6 @@ import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -29,15 +28,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
-import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
+import ru.taximaxim.codekeeper.ui.prefs.PreferenceScope;
+import ru.taximaxim.codekeeper.ui.prefs.Preferences;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
-import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
+import ru.taximaxim.codekeeper.ui.settings.ICustomFieldEditor;
 
 /**
  * Dialog box for filling in one-time preferences that will be used
@@ -46,7 +46,6 @@ import ru.taximaxim.codekeeper.ui.settings.TempBooleanFieldEditor;
 public class ApplyCustomDialog extends Dialog {
 
     private FieldEditorStore fieldEditorStore;
-    private StringFieldEditor clusterNameField;
 
     private final OverridablePrefs prefs;
     private final DatabaseType dbType;
@@ -83,47 +82,13 @@ public class ApplyCustomDialog extends Dialog {
 
         fieldEditorStore = new FieldEditorStore();
 
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.DbUpdatePrefPage_script_add_transaction, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.DbUpdatePrefPage_print_index_with_concurrently, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                Messages.DbUpdatePrefPage_script_from_selected_objs, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
-                Messages.DbUpdatePrefPage_option_if_exists, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                Messages.DbUpdatePrefPage_option_drop_object, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.ADD_PRE_POST_SCRIPT,
-                Messages.DbUpdatePrefPage_add_pre_post_script, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                Messages.DbUpdatePrefPage_allow_data_movement, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX,
-                Messages.dbUpdatePrefPage_use_actual_version_syntax, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-
-        if (DatabaseType.PG == dbType) {
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
-                    Messages.dbUpdatePrefPage_check_function_bodies, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_USING,
-                    Messages.dbUpdatePrefPage_switch_on_off_using, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                    Messages.ApplyCustomDialog_constraint_not_valid, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
-                    Messages.DbUpdatePrefPage_generate_exist_do_block, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-            fieldEditorStore.add(new TempBooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
-                    Messages.DbUpdatePrefPage_comments_to_end, btnsPanel, prefs::getBooleanOfDbUpdatePref));
-        } else if (DatabaseType.CH == dbType) {
-            var panelString = new Composite(panel, SWT.NONE);
-            clusterNameField = new StringFieldEditor(DB_UPDATE_PREF.CLUSTER_NAME,
-                    Messages.DbUpdatePrefPage_cluster_name, panelString);
-            clusterNameField.setStringValue(prefs.getStringOfDbUpdatePref(DB_UPDATE_PREF.CLUSTER_NAME));
-
-            Text textControl = clusterNameField.getTextControl(panelString);
-            if (textControl != null) {
-                gd = new GridData(SWT.FILL, SWT.CENTER, true, false);
-                gd.widthHint = 200;
-                textControl.setLayoutData(gd);
-            }
-        }
+        Preferences
+            .build(PreferenceScope.CUSTOM_APPLY_TO, PreferenceCategory.DB_UPDATE, btnsPanel, dbType)
+            .forEach(e -> {
+                var f = (ICustomFieldEditor<?>) e;
+                fieldEditorStore.add(f);
+                f.setValue(prefs);
+            });
 
         return panel;
     }
@@ -140,9 +105,6 @@ public class ApplyCustomDialog extends Dialog {
     protected void okPressed() {
         customSettings.put(PROJ_PREF.ENABLE_PROJ_PREF_DB_UPDATE, true);
         customSettings.putAll(fieldEditorStore.getPrefs());
-        if (null != clusterNameField) {
-            customSettings.put(DB_UPDATE_PREF.CLUSTER_NAME, clusterNameField.getStringValue());
-        }
 
         super.okPressed();
     }

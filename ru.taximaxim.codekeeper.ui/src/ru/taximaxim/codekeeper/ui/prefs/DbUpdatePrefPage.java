@@ -69,44 +69,12 @@ public final class DbUpdatePrefPage extends FieldEditorPreferencePage implements
         addField(new GroupFieldsEditor(pref,
                 Messages.dBUpdatePrefPage_set_warning_when_next_statements_present, getFieldEditorParent()));
 
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION,
-                Messages.DbUpdatePrefPage_script_add_transaction, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.DISABLE_CHECK_FUNCTION_BODIES,
-                Messages.dbUpdatePrefPage_check_function_bodies, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_USING,
-                Messages.dbUpdatePrefPage_switch_on_off_using, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_INDEX_WITH_CONCURRENTLY,
-                Messages.DbUpdatePrefPage_print_index_with_concurrently, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.PRINT_CONSTRAINT_NOT_VALID,
-                Messages.ApplyCustomDialog_constraint_not_valid, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.SCRIPT_FROM_SELECTED_OBJS,
-                Messages.DbUpdatePrefPage_script_from_selected_objs, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXISTS,
-                Messages.DbUpdatePrefPage_option_if_exists, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.GENERATE_EXIST_DO_BLOCK,
-                Messages.DbUpdatePrefPage_generate_exist_do_block, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.DROP_BEFORE_CREATE,
-                Messages.DbUpdatePrefPage_option_drop_object, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.COMMENTS_TO_END,
-                Messages.DbUpdatePrefPage_comments_to_end, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.DATA_MOVEMENT_MODE,
-                Messages.DbUpdatePrefPage_allow_data_movement, getFieldEditorParent()));
+        Preferences
+            .build(PreferenceScope.GLOBAL, PreferenceCategory.DB_UPDATE, getFieldEditorParent(), null)
+            .forEach(this::addField);
 
         addField(new BooleanFieldEditor(DB_UPDATE_PREF.COMMAND_LINE_DDL_UPDATE,
                 Messages.dbUpdatePrefPage_use_command_for_ddl_update, getFieldEditorParent()));
-
-        addField(new BooleanFieldEditor(DB_UPDATE_PREF.USE_ACTUAL_VERSION_SYNTAX,
-                Messages.dbUpdatePrefPage_use_actual_version_syntax, getFieldEditorParent()));
 
         StringFieldEditor cmdUpdate = new StringFieldEditor(DB_UPDATE_PREF.MIGRATION_COMMAND,
                 Messages.dbUpdatePrefPage_Enter_cmd_to_update_ddl_with_sql_script

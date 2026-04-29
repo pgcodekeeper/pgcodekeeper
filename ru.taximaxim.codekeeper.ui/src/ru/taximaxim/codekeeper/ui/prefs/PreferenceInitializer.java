@@ -25,7 +25,6 @@ import ru.taximaxim.codekeeper.ui.UIConsts;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.FORMATTER_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PG_EDIT_PREF;
-import ru.taximaxim.codekeeper.ui.UIConsts.PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.SQL_EDITOR_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.USAGE_REPORT_PREF;
 import ru.taximaxim.codekeeper.ui.sqledit.SQLEditorStatementTypes;
@@ -37,10 +36,7 @@ public final class PreferenceInitializer extends AbstractPreferenceInitializer {
     public void initializeDefaultPreferences() {
         IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 
-        store.setDefault(PREF.FORCE_SHOW_CONSOLE, true);
-        store.setDefault(PREF.PARSER_CACHE_CLEANING_INTERVAL, 30);
-        store.setDefault(PREF.PARALLEL_LOADING, true);
-        store.setDefault(PREF.HEAP_SIZE_WARNING, true);
+        Preferences.initialize(store);
 
         store.setDefault(PG_EDIT_PREF.EDITOR_UPDATE_ACTION, PG_EDIT_PREF.NO_ACTION);
         store.setDefault(PG_EDIT_PREF.SHOW_GIT_USER, true);
@@ -51,7 +47,6 @@ public final class PreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(DB_UPDATE_PREF.DROP_TABLE_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.RESTART_WITH_STATEMENT, true);
         store.setDefault(DB_UPDATE_PREF.UPDATE_STATEMENT, true);
-        store.setDefault(DB_UPDATE_PREF.PRINT_USING, true);
         store.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.PROMPT);
         store.setDefault(DB_UPDATE_PREF.CREATE_SCRIPT_IN_PROJECT, MessageDialogWithToggle.ALWAYS);
         store.setDefault(DB_UPDATE_PREF.MIGRATION_COMMAND, UIConsts.DDL_DEFAULT_CMD);

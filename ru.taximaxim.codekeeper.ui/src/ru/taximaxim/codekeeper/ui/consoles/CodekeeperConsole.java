@@ -85,16 +85,14 @@ class CodekeeperConsole extends IOConsole implements IPropertyChangeListener {
                 Activator.getRegisteredDescriptor(ProjectIcon.APP_SMALL));
         this.monitor = monitor;
         baseOuter = this.newOutputStream();
-        baseOuter.setActivateOnWrite(Activator.getDefault()
-                .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
+        var booleanValue = Activator.getDefault().getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE);
+        baseOuter.setActivateOnWrite(booleanValue);
 
         warningOuter = this.newOutputStream();
-        warningOuter.setActivateOnWrite(Activator.getDefault()
-                .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
+        warningOuter.setActivateOnWrite(booleanValue);
 
         errorOuter = this.newOutputStream();
-        errorOuter.setActivateOnWrite(Activator.getDefault()
-                .getPreferenceStore().getBoolean(PREF.FORCE_SHOW_CONSOLE));
+        errorOuter.setActivateOnWrite(booleanValue);
 
         Activator.getDefault().getPreferenceStore().addPropertyChangeListener(this);
 
