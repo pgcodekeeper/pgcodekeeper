@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+ - Added reset of the current comparison when settings that require a new comparison are changed.
+
 ### Changed
+
+- Unified the handling of overridable settings, which has changed the order of some settings.
 
 ### Fixed
 
