@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
@@ -48,6 +47,8 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
@@ -154,6 +155,7 @@ import ru.taximaxim.codekeeper.ui.job.SingletonEditorJob;
 import ru.taximaxim.codekeeper.ui.libraries.LibraryUtils;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.pgdbproject.PgDbProject;
+import ru.taximaxim.codekeeper.ui.prefs.Preferences;
 import ru.taximaxim.codekeeper.ui.prefs.ignoredobjects.InternalIgnoreList;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.propertytests.ChangesJobTester;
@@ -166,13 +168,18 @@ import ru.taximaxim.codekeeper.ui.views.DBPair;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.IgnoreListsXmlStore;
 
-public final class ProjectEditorDiffer extends EditorPart implements IResourceChangeListener {
+public final class ProjectEditorDiffer extends EditorPart
+        implements IResourceChangeListener, IPreferenceChangeListener {
+
+    private static final Set<String> PREFERENCES_WITH_NEED_RESET = Preferences.getPreferencesWithNeedReset();
 
     private final IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
 
     private PgDbProject proj;
     private ProjectEditorSelectionProvider sp;
     private Composite parent;
+    private IEclipsePreferences mainPrefsNode;
+    private IEclipsePreferences projectPrefsNode;
     /**
      * do not read directly, use {@link #getCurrentDb()}
      */
@@ -229,6 +236,16 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
             askPerspectiveChange(site);
         }
         getSite().setSelectionProvider(sp);
+
+        mainPrefsNode = InstanceScope.INSTANCE.getNode(PLUGIN_ID.THIS);
+        if (mainPrefsNode != null) {
+            mainPrefsNode.addPreferenceChangeListener(this);
+        }
+
+        projectPrefsNode = proj.getPrefs();
+        if (projectPrefsNode != null) {
+            projectPrefsNode.addPreferenceChangeListener(this);
+        }
     }
 
     @Override
@@ -376,6 +393,12 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
     @Override
     public void dispose() {
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        if (mainPrefsNode != null) {
+            mainPrefsNode.removePreferenceChangeListener(this);
+        }
+        if (projectPrefsNode != null) {
+            projectPrefsNode.removePreferenceChangeListener(this);
+        }
         dbStorePicker.dispose();
         diffPane.dispose();
         super.dispose();
@@ -1224,6 +1247,7 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                     return null;
                 }
             });
+
             mgrTblBtn.add(getChangesAction);
         }
 
@@ -1260,6 +1284,13 @@ public final class ProjectEditorDiffer extends EditorPart implements IResourceCh
                     Log.log(ex);
                 }
             }
+        }
+    }
+
+    @Override
+    public void preferenceChange(IEclipsePreferences.PreferenceChangeEvent event) {
+        if (PREFERENCES_WITH_NEED_RESET.contains(event.getKey())) {
+            reset();
         }
     }
 }

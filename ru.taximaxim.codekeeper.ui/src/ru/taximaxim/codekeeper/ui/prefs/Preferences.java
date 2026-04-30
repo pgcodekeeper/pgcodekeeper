@@ -15,9 +15,14 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.prefs;
 
-import static ru.taximaxim.codekeeper.ui.prefs.PreferenceScope.*;
+import static ru.taximaxim.codekeeper.ui.prefs.PreferenceScope.CUSTOM_APPLY_TO;
+import static ru.taximaxim.codekeeper.ui.prefs.PreferenceScope.CUSTOM_GET_CHANGES;
+import static ru.taximaxim.codekeeper.ui.prefs.PreferenceScope.DIFF_WIZARD;
+import static ru.taximaxim.codekeeper.ui.prefs.PreferenceScope.GLOBAL;
+import static ru.taximaxim.codekeeper.ui.prefs.PreferenceScope.PROJECT;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -35,31 +40,32 @@ public enum Preferences {
 
     IGNORE_COLUMN_ORDER(
             new BooleanPreference(PREF.IGNORE_COLUMN_ORDER, PreferenceCategory.MAIN,
-            Messages.GeneralPrefPage_ignore_column_order,
+            Messages.GeneralPrefPage_ignore_column_order, null, null, true,
             Set.of(GLOBAL, PROJECT, DIFF_WIZARD, CUSTOM_GET_CHANGES))),
     NO_PRIVILEGES(
             new BooleanPreference(PREF.NO_PRIVILEGES, PreferenceCategory.MAIN,
-            Messages.dbUpdatePrefPage_ignore_privileges,
+            Messages.dbUpdatePrefPage_ignore_privileges, null, null, true,
             Set.of(GLOBAL, PROJECT, DIFF_WIZARD, CUSTOM_GET_CHANGES))),
     ENABLE_BODY_DEPENDENCIES(
             new BooleanPreference(PREF.ENABLE_BODY_DEPENDENCIES, PreferenceCategory.MAIN,
-            Messages.GeneralPrefPage_enable_body_dependencies, Messages.GeneralPrefPage_body_depcy_tooltip, null, false,
+                    Messages.GeneralPrefPage_enable_body_dependencies, Messages.GeneralPrefPage_body_depcy_tooltip,
+                    null, true,
             Set.of(GLOBAL, PROJECT, DIFF_WIZARD, CUSTOM_GET_CHANGES))),
     SIMPLIFY_NOT_NULL(
             new BooleanPreference(PREF.SIMPLIFY_NOT_NULL, PreferenceCategory.MAIN,
-            Messages.GeneralPrefPage_simplify_not_null, null, null, false, Set.of(DatabaseType.PG),
+            Messages.GeneralPrefPage_simplify_not_null, null, null, true, Set.of(DatabaseType.PG),
             Set.of(GLOBAL, PROJECT, DIFF_WIZARD, CUSTOM_GET_CHANGES))),
     SIMPLIFY_VIEW(
             new BooleanPreference(PREF.SIMPLIFY_VIEW, PreferenceCategory.MAIN,
-            Messages.GeneralPrefPage_simplify_view, null, null, false, Set.of(DatabaseType.PG),
+            Messages.GeneralPrefPage_simplify_view, null, null, true, Set.of(DatabaseType.PG),
             Set.of(GLOBAL, PROJECT, DIFF_WIZARD, CUSTOM_GET_CHANGES))),
     FORMAT_OBJECT_CODE_AUTOMATICALLY(
             new BooleanPreference(PREF.FORMAT_OBJECT_CODE_AUTOMATICALLY, PreferenceCategory.MAIN,
-            Messages.GeneralPrefPage_format_object_code_automatically,
+                    Messages.GeneralPrefPage_format_object_code_automatically, null, null, true,
             Set.of(GLOBAL, CUSTOM_GET_CHANGES))),
     USE_GLOBAL_IGNORE_LIST(
             new BooleanPreference(PROJ_PREF.USE_GLOBAL_IGNORE_LIST, PreferenceCategory.MAIN,
-            Messages.ProjectProperties_use_global_ignore_list, null, true, false,
+            Messages.ProjectProperties_use_global_ignore_list, null, true, true,
             Set.of(PROJECT, DIFF_WIZARD, CUSTOM_GET_CHANGES))),
     SCRIPT_IN_TRANSACTION(
             new BooleanPreference(DB_UPDATE_PREF.SCRIPT_IN_TRANSACTION, PreferenceCategory.DB_UPDATE,
@@ -167,6 +173,20 @@ public enum Preferences {
             }
         }
         return list;
+    }
+
+    public static Set<String> getPreferencesWithNeedReset() {
+        Set<String> prefs = new HashSet<>();
+        for (var value : values()) {
+            var preference = value.preference;
+            if (preference.isNeedReset) {
+                prefs.add(preference.getPreferenceName());
+            }
+        }
+
+        prefs.add(PREF.IGNORE_CONCURRENT_MODIFICATION);
+        prefs.add(PROJ_PREF.ENABLE_PROJ_PREF_ROOT);
+        return prefs;
     }
 
     public String getPreferenceName() {

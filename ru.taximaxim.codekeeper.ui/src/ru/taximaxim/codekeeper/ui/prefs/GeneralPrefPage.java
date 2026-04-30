@@ -50,6 +50,13 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
     @Override
     protected void createFieldEditors() {
 
+        Preferences
+            .build(PreferenceScope.GLOBAL, PreferenceCategory.MAIN, getFieldEditorParent(), null)
+            .forEach(this::addField);
+
+        new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
+                .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
+
         addField(new BooleanFieldEditor(PREF.FORCE_SHOW_CONSOLE,
                 Messages.generalPrefPage_show_console_when_program_write_to_console, getFieldEditorParent()));
 
@@ -67,13 +74,6 @@ public final class GeneralPrefPage extends FieldEditorPreferencePage
 
         addField(new IntegerFieldEditor(PREF.PARSER_CACHE_CLEANING_INTERVAL,
                 Messages.GeneralPrefPage_time_to_clean_parser_cache, getFieldEditorParent(), 3));
-
-        new Label(getFieldEditorParent(), SWT.SEPARATOR | SWT.HORIZONTAL)
-                .setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false, 2, 1));
-
-        Preferences
-            .build(PreferenceScope.GLOBAL, PreferenceCategory.MAIN, getFieldEditorParent(), null)
-            .forEach(this::addField);
 
         Button button = new Button(getFieldEditorParent(), SWT.PUSH);
         button.setText(Messages.GeneralPrefPage_clean_parser_cache);
