@@ -9,10 +9,20 @@
 
 ### Добавлено
 
+### Изменено
+
+### Исправлено
+
+## [14.4.0] - 2026-05-05
+
+### Добавлено
+
 - Добавлено сброс текущего сравнения при изменении настроек требующих нового сравнения.
 
 ### Изменено
 
+- Улучшена генерация кода при изменении индекса у партиционных таблиц PostgreSQL.
+- Улучшен текст сообщения об ошибке при подключении к БД.
 - Унифицирована работа с переопредяемыми настройками, из-за чего изменился порядок некоторых настроек.
 
 ### Исправлено
@@ -2458,7 +2468,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...HEAD
+[14.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...14.4.0
 [14.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...14.3.0
 [14.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...v14.2.0
 [14.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...v14.1.1

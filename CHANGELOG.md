@@ -9,11 +9,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [14.4.0] - 2026-05-05
+
+### Added
+
  - Added reset of the current comparison when settings that require a new comparison are changed.
 
 ### Changed
 
 - Unified the handling of overridable settings, which has changed the order of some settings.
+- Improved code generation when changing an index on partitioned tables PostgreSQL.
+- Improved the error message text when connecting to the database.
 
 ### Fixed
 
@@ -2458,7 +2468,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...HEAD
+[14.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...14.4.0
 [14.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...14.3.0
 [14.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...v14.2.0
 [14.1.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v12.2.0...v14.1.1
