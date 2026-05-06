@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [14.4.1] - 2026-05-06
+
+### Fixed
+
+- Fixed a bug when working with Arenadata DB 7.4.0 and higher.
+
 ## [14.4.0] - 2026-05-05
 
 ### Added
