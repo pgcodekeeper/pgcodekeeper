@@ -2474,7 +2474,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...HEAD
+[14.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...14.4.1
 [14.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...14.4.0
 [14.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...14.3.0
 [14.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.1.1...v14.2.0
