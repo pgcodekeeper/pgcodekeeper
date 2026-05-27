@@ -27,7 +27,7 @@ jobs:
           java-version: '17'
 
       - name: get jarsigner key
-        uses: 1arp/create-a-file-action@0.4.5
+        uses: 1arp/create-a-file-action@6b7fed8f0bcec18f7685ff950011088e7ef5e378 #v0.4.5
         with:
           path: /tmp/keystore
           isAbsolutePath: false
@@ -38,7 +38,7 @@ jobs:
         run: base64 --decode -i tmp/keystore/key.txt -o tmp/keystore/key.jks
 
       - name: create macos certificate
-        uses: 1arp/create-a-file-action@0.4.5
+        uses: 1arp/create-a-file-action@6b7fed8f0bcec18f7685ff950011088e7ef5e378 #v0.4.5
         with:
           path: /tmp/keystore
           isAbsolutePath: false
@@ -46,12 +46,14 @@ jobs:
           content: ${{ secrets.MAC_CERT_P12 }}
 
       - name: create keychain and import certificate
+        env:
+          MAC_PASS: ${{ secrets.MAC_CERT_PASS }}
         run: |
           base64 --decode -i ${{ github.workspace }}/tmp/keystore/certificate.txt -o certificate.p12
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P ${{ secrets.MAC_CERT_PASS }} -T /usr/bin/codesign
+          security import certificate.p12 -k build.keychain -P MAC_PASS -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
           security find-identity build.keychain
 
@@ -81,7 +83,7 @@ jobs:
 
       - name: create GitHub release
         id: create_release
-        uses: comnoco/create-release-action@v2.0.5
+        uses: comnoco/create-release-action@7dea6dc82ac9d97ced7a764aa82811451bba80e0 # v2.0.5
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -91,7 +93,7 @@ jobs:
           prerelease: false
 
       - name: upload release linux build
-        uses: sekwah41/upload-release-assets@main
+        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -101,7 +103,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: upload release windows build
-        uses: sekwah41/upload-release-assets@main
+        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -111,7 +113,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: upload release macos aarch build
-        uses: sekwah41/upload-release-assets@main
+        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -121,7 +123,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: upload release macos x86 build
-        uses: sekwah41/upload-release-assets@main
+        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -131,7 +133,7 @@ jobs:
           asset_content_type: application/zip
 
       - name: upload release updatesite
-        uses: sekwah41/upload-release-assets@main
+        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
