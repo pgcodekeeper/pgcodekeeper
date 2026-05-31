@@ -61,6 +61,7 @@ import org.pgcodekeeper.core.database.api.schema.IFunction;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
+import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
@@ -179,7 +180,9 @@ class QuickUpdateJob extends SingletonEditorJob {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        boolean isSchemaFile = dbType.getDatabaseProvider().isSchemaFile(file.getProjectRelativePath());
+        var workDirs = ProjectUtils.createWorkDirs(dbType,
+                AbstractWorkDirs.resolveAltDirsFile(proj.getProject().getLocation().toFile().toPath()));
+        boolean isSchemaFile = ProjectUtils.isSchemaFile(workDirs, file.getProjectRelativePath());
         IEclipsePreferences projPrefs = proj.getPrefs();
         String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
 

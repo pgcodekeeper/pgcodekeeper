@@ -21,6 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.eclipse.core.resources.IContainer;
@@ -36,6 +39,12 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.osgi.framework.Version;
 import org.pgcodekeeper.core.Consts;
+import org.pgcodekeeper.core.database.api.project.IWorkDirs;
+import org.pgcodekeeper.core.database.api.schema.DbObjType;
+import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
+import org.pgcodekeeper.core.database.ch.project.ChWorkDirs;
+import org.pgcodekeeper.core.database.ms.project.MsWorkDirs;
+import org.pgcodekeeper.core.database.pg.project.PgWorkDirs;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -51,6 +60,64 @@ public final class ProjectUtils {
 
     public static Path getPath(IProject project) {
         return Paths.get(project.getLocationURI());
+    }
+
+    /**
+     * Returns distinct top-level directory names derived from the given
+     * {@link IWorkDirs} configuration. Used for UI heuristics (detecting
+     * whether a folder looks like a project, hyperlink resolution, etc.).
+     * In split-by-schema mode, sub-element directories (which live under
+     * the schema container) are excluded.
+     */
+    public static List<String> getDefaultTopLevelDirNames(IWorkDirs workDirs) {
+        boolean split = workDirs.isSplitBySchema();
+        return workDirs.getDirMapping().values().stream()
+                .filter(r -> !split || !r.isSubElement())
+                .map(r -> r.getDirName().split("/")[0])
+                .distinct()
+                .toList();
+    }
+
+    /**
+     * Returns a flat view of user-overridable type names to their current directory
+     * names. Intended for settings dialogs that let users edit the project layout.
+     */
+    public static Map<String, String> getEditableDirMappings(IWorkDirs workDirs) {
+        var result = new LinkedHashMap<String, String>();
+        for (var entry : workDirs.getDirMapping().entrySet()) {
+            result.put(entry.getKey(), entry.getValue().getDirName());
+        }
+        return result;
+    }
+
+    /**
+     * Returns whether the path is a schema's own .sql file under the given layout.
+     * Works for both split-by-schema and flat modes.
+     */
+    public static boolean isSchemaFile(IWorkDirs workDirs, IPath path) {
+        String[] containerSegments = workDirs.getDirNameForType(DbObjType.SCHEMA).split("/"); //$NON-NLS-1$
+        int expectedCount = containerSegments.length + (workDirs.isSplitBySchema() ? 2 : 1);
+        if (path.segmentCount() != expectedCount || !path.lastSegment().endsWith(Consts.SQL_POSTFIX)) {
+            return false;
+        }
+        for (int i = 0; i < containerSegments.length; i++) {
+            if (!containerSegments[i].equals(path.segment(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Creates a {@link AbstractWorkDirs} instance for the given DBMS, optionally
+     * applying overrides from {@code altDirsFile}. Pass {@code null} to get defaults.
+     */
+    public static AbstractWorkDirs createWorkDirs(DatabaseType dbType, Path altDirsFile) {
+        return switch (dbType) {
+            case PG -> new PgWorkDirs(altDirsFile);
+            case MS -> new MsWorkDirs(altDirsFile);
+            case CH -> new ChWorkDirs(altDirsFile);
+        };
     }
 
     public static boolean isInProject(IEditorInput editorInput) {

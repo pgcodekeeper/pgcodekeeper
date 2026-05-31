@@ -64,14 +64,15 @@ import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
+import org.pgcodekeeper.core.database.api.project.IWorkDirs;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.api.schema.ISearchPath;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.base.parser.QNameParserWrapper;
 import org.pgcodekeeper.core.database.base.project.AbstractModelExporter;
+import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
 import org.pgcodekeeper.core.database.ch.parser.ChParserUtils;
 import org.pgcodekeeper.core.database.ch.schema.ChFunction;
-import org.pgcodekeeper.core.database.ms.project.MsWorkDirs;
 import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
 import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.utils.FileUtils;
@@ -154,10 +155,10 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private void parseSelectionFolder(IResource resource) {
-        var provider = dbType.getDatabaseProvider();
+        var workDirs = createWorkDirs();
         var resName = resource.getName();
         type = allowedTypes.stream()
-                .filter(e -> resName.equals(provider.getDirectoryNameForType(e)))
+                .filter(e -> resName.equals(workDirs.getDirNameForType(e)))
                 .findAny().orElse(null);
 
         if (dbType == DatabaseType.MS) {
@@ -166,7 +167,7 @@ public final class NewObjectPage extends WizardPage {
         }
 
         IContainer cont = resource.getParent();
-        var dbContName = provider.getDirectoryNameForType(DbObjType.SCHEMA);
+        var dbContName = workDirs.getDirNameForType(DbObjType.SCHEMA);
         if (cont != null) {
             if (type != null && !isSchemaLevel()) {
                 schema = cont.getName();
@@ -522,26 +523,18 @@ public final class NewObjectPage extends WizardPage {
         }
     }
 
-    private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
-        IFolder schemaFolder;
-        String schemaFolderName = dbType.getDatabaseProvider().getDirectoryNameForType(DbObjType.SCHEMA);
-        if (dbType == DatabaseType.MS) {
-            IFolder securityFolder = project.getFolder(new Path(MsWorkDirs.SECURITY));
-            if (!securityFolder.exists()) {
-                securityFolder.create(false, true, null);
-            }
-            schemaFolder = securityFolder.getFolder(schemaFolderName);
-        } else {
-            IFolder rootSchemaFolder = project.getFolder(schemaFolderName);
-            if (!rootSchemaFolder.exists()) {
-                rootSchemaFolder.create(false, true, null);
-            }
-            schemaFolder = rootSchemaFolder.getFolder(FileUtils.getValidFilename(name));
-        }
+    private IWorkDirs createWorkDirs() {
+        var projectPath = currentProj.getLocation().toPath();
+        return ProjectUtils.createWorkDirs(dbType, AbstractWorkDirs.resolveAltDirsFile(projectPath));
+    }
 
-        if (!schemaFolder.exists()) {
-            schemaFolder.create(false, true, null);
+    private IFolder createSchema(String name, boolean open, IProject project) throws CoreException {
+        var workDirs = createWorkDirs();
+        IFolder schemaFolder = project.getFolder(new Path(workDirs.getDirNameForType(DbObjType.SCHEMA)));
+        if (workDirs.isSplitBySchema()) {
+            schemaFolder = schemaFolder.getFolder(FileUtils.getValidFilename(name));
         }
+        createFolder(schemaFolder);
 
         IFile file = schemaFolder.getFile(AbstractModelExporter.getExportedFilenameSql(name));
         if (!file.exists()) {
@@ -560,21 +553,16 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFile createObject(String schema, boolean open) throws CoreException {
+        var workDirs = createWorkDirs();
         IFolder folder;
         if (schema == null) {
-            if (dbType == DatabaseType.MS && type.in(DbObjType.SCHEMA, DbObjType.ROLE, DbObjType.USER)) {
-                folder = getMsSecurityFolder();
-            } else {
-                folder = currentProj.getFolder(dbType.getDatabaseProvider().getDirectoryNameForType(type));
-                if (!folder.exists()) {
-                    folder.create(false, true, null);
-                }
-            }
+            folder = currentProj.getFolder(new Path(workDirs.getDirNameForType(type)));
+            createFolder(folder);
         } else {
             folder = getFolder(schema, type, currentProj);
         }
 
-        IFile file = folder.getFile(getFileName(type, name));
+        IFile file = folder.getFile(getFileName(workDirs, type, name));
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
             if (open) {
@@ -587,8 +575,8 @@ public final class NewObjectPage extends WizardPage {
         return file;
     }
 
-    private String getFileName(DbObjType type, String name) {
-        if (DatabaseType.MS == dbType && ObjectLevel.SCHEMA != ObjectLevel.getLevel(dbType, type)) {
+    private String getFileName(IWorkDirs workDirs, DbObjType type, String name) {
+        if (!workDirs.isSplitBySchema() && ObjectLevel.SCHEMA != ObjectLevel.getLevel(dbType, type)) {
             return FileUtils.getValidFilename(schema) + '.' + AbstractModelExporter.getExportedFilenameSql(name);
         }
 
@@ -606,7 +594,8 @@ public final class NewObjectPage extends WizardPage {
 
     private void createSubElement(boolean parentIsTable) throws CoreException {
         DbObjType parentType = parentIsTable ? DbObjType.TABLE : DbObjType.VIEW;
-        IFile file = getFolder(schema, parentType, currentProj).getFile(getFileName(parentType, container));
+        IFile file = getFolder(schema, parentType, currentProj)
+                .getFile(getFileName(createWorkDirs(), parentType, container));
 
         if (!file.exists()) {
             file.create(new ByteArrayInputStream(new byte[0]), false, null);
@@ -650,31 +639,28 @@ public final class NewObjectPage extends WizardPage {
     }
 
     private IFolder getFolder(String name, DbObjType type, IProject project) throws CoreException {
+        var workDirs = createWorkDirs();
         IFolder schemaFolder = createSchema(name, false, project);
-        String folderName = dbType.getDatabaseProvider().getDirectoryNameForType(type);
+        String folderName = workDirs.getDirNameForType(type);
 
         IFolder typeFolder;
-        if (DatabaseType.MS == dbType) {
-            typeFolder = project.getFolder(folderName);
+        if (!workDirs.isSplitBySchema()) {
+            typeFolder = project.getFolder(new Path(folderName));
         } else {
             typeFolder = schemaFolder.getFolder(folderName);
         }
 
-        if (!typeFolder.exists()) {
-            typeFolder.create(false, true, null);
-        }
+        createFolder(typeFolder);
         return typeFolder;
     }
 
-    private IFolder getMsSecurityFolder() throws CoreException {
-        IFolder securityFolder = currentProj.getFolder(new Path(MsWorkDirs.SECURITY));
-        if (!securityFolder.exists()) {
-            securityFolder.create(false, true, null);
+    private static void createFolder(IFolder folder) throws CoreException {
+        if (folder.exists()) {
+            return;
         }
-        IFolder objFolder = securityFolder.getFolder(dbType.getDatabaseProvider().getDirectoryNameForType(type));
-        if (!objFolder.exists()) {
-            objFolder.create(false, true, null);
+        if (folder.getParent() instanceof IFolder parent) {
+            createFolder(parent);
         }
-        return objFolder;
+        folder.create(false, true, null);
     }
 }

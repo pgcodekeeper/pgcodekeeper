@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added the ability to specify alternative directories for project objects during normalization.
+
 ### Changed
 
 ### Fixed

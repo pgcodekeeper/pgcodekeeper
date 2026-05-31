@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IPath;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.formatter.IFormatConfiguration;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
@@ -48,6 +47,8 @@ import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
 public class PgUiDatabaseProvider extends PgDatabaseProvider implements IUiDatabaseProvider {
 
+    private static final PgWorkDirs DEFAULT_WORK_DIRS = new PgWorkDirs();
+
     @Override
     public PgJdbcConnector getDbInfoJdbcConnector(DbInfo dbInfo, int timeoutSeconds) {
         return new PgDbInfoConnector(dbInfo, timeoutSeconds);
@@ -62,12 +63,12 @@ public class PgUiDatabaseProvider extends PgDatabaseProvider implements IUiDatab
 
     @Override
     public List<String> getDirectoryNames() {
-        return PgWorkDirs.getDirectoryNames();
+        return ProjectUtils.getDefaultTopLevelDirNames(DEFAULT_WORK_DIRS);
     }
 
     @Override
     public String getDirectoryNameForType(DbObjType type) {
-        return PgWorkDirs.getDirectoryNameForType(type);
+        return DEFAULT_WORK_DIRS.getDirNameForType(type);
     }
 
     @Override
@@ -146,15 +147,7 @@ public class PgUiDatabaseProvider extends PgDatabaseProvider implements IUiDatab
 
     @Override
     public Path getRelativeFilePath(IStatement st) {
-        return PgWorkDirs.getRelativeFilePath(st);
-    }
-
-    @Override
-    public boolean isSchemaFile(IPath path) {
-        int c = path.segmentCount();
-        return c == 3
-                && path.segment(0).equals(PgWorkDirs.SCHEMA)
-                && path.segment(c - 1).endsWith(".sql"); //$NON-NLS-1$
+        return DEFAULT_WORK_DIRS.getRelativeFilePath(st);
     }
 
     @Override
