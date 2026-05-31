@@ -29,7 +29,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.pgcodekeeper.core.Consts;
-import org.pgcodekeeper.core.database.pg.project.PgWorkDirs;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import org.pgcodekeeper.core.library.Library;
@@ -154,10 +153,11 @@ public class UiLibraryLoader {
     }
 
     private void readProject(AbstractLibrary parent, Path path) throws IOException {
-        for (String name : PgWorkDirs.getDirectoryNames()) {
-            Path dirPath = path.resolve(name);
-            if (Files.exists(dirPath)) {
-                readPath(parent, dirPath);
+        try (Stream<Path> stream = Files.list(path).sorted(DIR_COMPARATOR)) {
+            for (Path sub : Utils.streamIterator(stream)) {
+                if (Files.isDirectory(sub)) {
+                    readPath(parent, sub);
+                }
             }
         }
 

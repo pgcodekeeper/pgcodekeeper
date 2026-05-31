@@ -19,7 +19,6 @@ import java.nio.file.Path;
 import java.util.List;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.IPath;
 import org.pgcodekeeper.core.database.api.IDatabaseProvider;
 import org.pgcodekeeper.core.database.api.formatter.IFormatConfiguration;
 import org.pgcodekeeper.core.database.api.formatter.IFormatter;
@@ -121,12 +120,6 @@ public interface IUiDatabaseProvider extends IDatabaseProvider {
      * @return array of project natures for for DBMS implementation
      */
     String[] getProjectNatures();
-
-    /**
-     * @param path project relative path
-     * @return whether the path corresponds to a schema sql file
-     */
-    boolean isSchemaFile(IPath path);
 
     /**
      *

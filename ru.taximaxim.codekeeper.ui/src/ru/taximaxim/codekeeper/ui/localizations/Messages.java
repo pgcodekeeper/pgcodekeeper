@@ -777,7 +777,18 @@ public final class Messages extends NLS {
     public static String NewProjWizard_get_from_db;
 
     public static String NewProjWizard_not_empty_dir;
-    public static String NormalizeProject_are_you_sure;
+
+    public static String ObjectDirectoryViewer_object_type;
+
+    public static String ObjectDirectoryViewer_object_directory;
+
+    public static String ProjectNormalizationDialog_title;
+
+    public static String ProjectNormalizationDialog_set_alt_dirs;
+
+    public static String ProjectNormalizationDialog_split_by_schema;
+
+    public static String ProjectNormalizationDialog_restore_default_dirs;
 
     public static String NormalizeProject_error_while_updating_project;
 
@@ -792,6 +803,8 @@ public final class Messages extends NLS {
     public static String NormalizeProject_project_normalized;
 
     public static String NormalizeProject_project_normalized_success;
+
+    public static String NormalizeProject_error_while_saving_file;
 
     public static String SqlEditor_absent_builder_message;
 
@@ -1000,6 +1013,10 @@ public final class Messages extends NLS {
     public static String ProjectProperties_binding_to_db_connection;
 
     public static String ProjectProperties_disable_parser_in_external_files;
+
+    public static String ProjectStructureProperties_description;
+
+    public static String ProjectStructureProperties_split_by_schema;
 
     public static String ProjectUtils_nature_identifier_error;
 
