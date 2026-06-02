@@ -9,11 +9,24 @@
 
 ### Добавлено
 
-- Добавлена возможность указания альтернативных директорий для объектов проекта при нормализации.
-
 ### Изменено
 
 ### Исправлено
+
+## [14.5.0] - 2026-06-02
+
+### Добавлено
+
+- Добавлена поддержка нового синтаксиса для таблиц в Greenplum 7.
+- Добавлена возможность указания альтернативных директорий для объектов проекта при нормализации.
+
+### Исправлено
+
+- Исправлены ошибки парсинга в PostgreSQL.
+
+### Безопасность
+
+- Повышена версия JDBC драйвера для PostgreSQL из-за CVE-2026-42198.
 
 ## [14.4.1] - 2026-05-06
 
@@ -2476,7 +2489,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...HEAD
+[14.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...14.5.0
 [14.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...14.4.1
 [14.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...14.4.0
 [14.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...14.3.0
