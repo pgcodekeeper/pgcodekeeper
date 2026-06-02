@@ -53,7 +53,7 @@ jobs:
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
-          security import certificate.p12 -k build.keychain -P MAC_PASS -T /usr/bin/codesign
+          security import certificate.p12 -k build.keychain -P $MAC_PASS -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
           security find-identity build.keychain
 
