@@ -9,11 +9,24 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added the ability to specify alternative directories for project objects during normalization.
-
 ### Changed
 
 ### Fixed
+
+## [14.5.0] - 2026-06-02
+
+### Added
+
+- Added support for new syntax for tables for Greenplum 7.
+- Added the ability to specify alternative directories for project objects during normalization.
+
+### Fixed
+
+- Fixed parser errors for PostgreSQL.
+
+### Security
+
+- Increased version of JDBC driver for PostgreSQL due to CVE-2026-42198.
 
 ## [14.4.1] - 2026-05-06
 
@@ -2476,7 +2489,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...HEAD
+[14.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...14.5.0
 [14.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...14.4.1
 [14.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...14.4.0
 [14.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.2.0...14.3.0
