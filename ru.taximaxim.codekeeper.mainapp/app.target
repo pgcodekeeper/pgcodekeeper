@@ -20,6 +20,10 @@
 			<unit id="org.eclipse.platform.feature.group" version="4.32.0.v20240601-0610"/>
 			<unit id="org.eclipse.zest.feature.group" version="3.20.0.202405290843"/>
 		</location>
+		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+			<repository location="https://download.eclipse.org/technology/swtbot/releases/4.2.1"/>
+			<unit id="org.eclipse.swtbot.eclipse.feature.group" version="4.2.1.202406141605"/>
+		</location>
     	<location includeDependencyDepth="none" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
         	<dependencies>
             	<dependency>
