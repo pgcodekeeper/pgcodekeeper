@@ -21,9 +21,11 @@
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-surefire-plugin</artifactId>
                 <version>${tycho.version}</version>
-                <configuration>
-                    <appArgLine>-nl en -consoleLog</appArgLine>
-                </configuration>
+                    <configuration>
+                        <useUIThread>false</useUIThread>
+                        <useUIHarness>true</useUIHarness>
+                        <appArgLine>-nl en -consoleLog -perspective ru.taximaxim.codekeeper.ui.mainperspective</appArgLine>
+                    </configuration>
             </plugin>
         </plugins>
     </build>
