@@ -1016,8 +1016,6 @@ public final class Messages extends NLS {
 
     public static String ProjectStructureProperties_description;
 
-    public static String ProjectStructureProperties_split_by_schema;
-
     public static String ProjectUtils_nature_identifier_error;
 
     public static String sqlScriptDialog_script_select_storage;

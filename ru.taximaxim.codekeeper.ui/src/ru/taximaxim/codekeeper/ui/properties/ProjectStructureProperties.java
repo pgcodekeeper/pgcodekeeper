@@ -62,7 +62,7 @@ public final class ProjectStructureProperties extends PropertyPage {
         description.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 
         Button btnSplitBySchema = new Button(panel, SWT.CHECK);
-        btnSplitBySchema.setText(Messages.ProjectStructureProperties_split_by_schema);
+        btnSplitBySchema.setText(Messages.ProjectNormalizationDialog_split_by_schema);
         btnSplitBySchema.setSelection(splitBySchema);
         btnSplitBySchema.setEnabled(false);
 
