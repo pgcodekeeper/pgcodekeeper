@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -69,9 +68,8 @@ public class GetChangesCustomDialog extends Dialog {
         Composite panel = new Composite(parent, SWT.NONE);
         panel.setLayout(new GridLayout());
 
-        new Label(panel, SWT.NONE).setText(MessageFormat
-                .format(Messages.getChangesCustomDialog_custom_prefs_description,
-                        Messages.DiffTableViewer_get_changes));
+        new Label(panel, SWT.NONE).setText(
+                Messages.getChangesCustomDialog_custom_prefs_description.formatted(Messages.DiffTableViewer_get_changes));
 
         Preferences.getPreferencesForScope(PreferenceCategory.MAIN, PreferenceScope.CUSTOM_GET_CHANGES, dbType)
                 .forEach(e -> createButton(e, panel));

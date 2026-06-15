@@ -15,7 +15,6 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.dialogs;
 
-import java.text.MessageFormat;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.Dialog;
@@ -71,9 +70,8 @@ public class ApplyCustomDialog extends Dialog {
         Composite panel = new Composite(parent, SWT.NONE);
         panel.setLayout(new GridLayout());
 
-        new Label(panel, SWT.NONE).setText(MessageFormat
-                .format(Messages.getChangesCustomDialog_custom_prefs_description,
-                        Messages.DiffTableViewer_apply_to));
+        new Label(panel, SWT.NONE).setText(
+                Messages.getChangesCustomDialog_custom_prefs_description.formatted(Messages.DiffTableViewer_apply_to));
 
         Composite btnsPanel = new Composite(panel, SWT.NONE);
         GridData gd = new GridData();
