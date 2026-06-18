@@ -13,7 +13,18 @@
 
 ### Исправлено
 
+## [14.6.0] - 2026-06-18
+
+### Изменено
+
+- Улучшена работа с временными файлами.
+
+### Исправлено
+
 - Исправлена ошибка, связанная с удалением настроек проекта после нормализации.
+- Исправлено добавление объектов библиотек в проект при экспорте.
+- Исправлена генерация кода индекса при его изменении в режиме CONCURRENTLY.
+- Исправлена генерация скрипта миграции при изменении генерируемой колонки в PostgreSQL.
 
 ## [14.5.0] - 2026-06-02
 
@@ -2491,7 +2502,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...HEAD
+[14.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...14.6.0
 [14.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...14.5.0
 [14.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...14.4.1
 [14.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.3.0...14.4.0
