@@ -70,12 +70,7 @@ public final class ProjectUtils {
      * the schema container) are excluded.
      */
     public static List<String> getDefaultTopLevelDirNames(IWorkDirs workDirs) {
-        boolean split = workDirs.isSplitBySchema();
-        return workDirs.getDirMapping().values().stream()
-                .filter(r -> !split || !r.isSubElement())
-                .map(r -> r.getDirName().split("/")[0])
-                .distinct()
-                .toList();
+        return workDirs.getTopLevelDirNames();
     }
 
     /**

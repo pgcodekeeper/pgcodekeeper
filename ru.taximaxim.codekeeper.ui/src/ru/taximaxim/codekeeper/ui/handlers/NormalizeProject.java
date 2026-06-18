@@ -17,11 +17,8 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
@@ -52,13 +49,11 @@ import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
 import org.pgcodekeeper.core.database.base.project.DirRule;
 import org.pgcodekeeper.core.settings.DiffSettings;
-import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.PLUGIN_ID;
-import ru.taximaxim.codekeeper.ui.UIConsts.PROJ_PATH;
 import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.ProjectNormalizationDialog;
@@ -122,29 +117,8 @@ public final class NormalizeProject extends AbstractHandler {
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
                     var updaterSettings = new UISettings(proj.getProject(), null);
 
-                    Path migrationDir = projectPath.resolve(PROJ_PATH.MIGRATION_DIR);
-                    Path migrationBackup = null;
-                    if (Files.isDirectory(migrationDir)) {
-                        migrationBackup = Files.createTempDirectory("codekeeper-migration-backup-"); //$NON-NLS-1$
-                        copyDirectory(migrationDir, migrationBackup);
-                    }
-                    try {
-                        provider.getProjectUpdater(db, null, null, projectPath, updaterSettings)
-                        .updateFull(projectOnly);
-                    } finally {
-                        if (migrationBackup != null) {
-                            try {
-                                if (Files.exists(migrationDir)) {
-                                    FileUtils.deleteRecursive(migrationDir);
-                                }
-                                copyDirectory(migrationBackup, migrationDir);
-                                FileUtils.deleteRecursive(migrationBackup);
-                            } catch (IOException restoreEx) {
-                                Log.log(Log.LOG_ERROR, "Failed to restore MIGRATION folder", //$NON-NLS-1$
-                                        restoreEx);
-                            }
-                        }
-                    }
+                    provider.getProjectUpdater(db, null, null, projectPath, updaterSettings)
+                            .updateFull(projectOnly, currentWorkDirs);
                 } catch (IOException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,
                             Messages.NormalizeProject_error_while_updating_project, ex);
@@ -210,22 +184,5 @@ public final class NormalizeProject extends AbstractHandler {
             }
         }
         workDirs.saveAltDirs(projectPath);
-    }
-
-    private static void copyDirectory(Path source, Path target) throws IOException {
-        Files.walkFileTree(source, new SimpleFileVisitor<>() {
-
-            @Override
-            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-                Files.createDirectories(target.resolve(source.relativize(dir)));
-                return FileVisitResult.CONTINUE;
-            }
-
-            @Override
-            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-                Files.copy(file, target.resolve(source.relativize(file)));
-                return FileVisitResult.CONTINUE;
-            }
-        });
     }
 }
