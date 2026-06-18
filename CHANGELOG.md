@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed an issue where project settings were deleted after project normalization.
+
 ## [14.5.0] - 2026-06-02
 
 ### Added
