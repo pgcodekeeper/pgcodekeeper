@@ -18,13 +18,10 @@ package ru.taximaxim.codekeeper.ui.swtbot;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotMenu;
 import org.junit.jupiter.api.Test;
 
-public class SwtBotTest {
-
-    private final SWTWorkbenchBot bot = new SWTWorkbenchBot();
+public class SwtBotTest extends AbstractSwtBotTest {
 
     @Test
     void dependenciesLoadedTest() {
