@@ -33,7 +33,11 @@ public class UsageReportDispatcher implements IStartup {
             UsageReporter reporter = UsageReporter.getInstance();
             Activator plugin = Activator.getDefault();
             String version = getVersion();
-            String platformVer = Platform.getBundle("org.eclipse.platform").getVersion().toString(); //$NON-NLS-1$
+            var bundle = Platform.getBundle("org.eclipse.platform"); //$NON-NLS-1$
+            if (bundle == null) {
+                return;
+            }
+            String platformVer = bundle.getVersion().toString();
             EclipseEnvironment environment = plugin.getEclipseEnvironment();
             UsageEventType type = new UsageEventType("pgCodeKeeper", version, platformVer, null); //$NON-NLS-1$
             String label = environment.getEventValue();

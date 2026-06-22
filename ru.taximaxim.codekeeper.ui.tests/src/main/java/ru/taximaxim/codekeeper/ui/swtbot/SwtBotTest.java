@@ -25,15 +25,14 @@ public class SwtBotTest extends AbstractSwtBotTest {
 
     @Test
     void dependenciesLoadedTest() {
-        assertNotNull(bot);
+        assertNotNull(BOT);
 
-        SWTBotMenu fileMenu = bot.menu("File");
+        SWTBotMenu fileMenu = BOT.menu("File");
         assertNotNull(fileMenu);
         assertTrue(fileMenu.isEnabled());
 
-        SWTBotMenu pgCodeKeeperMenu = bot.menu("pgCodeKeeper");
+        SWTBotMenu pgCodeKeeperMenu = BOT.menu("pgCodeKeeper");
         assertNotNull(pgCodeKeeperMenu);
         assertTrue(pgCodeKeeperMenu.isEnabled());
     }
-
 }
