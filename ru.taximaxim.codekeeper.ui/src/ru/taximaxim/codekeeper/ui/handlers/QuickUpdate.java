@@ -42,7 +42,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorPart;
@@ -61,7 +60,6 @@ import org.pgcodekeeper.core.database.api.schema.IFunction;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
-import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
@@ -180,41 +178,23 @@ class QuickUpdateJob extends SingletonEditorJob {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        var workDirs = ProjectUtils.createWorkDirs(dbType,
-                AbstractWorkDirs.resolveAltDirsFile(proj.getProject().getLocation().toFile().toPath()));
-        boolean isSchemaFile = ProjectUtils.isSchemaFile(workDirs, file.getProjectRelativePath());
-        IEclipsePreferences projPrefs = proj.getPrefs();
-        String timezone = projPrefs.get(PROJ_PREF.TIMEZONE, Consts.UTC);
-
-        IDumpLoader fileLoader = dbType.getDatabaseProvider().getDumpLoader(file.getLocation().toFile().toPath(),
-                new DiffSettings(new UISettings(proj.getProject(), null, dbType), new UIMonitor(monitor)));
-        IDatabase dbProjectFragment = fileLoader.loadAndAnalyze();
-        List<IStatement> listPgObjectsFragment = new ArrayList<>();
-        dbProjectFragment.getDescendants().forEach(listPgObjectsFragment::add);
-
-        long schemaCount = dbProjectFragment.getSchemas().size();
-        if (schemaCount > 1) {
-            // more than 1 schema, shoudln't happen
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_multiple_schemas);
-        } else if (listPgObjectsFragment.isEmpty()
-                || ((schemaCount == listPgObjectsFragment.size()) && !isSchemaFile)) {
-            // no objects (schemaCount == 0), or
-            // only schema loaded but not a schema file: probably a search_path-only file
-            throw new PgCodekeeperUIException(Messages.QuickUpdate_empty_script);
-        }
-
-        checkFileModified();
-
-        IUiDatabaseProvider provider = dbType.getDatabaseProvider();
         DiffSettings diffSettings = new DiffSettings(new UISettings(proj.getProject(), null, dbType),
                 new UIMonitor(monitor));
 
+        IUiDatabaseProvider provider = dbType.getDatabaseProvider();
         ILoader dbRemote = provider.getDbInfoJdbcLoader(dbInfo, diffSettings);
         ILoader dbProject = provider.getProjectLoader(proj.getProject().getLocation().toFile().toPath(), diffSettings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
 
         TreeElement treeFull = PgCodeKeeperApi.createTree(dbRemote, dbProject, diffSettings);
+
+        String filePath = file.getLocation().toFile().toPath().toString();
+        List<IStatement> listPgObjectsFragment = new ArrayList<>();
+        dbProject.getDatabase().getDescendants()
+            .filter(e -> filePath.equals(e.getLocation().getFilePath()))
+            .forEach(listPgObjectsFragment::add);
+
         Collection<TreeElement> checked = setCheckedFromFragment(treeFull, listPgObjectsFragment,
                 dbRemote.getDatabase(), dbProject.getDatabase());
 
@@ -223,6 +203,7 @@ class QuickUpdateJob extends SingletonEditorJob {
             return;
         }
 
+        String timezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, Consts.UTC);
         Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), treeFull, timezone,
                 proj.getProject(), null, dbType, diffSettings);
         differ.run(monitor.newChild(1));
@@ -254,13 +235,16 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         checkFileModified();
 
+        // recreating loader due to cache
+        dbRemote = provider.getDbInfoJdbcLoader(dbInfo, diffSettings);
+
         TreeElement treeAfter = PgCodeKeeperApi.createTree(
                 new StubDatabaseLoader(dbProject.getDatabase(), dbProject.getDatabaseName()), dbRemote, diffSettings);
 
         Collection<TreeElement> checkedAfter = setCheckedFromFragment(treeAfter, listPgObjectsFragment,
                 dbProject.getDatabase(), dbRemote.getDatabase());
         if (checkedAfter.isEmpty()) {
-            // success, no export needed, Postgres didn't make any alterations
+            // success, no export needed, database didn't make any alterations
             return;
         }
 
