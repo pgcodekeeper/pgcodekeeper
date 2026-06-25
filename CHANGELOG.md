@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+- Fixed the `Quick Update` command operation in the SQL editor.
+
 ## [14.6.0] - 2026-06-18
 
 ### Changed
