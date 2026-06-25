@@ -438,7 +438,7 @@ public final class ProjectEditorDiffer extends EditorPart
                 // something other than just markers has changed
                 // check that it's our resource
                 if ((delta.getFlags() != IResourceDelta.MARKERS)
-                        && (ProjectUtils.isInProject(delta, ProjectUtils.getDatabaseType(getProject()))
+                        && (ProjectUtils.isInProject(delta, getProject())
                                 || ProjectUtils.isOverridesFolder(delta))
                         && (delta.getResource().getType() == IResource.FILE)
                         && delta.getResource().getProject().equals(getProject())) {
