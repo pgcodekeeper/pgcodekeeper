@@ -120,8 +120,8 @@ public final class ProjectUtils {
         return res != null && isInProject(res);
     }
 
-    public static boolean isInProject(IResourceDelta delta, DatabaseType dbType) {
-        return isInProject(delta.getProjectRelativePath(), dbType);
+    public static boolean isInProject(IResourceDelta delta, IProject project) {
+        return isInProject(delta.getProjectRelativePath(), getProjectDirNames(project));
     }
 
     public static boolean isOverridesFolder(IResourceDelta delta) {
@@ -135,19 +135,25 @@ public final class ProjectUtils {
             return false;
         }
 
+        return isInProject(resource.getProjectRelativePath(), getProjectDirNames(project));
+    }
+
+    public static List<String> getProjectDirNames(IProject project) {
         var dbType = getDatabaseType(project);
-        return isInProject(resource.getProjectRelativePath(), dbType);
+        var workDirs = createWorkDirs(dbType, AbstractWorkDirs.resolveAltDirsFile(getPath(project)));
+        return getDefaultTopLevelDirNames(workDirs);
     }
 
     /**
      * @param path
      *            project relative path of checked resource
+     * @param dirNames
+     *            project top-level directory names, see {@link #getProjectDirNames(IProject)}
      * @return whether this resource is within the main database schema hierarchy
      */
-    public static boolean isInProject(IPath path, DatabaseType dbType) {
+    public static boolean isInProject(IPath path, List<String> dirNames) {
         String dir = path.segment(0);
-        return dir != null && (OVERRIDES.equals(dir)
-                || dbType.getDatabaseProvider().getDirectoryNames().stream().anyMatch(dir::equals));
+        return dir != null && (OVERRIDES.equals(dir) || dirNames.contains(dir));
     }
 
     public static int countFiles(IContainer container) throws CoreException {

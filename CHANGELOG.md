@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed the `Quick Update` command operation in the SQL editor.
+- Fixed Quick Update and other editor actions becoming unavailable in projects with a customized project structure.
 
 ## [14.6.0] - 2026-06-18
 

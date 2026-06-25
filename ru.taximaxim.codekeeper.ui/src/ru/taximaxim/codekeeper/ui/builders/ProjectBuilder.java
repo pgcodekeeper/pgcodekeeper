@@ -93,7 +93,7 @@ public class ProjectBuilder extends IncrementalProjectBuilder {
                     throws CoreException, InterruptedException, IOException {
         List<IFile> files = new ArrayList<>();
         delta.accept(d -> {
-            if (ProjectUtils.isInProject(d, dbType)) {
+            if (ProjectUtils.isInProject(d, getProject())) {
                 IResource res = d.getResource();
                 if (res.getType() == IResource.FILE) {
                     int kind = d.getKind();
