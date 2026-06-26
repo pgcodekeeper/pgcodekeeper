@@ -34,6 +34,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -48,6 +49,7 @@ import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.api.PgCodeKeeperApi;
 import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
+import org.pgcodekeeper.core.model.difftree.DiffTree;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.settings.DiffSettings;
 
@@ -70,6 +72,7 @@ import ru.taximaxim.codekeeper.ui.settings.FieldEditorStore;
 import ru.taximaxim.codekeeper.ui.settings.ICustomFieldEditor;
 import ru.taximaxim.codekeeper.ui.settings.UISettings;
 import ru.taximaxim.codekeeper.ui.utils.FileUtilsUi;
+import ru.taximaxim.codekeeper.ui.utils.UIMonitor;
 
 public final class DiffWizard extends Wizard implements IPageChangingListener {
 
@@ -91,7 +94,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     @Override
     public void addPages() {
         pageDiff = new PageDiff(Messages.diffWizard_diff_parameters, mainPrefs, proj);
-        pagePartial = new PagePartial(Messages.diffWizard_diff_tree);
+        pagePartial = new PagePartial(Messages.diffWizard_diff_tree, this);
 
         addPage(pageDiff);
         addPage(pagePartial);
@@ -149,6 +152,10 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
 
     @Override
     public boolean performFinish() {
+        return true;
+    }
+
+    public boolean generateScript() {
         try {
             Differ differ = new Differ(pagePartial.getOldDb().getDatabase(), pagePartial.getNewDb().getDatabase(),
                     pagePartial.getDiffTree(), pageDiff.getTimezone(), null, pageDiff.getOneTimePrefs(),
@@ -168,6 +175,31 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
             ExceptionNotifier.notifyDefault(Messages.ProjectEditorDiffer_error_creating_file, ex);
         }
         return false;
+    }
+
+    public void swapDbSides() {
+        ILoader oldDb = pagePartial.getOldDb();
+        ILoader newDb = pagePartial.getNewDb();
+        DiffSettings diffSettings = pagePartial.getDiffSettings();
+        DatabaseType dbType = pagePartial.getDbType();
+        final TreeElement[] diffTree = new TreeElement[1];
+
+        try {
+            getContainer().run(true, true, monitor ->
+            diffTree[0] = DiffTree.create(diffSettings.getSettings(), newDb.getDatabase(), oldDb.getDatabase(),
+                    new UIMonitor(monitor)));
+        } catch (InvocationTargetException ex) {
+            MessageBox mb = new MessageBox(getContainer().getShell(), SWT.ERROR);
+            mb.setText(Messages.error_in_differ_thread);
+            mb.setMessage(ex.getCause().getLocalizedMessage());
+            mb.open();
+            ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex.getCause());
+            return;
+        } catch (InterruptedException ex) {
+            return;
+        }
+
+        pagePartial.setData(newDb, oldDb, diffTree[0], diffSettings, pageDiff.getIgnoreList(), dbType);
     }
 }
 
@@ -354,6 +386,8 @@ final class PageDiff extends WizardPage implements Listener {
 
 final class PagePartial extends WizardPage {
 
+    private final DiffWizard wizard;
+
     private ILoader oldDb;
     private ILoader newDb;
     private TreeElement diffTree;
@@ -395,8 +429,9 @@ final class PagePartial extends WizardPage {
         return diffTable.getDbType();
     }
 
-    public PagePartial(String pageName) {
+    public PagePartial(String pageName, DiffWizard wizard) {
         super(pageName, pageName, null);
+        this.wizard = wizard;
         setDescription(Messages.diffwizard_pagepartial_description);
     }
 
@@ -412,6 +447,21 @@ final class PagePartial extends WizardPage {
 
         diffTable = new DiffTableViewer(container, false, null, new UISettings(null, null));
         diffTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+
+        Composite btnContainer = new Composite(container, SWT.NONE);
+        btnContainer.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false, 2, 1));
+        GridLayout btnLayout = new GridLayout(2, false);
+        btnLayout.marginWidth = 0;
+        btnLayout.marginHeight = 0;
+        btnContainer.setLayout(btnLayout);
+
+        Button btnSwap = new Button(btnContainer, SWT.PUSH);
+        btnSwap.setText(Messages.DiffWizard_swap_sides);
+        btnSwap.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> wizard.swapDbSides()));
+
+        Button btnGenerate = new Button(btnContainer, SWT.PUSH);
+        btnGenerate.setText(Messages.DiffWizard_generate_script);
+        btnGenerate.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> wizard.generateScript()));
 
         setControl(container);
     }

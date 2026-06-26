@@ -609,6 +609,10 @@ public final class Messages extends NLS {
 
     public static String DiffWizard_target;
 
+    public static String DiffWizard_swap_sides;
+
+    public static String DiffWizard_generate_script;
+
     public static String Diff_diff_debug;
 
     public static String Differ_diff;

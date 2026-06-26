@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added `Swap` and `Generate migration script` buttons to the `Diff wizard`. The `Finish` button no longer generates a migration script.
+
 ### Changed
 
 ### Fixed
 
 - Fixed the `Quick Update` command operation in the SQL editor.
-- Fixed Quick Update and other editor actions becoming unavailable in projects with a customized project structure.
+- Fixed unavailability of SQL editor commands in projects with an altered project structure.
 
 ## [14.6.0] - 2026-06-18
 
