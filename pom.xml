@@ -31,13 +31,13 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <target.definition.file>app</target.definition.file>
 
-        <sonar.language>java</sonar.language>
         <sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
         <sonar.java.source>${java.version}</sonar.java.source>
         <sonar.java.target>${java.version}</sonar.java.target>
         <sonar.core.coveragePlugin>jacoco</sonar.core.coveragePlugin>
         <sonar.junit.reportPath>${project.build.directory}/surefire-reports/</sonar.junit.reportPath>
-        <sonar.exclusions>**/*.sql, **/*.xml, **/generated/**, **/Messages.java</sonar.exclusions>
+        <sonar.inclusions>**/*.java</sonar.inclusions>
+        <sonar.exclusions>**/*.sql, **/*.xml, **/Messages.java</sonar.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/ru.taximaxim.codekeeper.mainapp/report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
         <java.version>17</java.version>

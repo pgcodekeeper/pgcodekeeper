@@ -15,30 +15,31 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.swtbot;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.AWTException;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotTreeItem;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
+import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public class ProjectTest extends AbstractSwtBotTest {
 
     @ParameterizedTest
     @EnumSource(DatabaseType.class)
-    void createEmptyPgcodekeeperProjectTest(DatabaseType dbType) throws AWTException, IOException, URISyntaxException {
+    void createEmptyPgcodekeeperProjectTest(DatabaseType dbType)
+            throws AWTException, IOException, URISyntaxException {
         var projectName = dbType.name().toLowerCase() + "_empty_test_project";
 
         createProject(projectName, dbType);
-        SWTBotTreeItem treeElement = BOT.viewByTitle(PROJECT_EXPLORER).bot().tree().getTreeItem(projectName);
-        assertNotNull(treeElement);
+        assertNotNull(getProjectExplorer().getTreeItem(projectName));
     }
 
     @ParameterizedTest
@@ -49,9 +50,39 @@ public class ProjectTest extends AbstractSwtBotTest {
         var dumpName = dbType.name().toLowerCase() + "_dump_test.sql";
         createProject(projectName, dbType, dumpName);
 
-        SWTBotTree projectExplorer = BOT.viewByTitle(PROJECT_EXPLORER).bot().tree();
+        SWTBotTree projectExplorer = getProjectExplorer();
         projectExplorer.expandNode(projectName);
-        projectExplorer.selectAll();
+        projectExplorer.getTreeItem(projectName).selectAll();
         assertTrue(3 < projectExplorer.selectionCount());
+    }
+
+    @ParameterizedTest
+    @EnumSource(DatabaseType.class)
+    void convertProjectTest(DatabaseType dbType) {
+        var projectName = dbType.name().toLowerCase() + "_convert_test_project";
+        BOT.menu("File").menu("New").menu("Project...").click();
+        BOT.tree().getTreeItem("General").expand().getNode("Project").select();
+        BOT.button("Next >").click();
+        BOT.textWithLabel("Project name:").setText(projectName);
+        BOT.button("Finish").click();
+        waitProjectCreation();
+
+        getProjectExplorer().getTreeItem(projectName).contextMenu().menu("Configure")
+                .menu("Convert to pgCodeKeeper project").click();
+        BOT.comboBox().setSelection(dbType.getDbTypeName());
+        BOT.button("OK").click();
+        closeShell(Messages.ConvertProject_convert_dialog_title, "Yes");
+        waitProjectCreation();
+
+        var projectTree = getProjectExplorer().getTreeItem(projectName);
+        projectTree.expand();
+        projectTree.selectAll();
+
+        int countSelected = getProjectExplorer().selectionCount();
+        assertEquals(2, countSelected, "DatabaseType: " + dbType.getDbTypeName());
+    }
+
+    private SWTBotTree getProjectExplorer() {
+        return BOT.viewByTitle(PROJECT_EXPLORER).bot().tree();
     }
 }
