@@ -26,6 +26,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
@@ -36,7 +37,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.pgcodekeeper.core.Consts;
@@ -87,10 +87,9 @@ public final class ConvertProject extends AbstractHandler {
                 .allMatch(Files::notExists);
 
         if (unknownProject) {
-            MessageBox message = new MessageBox(shell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
-            message.setMessage(Messages.ConvertProject_convert_dialog_message);
-            message.setText(Messages.ConvertProject_convert_dialog_title);
-            if (message.open() != SWT.YES) {
+            var result = MessageDialog.openQuestion(shell, Messages.ConvertProject_convert_dialog_title,
+                    Messages.ConvertProject_convert_dialog_message);
+            if (!result) {
                 return false;
             }
         }

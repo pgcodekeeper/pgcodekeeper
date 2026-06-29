@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.ui.swtbot;
 
 import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertContains;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.awt.AWTException;
 import java.awt.Robot;
 import java.awt.Toolkit;
@@ -33,16 +34,22 @@ import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public abstract class AbstractSwtBotTest {
+
+    private static final int PROJECT_CREATION_TIMEOUT = 2000;
 
     protected static final String PROJECT_EXPLORER = "Project Explorer";
 
     protected static final SWTWorkbenchBot BOT = new SWTWorkbenchBot();
 
     protected static final long DEFAULT_TIME_OUT = 5_000;
+
+    protected static final boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("nux")
+            || System.getProperty("os.name").toLowerCase().contains("nix");
 
     static {
         org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences.TIMEOUT = 15000;
@@ -82,7 +89,20 @@ public abstract class AbstractSwtBotTest {
             waitForLinkEquals(initPath, shell);
         }
         BOT.button("Finish").click();
-        BOT.sleep(1000);
+        waitProjectCreation();
+    }
+
+    protected void waitProjectCreation() {
+        BOT.sleep(PROJECT_CREATION_TIMEOUT);
+    }
+
+    protected void closeShell(String name, String button) {
+        BOT.sleep(100);
+        if (button != null) {
+            BOT.shell(name).bot().button(button).click();
+        } else {
+            BOT.shell(name).close();
+        }
     }
 
     protected void insertPath(String fileName) throws AWTException, IOException, URISyntaxException {
