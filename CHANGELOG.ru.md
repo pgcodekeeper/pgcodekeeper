@@ -14,11 +14,13 @@
 ### Изменено
 
 - Системные диалоговые окна заменены на встроенные компоненты Eclipse, которые выглядят одинаково на всех платформах.
+- Улучшены правила парсера для работы с форматами JSON в ClikHouse.
 
 ### Исправлено
 
 - Исправлена работа команды `Быстрое обновление` в SQL редакторе.
 - Исправлена недоступность команд SQL редактора в проектах с изменённой структурой проекта.
+- Исправлены ошибки при работе с файлами .pgcodekeeperdependencies.
 
 ## [14.6.0] - 2026-06-18
 
@@ -2509,7 +2511,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.7.0...HEAD
+[14.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...14.7.0
 [14.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...14.6.0
 [14.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...14.5.0
 [14.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...14.4.1

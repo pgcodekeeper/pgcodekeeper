@@ -14,11 +14,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Changed
 
 - System dialogs have been replaced with built-in Eclipse components that look the same on all platforms.
+- Improved parser rules for working with JSON formats in ClikHouse.
 
 ### Fixed
 
 - Fixed the `Quick Update` command operation in the SQL editor.
 - Fixed unavailability of SQL editor commands in projects with an altered project structure.
+- Fixed errors when working with .pgcodekeeperdependencies files.
 
 ## [14.6.0] - 2026-06-18
 
@@ -2509,7 +2511,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.7.0...HEAD
+[14.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...14.7.0
 [14.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...14.6.0
 [14.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...14.5.0
 [14.4.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.0...14.4.1
