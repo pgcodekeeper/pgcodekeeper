@@ -19,6 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.util.LocalSelectionTransfer;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -40,7 +41,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -194,11 +194,7 @@ public abstract class PrefListEditor<T> extends Composite {
     }
 
     private T getAnotherObject(T value) {
-        MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-        mb.setText(Messages.PrefListEditor_cannot_add);
-        mb.setMessage(errorAlreadyExists(value));
-        mb.open();
-
+        MessageDialog.openWarning(getShell(), Messages.PrefListEditor_cannot_add, errorAlreadyExists(value));
         return getNewObject(value);
     }
 

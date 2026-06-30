@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.dialogs.IPageChangingListener;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.viewers.ArrayContentProvider;
@@ -42,7 +43,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PartInitException;
 import org.pgcodekeeper.core.Consts;
@@ -125,10 +125,8 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
                     }
                 });
             } catch (InvocationTargetException ex) {
-                MessageBox mb = new MessageBox(getContainer().getShell(), SWT.ERROR);
-                mb.setText(Messages.error_in_differ_thread);
-                mb.setMessage(ex.getCause().getLocalizedMessage());
-                mb.open();
+                MessageDialog.openError(getContainer().getShell(), Messages.error_in_differ_thread,
+                        ex.getCause().getLocalizedMessage());
                 e.doit = false;
                 ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex.getCause());
                 return;
@@ -189,10 +187,8 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
             diffTree[0] = DiffTree.create(diffSettings.getSettings(), newDb.getDatabase(), oldDb.getDatabase(),
                     new UIMonitor(monitor)));
         } catch (InvocationTargetException ex) {
-            MessageBox mb = new MessageBox(getContainer().getShell(), SWT.ERROR);
-            mb.setText(Messages.error_in_differ_thread);
-            mb.setMessage(ex.getCause().getLocalizedMessage());
-            mb.open();
+            MessageDialog.openError(getContainer().getShell(), Messages.error_in_differ_thread,
+                    ex.getCause().getLocalizedMessage());
             ExceptionNotifier.notifyDefault(Messages.error_in_differ_thread, ex.getCause());
             return;
         } catch (InterruptedException ex) {

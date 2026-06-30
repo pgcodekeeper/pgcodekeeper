@@ -26,6 +26,7 @@ import org.eclipse.core.resources.ProjectScope;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -38,7 +39,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
@@ -139,10 +139,10 @@ public class LibraryProperties extends PropertyPage {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                MessageBox mbQuestion = new MessageBox(getShell(), SWT.ICON_QUESTION | SWT.YES | SWT.NO);
-                mbQuestion.setText(Messages.DependencyProperties_clear_cache);
-                mbQuestion.setMessage(Messages.DependencyProperties_clear_cache_descr);
-                if (mbQuestion.open() != SWT.YES) {
+                var clearCache = MessageDialog.openQuestion(getShell(), Messages.DependencyProperties_clear_cache,
+                        Messages.DependencyProperties_clear_cache_descr);
+
+                if (!clearCache) {
                     return;
                 }
 

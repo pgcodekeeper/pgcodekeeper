@@ -17,8 +17,7 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
@@ -37,15 +36,11 @@ public class UpdateDdl extends AbstractHandler {
         if (part instanceof SQLEditor sqlEditor) {
             DbInfo dbInfo = sqlEditor.getCurrentDb();
             if (dbInfo == null) {
-                MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
-                mb.setText(Messages.UpdateDdl_select_source);
-                mb.setMessage(Messages.UpdateDdl_select_source_msg);
-                mb.open();
+                MessageDialog.openInformation(HandlerUtil.getActiveShell(event), Messages.UpdateDdl_select_source,
+                        Messages.UpdateDdl_select_source_msg);
             } else if (dbInfo.isReadOnly()) {
-                MessageBox mb = new MessageBox(HandlerUtil.getActiveShell(event), SWT.ICON_INFORMATION);
-                mb.setText(Messages.UpdateDdl_read_only_db_title);
-                mb.setMessage(Messages.UpdateDdl_read_only_db_message);
-                mb.open();
+                MessageDialog.openInformation(HandlerUtil.getActiveShell(event), Messages.UpdateDdl_read_only_db_title,
+                        Messages.UpdateDdl_read_only_db_message);
             } else {
                 sqlEditor.updateDdl();
             }

@@ -87,7 +87,6 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -459,20 +458,16 @@ public final class ProjectEditorDiffer extends EditorPart
     public void getChanges() {
         Object currentRemote = getCurrentDb();
         if (currentRemote == null) {
-            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-            mb.setText(Messages.GetChanges_select_source);
-            mb.setMessage(Messages.GetChanges_select_source_msg);
-            mb.open();
+            MessageDialog.openInformation(parent.getShell(), Messages.GetChanges_select_source,
+                    Messages.GetChanges_select_source_msg);
             return;
         }
 
         boolean isDbInfo = currentRemote instanceof DbInfo;
         DatabaseType dbType = ProjectUtils.getDatabaseType(getProject());
         if (isDbInfo && (((DbInfo) currentRemote).getDbType() != dbType)) {
-            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-            mb.setText(Messages.ProjectEditorDiffer_different_types);
-            mb.setMessage(Messages.ProjectEditorDiffer_different_types_msg);
-            mb.open();
+            MessageDialog.openInformation(parent.getShell(), Messages.ProjectEditorDiffer_different_types,
+                    Messages.ProjectEditorDiffer_different_types_msg);
             return;
         }
 
@@ -583,10 +578,11 @@ public final class ProjectEditorDiffer extends EditorPart
         }
 
         if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
-            MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_ERROR | SWT.YES | SWT.NO);
-            mb.setText(Messages.ProjectEditorDiffer_library_duplication_title);
-            mb.setMessage(Messages.ProjectEditorDiffer_library_duplication_exception);
-            if (mb.open() == SWT.YES) {
+            var changeSettings = MessageDialog.openQuestion(parent.getShell(),
+                    Messages.ProjectEditorDiffer_library_duplication_title,
+                    Messages.ProjectEditorDiffer_library_duplication_exception);
+
+            if (changeSettings) {
                 PreferencesUtil.createPropertyDialogOn(parent.getShell(), proj.getProject(), PREF_PAGE.DEPENDENCIES,
                         null, null).open();
             }
@@ -865,10 +861,11 @@ public final class ProjectEditorDiffer extends EditorPart
 
         if (diffTable.checkLibChange()) {
             if (proj.getPrefs().getBoolean(PROJ_PREF.LIB_SAFE_MODE, true)) {
-                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-                mb.setMessage(Messages.ProjectEditorDiffer_lib_change_error_message);
-                mb.setText(Messages.ProjectEditorDiffer_lib_change_warning_title);
-                if (mb.open() != SWT.YES) {
+                boolean modifyObject = MessageDialog.openQuestion(parent.getShell(),
+                        Messages.ProjectEditorDiffer_lib_change_warning_title,
+                        Messages.ProjectEditorDiffer_lib_change_error_message);
+
+                if (!modifyObject) {
                     return;
                 }
                 forceSave = true;
@@ -945,10 +942,8 @@ public final class ProjectEditorDiffer extends EditorPart
         if (checked < 1) {
             IStructuredSelection selection = diffTable.getViewer().getStructuredSelection();
             if (selection.isEmpty()) {
-                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-                mb.setMessage(Messages.please_check_at_least_one_row);
-                mb.setText(Messages.empty_selection);
-                mb.open();
+                MessageDialog.openInformation(parent.getShell(), Messages.empty_selection,
+                        Messages.please_check_at_least_one_row);
             } else {
                 diffTable.setElementsChecked(selection.toList(), true, false);
                 return selection.size();
@@ -1042,10 +1037,9 @@ public final class ProjectEditorDiffer extends EditorPart
                 @Override
                 public void mouseDown(MouseEvent e) {
                     if (!dbStorePicker.isEnabled()) {
-                        MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_INFORMATION);
-                        mb.setText(Messages.DbStoreCombo_db_binding_property_title);
-                        mb.setMessage(Messages.DbStoreCombo_db_binding_property);
-                        mb.open();
+                        MessageDialog.openInformation(parent.getShell(),
+                                Messages.DbStoreCombo_db_binding_property_title,
+                                Messages.DbStoreCombo_db_binding_property);
                     }
                 }
             });
@@ -1253,11 +1247,11 @@ public final class ProjectEditorDiffer extends EditorPart
 
         public void changeMigrationDireciton(boolean isApplyToProj, boolean showWarning) {
             if (showWarning && (isApplyToProj != diffTable.isApplyToProj())) {
-                MessageBox mb = new MessageBox(parent.getShell(), SWT.ICON_WARNING);
-                mb.setText(Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title);
-                mb.setMessage(Messages.ProjectEditorDiffer_changed_direction_of_roll_on.formatted(
-                        isApplyToProj ? Messages.ProjectEditorDiffer_project : Messages.ProjectEditorDiffer_database));
-                mb.open();
+                String message = Messages.ProjectEditorDiffer_changed_direction_of_roll_on.formatted(
+                        isApplyToProj ? Messages.ProjectEditorDiffer_project : Messages.ProjectEditorDiffer_database);
+
+                MessageDialog.openWarning(parent.getShell(),
+                        Messages.ProjectEditorDiffer_changed_direction_of_roll_on_title, message);
             }
             diffTable.setApplyToProj(isApplyToProj);
             diffTable.getViewer().refresh();
