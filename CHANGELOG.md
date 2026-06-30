@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- System dialogs have been replaced with built-in Eclipse components that look the same on all platforms.
+
 ### Fixed
 
 - Fixed the `Quick Update` command operation in the SQL editor.

@@ -17,6 +17,7 @@ package ru.taximaxim.codekeeper.ui.dialogs;
 
 import java.util.List;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -130,10 +131,8 @@ public final class DependencyEditorDialog extends TrayDialog {
         var targetName = txtTargetName.getText().trim();
 
         if (sourceName.isEmpty() || targetName.isEmpty()) {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.DependenciesEditorDialog_cannot_save);
-            mb.setMessage(Messages.DependenciesEditorDialog_must_filled);
-            mb.open();
+            MessageDialog.openWarning(getShell(), Messages.DependenciesEditorDialog_cannot_save,
+                    Messages.DependenciesEditorDialog_must_filled);
             return;
         }
 

@@ -18,6 +18,7 @@ package ru.taximaxim.codekeeper.ui.properties;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -32,7 +33,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.ISharedImages;
@@ -195,10 +195,8 @@ public class LibraryEditorDialog extends TrayDialog {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (btnIgnorePriv.getSelection()) {
-                    MessageBox mb = new MessageBox(getShell(), SWT.ICON_INFORMATION);
-                    mb.setText(Messages.DependencyProperties_attention);
-                    mb.setMessage(Messages.DependencyProperties_ignore_priv_warn);
-                    mb.open();
+                    MessageDialog.openInformation(getShell(), Messages.DependencyProperties_attention,
+                            Messages.DependencyProperties_ignore_priv_warn);
                 }
             }
         });
@@ -214,10 +212,8 @@ public class LibraryEditorDialog extends TrayDialog {
     protected void okPressed() {
         String path = txtPath.getText();
         if (path.isEmpty()) {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-            mb.setMessage(Messages.DependencyEditorDialog_enter_path);
-            mb.open();
+            MessageDialog.openWarning(getShell(), Messages.dbStoreEditorDialog_cannot_save_entry,
+                    Messages.DependencyEditorDialog_enter_path);
             return;
         }
 

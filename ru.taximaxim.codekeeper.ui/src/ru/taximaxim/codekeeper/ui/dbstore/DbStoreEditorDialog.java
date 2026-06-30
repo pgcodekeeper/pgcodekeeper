@@ -56,7 +56,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TabFolder;
 import org.eclipse.swt.widgets.TabItem;
@@ -590,19 +589,15 @@ public final class DbStoreEditorDialog extends TrayDialog {
             try {
                 Integer.parseInt(port);
             } catch (NumberFormatException ex) {
-                MessageBox mb = new MessageBox(getShell(), SWT.ICON_ERROR);
-                mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-                mb.setMessage(Messages.dbStoreEditorDialog_not_valid_port_number.formatted(port));
-                mb.open();
+                MessageDialog.openError(getShell(), Messages.dbStoreEditorDialog_cannot_save_entry,
+                        Messages.dbStoreEditorDialog_not_valid_port_number.formatted(port));
                 return;
             }
         }
 
         if (txtName.getText().isEmpty()) {
-            MessageBox mb = new MessageBox(getShell(), SWT.ICON_WARNING);
-            mb.setText(Messages.dbStoreEditorDialog_cannot_save_entry);
-            mb.setMessage(Messages.dbStoreEditorDialog_empty_name);
-            mb.open();
+            MessageDialog.openWarning(getShell(), Messages.dbStoreEditorDialog_cannot_save_entry,
+                    Messages.dbStoreEditorDialog_empty_name);
         } else {
             dbInfo = generateDbInfo();
             super.okPressed();

@@ -32,8 +32,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.MessageBox;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.ide.ResourceUtil;
@@ -295,13 +294,13 @@ public final class ProjectUtils {
      *            does the error block the project from opening
      */
     private static void warnVersion(Shell parent, String error, boolean isError) {
-        MessageBox mb = new MessageBox(parent, isError ? SWT.ICON_ERROR : SWT.ICON_WARNING);
-        mb.setText(Messages.OpenProjectUtils_version_error);
-
-        String msg = isError ? Messages.OpenProjectUtils_proj_version_unsupported
-                : Messages.OpenProjectUtils_proj_version_warn;
-        mb.setMessage(msg + error);
-        mb.open();
+        if (isError) {
+            MessageDialog.openError(parent, Messages.OpenProjectUtils_version_error,
+                    Messages.OpenProjectUtils_proj_version_unsupported + error);
+        } else {
+            MessageDialog.openWarning(parent, Messages.OpenProjectUtils_version_error,
+                    Messages.OpenProjectUtils_proj_version_warn + error);
+        }
     }
 
     private ProjectUtils() {

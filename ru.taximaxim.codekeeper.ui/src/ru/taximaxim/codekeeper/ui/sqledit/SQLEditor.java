@@ -45,6 +45,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
@@ -72,7 +73,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
@@ -438,10 +438,10 @@ implements IResourceChangeListener, ITextErrorReporter {
         IResource resource = ResourceUtil.getResource(getEditorInput());
         IProject proj = resource == null ? null : resource.getProject();
         if (ProjectUtils.isPgCodeKeeperProject(proj) && !AddBuilder.hasBuilder(proj)) {
-            MessageBox mb = new MessageBox(getEditorSite().getShell(), SWT.ICON_WARNING | SWT.YES | SWT.NO);
-            mb.setText(Messages.SqlEditor_absent_builder_title);
-            mb.setMessage(Messages.SqlEditor_absent_builder_message);
-            if (mb.open() == SWT.YES) {
+            var addBuilder = MessageDialog.openQuestion(getEditorSite().getShell(),
+                    Messages.SqlEditor_absent_builder_title, Messages.SqlEditor_absent_builder_message);
+
+            if (addBuilder) {
                 AddBuilder.addBuilder(proj);
             }
         }
@@ -669,12 +669,10 @@ implements IResourceChangeListener, ITextErrorReporter {
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.RESTART_WITH_STATEMENT),
                 !mainPrefs.getBoolean(DB_UPDATE_PREF.UPDATE_STATEMENT)))) {
 
-            MessageBox mb = new MessageBox(parentComposite.getShell(),
-                    SWT.ICON_WARNING | SWT.OK | SWT.CANCEL);
-            mb.setText(Messages.sqlScriptDialog_warning);
-            mb.setMessage(Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
+            var allowDanger = MessageDialog.openQuestion(parentComposite.getShell(), Messages.sqlScriptDialog_warning,
+                    Messages.sqlScriptDialog_script_contains_statements_that_may_modify_data);
 
-            if (mb.open() != SWT.OK) {
+            if (!allowDanger) {
                 return;
             }
         }

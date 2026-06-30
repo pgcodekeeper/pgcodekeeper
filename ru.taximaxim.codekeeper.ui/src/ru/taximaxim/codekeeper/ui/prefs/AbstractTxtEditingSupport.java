@@ -17,12 +17,10 @@ package ru.taximaxim.codekeeper.ui.prefs;
 
 import java.util.ListIterator;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.MessageBox;
-
 import ru.taximaxim.codekeeper.ui.CommonEditingSupport;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
@@ -57,11 +55,8 @@ extends CommonEditingSupport<TextCellEditor> {
 
             // for case when text parameter is empty
             if (newText.isEmpty()) {
-                MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
-                        SWT.ICON_WARNING);
-                mb.setText(Messages.PrefListEditor_cannot_add);
-                mb.setMessage(Messages.txtNameEditingSupport_cannot_add_empty);
-                mb.open();
+                MessageDialog.openWarning(getViewer().getControl().getShell(),
+                        Messages.PrefListEditor_cannot_add, Messages.txtNameEditingSupport_cannot_add_empty);
                 return;
             }
 
@@ -73,11 +68,8 @@ extends CommonEditingSupport<TextCellEditor> {
             while (objsIter.hasNext()) {
                 T iterObj = objsIter.next();
                 if (iterObj != el && prefListEditor.checkDuplicate(iterObj, copy)) {
-                    MessageBox mb = new MessageBox(getViewer().getControl().getShell(),
-                            SWT.ICON_WARNING);
-                    mb.setText(Messages.PrefListEditor_cannot_add);
-                    mb.setMessage(Messages.IgnoredObjectPrefListEditor_already_present.formatted(newText));
-                    mb.open();
+                    MessageDialog.openWarning(getViewer().getControl().getShell(), Messages.PrefListEditor_cannot_add,
+                            Messages.IgnoredObjectPrefListEditor_already_present.formatted(newText));
                     return;
                 }
             }

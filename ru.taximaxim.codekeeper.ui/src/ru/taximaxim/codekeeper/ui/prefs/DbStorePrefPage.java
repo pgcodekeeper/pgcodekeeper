@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.PixelConverter;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
@@ -46,7 +48,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -232,13 +233,18 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
             @Override
             public void widgetSelected(SelectionEvent e) {
-                var box = new MessageBox(getShell(), SWT.YES | SWT.NO | SWT.CANCEL | SWT.ICON_QUESTION);
-                box.setMessage(Messages.DbStorePrefPage_export_dialog);
-                int result = box.open();
-                if (SWT.NO != result && SWT.YES != result) {
+                var md = new MessageDialog(getShell(), Messages.DbStorePrefPage_export_db, null,
+                        Messages.DbStorePrefPage_export_dialog, MessageDialog.QUESTION, 1,
+                        IDialogConstants.YES_LABEL,   // index 0
+                        IDialogConstants.NO_LABEL,    // index 1
+                        IDialogConstants.CANCEL_LABEL // index 2
+                );
+
+                var result = md.open();
+                if (result != 0 && result != 1) {
                     return;
                 }
-                boolean needPassword = SWT.YES == result;
+                boolean needPassword = 0 == result;
 
                 FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
                 dialog.setText(Messages.DbStorePrefPage_export_db);
