@@ -57,6 +57,11 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
           security find-identity build.keychain
 
+      - name: verify keychain
+        run: |
+          security default-keychain
+          security find-identity -v -p codesigning
+
       - name: build
         run: mvn clean -ntp deploy -DskipTests -P code-sign -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
 

@@ -53,11 +53,12 @@
                                         <argument>--deep</argument>
                                         <argument>--force</argument>
                                         <argument>--verify</argument>
-                                        <argument>--verbose</argument>
+                                        <argument>--verbose=4</argument>
                                         <argument>--sign</argument>
                                         <argument>TAXTELECOM LLC</argument>
                                         <argument>${mac.folder}/aarch64/pgCodeKeeper.app</argument>
                                     </arguments>
+                                    <timeout>300000</timeout>
                                 </configuration>
                             </execution>
                             <execution>
@@ -72,11 +73,12 @@
                                         <argument>--deep</argument>
                                         <argument>--force</argument>
                                         <argument>--verify</argument>
-                                        <argument>--verbose</argument>
+                                        <argument>--verbose=4</argument>
                                         <argument>--sign</argument>
                                         <argument>TAXTELECOM LLC</argument>
                                         <argument>${mac.folder}/x86_64/pgCodeKeeper.app</argument>
                                     </arguments>
+                                    <timeout>300000</timeout>
                                 </configuration>
                             </execution>
                         </executions>
