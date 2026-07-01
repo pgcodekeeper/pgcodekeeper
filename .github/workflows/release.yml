@@ -57,11 +57,6 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
           security find-identity build.keychain
 
-      - name: verify keychain
-        run: |
-          security default-keychain
-          security find-identity -v -p codesigning
-
       - name: build
         run: mvn clean -ntp deploy -DskipTests -P code-sign -Dkeystore=${{ github.workspace }}/tmp/keystore/key.jks
 
@@ -86,66 +81,19 @@ jobs:
       - name: set updatesite name
         run: echo "UPDATESITE=pgCodeKeeper-updatesite-${{ env.RELEASE_VERSION }}.zip" >> $GITHUB_ENV
 
-      - name: create GitHub release
-        id: create_release
-        uses: comnoco/create-release-action@7dea6dc82ac9d97ced7a764aa82811451bba80e0 # v2.0.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release and Upload Assets
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b #v3.0.1
         with:
           tag_name: v${{ env.RELEASE_VERSION }}
-          release_name: pgCodeKeeper ${{ env.RELEASE_VERSION }}
+          name: pgCodeKeeper ${{ env.RELEASE_VERSION }}
           draft: false
           prerelease: false
-
-      - name: upload release linux build
-        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.LINUX_BUILD }}
-          asset_name: ${{ env.LINUX_BUILD }}
-          asset_content_type: application/zip
-
-      - name: upload release windows build
-        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.WINDOWS_BUILD }}
-          asset_name: ${{ env.WINDOWS_BUILD }}
-          asset_content_type: application/zip
-
-      - name: upload release macos aarch build
-        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_AARCH_BUILD }}
-          asset_name: ${{ env.MACOS_AARCH_BUILD }}
-          asset_content_type: application/zip
-
-      - name: upload release macos x86 build
-        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_X86_BUILD }}
-          asset_name: ${{ env.MACOS_X86_BUILD }}
-          asset_content_type: application/zip
-
-      - name: upload release updatesite
-        uses: sekwah41/upload-release-assets@c78270f81ce7c57d4a677986bcd31a41fa65c5fa
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/updatesite/target/${{ env.UPDATESITE }}
-          asset_name: ${{ env.UPDATESITE }}
-          asset_content_type: application/zip
+          files: |
+            ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.LINUX_BUILD }}
+            ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.WINDOWS_BUILD }}
+            ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_AARCH_BUILD }}
+            ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/product/rcp/target/products/${{ env.MACOS_X86_BUILD }}
+            ${{ github.workspace }}/ru.taximaxim.codekeeper.mainapp/updatesite/target/${{ env.UPDATESITE }}
 
       - name: clean update folder
         run: |
