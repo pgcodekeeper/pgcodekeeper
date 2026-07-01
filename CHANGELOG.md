@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+### Changed
+
+### Fixed
+
+## [14.7.0] - 2026-06-30
+
+### Added
+
 - Added `Swap` and `Generate migration script` buttons to the `Diff wizard`. The `Finish` button no longer generates a migration script.
 
 ### Changed
