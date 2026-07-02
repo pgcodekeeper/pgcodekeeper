@@ -40,7 +40,7 @@
         <sonar.exclusions>**/*.sql, **/*.xml, **/Messages.java</sonar.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/ru.taximaxim.codekeeper.mainapp/report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <tycho.version>4.0.13</tycho.version>
         <jacoco.version>0.8.14</jacoco.version>
         <maven.surefire.version>3.5.5</maven.surefire.version>
@@ -166,6 +166,7 @@
                         </artifact>
                     </target>
                     <pomDependencies>consider</pomDependencies>
+                    <executionEnvironment>JavaSE-21</executionEnvironment>
                     <environments>
                         <environment>
                             <os>win32</os>

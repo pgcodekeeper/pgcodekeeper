@@ -8,7 +8,7 @@
 
    <launcherArgs>
       <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
-      <vmArgs>-Dosgi.requiredJavaVersion=17
+      <vmArgs>-Dosgi.requiredJavaVersion=21
 -XX:+UseG1GC
 -Xms512m
 -Xmx2048m
@@ -225,6 +225,8 @@
 
    <configurations>
       <plugin id="org.apache.felix.scr" autoStart="true" startLevel="2" />
+      <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.slf4j" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="3" />
@@ -232,7 +234,7 @@
    </configurations>
 
    <repositories>
-      <repository location="https://download.eclipse.org/releases/2024-12/" enabled="true" />
+      <repository location="https://download.eclipse.org/releases/latest/" enabled="true" />
       <repository location="https://pgcodekeeper.org/update/" enabled="true" />
       <repository location="https://download.eclipse.org/egit/updates/" enabled="true" />
    </repositories>

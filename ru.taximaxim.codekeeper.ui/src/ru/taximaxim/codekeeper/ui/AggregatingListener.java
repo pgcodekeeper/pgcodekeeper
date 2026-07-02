@@ -17,7 +17,7 @@ package ru.taximaxim.codekeeper.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.internal.SWTEventListener;
+import java.util.EventListener;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TypedListener;
@@ -46,7 +46,7 @@ public class AggregatingListener extends TypedListener {
         this.aggregationThresholdMs = aggregationThresholdMs;
     }
 
-    private AggregatingListener(SWTEventListener listener) {
+    private AggregatingListener(EventListener listener) {
         super(listener);
     }
 

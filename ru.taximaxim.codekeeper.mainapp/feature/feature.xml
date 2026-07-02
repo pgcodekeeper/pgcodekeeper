@@ -37,6 +37,10 @@
          version="0.0.0"/>
 
    <plugin
+         id="org.eclipse.equinox.slf4j"
+         version="0.0.0"/>
+
+   <plugin
          id="wrapped.com.github.technology16.pgpass"
          version="0.0.0"/>
 

@@ -18,15 +18,15 @@
     <repositories>
         <repository>
             <id>eclipse-p2-repo</id>
-            <url>https://download.eclipse.org/releases/2024-12/</url>
+            <url>https://download.eclipse.org/releases/latest/</url>
             <layout>p2</layout>
         </repository>
     </repositories>
 
     <properties>
-        <mac.jre.base>https://github.com/adoptium/temurin17-binaries/releases/download</mac.jre.base>
-        <mac.jre.x86>${mac.jre.base}/jdk-17.0.14%2B7/OpenJDK17U-jre_x64_mac_hotspot_17.0.14_7.tar.gz</mac.jre.x86>
-        <mac.jre.aarch64>${mac.jre.base}/jdk-17.0.14%2B7/OpenJDK17U-jre_aarch64_mac_hotspot_17.0.14_7.tar.gz</mac.jre.aarch64>
+        <mac.jre.base>https://github.com/adoptium/temurin21-binaries/releases/download</mac.jre.base>
+        <mac.jre.x86>${mac.jre.base}/jdk-21.0.11%2B10/OpenJDK21U-jre_x64_mac_hotspot_21.0.11_10.tar.gz</mac.jre.x86>
+        <mac.jre.aarch64>${mac.jre.base}/jdk-21.0.11%2B10/OpenJDK21U-jre_aarch64_mac_hotspot_21.0.11_10.tar.gz</mac.jre.aarch64>
         <mac.folder>${project.build.directory}/products/ru.taximaxim.codekeeper.rcp.product/macosx/cocoa</mac.folder>
     </properties>
 
@@ -206,7 +206,7 @@
                                        dest="${mac.folder}/jre_aarch64/"
                                        compression="none"/>
                                 <copy todir="${mac.folder}/aarch64/Pgcodekeeper.app/Contents/Eclipse/jre">
-                                      <fileset dir="${mac.folder}/jre_aarch64/jdk-17.0.14+7-jre"/>
+                                      <fileset dir="${mac.folder}/jre_aarch64/jdk-21.0.11+10-jre"/>
                                 </copy>
 
                                 <gunzip src="${mac.folder}/x64.tar.gz"
@@ -215,7 +215,7 @@
                                        dest="${mac.folder}/jre_x64_mac/"
                                        compression="none"/>
                                 <copy todir="${mac.folder}/x86_64/Pgcodekeeper.app/Contents/Eclipse/jre">
-                                      <fileset dir="${mac.folder}/jre_x64_mac/jdk-17.0.14+7-jre"/>
+                                      <fileset dir="${mac.folder}/jre_x64_mac/jdk-21.0.11+10-jre"/>
                                 </copy>
                             </target>
                         </configuration>
