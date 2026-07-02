@@ -48,9 +48,6 @@ public abstract class AbstractSwtBotTest {
 
     protected static final long DEFAULT_TIME_OUT = 5_000;
 
-    protected static final boolean IS_LINUX = System.getProperty("os.name").toLowerCase().contains("nux")
-            || System.getProperty("os.name").toLowerCase().contains("nix");
-
     static {
         org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences.TIMEOUT = 15000;
 
@@ -106,6 +103,10 @@ public abstract class AbstractSwtBotTest {
     }
 
     protected void insertPath(String fileName) throws AWTException, IOException, URISyntaxException {
+        insertPath(fileName, false);
+    }
+
+    protected void insertPath(String fileName, boolean needTab) throws AWTException, IOException, URISyntaxException {
         StringSelection stringSelection = new StringSelection(getPath(fileName));
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(stringSelection, null);
 
@@ -118,11 +119,17 @@ public abstract class AbstractSwtBotTest {
         robot.keyRelease(KeyEvent.VK_CONTROL);
         robot.delay(200);
 
+        if (needTab) {
+            robot.keyPress(KeyEvent.VK_TAB);
+            robot.keyRelease(KeyEvent.VK_TAB);
+            robot.delay(200);
+        }
+
         robot.keyPress(KeyEvent.VK_ENTER);
         robot.keyRelease(KeyEvent.VK_ENTER);
     }
 
-    private String getPath(String fileName) throws IOException, URISyntaxException {
+    protected String getPath(String fileName) throws IOException, URISyntaxException {
         URL osgiUrl = getClass().getResource(fileName);
         assertNotNull(osgiUrl, "filename: " + fileName);
         URL fileUrl = FileLocator.toFileURL(osgiUrl);
