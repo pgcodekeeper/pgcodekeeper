@@ -11,7 +11,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Increased minimum JAVA version to 21.
+- Standalone pgCodeKeeper packages now use latest version of Eclipse again.
+
 ### Fixed
+
+- Fixed error logging in standalone pgCodeKeeper packages.
 
 ## [14.7.0] - 2026-06-30
 

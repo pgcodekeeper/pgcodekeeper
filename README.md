@@ -13,7 +13,7 @@ A tool for easier PostgreSQL development.
 
 ## Download
 
-pgCodeKeeper requires Java (JRE) 17+ to run.
+pgCodeKeeper requires Java (JRE) 21+ to run.
 
 If you already have Eclipse IDE installed you can [install](https://pgcodekeeper.readthedocs.io/en/latest/installation.html) pgCodeKeeper plugin using Marketplace or `https://pgcodekeeper.org/update/` update site.
 
@@ -24,7 +24,7 @@ If you already have Eclipse IDE installed you can [install](https://pgcodekeeper
 
 ## Build
 
-Build requires Java (JDK) 17+ and Apache Maven 3.9+.
+Build requires Java (JDK) 21+ and Apache Maven 3.9+.
 
 ```sh
 git clone https://github.com/pgcodekeeper/pgcodekeeper.git

@@ -40,7 +40,7 @@ Require-Bundle: ru.taximaxim.codekeeper.mainapp,
  wrapped-click.com.clickhouse.jdbc-v2;bundle-version="[0.9.4,1.0.0)",
  wrapped-click.com.clickhouse.client-v2;bundle-version="[0.9.4,1.0.0)",
  wrapped-click.com.clickhouse.clickhouse-client;bundle-version="[0.9.4,1.0.0)"
-Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Bundle-Vendor: %Bundle-Vendor
