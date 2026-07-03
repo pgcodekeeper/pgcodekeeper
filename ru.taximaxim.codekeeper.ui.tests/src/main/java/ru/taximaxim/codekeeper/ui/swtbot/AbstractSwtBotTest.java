@@ -27,29 +27,38 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.jface.dialogs.MessageDialogWithToggle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swtbot.eclipse.finder.SWTWorkbenchBot;
 import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
+import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 
+import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
+import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 
 public abstract class AbstractSwtBotTest {
-
-    private static final int PROJECT_CREATION_TIMEOUT = 2000;
 
     protected static final String PROJECT_EXPLORER = "Project Explorer";
 
     protected static final SWTWorkbenchBot BOT = new SWTWorkbenchBot();
 
-    protected static final long DEFAULT_TIME_OUT = 5_000;
+    protected static final int SHORT_TIMEOUT = 200;
+    protected static final int ACTION_TIMEOUT = 2_000;
+
+    protected static String mainShellName;
 
     static {
         org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences.TIMEOUT = 15000;
+        IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
+        mainPrefs.setDefault(DB_UPDATE_PREF.DELETE_SCRIPT_AFTER_CLOSE, MessageDialogWithToggle.ALWAYS);
 
         try {
             BOT.shell(Messages.UsageReport_DialogTitle).close();
@@ -62,6 +71,8 @@ public abstract class AbstractSwtBotTest {
         } catch (Exception e) {
             // ignore
         }
+
+        mainShellName = BOT.activeShell().getText();
     }
 
     protected void createProject(String projectName, DatabaseType dbType)
@@ -90,11 +101,11 @@ public abstract class AbstractSwtBotTest {
     }
 
     protected void waitProjectCreation() {
-        BOT.sleep(PROJECT_CREATION_TIMEOUT);
+        BOT.sleep(ACTION_TIMEOUT);
     }
 
     protected void closeShell(String name, String button) {
-        BOT.sleep(100);
+        BOT.sleep(SHORT_TIMEOUT);
         if (button != null) {
             BOT.shell(name).bot().button(button).click();
         } else {
@@ -117,7 +128,7 @@ public abstract class AbstractSwtBotTest {
         robot.keyPress(KeyEvent.VK_V);
         robot.keyRelease(KeyEvent.VK_V);
         robot.keyRelease(KeyEvent.VK_CONTROL);
-        robot.delay(200);
+        robot.delay(SHORT_TIMEOUT);
 
         if (needTab) {
             robot.keyPress(KeyEvent.VK_TAB);
@@ -150,7 +161,7 @@ public abstract class AbstractSwtBotTest {
                 return "The link has not been updated. Current text: " + shell.bot().link().getText() + "; expected:"
                         + "<a>%s</a>".formatted(name);
             }
-        }, DEFAULT_TIME_OUT);
+        }, ACTION_TIMEOUT);
     }
 
     protected void waitForLinkEquals(String name, SWTBotEditor editor) {
@@ -165,6 +176,24 @@ public abstract class AbstractSwtBotTest {
                 return "The link has not been updated. Current text: " + editor.bot().link().getText() + "; expected:"
                         + "<a>%s</a>".formatted(name);
             }
-        }, DEFAULT_TIME_OUT);
+        }, ACTION_TIMEOUT);
+    }
+
+    protected SWTBotTree getProjectExplorer() {
+        return BOT.viewByTitle(PROJECT_EXPLORER).bot().tree();
+    }
+
+    protected String createName(DatabaseType dbType, String testName) {
+        return dbType.name().toLowerCase(Locale.ROOT) + testName;
+    }
+
+    protected int getActualNodesByProjectName(String projectName) {
+        return getProjectExplorer().expandNode(projectName).getNodes().size();
+    }
+
+    protected SWTBotEditor getEditor(String partName) {
+        BOT.sleep(SHORT_TIMEOUT);
+        return BOT.editors().stream().filter(e -> e.getTitle().contains(partName)).findAny()
+                .orElseThrow(() -> new IllegalStateException("didn't find editor " + partName));
     }
 }

@@ -24,7 +24,6 @@ import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Locale;
 import java.util.Map;
 
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
@@ -57,6 +56,7 @@ public class ProjectTest extends AbstractSwtBotTest {
         createProject(projectName, dbType, dumpName);
 
         SWTBotTree projectExplorer = getProjectExplorer();
+
         projectExplorer.expandNode(projectName);
         projectExplorer.getTreeItem(projectName).selectAll();
         assertEquals(EXPECTED_NODES_SIZE.get(dbType), projectExplorer.getTreeItem(projectName).getNodes().size());
@@ -106,14 +106,6 @@ public class ProjectTest extends AbstractSwtBotTest {
         String projectPath = getPath(projectName);
         Path pathToFile = Paths.get(projectPath, ".project");
         Files.deleteIfExists(pathToFile);
-        BOT.shell("data").activate();
-    }
-
-    private SWTBotTree getProjectExplorer() {
-        return BOT.viewByTitle(PROJECT_EXPLORER).bot().tree();
-    }
-
-    private String createName(DatabaseType dbType, String testName) {
-        return dbType.name().toLowerCase(Locale.ROOT) + testName;
+        BOT.shell(mainShellName).activate();
     }
 }
