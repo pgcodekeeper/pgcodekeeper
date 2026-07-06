@@ -42,7 +42,6 @@ import org.eclipse.zest.core.viewers.GraphViewer;
 import org.eclipse.zest.core.viewers.IGraphEntityContentProvider;
 import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
 import org.eclipse.zest.core.widgets.ZestStyles;
-import org.eclipse.zest.layouts.LayoutStyles;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
@@ -102,7 +101,7 @@ public class DepcyGraphView extends ViewPart implements IZoomableWorkbenchPart, 
         gv = new GraphViewer(parent, SWT.NONE);
         gv.setNodeStyle(ZestStyles.NODES_NO_ANIMATION);
         gv.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
-        gv.setLayoutAlgorithm(new SpringLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING), true);
+        gv.setLayoutAlgorithm(new SpringLayoutAlgorithm(), true);
 
         labelProvider = new DepcyGraphLabelProvider(gv.getControl());
         gv.setLabelProvider(labelProvider);
