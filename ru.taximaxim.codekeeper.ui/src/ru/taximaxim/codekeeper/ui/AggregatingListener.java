@@ -16,11 +16,11 @@
 package ru.taximaxim.codekeeper.ui;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import java.util.EventListener;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.TypedListener;
 
 /**
  * Aggregates multiple consecutive events into one with defined time threshold.
@@ -31,23 +31,24 @@ import org.eclipse.swt.widgets.TypedListener;
  *
  * @author levsha_aa
  */
-public class AggregatingListener extends TypedListener {
+public class AggregatingListener implements Listener {
+
+    private static final int DEFAULT_AGGREGATION_THRESHOLD_MS = 500;
+
+    private final ModifyListener modifyListener;
+    private int aggregationThresholdMs = DEFAULT_AGGREGATION_THRESHOLD_MS;
+    private DelayedEvent lastEvent;
 
     public static void addModifyListener(Text text, ModifyListener listener) {
         text.addListener(SWT.Modify, new AggregatingListener(listener));
     }
 
-    private static final int DEFAULT_AGGREGATION_THRESHOLD_MS = 500;
-
-    private int aggregationThresholdMs = DEFAULT_AGGREGATION_THRESHOLD_MS;
-    private DelayedEvent lastEvent;
+    private AggregatingListener(ModifyListener listener) {
+        this.modifyListener = listener;
+    }
 
     public void setAggregationThresholdMs(int aggregationThresholdMs) {
         this.aggregationThresholdMs = aggregationThresholdMs;
-    }
-
-    private AggregatingListener(EventListener listener) {
-        super(listener);
     }
 
     @Override
@@ -67,7 +68,7 @@ public class AggregatingListener extends TypedListener {
         @Override
         public void run() {
             if (this == lastEvent) {
-                AggregatingListener.super.handleEvent(e);
+                modifyListener.modifyText(new ModifyEvent(e));
             }
         }
     }

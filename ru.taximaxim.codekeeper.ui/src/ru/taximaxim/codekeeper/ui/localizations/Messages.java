@@ -798,8 +798,6 @@ public final class Messages extends NLS {
 
     public static String NormalizeProject_exporting_project;
 
-    public static String NormalizeProject_normalize_project;
-
     public static String NormalizeProject_normalizing_project;
 
     public static String NormalizeProject_normalizing_project_projName;
@@ -807,8 +805,6 @@ public final class Messages extends NLS {
     public static String NormalizeProject_project_normalized;
 
     public static String NormalizeProject_project_normalized_success;
-
-    public static String NormalizeProject_error_while_saving_file;
 
     public static String SqlEditor_absent_builder_message;
 
@@ -1186,8 +1182,6 @@ public final class Messages extends NLS {
     public static String QuickUpdate_file_modified;
 
     public static String QuickUpdate_migration_failed;
-
-    public static String QuickUpdate_multiple_schemas;
 
     public static String QuickUpdate_quick_update;
 

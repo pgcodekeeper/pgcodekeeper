@@ -16,8 +16,7 @@
 package ru.taximaxim.codekeeper.ui.reports;
 
 import java.net.HttpURLConnection;
-import java.net.URL;
-
+import java.net.URI;
 import org.eclipse.core.runtime.Platform;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -90,7 +89,7 @@ public class UsageRequest {
         String url = builder.toString();
 
         try {
-            HttpURLConnection urlConnection = (HttpURLConnection) new URL(url).openConnection();
+            HttpURLConnection urlConnection = (HttpURLConnection) new URI(url).toURL().openConnection();
             urlConnection.setInstanceFollowRedirects(true);
             urlConnection.setFixedLengthStreamingMode(0);
             urlConnection.setDoOutput(true);
