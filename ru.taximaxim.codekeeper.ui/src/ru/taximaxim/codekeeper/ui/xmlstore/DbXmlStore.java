@@ -103,9 +103,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         GENERATE_NAME("generate_name"), //$NON-NLS-1$
         IGNORE_LIST("ignore_list"), //$NON-NLS-1$
         IGNORE_FILE("ignore_file"), //$NON-NLS-1$
-        PGDUMP_EXE_PATH("pgdump_exe_path"), //$NON-NLS-1$
-        PGDUMP_CUSTOM_PARAMS("pgdump_custom_params"), //$NON-NLS-1$
-        PG_DUMP_SWITCH("pg_dump_switch"), //$NON-NLS-1$
         PROPERTY_LIST("property_list"), //$NON-NLS-1$
         PROPERTY("property"), //$NON-NLS-1$
         PROPERTY_NAME("name"), //$NON-NLS-1$
@@ -208,9 +205,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DB_TYPE.toString(), String.valueOf(dbInfo.getDbType()));
             createSubElement(xml, keyElement, Tags.WIN_AUTH.toString(), String.valueOf(dbInfo.isWinAuth()));
             createSubElement(xml, keyElement, Tags.DOMAIN.toString(), dbInfo.getDomain());
-            createSubElement(xml, keyElement, Tags.PG_DUMP_SWITCH.toString(), String.valueOf(dbInfo.isPgDumpSwitch()));
-            createSubElement(xml, keyElement, Tags.PGDUMP_CUSTOM_PARAMS.toString(), dbInfo.getPgdumpCustomParams());
-            createSubElement(xml, keyElement, Tags.PGDUMP_EXE_PATH.toString(), dbInfo.getPgdumpExePath());
             createSubElement(xml, keyElement, Tags.CON_TYPE.toString(), dbInfo.getConType());
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
@@ -260,9 +254,6 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 case DB_TYPE:
                 case WIN_AUTH:
                 case DOMAIN:
-                case PG_DUMP_SWITCH:
-                case PGDUMP_CUSTOM_PARAMS:
-                case PGDUMP_EXE_PATH:
                 case CON_TYPE:
                     object.put(tag, param.getTextContent());
                     break;
@@ -303,9 +294,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 Boolean.parseBoolean(object.get(Tags.GENERATE_NAME)),
                 ignoreFiles, properties, dbType,
                 Boolean.parseBoolean(object.get(Tags.WIN_AUTH)),
-                object.get(Tags.DOMAIN), object.get(Tags.PGDUMP_EXE_PATH),
-                object.get(Tags.PGDUMP_CUSTOM_PARAMS),
-                Boolean.parseBoolean(object.get(Tags.PG_DUMP_SWITCH)),
+                object.get(Tags.DOMAIN),
                 !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP), //$NON-NLS-1$
                         !object.containsKey(Tags.CON_TYPE) ? "" : object.get(Tags.CON_TYPE)); //$NON-NLS-1$
     }
