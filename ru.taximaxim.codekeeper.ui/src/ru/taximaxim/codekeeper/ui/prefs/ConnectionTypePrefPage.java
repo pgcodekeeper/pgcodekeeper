@@ -111,12 +111,12 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
 
             @Override
             public String getText(Object element) {
-                return ((ConnectionTypeInfo) element).getName();
+                return ((ConnectionTypeInfo) element).name();
             }
 
             @Override
             public Color getBackground(Object element) {
-                return resourceManager.createColor(StringConverter.asRGB(((ConnectionTypeInfo) element).getColor()));
+                return resourceManager.createColor(StringConverter.asRGB(((ConnectionTypeInfo) element).color()));
             }
 
             @Override
@@ -143,8 +143,8 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
                 dialog.setText(Messages.connectionTypePrefPage_export);
-                dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterNames(new String[] { Messages.DbStorePrefPage_xml_files, Messages.DiffPresentationPane_any_file_filter });
+                dialog.setFilterExtensions( "*.xml", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(Messages.xml_files_filter, Messages.all_files_filter);
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
                 String stringPath = dialog.open();
@@ -166,8 +166,8 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
                 dialog.setText(Messages.connectionTypePrefPage_import);
-                dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterNames(new String[] {Messages.DbStorePrefPage_xml_files, Messages.DiffPresentationPane_any_file_filter });
+                dialog.setFilterExtensions("*.xml", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(Messages.xml_files_filter, Messages.all_files_filter);
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
                 String stringPath = dialog.open();
@@ -202,7 +202,7 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
 
     @Override
     protected String errorAlreadyExists(ConnectionTypeInfo obj) {
-        return Messages.DbStorePrefPage_already_present.formatted(obj.getName());
+        return Messages.DbStorePrefPage_already_present.formatted(obj.name());
     }
 
     @Override
@@ -217,8 +217,8 @@ final class ConnectionTypePrefListEditor extends PrefListEditor<ConnectionTypeIn
                 String typeColor = "255,255,255";//$NON-NLS-1$
 
                 if (oldObject != null) {
-                    name = oldObject.getName();
-                    typeColor = oldObject.getColor();
+                    name = oldObject.name();
+                    typeColor = oldObject.color();
                 }
 
                 Composite container = (Composite) super.createDialogArea(parent);

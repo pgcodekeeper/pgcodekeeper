@@ -38,7 +38,7 @@ public class ParserCacheCleaner implements IStartup {
     @Override
     public void earlyStartup() {
         IPreferenceStore mainPrefs = Activator.getDefault().getPreferenceStore();
-        Thread thread = new Thread(() -> {
+        Thread.ofVirtual().start(() -> {
             while (true) {
                 try {
                     Thread.sleep(CHECK_INTERVAL);
@@ -56,7 +56,5 @@ public class ParserCacheCleaner implements IStartup {
                 }
             }
         });
-        thread.setDaemon(true);
-        thread.start();
     }
 }

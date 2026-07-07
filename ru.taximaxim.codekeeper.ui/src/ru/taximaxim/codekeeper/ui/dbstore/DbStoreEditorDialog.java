@@ -135,7 +135,6 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 newShell.removeShellListener(this);
 
                 boolean generateEntryName = true;
-                DatabaseType dbType = DatabaseType.PG;
                 String dbHost = DEFAULT_HOST;
                 String dbPort = "0";
                 String dbName = ""; //$NON-NLS-1$
@@ -159,7 +158,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     domain = dbInitial.getDomain();
-                    dbType = dbInitial.getDbType();
+                    DatabaseType dbType = dbInitial.getDbType();
                     ignoreList = dbInitial.getIgnoreFiles();
 
                     properties = dbInitial.getProperties().entrySet().stream()
@@ -414,7 +413,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
 
         Set<String> conTypes = new LinkedHashSet<>();
         conTypes.add(""); //$NON-NLS-1$
-        ConnectioTypeXMLStore.readStoreFromXml().forEach(e -> conTypes.add(e.getName()));
+        ConnectioTypeXMLStore.readStoreFromXml().forEach(e -> conTypes.add(e.name()));
         if (dbInitial != null) {
             String brokenType = dbInitial.getConType();
             if (brokenType != null && conTypes.add(brokenType)) {
@@ -473,8 +472,8 @@ public final class DbStoreEditorDialog extends TrayDialog {
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dialog = new FileDialog(getShell());
                 dialog.setText(Messages.DbStoreEditorDialog_dump_file_dialog_header);
-                dialog.setFilterExtensions(new String[] {"*"}); //$NON-NLS-1$
-                dialog.setFilterNames(new String[] {Messages.DbStoreEditorDialog_dump_filter});
+                dialog.setFilterExtensions("*"); //$NON-NLS-1$
+                dialog.setFilterNames(Messages.all_files_filter);
                 dialog.setFileName(DbInfo.DEFAULT_EXECUTE_PATH);
                 String path2Dump = dialog.open();
                 if(path2Dump != null) {

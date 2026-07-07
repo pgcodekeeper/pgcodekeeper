@@ -365,7 +365,7 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_dump_browse;
 
-    public static String DbStoreEditorDialog_pgcodekeeperignore_files_filter;
+    public static String pgcodekeeperignore_files_filter;
 
     public static String DbStoreEditorDialog_read_only;
 
@@ -427,9 +427,9 @@ public final class Messages extends NLS {
 
     public static String DbStorePrefPage_saving_error;
 
-    public static String DbStorePrefPage_xml_files;
+    public static String xml_files_filter;
 
-    public static String DbStorePrefPage_pg_pass_file_filter;
+    public static String pg_pass_files_filter;
 
     public static String DbStorePrefPage_pg_pass_file_select_title;
 
@@ -530,7 +530,7 @@ public final class Messages extends NLS {
     public static String DiffPaneViewer_btn_switch;
     public static String DiffPaneViewer_project;
 
-    public static String DiffPresentationPane_any_file_filter;
+    public static String all_files_filter;
 
     public static String DiffPresentationPane_attention;
 
@@ -541,9 +541,9 @@ public final class Messages extends NLS {
 
     public static String DiffPresentationPane_remote_changed_notification;
 
-    public static String DiffPresentationPane_sql_file_filter;
+    public static String sql_files_filter;
 
-    public static String DiffPresentationPane_zip_file_filter;
+    public static String zip_files_filter;
 
     public static String DiffTableViewer_collapse_all;
     public static String DiffTableViewer_apply_to;

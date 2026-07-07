@@ -206,9 +206,9 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
         ISelection sel = viewer.getSelection();
         if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
             Object obj = ss.getFirstElement();
-            if (obj instanceof ObjectOverride ov) {
+            if (obj instanceof ObjectOverride(IStatement newStatement, IStatement oldStatement)) {
                 try {
-                    IStatement st = openOldFile ? ov.oldStatement() : ov.newStatement();
+                    IStatement st = openOldFile ? oldStatement : newStatement;
                     ObjectLocation loc = st.getLocation();
                     String proj = project == null ? null : project.getName();
                     FileUtilsUi.openFileInSqlEditor(loc, proj, DatabaseType.fromStatement(st), st.isLib());
@@ -223,8 +223,8 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
         ISelection sel = viewer.getSelection();
         if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
             Object obj = ss.getFirstElement();
-            if (obj instanceof ObjectOverride ov) {
-                IStatement st = isOld ? ov.oldStatement() : ov.newStatement();
+            if (obj instanceof ObjectOverride(IStatement newStatement, IStatement oldStatement)) {
+                IStatement st = isOld ? oldStatement : newStatement;
                 return st.getLocation() != null;
             }
         }

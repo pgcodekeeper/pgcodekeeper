@@ -164,11 +164,8 @@ public class LibraryEditorDialog extends TrayDialog {
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell());
                 dialog.setText(Messages.choose_dump_file_with_changes);
-                dialog.setFilterExtensions(new String[] { "*.sql", "*.zip", "*" }); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-                dialog.setFilterNames(new String[] {
-                        Messages.DiffPresentationPane_sql_file_filter,
-                        Messages.DiffPresentationPane_zip_file_filter,
-                        Messages.DiffPresentationPane_any_file_filter });
+                dialog.setFilterExtensions("*.sql", "*.zip", "*"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                dialog.setFilterNames(Messages.sql_files_filter, Messages.zip_files_filter, Messages.all_files_filter);
                 dialog.setFilterPath(defaultPath);
                 String value = dialog.open();
                 if (value != null) {

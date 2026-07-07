@@ -17,23 +17,7 @@ package ru.taximaxim.codekeeper.ui.dbstore;
 
 import java.util.Objects;
 
-public final class ConnectionTypeInfo {
-
-    private final String name;
-    private final String color;
-
-    public ConnectionTypeInfo(String name, String color) {
-        this.name = name;
-        this.color = color;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public String getColor() {
-        return color;
-    }
+public record ConnectionTypeInfo(String name, String color) {
 
     @Override
     public int hashCode() {
@@ -45,10 +29,7 @@ public final class ConnectionTypeInfo {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ConnectionTypeInfo)) {
-            return false;
-        }
-        ConnectionTypeInfo other = (ConnectionTypeInfo) obj;
-        return Objects.equals(name, other.name);
+        return obj instanceof ConnectionTypeInfo other
+                && Objects.equals(name, other.name);
     }
 }

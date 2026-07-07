@@ -178,8 +178,8 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
     private void setBackground(String conType) {
         if (conType != null && !conType.isBlank()) {
             for (ConnectionTypeInfo t : ConnectioTypeXMLStore.readStoreFromXml()) {
-                if (conType.equals(t.getName())) {
-                    lnkDb.setBackground(resourceManager.createColor(StringConverter.asRGB(t.getColor())));
+                if (conType.equals(t.name())) {
+                    lnkDb.setBackground(resourceManager.createColor(StringConverter.asRGB(t.color())));
                     return;
                 }
             }
