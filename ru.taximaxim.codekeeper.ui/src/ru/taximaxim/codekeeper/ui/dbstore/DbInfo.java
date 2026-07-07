@@ -30,18 +30,12 @@ import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public final class DbInfo {
 
-    public static final String DEFAULT_EXECUTE_PATH = "pg_dump"; //$NON-NLS-1$
-    private static final String DEFAULT_CUSTOM_PARAMS = "--schema-only --no-password"; //$NON-NLS-1$
-
     private final String name;
     private final String dbname;
     private final String dbuser;
     private final String dbpass;
     private final String dbhost;
     private final int dbport;
-    private final String pgdumpExePath;
-    private final String pgdumpCustomParams;
-    private final boolean pgDumpSwitch;
     private final boolean readOnly;
     private final boolean winAuth;
     private final DatabaseType dbType;
@@ -108,18 +102,6 @@ public final class DbInfo {
         return Collections.unmodifiableMap(properties);
     }
 
-    public String getPgdumpExePath() {
-        return pgdumpExePath;
-    }
-
-    public String getPgdumpCustomParams() {
-        return pgdumpCustomParams;
-    }
-
-    public boolean isPgDumpSwitch() {
-        return pgDumpSwitch;
-    }
-
     public String getConType() {
         return conType;
     }
@@ -127,15 +109,13 @@ public final class DbInfo {
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
         this(name, dbname, dbuser, dbpass, dbhost, dbport, false, false, Collections.emptyList(),
-                Collections.emptyMap(), DatabaseType.PG, false, "", //$NON-NLS-1$
-                DEFAULT_EXECUTE_PATH, DEFAULT_CUSTOM_PARAMS, false, "", ""); //$NON-NLS-1$ //$NON-NLS-2$
+                Collections.emptyMap(), DatabaseType.PG, false, "", "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
             List<String> ignoreFiles, Map<String, String> properties, DatabaseType dbType, boolean winAuth,
-            String domain, String pgdumpExePath, String pgdumpCustomParams, boolean pgDumpSwitch,
-            String dbGroup, String conType) {
+            String domain, String dbGroup, String conType) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -149,9 +129,6 @@ public final class DbInfo {
         this.dbType = dbType;
         this.winAuth = winAuth;
         this.domain = domain;
-        this.pgdumpExePath = pgdumpExePath == null ? DEFAULT_EXECUTE_PATH : pgdumpExePath;
-        this.pgdumpCustomParams = pgdumpCustomParams == null ? DEFAULT_CUSTOM_PARAMS : pgdumpCustomParams;
-        this.pgDumpSwitch = pgDumpSwitch;
         this.dbGroup = dbGroup;
         this.conType = conType;
     }

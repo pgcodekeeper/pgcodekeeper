@@ -169,11 +169,6 @@ public final class Messages extends NLS {
     public static String sqlScriptDialog_script_execution_interrupted;
     public static String sqlScriptDialog_warning;
     public static String stdStreamRedirector_completed_with_code;
-    public static String manualDepciesDialog_dependant_dependency;
-    public static String manualDepciesDialog_depends_on;
-    public static String manualDepciesDialog_object;
-    public static String manualDepciesDialog_add;
-    public static String manualDepciesDialog_remove;
     public static String commitDialog_user_selected_elements;
     public static String commitDialog_depcy_elements;
 
@@ -213,14 +208,6 @@ public final class Messages extends NLS {
     public static String diffTableViewer_select_child_elements;
     public static String diffTableViewer_use_java_regular_expressions_see_more;
     public static String diffTableViewer_use_regular_expressions;
-    public static String diffTreeViewer_collapse_all;
-    public static String diffTreeViewer_collapse_subtree;
-    public static String diffTreeViewer_debug_view;
-    public static String diffTreeViewer_deselect_subtree;
-    public static String diffTreeViewer_expand_all;
-    public static String diffTreeViewer_expand_subtree;
-    public static String diffTreeViewer_select_subtree;
-
     // change perspective
     public static String remember_choice_toggle;
     public static String change_perspective_message;
@@ -232,8 +219,6 @@ public final class Messages extends NLS {
     public static String prespective_change_status_never;
 
     // ui.externalcalls
-    public static String pgDumper_bad_pg_dump_version_output;
-
     // ui.handlers
     public static String database;
 
@@ -299,8 +284,6 @@ public final class Messages extends NLS {
     public static String newProjWizard_error_in_initializing_repo_from_source;
     public static String newProjWizard_new_pg_db_project;
 
-    public static String txtNameEditingSupport_cannot_add_empty;
-
     // query results tabs
     public static String resultSetView_close;
     public static String resultSetView_close_others;
@@ -350,20 +333,6 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_connection_type;
 
     public static String DbStoreEditorDialog_connnection_test;
-
-    public static String DbStoreEditorDialog_dump_custom_parameters;
-
-    public static String DbStoreEditorDialog_dump_executable;
-
-    public static String DbStoreEditorDialog_dump_file_dialog_header;
-
-    public static String DbStoreEditorDialog_dump_filter;
-
-    public static String DbStoreEditorDialog_dump_properties;
-
-    public static String DbStoreEditorDialog_dump_switch;
-
-    public static String DbStoreEditorDialog_dump_browse;
 
     public static String pgcodekeeperignore_files_filter;
 
@@ -617,8 +586,6 @@ public final class Messages extends NLS {
 
     public static String Differ_diff;
 
-    public static String executableFileFieldEditor_value_must_be_file_with_execute_permission_set;
-
     public static String ProjectProperties_force_unix_newlines;
 
     public static String ProjectProperties_force_unix_newlines_desc;
@@ -676,8 +643,6 @@ public final class Messages extends NLS {
     public static String IgnoreListEditorDialog_save_ignore_file;
 
     public static String ImportProjWizard_title;
-
-    public static String ManualDepciesDialog_set_add_depcies;
 
     public static String MisplaceCompletionProposal_rename_file_to;
     public static String MockDataPage_add_column;
