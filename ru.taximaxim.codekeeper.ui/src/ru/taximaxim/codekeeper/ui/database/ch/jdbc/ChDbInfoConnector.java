@@ -51,7 +51,9 @@ public class ChDbInfoConnector extends ChJdbcConnector implements IDbInfoConnect
             // when trying to connect to a non-existent database.
 
             // check connection catch and throw exception if false
-            con.createStatement().executeQuery("SELECT 1");
+            try (var st = con.createStatement()) {
+                st.executeQuery("SELECT 1");
+            }
             return con;
         } catch (SQLException e) {
             throw new IOException(e.getLocalizedMessage(), e);

@@ -1148,7 +1148,7 @@ public class DiffTableViewer extends Composite {
         @Override
         public Object[] getElements(Object inputElement) {
             Collection<?> input = (Collection<?>) inputElement;
-            Set<TreeElement> rootTableEntries = new HashSet<>(input.size());
+            Set<TreeElement> rootTableEntries = HashSet.newHashSet(input.size());
             for (Object o : input) {
                 TreeElement el = (TreeElement) o;
                 rootTableEntries.add(el.isSubElement() ? el.getParent() : el);

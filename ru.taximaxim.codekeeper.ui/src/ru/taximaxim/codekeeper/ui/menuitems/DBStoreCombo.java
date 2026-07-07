@@ -111,7 +111,8 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
         Object lastDb = null;
         IProject proj = null;
 
-        if (part instanceof SQLEditor editor) {
+        switch (part) {
+        case SQLEditor editor -> {
             lastDb = editor.getCurrentDb();
             storePicker.setUseFileSources(false);
             IEditorInput input = editor.getEditorInput();
@@ -119,14 +120,16 @@ public class DBStoreCombo extends WorkbenchWindowControlContribution {
                 proj = fileEditorInput.getFile().getProject();
             }
             setDbComboEnableState(editor.getProjDbBindPrefs());
-        } else if (part instanceof ProjectEditorDiffer differ) {
+        }
+        case ProjectEditorDiffer differ -> {
             lastDb = differ.getCurrentDb();
             storePicker.setUseFileSources(true);
             proj = differ.getProject();
             setDbComboEnableState(PgDbProject.getPrefs(differ.getProject(), false));
-        } else {
-            return;
         }
+        default -> {
+            return;
+        }}
 
         DatabaseType dbType;
         if (ProjectUtils.isPgCodeKeeperProject(proj)) {

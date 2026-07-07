@@ -208,8 +208,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
                     return null;
                 }
                 for (ConnectionTypeInfo t : ConnectioTypeXMLStore.readStoreFromXml()) {
-                    if (t.getName().equals(conType)) {
-                        return resourceManager.createColor(StringConverter.asRGB(t.getColor()));
+                    if (t.name().equals(conType)) {
+                        return resourceManager.createColor(StringConverter.asRGB(t.color()));
                     }
                 }
                 return null;
@@ -248,9 +248,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
                 FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
                 dialog.setText(Messages.DbStorePrefPage_export_db);
-                dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterNames(new String[] { Messages.DbStorePrefPage_xml_files,
-                        Messages.DiffPresentationPane_any_file_filter });
+                dialog.setFilterExtensions("*.xml", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(Messages.xml_files_filter, Messages.all_files_filter);
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
                 String stringPath = dialog.open();
@@ -273,8 +272,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             public void widgetSelected(SelectionEvent e) {
                 FileDialog dialog = new FileDialog(getShell(), SWT.OPEN);
                 dialog.setText(Messages.DbStorePrefPage_import_db_list);
-                dialog.setFilterExtensions(new String[] { "*.xml", "*" }); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterNames(new String[] {Messages.DbStorePrefPage_xml_files, Messages.DiffPresentationPane_any_file_filter });
+                dialog.setFilterExtensions("*.xml", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(Messages.xml_files_filter, Messages.all_files_filter);
                 dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
                 String stringPath = dialog.open();
@@ -298,10 +297,8 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
             public void widgetSelected(SelectionEvent event) {
                 FileDialog dialog = new FileDialog(getShell());
                 dialog.setText(Messages.DbStorePrefPage_pg_pass_file_select_title);
-                dialog.setFilterExtensions(new String[] {"*.pgpass", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-                dialog.setFilterNames(new String[] {
-                        Messages.DbStorePrefPage_pg_pass_file_filter,
-                        Messages.DiffPresentationPane_any_file_filter});
+                dialog.setFilterExtensions("*.pgpass", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+                dialog.setFilterNames(Messages.pg_pass_files_filter, Messages.all_files_filter);
                 Path path = PgPass.getPgPassPath();
                 dialog.setFilterPath(path.getParent().toString());
                 dialog.setFileName(path.getFileName().toString());

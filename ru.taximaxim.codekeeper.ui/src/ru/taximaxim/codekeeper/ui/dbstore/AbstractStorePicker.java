@@ -107,10 +107,8 @@ public abstract class AbstractStorePicker implements IStorePicker {
     public static String getFilePath(IPreferenceStore prefStore, Shell shell) {
         FileDialog dialog = new FileDialog(shell);
         dialog.setText(Messages.choose_dump_file_with_changes);
-        dialog.setFilterExtensions(new String[] {"*.sql", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-        dialog.setFilterNames(new String[] {
-                Messages.DiffPresentationPane_sql_file_filter,
-                Messages.DiffPresentationPane_any_file_filter});
+        dialog.setFilterExtensions("*.sql", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+        dialog.setFilterNames(Messages.sql_files_filter, Messages.all_files_filter);
         dialog.setFilterPath(prefStore.getString(PREF.LAST_OPENED_LOCATION));
         return dialog.open();
     }

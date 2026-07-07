@@ -87,43 +87,43 @@ public final class QuickUpdate extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) {
+        quickUpdate(event);
+        return null;
+    }
+
+    private void quickUpdate(ExecutionEvent event) {
         SQLEditor editor = (SQLEditor) HandlerUtil.getActiveEditor(event);
         DbInfo dbInfo = editor.getCurrentDb();
         if (dbInfo == null) {
             ExceptionNotifier.notifyDefault(Messages.sqlScriptDialog_script_select_storage, null);
-            return null;
+            return;
         }
 
         if (dbInfo.isReadOnly()) {
             MessageDialog.openInformation(HandlerUtil.getActiveShell(event),
                     Messages.UpdateDdl_read_only_db_title,
                     Messages.UpdateDdl_read_only_db_message);
-            return null;
+            return;
         }
 
         String text = editor.getEditorText();
         if (text.trim().isEmpty()) {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_empty_script, null);
-            return null;
+            return;
         }
 
-        IFile file = ResourceUtil.getFile(editor.getEditorInput());
-        editor.doSave(new NullProgressMonitor());
-        byte[] textSnapshot;
         try {
-            textSnapshot = text.getBytes(file.getCharset());
+            IFile file = ResourceUtil.getFile(editor.getEditorInput());
+            editor.doSave(new NullProgressMonitor());
+            byte[] textSnapshot = text.getBytes(file.getCharset());
+            QuickUpdateJob quickUpdateJob = new QuickUpdateJob(file, dbInfo, textSnapshot, editor);
+            quickUpdateJob.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
+            quickUpdateJob.setUser(true);
+            quickUpdateJob.schedule();
+            editor.saveLastDb(dbInfo);
         } catch (UnsupportedEncodingException | CoreException e) {
             ExceptionNotifier.notifyDefault(Messages.QuickUpdate_error_charset, e);
-            return null;
         }
-
-        QuickUpdateJob quickUpdateJob = new QuickUpdateJob(file, dbInfo, textSnapshot, editor);
-        quickUpdateJob.setProperty(IProgressConstants2.SHOW_IN_TASKBAR_ICON_PROPERTY, Boolean.TRUE);
-        quickUpdateJob.setUser(true);
-        quickUpdateJob.schedule();
-        editor.saveLastDb(dbInfo);
-
-        return null;
     }
 
     @Override

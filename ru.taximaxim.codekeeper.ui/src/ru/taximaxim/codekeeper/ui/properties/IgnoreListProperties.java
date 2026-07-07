@@ -133,10 +133,8 @@ public class IgnoreListProperties extends PropertyPage {
         protected String getNewObject(String oldObject) {
             FileDialog dialog = new FileDialog(getShell());
             dialog.setText(Messages.DbStoreEditorDialog_select_ignore_file);
-            dialog.setFilterExtensions(new String[] {"*.pgcodekeeperignore", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-            dialog.setFilterNames(new String[] {
-                    Messages.DbStoreEditorDialog_pgcodekeeperignore_files_filter,
-                    Messages.DiffPresentationPane_any_file_filter});
+            dialog.setFilterExtensions("*.pgcodekeeperignore", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+            dialog.setFilterNames(Messages.pgcodekeeperignore_files_filter, Messages.all_files_filter);
             dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
             return dialog.open();
         }

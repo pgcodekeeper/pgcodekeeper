@@ -90,10 +90,8 @@ public class IgnoreListEditorDialog extends Dialog {
         if (path == null) {
             FileDialog dialog = new FileDialog(getShell(), SWT.SAVE);
             dialog.setText(Messages.IgnoreListEditorDialog_save_ignore_file);
-            dialog.setFilterExtensions(new String[] {"*.pgcodekeeperignore", "*"}); //$NON-NLS-1$ //$NON-NLS-2$
-            dialog.setFilterNames(new String[] {
-                    Messages.DbStoreEditorDialog_pgcodekeeperignore_files_filter,
-                    Messages.DiffPresentationPane_any_file_filter});
+            dialog.setFilterExtensions("*.pgcodekeeperignore", "*"); //$NON-NLS-1$ //$NON-NLS-2$
+            dialog.setFilterNames(Messages.pgcodekeeperignore_files_filter, Messages.all_files_filter);
             dialog.setFilterPath(ResourcesPlugin.getWorkspace().getRoot().getLocation().toOSString());
 
             String stringPath = dialog.open();

@@ -139,12 +139,7 @@ implements IExecutableExtension, INewWizard {
             }
 
             if (applyProps) {
-                try {
-                    props.getPrefs().flush();
-                    props.getDbBindPrefs().flush();
-                } catch (BackingStoreException e) {
-                    Log.log(Log.LOG_WARNING, Messages.NewProjWizard_flushing_properties_error, e);
-                }
+                flushProject(props);
             }
 
             getContainer().run(true, true, new InitProjectFromSource(props, pageDb));
@@ -156,10 +151,8 @@ implements IExecutableExtension, INewWizard {
             workbench.getWorkingSetManager().addToWorkingSets(props.getProject(), workingSets);
 
             BasicNewProjectResourceWizard.updatePerspective(config);
-            BasicNewResourceWizard.selectAndReveal(props.getProject(),
-                    workbench.getActiveWorkbenchWindow());
-            OpenEditor.openEditor(workbench.getActiveWorkbenchWindow().getActivePage(),
-                    props.getProject());
+            BasicNewResourceWizard.selectAndReveal(props.getProject(), workbench.getActiveWorkbenchWindow());
+            OpenEditor.openEditor(workbench.getActiveWorkbenchWindow().getActivePage(), props.getProject());
         } catch (CoreException e) {
             ExceptionNotifier.notifyDefault(Messages.NewProjWizard_error_creating_project, e);
         } catch (InvocationTargetException ex) {
@@ -177,6 +170,15 @@ implements IExecutableExtension, INewWizard {
             }
         }
         return initSuccess;
+    }
+
+    private void flushProject(PgDbProject project) {
+        try {
+            project.getPrefs().flush();
+            project.getDbBindPrefs().flush();
+        } catch (BackingStoreException e) {
+            Log.log(Log.LOG_WARNING, Messages.NewProjWizard_flushing_properties_error, e);
+        }
     }
 
     @Override

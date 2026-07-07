@@ -72,10 +72,14 @@ public final class NormalizeProject extends AbstractHandler {
         PgDbProject proj = PgDbProject.getProject(sel);
 
         Shell shell = HandlerUtil.getActiveShell(event);
-        if (!ProjectUtils.checkVersionAndWarn(proj.getProject(), shell, false)) {
-            return null;
+        if (ProjectUtils.checkVersionAndWarn(proj.getProject(), shell, false)) {
+            normalizeProject(shell, proj);
         }
 
+        return null;
+    }
+
+    private void normalizeProject(Shell shell, PgDbProject proj) {
         Path projectPath = proj.getProject().getLocation().toFile().toPath();
         var dbType = ProjectUtils.getDatabaseType(proj.getProject());
 
@@ -87,7 +91,7 @@ public final class NormalizeProject extends AbstractHandler {
         var normalizationDialog = new ProjectNormalizationDialog(shell, currentMappings, defaults,
                 currentWorkDirs.isSplitBySchema());
         if (normalizationDialog.open() != Window.OK) {
-            return null;
+            return;
         }
         var newDirMappingsCopy = normalizationDialog.getDirMappings();
         var newSplitBySchema = normalizationDialog.isSplitBySchema();
@@ -128,6 +132,7 @@ public final class NormalizeProject extends AbstractHandler {
                 return Status.OK_STATUS;
             }
         };
+
         job.addJobChangeListener(new JobChangeAdapter() {
 
             @Override
@@ -161,12 +166,13 @@ public final class NormalizeProject extends AbstractHandler {
                 }
             }
         });
+
         job.setUser(true);
         job.schedule();
-        return null;
+
     }
 
-    private static void saveAltDirs(Path projectPath, DatabaseType dbType, Map<String, String> newMappings,
+    private void saveAltDirs(Path projectPath, DatabaseType dbType, Map<String, String> newMappings,
             boolean splitBySchema) throws IOException {
         Path altDirsFile = AbstractWorkDirs.resolveAltDirsFile(projectPath);
         var seed = new Properties();

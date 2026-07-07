@@ -107,8 +107,8 @@ public final class ConnectioTypeXMLStore extends XmlStore<ConnectionTypeInfo> {
             Element keyElement = xml.createElement(Tags.CON_TYPE_INFO.toString());
             root.appendChild(keyElement);
 
-            createSubElement(xml, keyElement, Tags.NAME.toString(), сonTypeInfo.getName());
-            createSubElement(xml, keyElement, Tags.COLOR.toString(), сonTypeInfo.getColor());
+            createSubElement(xml, keyElement, Tags.NAME.toString(), сonTypeInfo.name());
+            createSubElement(xml, keyElement, Tags.COLOR.toString(), сonTypeInfo.color());
         }
     }
 }

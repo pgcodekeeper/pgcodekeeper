@@ -56,15 +56,13 @@ public final class ConvertProject extends AbstractHandler {
         IStructuredSelection selection = HandlerUtil.getCurrentStructuredSelection(event);
         Object obj = selection.getFirstElement();
 
-        if (!(obj instanceof IProject project)) {
-            return null;
-        }
+        if (obj instanceof IProject project) {
+            Shell shell = HandlerUtil.getActiveShell(event);
 
-        Shell shell = HandlerUtil.getActiveShell(event);
-
-        var dialog = new ConvertProjectDialog(shell);
-        if (dialog.open() == Window.OK) {
-            convertProject(project, shell, dialog.getDbType());
+            var dialog = new ConvertProjectDialog(shell);
+            if (dialog.open() == Window.OK) {
+                convertProject(project, shell, dialog.getDbType());
+            }
         }
 
         return null;

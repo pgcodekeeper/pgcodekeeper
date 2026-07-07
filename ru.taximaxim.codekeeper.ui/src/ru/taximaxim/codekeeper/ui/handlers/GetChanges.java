@@ -17,7 +17,6 @@ package ru.taximaxim.codekeeper.ui.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -44,31 +43,37 @@ public final class GetChanges extends AbstractHandler {
         if (part instanceof ProjectEditorDiffer projEditor) {
             projEditor.getChanges();
         } else if (part instanceof SQLEditor sqlEditor && part.getEditorInput() instanceof IFileEditorInput) {
-            try {
-                IProject proj = ((IFileEditorInput) sqlEditor.getEditorInput()).getFile().getProject();
+            getChangesFromSqlEditor(sqlEditor, event);
+        }
 
-                DbInfo remote = sqlEditor.getCurrentDb();
-                if (remote == null) {
-                    MessageDialog.openInformation(HandlerUtil.getActiveShell(event), Messages.UpdateDdl_select_source,
-                            Messages.UpdateDdl_select_source_msg);
-                    return null;
-                }
-                ProjectEditorDiffer editor = ChangesJobTester.findProjectEditor(proj);
-                if (editor == null) {
-                    ProjectEditorDiffer.saveLastDb(remote, proj);
-                    ProjectEditorInput projectEditorInput = new ProjectEditorInput(proj.getName());
-                    editor = (ProjectEditorDiffer) sqlEditor.getSite().getPage()
-                            .openEditor(projectEditorInput, EDITOR.PROJECT);
-                } else {
-                    editor.setCurrentDb(remote);
-                    editor.getSite().getPage().activate(editor);
-                }
-                editor.getChanges();
+        return null;
+    }
+
+    private void getChangesFromSqlEditor(SQLEditor sqlEditor, ExecutionEvent event) {
+        DbInfo dbInfo = sqlEditor.getCurrentDb();
+        if (dbInfo == null) {
+            MessageDialog.openInformation(HandlerUtil.getActiveShell(event), Messages.UpdateDdl_select_source,
+                    Messages.UpdateDdl_select_source_msg);
+            return;
+        }
+
+        var project = ((IFileEditorInput) sqlEditor.getEditorInput()).getFile().getProject();
+        var projectEditor = ChangesJobTester.findProjectEditor(project);
+        var page = sqlEditor.getSite().getPage();
+        if (projectEditor == null) {
+            ProjectEditorDiffer.saveLastDb(dbInfo, project);
+            ProjectEditorInput projectEditorInput = new ProjectEditorInput(project.getName());
+            try {
+                projectEditor = (ProjectEditorDiffer) page.openEditor(projectEditorInput, EDITOR.PROJECT);
             } catch (PartInitException e) {
                 ExceptionNotifier.notifyDefault(e.getLocalizedMessage(), e);
+                return;
             }
+        } else {
+            projectEditor.setCurrentDb(dbInfo);
+            page.activate(projectEditor);
         }
-        return null;
+        projectEditor.getChanges();
     }
 
     @Override

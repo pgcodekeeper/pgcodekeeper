@@ -15,6 +15,7 @@
  *******************************************************************************/
 package ru.taximaxim.codekeeper.ui.dialogs;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -48,15 +49,8 @@ public class ObjectDirectoryViewer {
     public void createViewer() {
         tableViewer = new TableViewer(parent, SWT.H_SCROLL | SWT.V_SCROLL | SWT.FULL_SELECTION | SWT.BORDER | SWT.MULTI);
         tableViewer.getTable().setHeaderVisible(true);
-        tableViewer.setContentProvider(new IStructuredContentProvider() {
-
-            @Override
-            public Object[] getElements(Object inputElement) {
-                return dirMappings.entrySet().stream()
-                        .sorted((e1, e2) -> e1.getKey().compareTo(e2.getKey()))
-                        .toArray();
-            }
-        });
+        tableViewer.setContentProvider((IStructuredContentProvider) inputElement ->
+                dirMappings.entrySet().stream().sorted(Comparator.comparing(Entry<String, String>::getKey)).toArray());
 
         addColumns();
         tableViewer.setInput(dirMappings);

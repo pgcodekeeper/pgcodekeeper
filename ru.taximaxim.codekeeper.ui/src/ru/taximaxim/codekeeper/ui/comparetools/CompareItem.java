@@ -77,9 +77,8 @@ public class CompareItem implements IEncodedStreamContentAccessor, ITypedElement
 
         if (this == obj) {
             eq = true;
-        } else if (obj instanceof CompareItem) {
-            CompareItem val = (CompareItem) obj;
-            eq = name.equals(val.name) && Arrays.equals(contents, val.contents);
+        } else if (obj instanceof CompareItem ci) {
+            eq = name.equals(ci.name) && Arrays.equals(contents, ci.contents);
         }
 
         return eq;
