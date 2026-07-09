@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
+import org.pgcodekeeper.core.database.api.parser.ParserListenerMode;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.api.schema.IColumn;
 import org.pgcodekeeper.core.database.api.schema.IConstraint;
@@ -761,7 +762,8 @@ public final class MockDataPage extends WizardPage {
                 IDumpLoader loader = dbType.getDatabaseProvider().getDumpLoader(
                         file.getLocation().toFile().toPath(),
                         new DiffSettings(new UISettings(file.getProject(), null)));
-                table = (ITable) loader.loadAndAnalyze().getDescendants()
+                loader.setMode(ParserListenerMode.SINGLE);
+                table = (ITable) loader.load().getDescendants()
                         .filter(e -> e.getStatementType() == DbObjType.TABLE)
                         .findAny().orElse(null);
             } catch (InterruptedException | IOException e) {
