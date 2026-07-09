@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 ### Fixed
 
 - Fixed error logging in standalone pgCodeKeeper packages.
+- Fixed table data parsing in the `Mock data wizard`.
 
 ## [14.7.0] - 2026-06-30
 
