@@ -30,7 +30,7 @@ import org.pgcodekeeper.core.database.ch.jdbc.ChJdbcConnector;
 import org.pgcodekeeper.core.database.ch.loader.ChJdbcLoader;
 import org.pgcodekeeper.core.database.ch.project.ChWorkDirs;
 import org.pgcodekeeper.core.database.ch.utils.ChDiffUtils;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.database.base.IUiDatabaseProvider;
@@ -53,8 +53,8 @@ public class ChUiDatabaseProvider extends ChDatabaseProvider implements IUiDatab
     }
 
     @Override
-    public ChJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, DiffSettings diffSettings) {
-        return new ChJdbcLoader(getDbInfoJdbcConnector(dbInfo), diffSettings);
+    public ChJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, ISettings settings) {
+        return new ChJdbcLoader(getDbInfoJdbcConnector(dbInfo), settings);
     }
 
     @Override

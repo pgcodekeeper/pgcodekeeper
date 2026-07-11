@@ -48,7 +48,6 @@ import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
 import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
 import org.pgcodekeeper.core.database.base.project.DirRule;
-import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -107,11 +106,10 @@ public final class NormalizeProject extends AbstractHandler {
                     boolean projectOnly = true;
                     Map<String, Object> oneTimePrefs = Map.of(DB_UPDATE_PREF.PROJECT_ONLY, projectOnly);
                     IDatabaseProvider provider = dbType.getDatabaseProvider();
-                    DiffSettings diffSettings = new DiffSettings(
-                            new UISettings(proj.getProject(), oneTimePrefs),
-                            new UIMonitor(mon.newChild(1)));
+                    var settings = new UISettings(proj.getProject(), oneTimePrefs, null);
+                    settings.setMonitor(new UIMonitor(mon.newChild(1)));
                     ILoader loader = provider.getProjectLoader(
-                            projectPath, diffSettings,
+                            projectPath, settings,
                             Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                             LibraryUtils.META_PATH);
                     IDatabase db = loader.loadAndAnalyze();
@@ -119,9 +117,9 @@ public final class NormalizeProject extends AbstractHandler {
                     saveAltDirs(projectPath, dbType, newDirMappingsCopy, newSplitBySchema);
 
                     mon.newChild(1).subTask(Messages.NormalizeProject_exporting_project);
-                    var updaterSettings = new UISettings(proj.getProject(), null);
+                    var updaterSettings = new UISettings(proj.getProject());
 
-                    provider.getProjectUpdater(db, null, null, projectPath, updaterSettings)
+                    provider.getProjectUpdater(db, null, null, projectPath, false, updaterSettings)
                             .updateFull(projectOnly, currentWorkDirs);
                 } catch (IOException ex) {
                     return new Status(IStatus.ERROR, PLUGIN_ID.THIS,

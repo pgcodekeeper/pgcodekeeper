@@ -20,7 +20,6 @@ import java.util.List;
 
 import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
-import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.settings.ISettings;
 
 /**
@@ -73,10 +72,5 @@ public class StubDatabaseLoader implements ILoader {
     @Override
     public List<Object> getErrors() {
         return Collections.emptyList();
-    }
-
-    @Override
-    public DiffSettings getDiffSettings() {
-        throw new IllegalStateException();
     }
 }

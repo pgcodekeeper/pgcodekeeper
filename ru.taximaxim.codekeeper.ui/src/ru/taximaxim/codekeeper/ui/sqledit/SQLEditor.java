@@ -103,7 +103,6 @@ import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
 import org.pgcodekeeper.core.reporter.IProgressReporter;
-import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
@@ -636,9 +635,10 @@ implements IResourceChangeListener, ITextErrorReporter {
         IRunnableWithProgress runnable = monitor -> {
             try {
                 var scriptSettings = new UISettings(null, null, dbInfo.getDbType());
+                scriptSettings.setMonitor(new UIMonitor(monitor));
                 IDumpLoader scriptLoader = dbInfo.getDbType().getDatabaseProvider().getDumpLoader(
                         () -> new ByteArrayInputStream(textRetrieved.getBytes(StandardCharsets.UTF_8)),
-                        getEditorInput().getName(), new DiffSettings(scriptSettings, new UIMonitor(monitor)));
+                        getEditorInput().getName(), scriptSettings);
                 ScriptParser scriptParser = new ScriptParser(scriptLoader,
                         getEditorInput().getName(), textRetrieved);
                 String error = scriptParser.getErrorMessage();

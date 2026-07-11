@@ -51,7 +51,7 @@ import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.ignorelist.IgnoreList;
 import org.pgcodekeeper.core.model.difftree.DiffTree;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
@@ -112,14 +112,14 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
             ILoader newDb = pageDiff.getNewDb();
             ILoader oldDb = pageDiff.getOldDb();
             DatabaseType dbType = pageDiff.getSelectedDbType();
-            DiffSettings diffSettings = new DiffSettings(new UISettings(null, pageDiff.getOneTimePrefs(), dbType));
+            ISettings settings = new UISettings(null, pageDiff.getOneTimePrefs(), dbType);
             final TreeElement[] diffTree = new TreeElement[1];
 
             try {
                 getContainer().run(true, true, monitor -> {
                     try {
-                        // FIXME loaders have their own DiffSettings and we lose some information
-                        diffTree[0] = PgCodeKeeperApi.createTree(oldDb, newDb, diffSettings);
+                        // FIXME loaders have their own ISettings and we lose some information
+                        diffTree[0] = PgCodeKeeperApi.createTree(oldDb, newDb, settings);
                     } catch (IOException ex) {
                         throw new InvocationTargetException(ex);
                     }
@@ -136,7 +136,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
                 return;
             }
 
-            pagePartial.setData(oldDb, newDb, diffTree[0], diffSettings, pageDiff.getIgnoreList(), dbType);
+            pagePartial.setData(oldDb, newDb, diffTree[0], settings, pageDiff.getIgnoreList(), dbType);
         }
     }
 
@@ -157,7 +157,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
         try {
             Differ differ = new Differ(pagePartial.getOldDb().getDatabase(), pagePartial.getNewDb().getDatabase(),
                     pagePartial.getDiffTree(), pageDiff.getTimezone(), null, pageDiff.getOneTimePrefs(),
-                    pagePartial.getDbType(), pagePartial.getDiffSettings());
+                    pagePartial.getDbType(), pagePartial.getSettings());
             getContainer().run(true, true, differ);
 
             FileUtilsUi.saveOpenTmpSqlEditor(differ.getDiffDirect(), "diff_wizard_result", //$NON-NLS-1$
@@ -178,13 +178,13 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
     public void swapDbSides() {
         ILoader oldDb = pagePartial.getOldDb();
         ILoader newDb = pagePartial.getNewDb();
-        DiffSettings diffSettings = pagePartial.getDiffSettings();
+        ISettings settings = pagePartial.getSettings();
         DatabaseType dbType = pagePartial.getDbType();
         final TreeElement[] diffTree = new TreeElement[1];
 
         try {
             getContainer().run(true, true, monitor ->
-            diffTree[0] = DiffTree.create(diffSettings.getSettings(), newDb.getDatabase(), oldDb.getDatabase(),
+            diffTree[0] = DiffTree.create(settings, newDb.getDatabase(), oldDb.getDatabase(),
                     new UIMonitor(monitor)));
         } catch (InvocationTargetException ex) {
             MessageDialog.openError(getContainer().getShell(), Messages.error_in_differ_thread,
@@ -195,7 +195,7 @@ public final class DiffWizard extends Wizard implements IPageChangingListener {
             return;
         }
 
-        pagePartial.setData(newDb, oldDb, diffTree[0], diffSettings, pageDiff.getIgnoreList(), dbType);
+        pagePartial.setData(newDb, oldDb, diffTree[0], settings, pageDiff.getIgnoreList(), dbType);
     }
 }
 
@@ -390,14 +390,14 @@ final class PagePartial extends WizardPage {
     private Label lblNewDb;
     private Label lblOldDb;
     private DiffTableViewer diffTable;
-    private DiffSettings diffSettings;
+    private ISettings settings;
 
-    public void setData(ILoader oldDb, ILoader newDb, TreeElement diffTree, DiffSettings diffSettings,
+    public void setData(ILoader oldDb, ILoader newDb, TreeElement diffTree, ISettings settings,
             IgnoreList ignoreList, DatabaseType dbType) {
         this.oldDb = oldDb;
         this.newDb = newDb;
         this.diffTree = diffTree;
-        this.diffSettings = diffSettings;
+        this.settings = settings;
         lblNewDb.setText(newDb.getDatabaseName());
         lblOldDb.setText(oldDb.getDatabaseName());
         lblNewDb.getParent().layout();
@@ -417,8 +417,8 @@ final class PagePartial extends WizardPage {
         return diffTree;
     }
 
-    public DiffSettings getDiffSettings() {
-        return diffSettings;
+    public ISettings getSettings() {
+        return settings;
     }
 
     public DatabaseType getDbType() {
@@ -441,7 +441,7 @@ final class PagePartial extends WizardPage {
         lblNewDb = new Label(container, SWT.WRAP);
         lblOldDb = new Label(container, SWT.WRAP);
 
-        diffTable = new DiffTableViewer(container, false, null, new UISettings(null, null));
+        diffTable = new DiffTableViewer(container, false, null, new UISettings(null));
         diffTable.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
 
         Composite btnContainer = new Composite(container, SWT.NONE);

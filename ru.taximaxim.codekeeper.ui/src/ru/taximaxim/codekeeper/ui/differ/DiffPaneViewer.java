@@ -165,7 +165,7 @@ public final class DiffPaneViewer extends Composite {
 
         ILoader db = isProject ? dbProject : dbRemote;
         IStatement st = el.getStatement(db.getDatabase());
-        ISettings settings = new UISettings(project, null);
+        ISettings settings = new UISettings(project);
         if (st.getStatementType() == DbObjType.ASSEMBLY) {
             return ((MsAssembly) st).getPreview(settings);
         }

@@ -19,9 +19,9 @@ import java.util.Collection;
 
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.base.formatter.FormatConfiguration;
-import org.pgcodekeeper.core.settings.ISettings;
+import org.pgcodekeeper.core.settings.AbstractSettings;
 
-public final class TestUiSettings implements ISettings {
+public final class TestUiSettings extends AbstractSettings {
 
     @Override
     public boolean isConcurrentlyMode() {
@@ -154,7 +154,7 @@ public final class TestUiSettings implements ISettings {
     }
 
     @Override
-    public ISettings copy() {
+    protected AbstractSettings shallowCopy() {
         throw new UnsupportedOperationException();
     }
 

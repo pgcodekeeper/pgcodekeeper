@@ -41,7 +41,7 @@ import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.Utils;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
@@ -78,7 +78,7 @@ public final class AddComment extends AbstractHandler {
         }
 
         IDumpLoader fileLoader = ProjectUtils.getDatabaseType(file.getProject()).getDatabaseProvider().getDumpLoader(
-                file.getLocation().toFile().toPath(), new DiffSettings(new UISettings(file.getProject(), null)));
+                file.getLocation().toFile().toPath(), new UISettings(file.getProject()));
         IDatabase oldDb = fileLoader.loadAndAnalyze();
         IDatabase newDb = (IDatabase) oldDb.deepCopy();
 
@@ -118,11 +118,11 @@ public final class AddComment extends AbstractHandler {
 
         var project = file.getProject();
         IDatabaseProvider provider = ProjectUtils.getDatabaseType(project).getDatabaseProvider();
-        DiffSettings diffSettings = new DiffSettings(new UISettings(project, null));
-        TreeElement el = PgCodeKeeperApi.createTree(newDbSource, oldDbSource, diffSettings).findElement(statement);
+        ISettings settings = new UISettings(project);
+        TreeElement el = PgCodeKeeperApi.createTree(newDbSource, oldDbSource, settings).findElement(statement);
 
         PgDbProject proj = new PgDbProject(project);
-        var updaterSettings = new UISettings(project, null);
+        var updaterSettings = new UISettings(project);
         provider.getProjectUpdater(newDb, oldDb, List.of(el), proj.getPathToProject(), false, updaterSettings)
                 .updatePartial();
         file.refreshLocal(IResource.DEPTH_INFINITE, null);

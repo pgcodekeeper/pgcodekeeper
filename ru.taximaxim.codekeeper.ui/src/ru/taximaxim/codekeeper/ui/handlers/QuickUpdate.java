@@ -60,7 +60,6 @@ import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.base.jdbc.JdbcRunner;
 import org.pgcodekeeper.core.database.base.parser.ScriptParser;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -176,16 +175,16 @@ class QuickUpdateJob extends SingletonEditorJob {
             throw new PgCodekeeperUIException(Messages.QuickUpdate_different_types);
         }
 
-        DiffSettings diffSettings = new DiffSettings(new UISettings(proj.getProject(), null, dbType),
-                new UIMonitor(monitor));
+        var settings = new UISettings(proj.getProject(), null, dbType);
+        settings.setMonitor(new UIMonitor(monitor));
 
         IUiDatabaseProvider provider = dbType.getDatabaseProvider();
-        ILoader dbRemote = provider.getDbInfoJdbcLoader(dbInfo, diffSettings);
-        ILoader dbProject = provider.getProjectLoader(proj.getProject().getLocation().toFile().toPath(), diffSettings,
+        ILoader dbRemote = provider.getDbInfoJdbcLoader(dbInfo, settings);
+        ILoader dbProject = provider.getProjectLoader(proj.getProject().getLocation().toFile().toPath(), settings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
 
-        TreeElement treeFull = PgCodeKeeperApi.createTree(dbRemote, dbProject, diffSettings);
+        TreeElement treeFull = PgCodeKeeperApi.createTree(dbRemote, dbProject, settings);
 
         String filePath = file.getLocation().toFile().toPath().toString();
         List<IStatement> listPgObjectsFragment = new ArrayList<>();
@@ -203,7 +202,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         String timezone = proj.getPrefs().get(PROJ_PREF.TIMEZONE, Consts.UTC);
         Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), treeFull, timezone,
-                proj.getProject(), null, dbType, diffSettings);
+                proj.getProject(), null, dbType, settings);
         differ.run(monitor.newChild(1));
 
         checkFileModified();
@@ -215,7 +214,7 @@ class QuickUpdateJob extends SingletonEditorJob {
         try {
             IDumpLoader scriptLoader = provider.getDumpLoader(
                     () -> new ByteArrayInputStream(differ.getDiffDirect().getBytes(StandardCharsets.UTF_8)),
-                    file.getName(), diffSettings);
+                    file.getName(), settings);
             ScriptParser parser = new ScriptParser(scriptLoader, file.getName(), differ.getDiffDirect());
             String error = parser.getErrorMessage();
             if (error != null) {
@@ -234,10 +233,10 @@ class QuickUpdateJob extends SingletonEditorJob {
         checkFileModified();
 
         // recreating loader due to cache
-        dbRemote = provider.getDbInfoJdbcLoader(dbInfo, diffSettings);
+        dbRemote = provider.getDbInfoJdbcLoader(dbInfo, settings);
 
         TreeElement treeAfter = PgCodeKeeperApi.createTree(
-                new StubDatabaseLoader(dbProject.getDatabase(), dbProject.getDatabaseName()), dbRemote, diffSettings);
+                new StubDatabaseLoader(dbProject.getDatabase(), dbProject.getDatabaseName()), dbRemote, settings);
 
         Collection<TreeElement> checkedAfter = setCheckedFromFragment(treeAfter, listPgObjectsFragment,
                 dbProject.getDatabase(), dbRemote.getDatabase());
@@ -250,7 +249,7 @@ class QuickUpdateJob extends SingletonEditorJob {
 
         monitor.newChild(1).subTask(Messages.QuickUpdate_updating_project);
         provider.getProjectUpdater(dbRemote.getDatabase(), dbProject.getDatabase(), checkedAfter,
-                proj.getPathToProject(), false, new UISettings(proj.getProject(), null)).updatePartial();
+                proj.getPathToProject(), false, new UISettings(proj.getProject())).updatePartial();
 
         file.refreshLocal(IResource.DEPTH_INFINITE, monitor.newChild(1));
     }

@@ -36,7 +36,6 @@ import org.eclipse.swt.widgets.Label;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.IDatabaseProvider;
 import org.pgcodekeeper.core.database.api.loader.ILoader;
-import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 
@@ -117,19 +116,18 @@ class DbSourcePicker extends Composite {
 
     public ILoader getDbSource(Map<String, Object> oneTimePrefs) {
         IDatabaseProvider provider = pageDiff.getSelectedDbType().getDatabaseProvider();
-        DiffSettings diffSettings = new DiffSettings(
-                new UISettings(null, oneTimePrefs, pageDiff.getSelectedDbType()),
-                new UIMonitor(null));
+        var settings = new UISettings(null, oneTimePrefs, pageDiff.getSelectedDbType());
+        settings.setMonitor(new UIMonitor(null));
 
         DbInfo dbInfo;
         File file;
         File dir;
         if ((dbInfo = storePicker.getDbInfo()) != null) {
-            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
+            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), settings);
         } else if ((file = storePicker.getPathOfFile()) != null) {
-            return provider.getDumpLoader(file.toPath(), diffSettings);
+            return provider.getDumpLoader(file.toPath(), settings);
         } else if ((dir = storePicker.getPathOfDir()) != null) {
-            return provider.getProjectLoader(dir.toPath(), diffSettings,
+            return provider.getProjectLoader(dir.toPath(), settings,
                     Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                     LibraryUtils.META_PATH);
         }

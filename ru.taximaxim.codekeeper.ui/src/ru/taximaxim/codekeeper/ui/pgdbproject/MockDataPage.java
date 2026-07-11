@@ -57,7 +57,6 @@ import org.pgcodekeeper.core.database.api.schema.IConstraint;
 import org.pgcodekeeper.core.database.api.schema.IConstraintPk;
 import org.pgcodekeeper.core.database.api.schema.ITable;
 import org.pgcodekeeper.core.database.ms.utils.MsDiffUtils;
-import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -761,9 +760,9 @@ public final class MockDataPage extends WizardPage {
                 dbType = ProjectUtils.getDatabaseType(file.getProject());
                 IDumpLoader loader = dbType.getDatabaseProvider().getDumpLoader(
                         file.getLocation().toFile().toPath(),
-                        new DiffSettings(new UISettings(file.getProject(), null)));
+                        new UISettings(file.getProject()));
                 loader.setMode(ParserListenerMode.SINGLE);
-                table = (ITable) loader.load().getDescendants()
+                table = (ITable) loader.loadAndAnalyze().getDescendants()
                         .filter(e -> e.getStatementType() == DbObjType.TABLE)
                         .findAny().orElse(null);
             } catch (InterruptedException | IOException e) {

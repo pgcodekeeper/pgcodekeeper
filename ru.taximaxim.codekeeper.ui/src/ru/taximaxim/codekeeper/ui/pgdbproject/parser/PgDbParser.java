@@ -64,7 +64,6 @@ import org.pgcodekeeper.core.database.base.parser.ErrorTypes;
 import org.pgcodekeeper.core.database.base.parser.FullAnalyze;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaUtils;
-import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 import org.pgcodekeeper.core.utils.Utils;
@@ -181,10 +180,11 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void getObjFromProjFile(IFile file, IProgressMonitor monitor)
             throws InterruptedException, IOException {
-        ISettings settings = new UISettings(file.getProject(), null);
+        ISettings settings = new UISettings(file.getProject());
+        settings.setMonitor(new UIMonitor(monitor));
         var provider = ProjectUtils.getDatabaseType(file.getProject()).getDatabaseProvider();
         IDumpLoader loader = provider.getDumpLoader(file.getLocation().toFile().toPath(),
-                new DiffSettings(settings, new UIMonitor(monitor)));
+                settings);
         loader.setMode(ParserListenerMode.REF);
         IDatabase db = loader.load();
         clearMarkers(List.of(file));
@@ -200,15 +200,16 @@ public final class PgDbParser implements IResourceChangeListener {
             return;
         }
         IProject proj = files.iterator().next().getProject();
-        DiffSettings diffSettings = new DiffSettings(new UISettings(proj, null), new UIMonitor(monitor));
-        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj), diffSettings,
+        ISettings settings = new UISettings(proj);
+        settings.setMonitor(new UIMonitor(monitor));
+        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj), settings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
         IDatabase db = loader.load();
         files.forEach(this::removeResFromRefs);
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, diffSettings.getErrors(), diffSettings.getVersion());
+        FullAnalyze.fullAnalyze(db, settings.getErrors(), settings.getVersion());
         clearMarkers(files);
         markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
@@ -217,17 +218,17 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
             throws InterruptedException, IOException {
-        UISettings settings = new UISettings(proj, null);
+        UISettings settings = new UISettings(proj);
+        settings.setMonitor(new UIMonitor(monitor));
         var provider = ProjectUtils.getDatabaseType(proj).getDatabaseProvider();
-        DiffSettings diffSettings = new DiffSettings(settings, new UIMonitor(monitor));
-        ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj), diffSettings,
+        ILoader loader = provider.getProjectLoader(ProjectUtils.getPath(proj), settings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
         IDatabase db = loader.load();
         referencesStorage.clear();
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, diffSettings.getErrors(), diffSettings.getVersion());
+        FullAnalyze.fullAnalyze(db, settings.getErrors(), settings.getVersion());
         clearMarkers(proj);
         markErrors(loader.getErrors());
         referencesStorage.putReferences(definitions, db.getObjReferences());
@@ -300,8 +301,9 @@ public final class PgDbParser implements IResourceChangeListener {
             DatabaseType dbType)
             throws InterruptedException, IOException {
         var provider = dbType.getDatabaseProvider();
-        var loader = provider.getDumpLoader(() -> input,
-                fileName, new DiffSettings(new UISettings(project, null), new UIMonitor(monitor)));
+        var settings = new UISettings(project);
+        settings.setMonitor(new UIMonitor(monitor));
+        var loader = provider.getDumpLoader(() -> input, fileName, settings);
         loader.setMode(ParserListenerMode.REF);
         IDatabase db = loader.load();
         referencesStorage.clear();

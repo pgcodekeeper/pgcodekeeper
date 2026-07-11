@@ -30,7 +30,7 @@ import org.eclipse.core.resources.ProjectScope;
 import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.base.formatter.FormatConfiguration;
-import org.pgcodekeeper.core.settings.ISettings;
+import org.pgcodekeeper.core.settings.AbstractSettings;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts;
@@ -44,7 +44,7 @@ import ru.taximaxim.codekeeper.ui.prefs.PreferenceCategory;
 import ru.taximaxim.codekeeper.ui.properties.OverridablePrefs;
 import ru.taximaxim.codekeeper.ui.utils.ProjectUtils;
 
-public final class UISettings implements ISettings {
+public final class UISettings extends AbstractSettings {
 
     private String timeZone;
     private String inCharsetName = Consts.UTF_8;
@@ -73,8 +73,8 @@ public final class UISettings implements ISettings {
         }
     }
 
-    public UISettings(IProject project, Map<String, Object> oneTimePS) {
-        this(project, oneTimePS, null);
+    public UISettings(IProject project) {
+        this(project, null, null);
     }
 
     @Override
@@ -250,7 +250,7 @@ public final class UISettings implements ISettings {
     }
 
     @Override
-    public UISettings copy() {
+    protected AbstractSettings shallowCopy() {
         return new UISettings(project, createTempPrefs(), dbType);
     }
 
