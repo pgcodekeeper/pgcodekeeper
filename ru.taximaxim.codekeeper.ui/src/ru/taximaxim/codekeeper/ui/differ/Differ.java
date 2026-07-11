@@ -27,7 +27,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.pgcodekeeper.core.api.PgCodeKeeperApi;
 import org.pgcodekeeper.core.database.api.schema.*;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.Log;
@@ -42,18 +42,18 @@ public final class Differ implements IRunnableWithProgress {
     private final TreeElement root;
     private final String timezone;
     private final DatabaseType dbType;
-    private final DiffSettings diffSettings;
+    private final ISettings settings;
 
     private String diffDirect;
 
     public Differ(IDatabase oldDb, IDatabase newDb, TreeElement root, String timezone, IProject proj,
-            Map<String, Object> oneTimePrefs, DatabaseType dbType, DiffSettings diffSettings) {
+            Map<String, Object> oneTimePrefs, DatabaseType dbType, ISettings settings) {
         this.oldDb = oldDb;
         this.newDb = newDb;
         this.root = root;
         this.timezone = timezone;
         this.dbType = dbType;
-        this.diffSettings = diffSettings;
+        this.settings = settings;
     }
 
     public Job getDifferJob() {
@@ -90,8 +90,8 @@ public final class Differ implements IRunnableWithProgress {
         UIMonitor uiMonitor = new UIMonitor(monitor);
 
         try {
-            diffSettings.setMonitor(uiMonitor);
-            diffDirect = PgCodeKeeperApi.diff(dbType.getDatabaseProvider(), oldDb, newDb, diffSettings, root);
+            settings.setMonitor(uiMonitor);
+            diffDirect = PgCodeKeeperApi.diff(dbType.getDatabaseProvider(), oldDb, newDb, settings, root);
         } catch (IOException e) {
             throw new InvocationTargetException(e, e.getLocalizedMessage());
         }

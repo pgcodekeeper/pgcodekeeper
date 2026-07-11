@@ -184,7 +184,7 @@ public final class ProjectOverrideView extends ViewPart implements ISelectionLis
                 if (!sel.isEmpty() && sel instanceof IStructuredSelection ss) {
                     Object obj = ss.getFirstElement();
                     if (obj instanceof ObjectOverride override) {
-                        CompareAction.openCompareEditor(new CompareInput(override, new UISettings(project, null)));
+                        CompareAction.openCompareEditor(new CompareInput(override, new UISettings(project)));
                     }
                 }
             }

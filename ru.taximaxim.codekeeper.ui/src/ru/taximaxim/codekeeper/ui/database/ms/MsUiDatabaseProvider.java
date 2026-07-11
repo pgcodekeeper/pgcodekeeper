@@ -31,7 +31,7 @@ import org.pgcodekeeper.core.database.ms.jdbc.MsJdbcConnector;
 import org.pgcodekeeper.core.database.ms.loader.MsJdbcLoader;
 import org.pgcodekeeper.core.database.ms.project.MsWorkDirs;
 import org.pgcodekeeper.core.database.ms.utils.MsDiffUtils;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.database.base.IUiDatabaseProvider;
@@ -53,8 +53,8 @@ public class MsUiDatabaseProvider extends MsDatabaseProvider implements IUiDatab
     }
 
     @Override
-    public MsJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, DiffSettings diffSettings) {
-        return new MsJdbcLoader(getDbInfoJdbcConnector(dbInfo), diffSettings);
+    public MsJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, ISettings settings) {
+        return new MsJdbcLoader(getDbInfoJdbcConnector(dbInfo), settings);
     }
 
     @Override

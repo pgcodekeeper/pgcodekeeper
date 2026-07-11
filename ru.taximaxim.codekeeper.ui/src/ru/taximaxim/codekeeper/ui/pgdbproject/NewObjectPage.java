@@ -74,7 +74,6 @@ import org.pgcodekeeper.core.database.base.project.AbstractWorkDirs;
 import org.pgcodekeeper.core.database.ch.parser.ChParserUtils;
 import org.pgcodekeeper.core.database.ch.schema.ChFunction;
 import org.pgcodekeeper.core.database.pg.parser.PgParserUtils;
-import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -186,7 +185,7 @@ public final class NewObjectPage extends WizardPage {
             IFile iFile = (IFile) resource;
             IDumpLoader loader = dbType.getDatabaseProvider().getDumpLoader(
                     iFile.getLocation().toFile().toPath(),
-                    new DiffSettings(new UISettings(iFile.getProject(), null)));
+                    new UISettings(iFile.getProject()));
             st = loader.loadAndAnalyze().getDescendants()
                     .filter(e -> types.contains(e.getStatementType()))
                     .findAny().orElse(null);

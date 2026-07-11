@@ -23,7 +23,6 @@ import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 import org.pgcodekeeper.core.script.SQLScript;
-import org.pgcodekeeper.core.settings.DiffSettings;
 import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.differ.ElementMetaInfo;
@@ -54,7 +53,7 @@ public final class CodeFilter extends AbstractFilter {
     }
 
     private String getScript(IStatement st, ISettings settings) {
-        SQLScript script = new SQLScript(new DiffSettings(settings), st.getSeparator());
+        SQLScript script = new SQLScript(settings, st.getSeparator());
         st.getCreationSQL(script);
         return script.getFullScript();
     }

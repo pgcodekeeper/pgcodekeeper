@@ -28,7 +28,6 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.pgcodekeeper.core.database.api.IDatabaseProvider;
 import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.schema.IDatabase;
-import org.pgcodekeeper.core.settings.DiffSettings;
 
 import ru.taximaxim.codekeeper.ui.Log;
 import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
@@ -80,7 +79,7 @@ public final class InitProjectFromSource implements IRunnableWithProgress {
         pm.newChild(25).subTask(Messages.initProjectFromSource_exporting_db_model);
         var provider = dbType.getDatabaseProvider();
         var settings = new UISettings(proj.getProject(), null, dbType);
-        provider.getProjectUpdater(db, null, null, proj.getPathToProject(), settings).updateFull(false);
+        provider.getProjectUpdater(db, null, null, proj.getPathToProject(), false, settings).updateFull(false);
     }
 
     private ILoader createLoader(SubMonitor monitor) {
@@ -89,15 +88,15 @@ public final class InitProjectFromSource implements IRunnableWithProgress {
             return new StubDatabaseLoader(provider.createDatabase(), "Empty DB"); //$NON-NLS-1$
         }
 
-        DiffSettings diffSettings = new DiffSettings(new UISettings(proj.getProject(), null, dbType),
-                new UIMonitor(monitor));
+        var settings = new UISettings(proj.getProject(), null, dbType);
+        settings.setMonitor(new UIMonitor(monitor));
 
         if (dbInfo != null) {
-            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
+            return provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), settings);
         }
 
         if (dumpPath != null) {
-            return provider.getDumpLoader(dumpPath.toPath(), diffSettings);
+            return provider.getDumpLoader(dumpPath.toPath(), settings);
         }
 
         throw new IllegalStateException(Messages.initProjectFromSource_init_request_but_no_schema_source);

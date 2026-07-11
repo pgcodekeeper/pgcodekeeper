@@ -27,7 +27,7 @@ import org.pgcodekeeper.core.database.api.loader.IJdbcLoader;
 import org.pgcodekeeper.core.database.api.schema.DbObjType;
 import org.pgcodekeeper.core.database.api.schema.IStatement;
 import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
@@ -55,11 +55,11 @@ public interface IUiDatabaseProvider extends IDatabaseProvider {
 
     /**
      * @param dbInfo       {@link DbInfo}
-     * @param diffSettings {@link DiffSettings}
+     * @param settings {@link ISettings}
      * @return jdbc loader for DBMS
      * @see {@link IJdbcLoader}
      */
-    IJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, DiffSettings diffSettings);
+    IJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, ISettings settings);
 
     /**
      * @param type {@link DbObjType} of {@link IStatement}
@@ -144,7 +144,7 @@ public interface IUiDatabaseProvider extends IDatabaseProvider {
     }
 
     @Override
-    default IJdbcLoader getJdbcLoader(String url, DiffSettings diffSettings) {
+    default IJdbcLoader getJdbcLoader(String url, ISettings settings) {
         throw new UnsupportedOperationException(
                 Messages.IUiDatabaseProvider_unsuported_operation_exception.formatted("getDbInfoJdbcLoader")); //$NON-NLS-1$
     }

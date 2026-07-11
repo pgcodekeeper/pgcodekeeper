@@ -547,7 +547,7 @@ public class DiffTableViewer extends Composite {
         IDatabase source = sourceLoader.getDatabase();
         IStatement st = el.getStatement(source);
         List<String> deps = DepcyFinder.byStatement(graphDlg.getGraphDepth(), graphDlg.isReverse(),
-                graphDlg.getObjTypes(), st, sourceLoader.getDiffSettings().getAdditionalDependencies());
+                graphDlg.getObjTypes(), st, sourceLoader.getSettings().getAdditionalDependencies());
 
         String content = String.join("\n", deps); //$NON-NLS-1$
         try {

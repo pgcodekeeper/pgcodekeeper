@@ -118,7 +118,7 @@ import org.pgcodekeeper.core.model.difftree.TreeElement;
 import org.pgcodekeeper.core.model.difftree.TreeElement.DiffSide;
 import org.pgcodekeeper.core.model.graph.DepcyTreeExtender;
 import org.pgcodekeeper.core.monitor.IMonitor;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.Activator;
@@ -186,7 +186,7 @@ public final class ProjectEditorDiffer extends EditorPart
     private ILoader dbProject;
     private ILoader dbRemote;
     private TreeElement diffTree;
-    private DiffSettings diffSettings;
+    private ISettings settings;
     private Object loadedRemote;
 
     private Composite contNotifications;
@@ -277,7 +277,7 @@ public final class ProjectEditorDiffer extends EditorPart
                 e -> openElementInEditor((TreeElement) ((IStructuredSelection) e.getSelection()).getFirstElement()));
 
         diffTable.getViewer().addPostSelectionChangedListener(
-                e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote, diffSettings)));
+                e -> sp.fireSelectionChanged(e, new DBPair(dbProject, dbRemote, settings)));
 
         diffPane = new DiffPaneViewer(sashOuter, getProject());
 
@@ -368,7 +368,7 @@ public final class ProjectEditorDiffer extends EditorPart
         if (dbProject != null) {
             ISelection selection = diffTable.getViewer().getSelection();
             if (selection.isEmpty()) {
-                DBPair pair = new DBPair(dbProject, dbRemote, diffSettings);
+                DBPair pair = new DBPair(dbProject, dbRemote, settings);
                 sp.fireSelectionChanged(new SelectionChangedEvent(sp, new StructuredSelection(pair)), pair);
             }
         }
@@ -473,20 +473,19 @@ public final class ProjectEditorDiffer extends EditorPart
 
         var settings = new UISettings(getProject(), oneTimePrefs, dbType);
         IDatabaseProvider provider = dbType.getDatabaseProvider();
-        DiffSettings diffSettings = new DiffSettings(settings);
 
-        ILoader oldDb = provider.getProjectLoader(getProject().getLocation().toFile().toPath(), diffSettings,
+        ILoader oldDb = provider.getProjectLoader(getProject().getLocation().toFile().toPath(), settings,
                 Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
                 LibraryUtils.META_PATH);
 
         ILoader newDb;
         if (isDbInfo) {
             DbInfo dbInfo = (DbInfo) currentRemote;
-            newDb = provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), diffSettings);
+            newDb = provider.getJdbcLoader(IDbInfoConnector.createConnector(dbInfo), settings);
             saveLastDb(dbInfo);
         } else {
             File file = (File) currentRemote;
-            newDb = provider.getDumpLoader(file.toPath(), diffSettings);
+            newDb = provider.getDumpLoader(file.toPath(), settings);
         }
 
         if (!ProjectUtils.checkVersionAndWarn(getProject(), parent.getShell(), true)) {
@@ -509,14 +508,14 @@ public final class ProjectEditorDiffer extends EditorPart
 
                     UIMonitor uiMonitor = new UIMonitor(monitor);
                     IMonitor.checkCancelled(uiMonitor);
-                    diffSettings.setMonitor(uiMonitor);
+                    settings.setMonitor(uiMonitor);
                     sub.subTask(Messages.diffPresentationPane_getting_changes_for_diff);
-                    TreeElement diffTree = PgCodeKeeperApi.createTree(oldDb, newDb, diffSettings);
+                    TreeElement diffTree = PgCodeKeeperApi.createTree(oldDb, newDb, settings);
 
                     UiSync.exec(parent, () -> {
                         if (!parent.isDisposed()) {
                             loadedRemote = currentRemote;
-                            setInput(oldDb, newDb, diffTree, diffSettings);
+                            setInput(oldDb, newDb, diffTree, settings);
                             if (diffTable.getElements().isEmpty()) {
                                 showNotificationArea(true, Messages.ProjectEditorDiffer_no_differences);
                             }
@@ -554,7 +553,7 @@ public final class ProjectEditorDiffer extends EditorPart
                 });
 
                 if (event.getResult().isOK() && mainPrefs.getBoolean(PG_EDIT_PREF.SHOW_DIFF_ERRORS)) {
-                    diffSettings.getErrors().forEach(e -> StatusManager.getManager()
+                    settings.getErrors().forEach(e -> StatusManager.getManager()
                             .handle(new Status(IStatus.WARNING, PLUGIN_ID.THIS, e.toString()), StatusManager.SHOW));
                 }
             }
@@ -693,7 +692,7 @@ public final class ProjectEditorDiffer extends EditorPart
 
         IEclipsePreferences pref = proj.getPrefs();
         final Differ differ = new Differ(dbRemote.getDatabase(), dbProject.getDatabase(), diffTree.getRevertedCopy(),
-                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType, diffSettings);
+                pref.get(PROJ_PREF.TIMEZONE, Consts.UTC), getProject(), oneTimePrefs, dbType, settings);
 
         Job job = differ.getDifferJob();
         job.addJobChangeListener(new JobChangeAdapter() {
@@ -723,11 +722,11 @@ public final class ProjectEditorDiffer extends EditorPart
         job.schedule();
     }
 
-    private void setInput(ILoader dbProject, ILoader dbRemote, TreeElement diffTree, DiffSettings diffSettings) {
+    private void setInput(ILoader dbProject, ILoader dbRemote, TreeElement diffTree, ISettings settings) {
         this.dbProject = dbProject;
         this.dbRemote = dbRemote;
         this.diffTree = diffTree;
-        this.diffSettings = diffSettings;
+        this.settings = settings;
 
         if (dbProject != null && !showOverrideView(dbProject)) {
             return;
@@ -891,7 +890,7 @@ public final class ProjectEditorDiffer extends EditorPart
         TreeElement treeCopy = diffTree.getCopy();
         Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_processing_depcies_for_project_update);
         Set<TreeElement> sumNewAndDelete = new DepcyTreeExtender(dbProject.getDatabase(), dbRemote.getDatabase(),
-                treeCopy, diffSettings.getAdditionalDependencies()).getDepcies();
+                treeCopy, settings.getAdditionalDependencies()).getDepcies();
 
         Log.log(Log.LOG_INFO, Messages.ProjectEditorDiffer_querying_user_for_project_update);
         // display commit dialog
@@ -1003,7 +1002,7 @@ public final class ProjectEditorDiffer extends EditorPart
 
         public DiffTable(Composite parent, boolean viewOnly, IStatusLineManager lineManager, Path location,
                 IProject proj) {
-            super(parent, viewOnly, lineManager, location, dbType, new UISettings(proj, oneTimePrefs));
+            super(parent, viewOnly, lineManager, location, dbType, new UISettings(proj, oneTimePrefs, null));
         }
 
         @Override

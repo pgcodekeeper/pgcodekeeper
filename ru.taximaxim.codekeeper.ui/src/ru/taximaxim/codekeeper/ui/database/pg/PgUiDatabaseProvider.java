@@ -32,7 +32,7 @@ import org.pgcodekeeper.core.database.pg.jdbc.PgJdbcConnector;
 import org.pgcodekeeper.core.database.pg.loader.PgJdbcLoader;
 import org.pgcodekeeper.core.database.pg.project.PgWorkDirs;
 import org.pgcodekeeper.core.database.pg.utils.PgDiffUtils;
-import org.pgcodekeeper.core.settings.DiffSettings;
+import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
 
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
@@ -55,10 +55,10 @@ public class PgUiDatabaseProvider extends PgDatabaseProvider implements IUiDatab
     }
 
     @Override
-    public PgJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, DiffSettings diffSettings) {
-        String timezone = diffSettings.getSettings().getTimeZone() == null ? Consts.UTC
-                : diffSettings.getSettings().getTimeZone();
-        return new PgJdbcLoader(getDbInfoJdbcConnector(dbInfo), timezone, diffSettings);
+    public PgJdbcLoader getDbInfoJdbcLoader(DbInfo dbInfo, ISettings settings) {
+        String timezone = settings.getTimeZone() == null ? Consts.UTC
+                : settings.getTimeZone();
+        return new PgJdbcLoader(getDbInfoJdbcConnector(dbInfo), timezone, settings);
     }
 
     @Override

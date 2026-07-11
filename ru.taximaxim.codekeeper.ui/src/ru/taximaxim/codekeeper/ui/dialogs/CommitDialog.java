@@ -119,7 +119,7 @@ public final class CommitDialog extends TrayDialog {
         gTop.setText(Messages.commitDialog_user_selected_elements);
 
         var dbType = DatabaseType.fromStatement(dbProject.getDatabase());
-        ISettings settings = new UISettings(proj.getProject(), null);
+        ISettings settings = new UISettings(proj.getProject());
         DiffTableViewer dtvTop = new DiffTableViewer(gTop, true, dbType, settings);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 300;
@@ -309,7 +309,7 @@ public final class CommitDialog extends TrayDialog {
                         .onlyEdits(dbProject.getDatabase(), dbRemote.getDatabase()).flatten(diffTree);
 
                 var provider = DatabaseType.fromStatement(dbProject.getDatabase()).getDatabaseProvider();
-                var settings = new UISettings(proj.getProject(), null);
+                var settings = new UISettings(proj.getProject());
                 PgCodeKeeperApi.exportToProject(provider, dbProject.getDatabase(), dbRemote.getDatabase(),
                         checked, proj.getPathToProject(), isOverridesOnly, settings);
 
