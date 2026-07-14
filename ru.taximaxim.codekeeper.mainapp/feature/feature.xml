@@ -2,7 +2,7 @@
 <feature
       id="ru.taximaxim.codekeeper.feature"
       label="%feature.label"
-      version="14.7.0.qualifier"
+      version="15.0.0.qualifier"
       provider-name="%feature.provider-name"
       plugin="ru.taximaxim.codekeeper.mainapp">
 
@@ -69,10 +69,6 @@
          version="0.0.0"/>
 
    <plugin
-         id="wrapped.org.apfloat.apfloat"
-         version="0.0.0"/>
-
-   <plugin
          id="org.pgcodekeeper.core"
          version="0.0.0"/>
 
@@ -94,6 +90,10 @@
 
    <plugin
          id="wrapped-click.com.clickhouse.jdbc-v2"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.apfloat"
          version="0.0.0"/>
 
 </feature>

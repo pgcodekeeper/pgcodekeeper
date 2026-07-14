@@ -25,7 +25,8 @@
     </modules>
 
     <properties>
-        <revision>14.7.0-SNAPSHOT</revision>
+        <java.version>21</java.version>
+        <revision>15.0.0-SNAPSHOT</revision>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -40,11 +41,9 @@
         <sonar.exclusions>**/*.sql, **/*.xml, **/Messages.java</sonar.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/ru.taximaxim.codekeeper.mainapp/report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
-        <java.version>21</java.version>
         <tycho.version>4.0.13</tycho.version>
-        <jacoco.version>0.8.14</jacoco.version>
-        <maven.surefire.version>3.5.5</maven.surefire.version>
-        <maven.enforcer.version>3.6.2</maven.enforcer.version>
+        <jacoco.version>0.8.15</jacoco.version>
+        <maven.enforcer.version>3.6.3</maven.enforcer.version>
         <maven.jarsigner.version>3.1.0</maven.jarsigner.version>
     </properties>
 
@@ -108,7 +107,7 @@
                     <plugin>
                         <groupId>org.sonarsource.scanner.maven</groupId>
                         <artifactId>sonar-maven-plugin</artifactId>
-                        <version>5.5.0.6356</version>
+                        <version>5.7.0.6970</version>
                     </plugin>
                 </plugins>
             </build>
