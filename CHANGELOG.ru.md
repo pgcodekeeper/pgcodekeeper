@@ -11,9 +11,16 @@
 
 ### Изменено
 
+### Исправлено
+
+## [15.0.0] - 2026-07-14
+
+### Изменено
+
 - Повышена минимальная версии JAVA до 21.
 - Самостоятельные сборки pgCodeKeeper-а снова используют последнюю версию Eclipse.
 - Убрана неработающая настройка `Внешний загрузчик` из редактора подключения к БД.
+- Обновлены библиотечные зависимости.
 
 ### Исправлено
 
@@ -2526,7 +2533,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.7.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.0.0...HEAD
+[15.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.7.0...15.0.0
 [14.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...14.7.0
 [14.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...14.6.0
 [14.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.4.1...14.5.0
