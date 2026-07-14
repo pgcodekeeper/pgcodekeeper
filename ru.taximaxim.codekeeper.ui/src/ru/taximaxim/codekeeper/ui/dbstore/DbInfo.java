@@ -44,7 +44,7 @@ public final class DbInfo {
     private final boolean generateName;
     private final List<String> ignoreFiles;
     private final Map<String, String> properties;
-    private final String conType;
+    private final String color;
 
     public String getName() {
         return name;
@@ -102,20 +102,20 @@ public final class DbInfo {
         return Collections.unmodifiableMap(properties);
     }
 
-    public String getConType() {
-        return conType;
+    public String getColor() {
+        return color;
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport) {
         this(name, dbname, dbuser, dbpass, dbhost, dbport, false, false, Collections.emptyList(),
-                Collections.emptyMap(), DatabaseType.PG, false, "", "", ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                Collections.emptyMap(), DatabaseType.PG, false, "", "", null); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     public DbInfo(String name, String dbname, String dbuser, String dbpass,
             String dbhost, int dbport, boolean readOnly, boolean generateName,
             List<String> ignoreFiles, Map<String, String> properties, DatabaseType dbType, boolean winAuth,
-            String domain, String dbGroup, String conType) {
+            String domain, String dbGroup, String color) {
         this.name = name;
         this.dbname = dbname;
         this.dbuser = dbuser;
@@ -130,7 +130,7 @@ public final class DbInfo {
         this.winAuth = winAuth;
         this.domain = domain;
         this.dbGroup = dbGroup;
-        this.conType = conType;
+        this.color = color;
     }
 
     @Override

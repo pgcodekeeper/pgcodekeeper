@@ -26,14 +26,11 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.layout.PixelConverter;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.LocalResourceManager;
 import org.eclipse.jface.resource.ResourceManager;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TableViewerColumn;
@@ -55,28 +52,23 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.ProjectIcon;
-import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
-import ru.taximaxim.codekeeper.ui.dbstore.ConnectionTypeInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbInfo;
 import ru.taximaxim.codekeeper.ui.dbstore.DbStoreEditorDialog;
 import ru.taximaxim.codekeeper.ui.dialogs.ExceptionNotifier;
 import ru.taximaxim.codekeeper.ui.dialogs.PgPassDialog;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 import ru.taximaxim.pgpass.PgPass;
 
 public final class DbStorePrefPage extends PreferencePage
-        implements IWorkbenchPreferencePage, IPropertyChangeListener {
+        implements IWorkbenchPreferencePage {
 
     private DbStorePrefListEditor dbList;
 
     @Override
     public void init(IWorkbench workbench) {
-        IPreferenceStore store = Activator.getDefault().getPreferenceStore();
-        store.addPropertyChangeListener(this);
-        setPreferenceStore(store);
+        setPreferenceStore(Activator.getDefault().getPreferenceStore());
     }
 
     @Override
@@ -107,19 +99,6 @@ public final class DbStorePrefPage extends PreferencePage
             setErrorMessage(e.getLocalizedMessage());
             return false;
         }
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent event) {
-        if (CONN_TYPE_PREF.LAST_CONN_TYPE_CHANGE_TIME.equals(event.getProperty()) && !dbList.isDisposed()) {
-            dbList.refresh();
-        }
-    }
-
-    @Override
-    public void dispose() {
-        getPreferenceStore().removePropertyChangeListener(this);
-        super.dispose();
     }
 }
 
@@ -203,16 +182,11 @@ final class DbStorePrefListEditor extends PrefListEditor<DbInfo> {
 
             @Override
             public Color getBackground(Object element) {
-                String conType = ((DbInfo) element).getConType();
-                if (conType == null) {
+                String color = ((DbInfo) element).getColor();
+                if (color == null) {
                     return null;
                 }
-                for (ConnectionTypeInfo t : ConnectioTypeXMLStore.readStoreFromXml()) {
-                    if (t.name().equals(conType)) {
-                        return resourceManager.createColor(StringConverter.asRGB(t.color()));
-                    }
-                }
-                return null;
+                return resourceManager.createColor(StringConverter.asRGB(color));
             }
         });
 
