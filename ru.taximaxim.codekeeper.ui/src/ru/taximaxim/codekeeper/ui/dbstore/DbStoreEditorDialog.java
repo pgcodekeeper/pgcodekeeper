@@ -20,7 +20,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -37,9 +36,10 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.preference.ColorSelector;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
@@ -47,6 +47,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.ShellAdapter;
 import org.eclipse.swt.events.ShellEvent;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.program.Program;
@@ -68,7 +69,6 @@ import ru.taximaxim.codekeeper.ui.UiSync;
 import ru.taximaxim.codekeeper.ui.database.base.jdbc.IDbInfoConnector;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
 import ru.taximaxim.codekeeper.ui.properties.IgnoreListProperties.IgnoreListEditor;
-import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 
 public final class DbStoreEditorDialog extends TrayDialog {
 
@@ -77,7 +77,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
     private final String action;
 
     private static final String DEFAULT_HOST = "127.0.0.1"; //$NON-NLS-1$
-    private static final String WARNING_IMAGE = "\u2757"; //$NON-NLS-1$
+    private static final RGB DEFAULT_COLOR = new RGB(255, 255, 255);
 
     private final DbInfo dbInitial;
     private DbInfo dbInfo;
@@ -95,7 +95,8 @@ public final class DbStoreEditorDialog extends TrayDialog {
     private Button btnMsCert;
     private Button btnWinAuth;
     private ComboViewer cmbGroups;
-    private ComboViewer cmbConTypes;
+    private Button btnUseColor;
+    private ColorSelector colorSelector;
     private final Set<String> dbGroups;
 
     private IgnoreListEditor ignoreListEditor;
@@ -136,7 +137,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 String dbUser = ""; //$NON-NLS-1$
                 String dbPass = ""; //$NON-NLS-1$
                 String dbGroup = ""; //$NON-NLS-1$
-                String dbConType = ""; //$NON-NLS-1$
+                String dbColor = null;
                 String entryName = ""; //$NON-NLS-1$
                 String domain = ""; //$NON-NLS-1$
                 List<String> ignoreList = null;
@@ -149,7 +150,7 @@ public final class DbStoreEditorDialog extends TrayDialog {
                     dbUser = dbInitial.getDbUser();
                     dbPass = dbInitial.getDbPass();
                     dbGroup = dbInitial.getDbGroup();
-                    dbConType = dbInitial.getConType();
+                    dbColor = dbInitial.getColor();
                     generateEntryName = dbInitial.isGeneratedName();
                     entryName = dbInitial.getName();
                     domain = dbInitial.getDomain();
@@ -180,8 +181,10 @@ public final class DbStoreEditorDialog extends TrayDialog {
                 if (dbGroup != null) {
                     cmbGroups.setSelection(new StructuredSelection(dbGroup));
                 }
-                if (dbConType != null) {
-                    cmbConTypes.setSelection(new StructuredSelection(dbConType));
+                if (dbColor != null) {
+                    btnUseColor.setSelection(true);
+                    colorSelector.setEnabled(true);
+                    colorSelector.setColorValue(StringConverter.asRGB(dbColor));
                 }
                 txtName.setText(entryName);
                 txtDomain.setText(domain != null ? domain : ""); //$NON-NLS-1$
@@ -391,32 +394,28 @@ public final class DbStoreEditorDialog extends TrayDialog {
         dbGroups.removeIf(String::isEmpty);
         cmbGroups.setInput(dbGroups);
 
-        Label lblType = new Label(tabAreaDb, SWT.NONE);
-        lblType.setText(Messages.DbStoreEditorDialog_connection_type);
+        Label lblColor = new Label(tabAreaDb, SWT.NONE);
+        lblColor.setText(Messages.DbStoreEditorDialog_color);
 
-        cmbConTypes = new ComboViewer(tabAreaDb, SWT.DROP_DOWN | SWT.READ_ONLY);
-        cmbConTypes.getCombo().setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
-        cmbConTypes.setContentProvider(ArrayContentProvider.getInstance());
+        Composite cColor = new Composite(tabAreaDb, SWT.NONE);
+        GridLayout glColor = new GridLayout(2, false);
+        glColor.marginWidth = 0;
+        glColor.marginHeight = 0;
+        cColor.setLayout(glColor);
+        cColor.setLayoutData(new GridData(SWT.LEFT, SWT.DEFAULT, true, false, 3, 1));
 
-        Label warning = new Label(tabAreaDb, SWT.CENTER);
-        warning.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, false, false, 3, 1));
-        warning.setText(WARNING_IMAGE + Messages.DbStoreEditorDialog_warning_message);
-        warning.setVisible(false);
+        btnUseColor = new Button(cColor, SWT.CHECK);
+        btnUseColor.addSelectionListener(new SelectionAdapter() {
 
-        Set<String> conTypes = new LinkedHashSet<>();
-        conTypes.add(""); //$NON-NLS-1$
-        ConnectioTypeXMLStore.readStoreFromXml().forEach(e -> conTypes.add(e.name()));
-        if (dbInitial != null) {
-            String brokenType = dbInitial.getConType();
-            if (brokenType != null && conTypes.add(brokenType)) {
-                cmbConTypes.addSelectionChangedListener(e -> {
-                    var sel = (IStructuredSelection) e.getSelection();
-                    var selConTypeName = (String) sel.getFirstElement();
-                    warning.setVisible(brokenType.equals(selConTypeName));
-                });
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                colorSelector.setEnabled(btnUseColor.getSelection());
             }
-        }
-        cmbConTypes.setInput(conTypes);
+        });
+
+        colorSelector = new ColorSelector(cColor);
+        colorSelector.setColorValue(DEFAULT_COLOR);
+        colorSelector.setEnabled(false);
 
         //// Creating tab item "Ignored objects files" and fill it by components.
 
@@ -566,10 +565,14 @@ public final class DbStoreEditorDialog extends TrayDialog {
             properties.put(TRUST_CERT, String.valueOf(btnMsCert.getSelection()));
         }
 
+        String color = btnUseColor.getSelection()
+                ? StringConverter.asString(colorSelector.getColorValue())
+                : null;
+
         return new DbInfo(txtName.getText(), txtDbName.getText(), txtDbUser.getText(), txtDbPass.getText(),
                 txtDbHost.getText(), dbport, btnReadOnly.getSelection(), btnGenerateName.getSelection(),
                 ignoreListEditor.getList(), properties, dbType, isWinAuth(), txtDomain.getText(),
-                cmbGroups.getCombo().getText(), cmbConTypes.getCombo().getText());
+                cmbGroups.getCombo().getText(), color);
     }
 
     public DatabaseType getSelectedDbType() {

@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - Increased minimum JAVA version to 21.
 - Standalone pgCodeKeeper packages now use latest version of Eclipse again.
 - Removed the non-working `External loader` setting from the DB connection editor.
+- Removed the `Connection type` preference page. Connection color is now set directly in the DB connection editor.
 - Updated library dependencies.
 
 ### Fixed

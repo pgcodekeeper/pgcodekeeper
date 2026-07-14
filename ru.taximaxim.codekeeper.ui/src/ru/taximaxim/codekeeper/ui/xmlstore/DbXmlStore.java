@@ -78,6 +78,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
 
     private static final String FILE_NAME = "dbstore.xml"; //$NON-NLS-1$
 
+    private static final String VERSION_ATTRIBUTE = "dbstore_version"; //$NON-NLS-1$
+    private static final String CURRENT_VERSION = "1.0.0"; //$NON-NLS-1$
+
     public static final DbXmlStore INSTANCE = new DbXmlStore(Paths.get(
             Platform.getStateLocation(Activator.getContext().getBundle()).append(FILE_NAME).toString()), true);
 
@@ -88,6 +91,8 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
     private boolean isDirty = true;
     private boolean encrypt;
     private boolean exportWithPassword;
+
+    private Map<String, String> legacyConTypeColors;
 
     private enum Tags {
         DB_STORE("db_store"), //$NON-NLS-1$
@@ -111,7 +116,8 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
         DB_TYPE("db_type"), //$NON-NLS-1$
         WIN_AUTH("win_auth"), //$NON-NLS-1$
         DOMAIN("domain"), //$NON-NLS-1$
-        CON_TYPE("con_type"); //$NON-NLS-1$
+        CON_TYPE("con_type"), //$NON-NLS-1$
+        COLOR("color"); //$NON-NLS-1$
 
         String name;
 
@@ -188,6 +194,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
 
     @Override
     protected void appendChildren(Document xml, Element root, List<DbInfo> list) {
+        root.setAttribute(VERSION_ATTRIBUTE, CURRENT_VERSION);
         for (DbInfo dbInfo : list) {
             Element keyElement = xml.createElement(Tags.DB_INFO.toString());
             root.appendChild(keyElement);
@@ -205,7 +212,9 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             createSubElement(xml, keyElement, Tags.DB_TYPE.toString(), String.valueOf(dbInfo.getDbType()));
             createSubElement(xml, keyElement, Tags.WIN_AUTH.toString(), String.valueOf(dbInfo.isWinAuth()));
             createSubElement(xml, keyElement, Tags.DOMAIN.toString(), dbInfo.getDomain());
-            createSubElement(xml, keyElement, Tags.CON_TYPE.toString(), dbInfo.getConType());
+            if (dbInfo.getColor() != null) {
+                createSubElement(xml, keyElement, Tags.COLOR.toString(), dbInfo.getColor());
+            }
 
             Element ignoreList = xml.createElement(Tags.IGNORE_LIST.toString());
             keyElement.appendChild(ignoreList);
@@ -221,6 +230,25 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 createSubElement(xml, propertyTag, Tags.PROPERTY_VALUE.toString(), property.getValue());
             }
         }
+    }
+
+    @Override
+    protected List<DbInfo> getObjects(Document xml) {
+        String version = xml.getDocumentElement().getAttribute(VERSION_ATTRIBUTE);
+        legacyConTypeColors = version.isBlank() ? readLegacyConTypeColors() : null;
+        try {
+            return super.getObjects(xml);
+        } finally {
+            legacyConTypeColors = null;
+        }
+    }
+
+    private static Map<String, String> readLegacyConTypeColors() {
+        Map<String, String> colors = new HashMap<>();
+        for (var conType : ConnectioTypeXMLStore.readStoreFromXml()) {
+            colors.put(conType.name(), conType.color());
+        }
+        return colors;
     }
 
     @Override
@@ -255,6 +283,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 case WIN_AUTH:
                 case DOMAIN:
                 case CON_TYPE:
+                case COLOR:
                     object.put(tag, param.getTextContent());
                     break;
                 case IGNORE_LIST:
@@ -287,6 +316,13 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
             // backwards compatibility
             dbType = (Boolean.parseBoolean(object.get(Tags.MSSQL)) ? DatabaseType.MS : DatabaseType.PG);
         }
+        String color;
+        if (legacyConTypeColors != null) {
+            color = legacyConTypeColors.get(object.get(Tags.CON_TYPE));
+        } else {
+            color = object.get(Tags.COLOR);
+        }
+
         return new DbInfo(object.get(Tags.NAME), object.get(Tags.DBNAME),
                 object.get(Tags.DBUSER), dbPass, object.get(Tags.DBHOST),
                 Integer.parseInt(object.get(Tags.DBPORT)),
@@ -296,7 +332,7 @@ public final class DbXmlStore extends XmlStore<DbInfo> {
                 Boolean.parseBoolean(object.get(Tags.WIN_AUTH)),
                 object.get(Tags.DOMAIN),
                 !object.containsKey(Tags.DBGROUP) ? "" : object.get(Tags.DBGROUP), //$NON-NLS-1$
-                        !object.containsKey(Tags.CON_TYPE) ? "" : object.get(Tags.CON_TYPE)); //$NON-NLS-1$
+                color);
     }
 
     private void fillIgnoreFileList(NodeList xml, List<String> list) {

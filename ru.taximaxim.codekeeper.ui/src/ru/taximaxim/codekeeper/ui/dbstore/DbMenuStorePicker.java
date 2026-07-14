@@ -35,10 +35,8 @@ import org.eclipse.swt.widgets.Menu;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 
 import ru.taximaxim.codekeeper.ui.Activator;
-import ru.taximaxim.codekeeper.ui.UIConsts.CONN_TYPE_PREF;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_STORE_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
-import ru.taximaxim.codekeeper.ui.xmlstore.ConnectioTypeXMLStore;
 import ru.taximaxim.codekeeper.ui.xmlstore.DbXmlStore;
 
 public final class DbMenuStorePicker extends AbstractStorePicker implements IStorePicker, IPropertyChangeListener {
@@ -119,19 +117,19 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
 
         String text = Messages.LabelPicker_choice_db;
         String toolTip = null;
-        String conType = null;
+        String color = null;
 
         if (selection != null) {
             if (selection instanceof DbInfo info) {
                 text = info.getName();
-                conType = info.getConType();
+                color = info.getColor();
             } else {
                 text = ((File) selection).getName();
             }
             text = escapeLink(text);
             toolTip = text;
         }
-        setBackground(conType);
+        setBackground(color);
         lnkDb.setText("<a>" + text + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
         lnkDb.setToolTipText(toolTip);
     }
@@ -169,23 +167,12 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
         }
     }
 
-    private void setBackground() {
-        if (!lnkDb.isDisposed() && selection instanceof DbInfo info) {
-            setBackground(info.getConType());
+    private void setBackground(String color) {
+        if (color != null) {
+            lnkDb.setBackground(resourceManager.createColor(StringConverter.asRGB(color)));
+        } else {
+            lnkDb.setBackground(null);
         }
-    }
-
-    private void setBackground(String conType) {
-        if (conType != null && !conType.isBlank()) {
-            for (ConnectionTypeInfo t : ConnectioTypeXMLStore.readStoreFromXml()) {
-                if (conType.equals(t.name())) {
-                    lnkDb.setBackground(resourceManager.createColor(StringConverter.asRGB(t.color())));
-                    return;
-                }
-            }
-        }
-
-        lnkDb.setBackground(null);
     }
 
     @Override
@@ -197,11 +184,8 @@ public final class DbMenuStorePicker extends AbstractStorePicker implements ISto
 
     @Override
     public void propertyChange(PropertyChangeEvent event) {
-        String propertyName = event.getProperty();
-        if (DB_STORE_PREF.LAST_DB_STORE_CHANGE_TIME.equals(propertyName)) {
+        if (DB_STORE_PREF.LAST_DB_STORE_CHANGE_TIME.equals(event.getProperty())) {
             updateSelection();
-        } else if (CONN_TYPE_PREF.LAST_CONN_TYPE_CHANGE_TIME.equals(propertyName)) {
-            setBackground();
         }
     }
 }

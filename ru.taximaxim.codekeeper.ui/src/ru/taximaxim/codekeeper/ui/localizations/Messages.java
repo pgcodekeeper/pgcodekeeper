@@ -172,17 +172,6 @@ public final class Messages extends NLS {
     public static String commitDialog_user_selected_elements;
     public static String commitDialog_depcy_elements;
 
-    // ui.connectiontypepref
-    public static String connectionTypePrefPage_color;
-    public static String connectionTypePrefPage_copyType;
-    public static String connectionTypePrefPage_createType;
-    public static String connectionTypePrefPage_editType;
-    public static String connectionTypePrefPage_import;
-    public static String connectionTypePrefPage_export;
-    public static String connectionTypePrefPage_name;
-    public static String connectionTypePrefPage_opening_error;
-    public static String connectionTypePrefPage_saving_error;
-
     // ui.dbstore
     public static String dbPicker_port;
     public static String dbStoreEditorDialog_cannot_save_entry;
@@ -328,9 +317,9 @@ public final class Messages extends NLS {
 
     public static String DbStoreEditorDialog_choice_db_group;
 
-    public static String DbStoreEditorDialog_connection_properties;
+    public static String DbStoreEditorDialog_color;
 
-    public static String DbStoreEditorDialog_connection_type;
+    public static String DbStoreEditorDialog_connection_properties;
 
     public static String DbStoreEditorDialog_connnection_test;
 
@@ -357,8 +346,6 @@ public final class Messages extends NLS {
     public static String DbStoreEditorDialog_trust_mssql;
 
     public static String DbStoreEditorDialog_use_win_auth;
-
-    public static String DbStoreEditorDialog_warning_message;
 
     public static String DbStoreEditorDialog_win_auth;
 
