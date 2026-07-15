@@ -16,7 +16,6 @@
 package ru.taximaxim.codekeeper.ui.swtbot;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.AWTException;
@@ -25,15 +24,15 @@ import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.function.IntPredicate;
 
-import org.eclipse.swtbot.eclipse.finder.widgets.SWTBotEditor;
 import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
-import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.swtbot.utils.EditorBotProvider;
+import ru.taximaxim.codekeeper.ui.swtbot.utils.IBotProvider;
 
 public class EditorTest extends AbstractSwtBotTest {
 
@@ -66,7 +65,7 @@ public class EditorTest extends AbstractSwtBotTest {
 
         createProject(projectName, dbType);
 
-        SWTBotEditor editor = BOT.editorByTitle(projectName);
+        EditorBotProvider editor = new EditorBotProvider(BOT.editorByTitle(projectName));
         selectDump(editor, dumpName);
 
         BOT.toolbarDropDownButtonWithTooltip(Messages.DiffTableViewer_get_changes).click();
@@ -74,7 +73,7 @@ public class EditorTest extends AbstractSwtBotTest {
         assertTreeRowCount(editor, IS_NOT_EMPTY);
 
         selectAllAndApplyTo(Messages.DiffTableViewer_to_database);
-        checkMigrationScript(dumpName);
+        checkMigrationScript("migration for " + dumpName);
 
         selectAllAndApplyTo(Messages.DiffTableViewer_to_project);
 
@@ -91,10 +90,9 @@ public class EditorTest extends AbstractSwtBotTest {
         assertTreeRowCount(editor, IS_NOT_EMPTY);
 
         selectAllAndApplyTo(Messages.DiffTableViewer_to_database);
-        checkMigrationScript(emptyDumpName);
+        checkMigrationScript("migration for " + emptyDumpName);
 
         assertEquals(EXPECTED_NODES_SIZE.get(dbType), getActualNodesByProjectName(projectName));
-        editor.close();
     }
 
     private void selectAllAndApplyTo(String target) {
@@ -118,18 +116,11 @@ public class EditorTest extends AbstractSwtBotTest {
         buttonToApply.click();
     }
 
-    private void checkMigrationScript(String dumpName) {
-        SWTBotEditor activeEditor = getEditor("migration for " + dumpName);
-        String actualMirationScript = activeEditor.toTextEditor().getText();
-        activeEditor.close();
-        assertNotNull(actualMirationScript);
-    }
-
-    private void waitUntilLoadDiffTree(SWTBotEditor editor, IntPredicate condition) {
+    private void waitUntilLoadDiffTree(IBotProvider provider, IntPredicate condition) {
         BOT.waitUntil(new DefaultCondition() {
             @Override
             public boolean test() throws Exception {
-                return condition.test(editor.bot().tree().rowCount());
+                return condition.test(provider.bot().tree().rowCount());
             }
 
             @Override
@@ -139,17 +130,8 @@ public class EditorTest extends AbstractSwtBotTest {
         }, ACTION_TIMEOUT);
     }
 
-    private void selectDump(SWTBotEditor editor, String dumpName) throws AWTException, IOException, URISyntaxException {
-        SWTBotLink link = editor.bot().link();
-        link.click().contextMenu(Messages.DbStorePicker_load_from_file).click();
-        insertPath(dumpName);
-        waitForLinkEquals(dumpName, editor);
-        link = editor.bot().link();
-        assertEquals("<a>%s</a>".formatted(dumpName), link.getText());
-    }
-
-    private void assertTreeRowCount(SWTBotEditor editor, IntPredicate condition) {
-        int count = editor.bot().tree().rowCount();
+    private void assertTreeRowCount(IBotProvider provider, IntPredicate condition) {
+        int count = provider.bot().tree().rowCount();
         assertTrue(condition.test(count));
     }
 }

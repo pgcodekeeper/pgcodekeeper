@@ -16,6 +16,7 @@
 package ru.taximaxim.codekeeper.ui.swtbot;
 
 import static org.eclipse.swtbot.swt.finder.SWTBotAssert.assertContains;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.awt.AWTException;
@@ -38,11 +39,14 @@ import org.eclipse.swtbot.swt.finder.waits.DefaultCondition;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
+import org.junit.jupiter.api.AfterEach;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
 import ru.taximaxim.codekeeper.ui.UIConsts.DB_UPDATE_PREF;
 import ru.taximaxim.codekeeper.ui.localizations.Messages;
+import ru.taximaxim.codekeeper.ui.swtbot.utils.IBotProvider;
+import ru.taximaxim.codekeeper.ui.swtbot.utils.ShellBotProvider;
 
 public abstract class AbstractSwtBotTest {
 
@@ -75,6 +79,13 @@ public abstract class AbstractSwtBotTest {
         mainShellName = BOT.activeShell().getText();
     }
 
+    @AfterEach
+    protected void closeAllEditors() {
+        for (var editor : BOT.editors()) {
+            editor.close();
+        }
+    }
+
     protected void createProject(String projectName, DatabaseType dbType)
             throws AWTException, IOException, URISyntaxException {
         createProject(projectName, dbType, null);
@@ -94,7 +105,7 @@ public abstract class AbstractSwtBotTest {
             SWTBotLink link = shell.bot().link();
             link.click().contextMenu(Messages.DbStorePicker_load_from_file).click();
             insertPath(initPath);
-            waitForLinkEquals(initPath, shell);
+            waitForLinkEquals(initPath, new ShellBotProvider(shell));
         }
         BOT.button("Finish").click();
         waitProjectCreation();
@@ -149,34 +160,54 @@ public abstract class AbstractSwtBotTest {
         return path;
     }
 
-    protected void waitForLinkEquals(String name, SWTBotShell shell) {
+    protected void selectDump(IBotProvider provider, String dumpName)
+            throws AWTException, IOException, URISyntaxException {
+        selectDump(provider, dumpName, 0);
+    }
+
+    protected void selectDump(IBotProvider provider, String dumpName, int linkIndex)
+            throws AWTException, IOException, URISyntaxException {
+        SWTBotLink link = provider.bot().link(linkIndex);
+        link.click().contextMenu(Messages.DbStorePicker_load_from_file).click();
+        insertPath(dumpName);
+        waitForLinkEquals(dumpName, provider, linkIndex);
+        link = provider.bot().link(linkIndex);
+        assertEquals("<a>%s</a>".formatted(dumpName), link.getText());
+    }
+
+    protected void waitForLinkEquals(String name, IBotProvider provider) {
+        waitForLinkEquals(name, provider, 0);
+    }
+
+    protected void waitForLinkEquals(String name, IBotProvider provider, int linkIndex) {
         BOT.waitUntil(new DefaultCondition() {
             @Override
             public boolean test() throws Exception {
-                return shell.bot().link().getText().contains("<a>%s</a>".formatted(name));
+                return provider.bot().link(linkIndex).getText().contains("<a>%s</a>".formatted(name));
             }
 
             @Override
             public String getFailureMessage() {
-                return "The link has not been updated. Current text: " + shell.bot().link().getText() + "; expected:"
-                        + "<a>%s</a>".formatted(name);
+                return "The link by index " + linkIndex + " has not been updated. Current text: "
+                        + provider.bot().link(linkIndex).getText()
+                        + "; expected: <a>%s</a>".formatted(name);
             }
         }, ACTION_TIMEOUT);
     }
 
-    protected void waitForLinkEquals(String name, SWTBotEditor editor) {
-        BOT.waitUntil(new DefaultCondition() {
-            @Override
-            public boolean test() throws Exception {
-                return editor.bot().link().getText().contains("<a>%s</a>".formatted(name));
-            }
+    protected void waitAction() {
+        try {
+            Thread.sleep(ACTION_TIMEOUT);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
-            @Override
-            public String getFailureMessage() {
-                return "The link has not been updated. Current text: " + editor.bot().link().getText() + "; expected:"
-                        + "<a>%s</a>".formatted(name);
-            }
-        }, ACTION_TIMEOUT);
+    protected void checkMigrationScript(String dumpName) {
+        SWTBotEditor activeEditor = getEditor(dumpName);
+        String actualMirationScript = activeEditor.toTextEditor().getText();
+        activeEditor.close();
+        assertNotNull(actualMirationScript);
     }
 
     protected SWTBotTree getProjectExplorer() {
