@@ -104,7 +104,5 @@ public class WizardsTest extends AbstractSwtBotTest {
 
         BOT.shell(Messages.diffWizard_Diff).activate();
         BOT.button("Finish").click();
-
-        BOT.shell(mainShellName).activate();
     }
 }

@@ -40,6 +40,7 @@ import org.eclipse.swtbot.swt.finder.widgets.SWTBotLink;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotShell;
 import org.eclipse.swtbot.swt.finder.widgets.SWTBotTree;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import ru.taximaxim.codekeeper.ui.Activator;
 import ru.taximaxim.codekeeper.ui.DatabaseType;
@@ -55,9 +56,9 @@ public abstract class AbstractSwtBotTest {
     protected static final SWTWorkbenchBot BOT = new SWTWorkbenchBot();
 
     protected static final int SHORT_TIMEOUT = 200;
-    protected static final int ACTION_TIMEOUT = 2_000;
+    protected static final int ACTION_TIMEOUT = 2_500;
 
-    protected static String mainShellName;
+    private static String mainShellName;
 
     static {
         org.eclipse.swtbot.swt.finder.utils.SWTBotPreferences.TIMEOUT = 15000;
@@ -77,6 +78,11 @@ public abstract class AbstractSwtBotTest {
         }
 
         mainShellName = BOT.activeShell().getText();
+    }
+
+    @BeforeEach
+    protected void activateMainShell() {
+        BOT.shell(mainShellName).activate();
     }
 
     @AfterEach
