@@ -106,6 +106,5 @@ public class ProjectTest extends AbstractSwtBotTest {
         String projectPath = getPath(projectName);
         Path pathToFile = Paths.get(projectPath, ".project");
         Files.deleteIfExists(pathToFile);
-        BOT.shell(mainShellName).activate();
     }
 }
