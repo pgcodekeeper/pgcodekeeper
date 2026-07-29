@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -54,6 +55,7 @@ import org.eclipse.ui.actions.BuildAction;
 import org.eclipse.ui.editors.text.TextFileDocumentProvider;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.pgcodekeeper.core.Consts;
 import org.pgcodekeeper.core.database.api.loader.IDumpLoader;
 import org.pgcodekeeper.core.database.api.loader.ILoader;
 import org.pgcodekeeper.core.database.api.parser.ParserListenerMode;
@@ -62,7 +64,9 @@ import org.pgcodekeeper.core.database.api.schema.ObjectLocation;
 import org.pgcodekeeper.core.database.base.parser.AntlrError;
 import org.pgcodekeeper.core.database.base.parser.ErrorTypes;
 import org.pgcodekeeper.core.database.base.parser.FullAnalyze;
+import org.pgcodekeeper.core.database.base.schema.meta.MetaContainer;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;
+import org.pgcodekeeper.core.database.base.schema.meta.MetaStorage;
 import org.pgcodekeeper.core.database.base.schema.meta.MetaUtils;
 import org.pgcodekeeper.core.settings.ISettings;
 import org.pgcodekeeper.core.utils.FileUtils;
@@ -98,26 +102,25 @@ public final class PgDbParser implements IResourceChangeListener {
         java.util.LinkedHashMap;\
         java.util.LinkedHashSet;\
         java.util.Map$Entry;\
-        org.codekeeper.core.ContextLocation;\
-        org.codekeeper.core.DangerStatement;\
-        org.codekeeper.core.model.graph.DbObjType;\
-        org.codekeeper.core.database.api.schema.ArgMode;\
-        org.codekeeper.core.schema.database.base.Argument;\
-        org.codekeeper.core.database.api.schema.ObjectReference;\
-        org.codekeeper.core.database.api.schema.ICast$CastContext;\
-        org.codekeeper.core.database.base.schema.meta.MetaCast;\
-        org.codekeeper.core.database.base.schema.meta.MetaCompositeType;\
-        org.codekeeper.core.database.base.schema.meta.MetaConstraint;\
-        org.codekeeper.core.database.base.schema.meta.MetaContainer;\
-        org.codekeeper.core.database.base.schema.meta.MetaFunction;\
-        org.codekeeper.core.database.base.schema.meta.MetaOperator;\
-        org.codekeeper.core.database.base.schema.meta.MetaRelation;\
-        org.codekeeper.core.database.base.schema.meta.MetaStatement;\
-        org.codekeeper.core.database.api.schema.ObjectLocation$LocationType;\
-        org.codekeeper.core.database.api.schema.ObjectLocation;\
-        org.codekeeper.core.database.api.schema.ObjectLocation.LocationType;\
-        org.codekeeper.core.utils.ModPair;\
-        org.codekeeper.core.utils.Pair;\
+        org.pgcodekeeper.core.ContextLocation;\
+        org.pgcodekeeper.core.DangerStatement;\
+        org.pgcodekeeper.core.database.api.schema.DbObjType;\
+        org.pgcodekeeper.core.database.api.schema.ArgMode;\
+        org.pgcodekeeper.core.database.base.schema.Argument;\
+        org.pgcodekeeper.core.database.api.schema.ObjectReference;\
+        org.pgcodekeeper.core.database.api.schema.ICast$CastContext;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaCast;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaCompositeType;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaConstraint;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaContainer;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaFunction;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaOperator;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaRelation;\
+        org.pgcodekeeper.core.database.base.schema.meta.MetaStatement;\
+        org.pgcodekeeper.core.database.api.schema.ObjectLocation$LocationType;\
+        org.pgcodekeeper.core.database.api.schema.ObjectLocation;\
+        org.pgcodekeeper.core.utils.ModPair;\
+        org.pgcodekeeper.core.utils.Pair;\
         ru.taximaxim.codekeeper.ui.pgdbproject.parser.ProjectReferencesStorage;\
         !*""";
     private static final ObjectInputFilter DESERIALIZATION_FILTER = ObjectInputFilter.Config
@@ -196,24 +199,48 @@ public final class PgDbParser implements IResourceChangeListener {
 
     public void getObjFromProjFiles(Collection<IFile> files, IProgressMonitor monitor, DatabaseType dbType)
             throws InterruptedException, IOException {
-        if (files.isEmpty()) {
+        // only existing *.sql files are parseable
+        List<IFile> sqlFiles = filterSqlFiles(files);
+        if (sqlFiles.isEmpty()) {
             return;
         }
-        IProject proj = files.iterator().next().getProject();
+
+        IProject proj = sqlFiles.get(0).getProject();
         ISettings settings = new UISettings(proj);
         settings.setMonitor(new UIMonitor(monitor));
-        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj), settings,
-                Collections.emptyList(), Collections.emptyList(), Collections.emptyList(),
-                LibraryUtils.META_PATH);
-        IDatabase db = loader.load();
-        files.forEach(this::removeResFromRefs);
+
+        // parse only the changed files instead of the whole project;
+        var loader = dbType.getDatabaseProvider().getProjectLoader(ProjectUtils.getPath(proj), settings);
+        List<Path> paths = sqlFiles.stream().map(f -> f.getLocation().toFile().toPath()).toList();
+        IDatabase db = loader.loadFiles(paths);
+
+        // drop the stale state of the changed files before collecting the new one
+        sqlFiles.forEach(this::removeResFromRefs);
+
         // fill definitions, view columns will be filled in the analysis
         var definitions = MetaUtils.getObjDefinitions(db);
-        FullAnalyze.fullAnalyze(db, settings.getErrors(), settings.getVersion());
-        clearMarkers(files);
+
+        // analyze against the whole-project context
+        MetaContainer meta = new MetaContainer();
+        Stream.concat(getAllObjDefinitions(), definitions.values().stream().flatMap(List::stream))
+                .forEach(meta::addStatement);
+        MetaStorage.getSystemObjects(db.getVersion()).forEach(meta::addStatement);
+        FullAnalyze.fullAnalyze(db, meta, settings.getErrors());
+
+        // recreate markers of the changed files only, others keep theirs
+        clearMarkers(sqlFiles);
         markErrors(loader.getErrors());
+
+        // publish the results to the storage and let the editors refresh
         referencesStorage.putReferences(definitions, db.getObjReferences());
         notifyListeners();
+    }
+
+    private static List<IFile> filterSqlFiles(Collection<IFile> files) {
+        return files.stream()
+                .filter(IFile::exists)
+                .filter(f -> f.getName().toLowerCase(Locale.ROOT).endsWith(Consts.SQL_POSTFIX))
+                .toList();
     }
 
     public void getFullDBFromPgDbProject(IProject proj, IProgressMonitor monitor)
