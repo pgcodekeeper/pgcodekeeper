@@ -127,7 +127,6 @@ public final class ProjectUtils {
         return OVERRIDES.equals(delta.getProjectRelativePath().segment(0));
     }
 
-
     public static boolean isInProject(IResource resource) {
         IProject project = resource.getProject();
         if (!isPgCodeKeeperProject(project)) {

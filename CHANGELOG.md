@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Saving a project file no longer re-reads the whole project.
+
 ### Fixed
 
 ## [15.0.0] - 2026-07-14
