@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
+- Added deletion of a file with links in case of a deserialization error.
+
 ### Changed
 
 - Saving a project file no longer re-reads the whole project.

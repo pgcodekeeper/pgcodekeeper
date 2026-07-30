@@ -168,6 +168,11 @@ public final class PgDbParser implements IResourceChangeListener {
             return true;
         } catch (ClassNotFoundException | IOException | ClassCastException e) {
             Log.log(Log.LOG_DEBUG, Messages.PgDbParser_deserialize_error, e);
+            try {
+                Files.deleteIfExists(path);
+            } catch (IOException e1) {
+                Log.log(Log.LOG_DEBUG, Messages.PgDbParser_deserialize_error, e1);
+            }
             return false;
         }
     }
