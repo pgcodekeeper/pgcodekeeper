@@ -1,68 +1,68 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <?pde version="3.8"?>
 <target includeMode="feature" name="app" sequenceNumber="128">
-	<locations>
-		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/tools/orbit/simrel/maven-osgi/release/4.40.0"/>
-			<unit id="junit-jupiter-api" version="5.14.4"/>
-			<unit id="junit-jupiter-engine" version="5.14.4"/>
-			<unit id="junit-jupiter-params" version="5.14.4"/>
-			<unit id="slf4j.api" version="0.0.0"/>
-			<unit id="org.mockito.mockito-core" version="0.0.0"/>
-			<unit id="org.objenesis" version="0.0.0"/>
-			<unit id="net.bytebuddy.byte-buddy" version="0.0.0"/>
-			<unit id="net.bytebuddy.byte-buddy-agent" version="0.0.0"/>
-		</location>
-		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/releases/2026-06"/>
-			<unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
-			<unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
-			<unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
-			<unit id="org.eclipse.zest.feature.group" version="0.0.0"/>
-			<unit id="org.eclipse.equinox.slf4j" version="0.0.0"/>
-			<unit id="org.apache.httpcomponents.client5.httpclient5" version="0.0.0"/>
-			<unit id="org.apache.httpcomponents.core5.httpcore5" version="0.0.0"/>
-		</location>
-		<location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
-			<repository location="https://download.eclipse.org/technology/swtbot/releases/4.2.1"/>
-			<unit id="org.eclipse.swtbot.eclipse.feature.group" version="4.2.1.202406141605"/>
-		</location>
-    	<location includeDependencyDepth="none" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
-        	<dependencies>
-            	<dependency>
-                	<groupId>com.github.technology16</groupId>
-                	<artifactId>pgpass</artifactId>
-                	<version>2.0.1</version>
-                	<type>jar</type>
-            	</dependency>
-            	<dependency>
-                	<groupId>org.osgi</groupId>
-                	<artifactId>org.osgi.service.jdbc</artifactId>
-                	<version>1.1.0</version>
-                	<type>jar</type>
-            	</dependency>
-        	</dependencies>
-    	</location>
-    	<location includeDependencyDepth="infinite" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
-        	<dependencies>
-            	<dependency>
-                	<groupId>org.pgcodekeeper</groupId>
-                	<artifactId>pgcodekeeper-core</artifactId>
-                	<version>15.0.0</version>
-                	<type>jar</type>
-            	</dependency>
-        	</dependencies>
-    	</location>
-    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="click-jdbc-v2" missingManifest="generate" type="Maven">
-        	<dependencies>
-            	<dependency>
-                	<groupId>com.clickhouse</groupId>
-                	<artifactId>jdbc-v2</artifactId>
-                	<version>0.9.6</version>
-                	<type>jar</type>
-            	</dependency>
-        	</dependencies>
-        	<instructions><![CDATA[
+    <locations>
+        <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+            <repository location="https://download.eclipse.org/tools/orbit/simrel/maven-osgi/release/4.40.0"/>
+            <unit id="junit-jupiter-api" version="5.14.4"/>
+            <unit id="junit-jupiter-engine" version="5.14.4"/>
+            <unit id="junit-jupiter-params" version="5.14.4"/>
+            <unit id="slf4j.api" version="0.0.0"/>
+            <unit id="org.mockito.mockito-core" version="0.0.0"/>
+            <unit id="org.objenesis" version="0.0.0"/>
+            <unit id="net.bytebuddy.byte-buddy" version="0.0.0"/>
+            <unit id="net.bytebuddy.byte-buddy-agent" version="0.0.0"/>
+        </location>
+        <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+            <repository location="https://download.eclipse.org/releases/2026-06"/>
+            <unit id="org.eclipse.egit.feature.group" version="0.0.0"/>
+            <unit id="org.eclipse.equinox.sdk.feature.group" version="0.0.0"/>
+            <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
+            <unit id="org.eclipse.zest.feature.group" version="0.0.0"/>
+            <unit id="org.eclipse.equinox.slf4j" version="0.0.0"/>
+            <unit id="org.apache.httpcomponents.client5.httpclient5" version="0.0.0"/>
+            <unit id="org.apache.httpcomponents.core5.httpcore5" version="0.0.0"/>
+        </location>
+        <location includeAllPlatforms="false" includeConfigurePhase="true" includeMode="planner" includeSource="true" type="InstallableUnit">
+            <repository location="https://download.eclipse.org/technology/swtbot/releases/4.2.1"/>
+            <unit id="org.eclipse.swtbot.eclipse.feature.group" version="4.2.1.202406141605"/>
+        </location>
+        <location includeDependencyDepth="none" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
+            <dependencies>
+                <dependency>
+                    <groupId>com.github.technology16</groupId>
+                    <artifactId>pgpass</artifactId>
+                    <version>2.0.1</version>
+                    <type>jar</type>
+                </dependency>
+                <dependency>
+                    <groupId>org.osgi</groupId>
+                    <artifactId>org.osgi.service.jdbc</artifactId>
+                    <version>1.1.0</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+        </location>
+        <location includeDependencyDepth="infinite" includeDependencyScopes="compile,provided" includeSource="true" missingManifest="generate" type="Maven">
+            <dependencies>
+                <dependency>
+                    <groupId>org.pgcodekeeper</groupId>
+                    <artifactId>pgcodekeeper-core</artifactId>
+                    <version>15.1.0</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+        </location>
+        <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="click-jdbc-v2" missingManifest="generate" type="Maven">
+            <dependencies>
+                <dependency>
+                    <groupId>com.clickhouse</groupId>
+                    <artifactId>jdbc-v2</artifactId>
+                    <version>0.9.6</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+            <instructions><![CDATA[
 Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
@@ -71,17 +71,17 @@ Import-Package:        *;resolution:=optional
 Export-Package:        *;version="${version}";-noimport:=true
 DynamicImport-Package: *
 ]]></instructions>
-    	</location>
-    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="clickhouse-client" missingManifest="generate" type="Maven">
-        	<dependencies>
-            	<dependency>
-                	<groupId>com.clickhouse</groupId>
-                	<artifactId>clickhouse-client</artifactId>
-                	<version>0.9.6</version>
-                	<type>jar</type>
-            	</dependency>
-        	</dependencies>
-        	<instructions><![CDATA[
+        </location>
+        <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="clickhouse-client" missingManifest="generate" type="Maven">
+            <dependencies>
+                <dependency>
+                    <groupId>com.clickhouse</groupId>
+                    <artifactId>clickhouse-client</artifactId>
+                    <version>0.9.6</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+            <instructions><![CDATA[
 Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
@@ -90,17 +90,17 @@ Import-Package:        *;resolution:=optional
 Export-Package:        *;version="${version}";-noimport:=true
 DynamicImport-Package: *
 ]]></instructions>
-    	</location>
-    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="clickhouse-data" missingManifest="generate" type="Maven">
-        	<dependencies>
-            	<dependency>
-                	<groupId>com.clickhouse</groupId>
-                	<artifactId>clickhouse-data</artifactId>
-                	<version>0.9.6</version>
-                	<type>jar</type>
-            	</dependency>
-        	</dependencies>
-        	<instructions><![CDATA[
+        </location>
+        <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" label="clickhouse-data" missingManifest="generate" type="Maven">
+            <dependencies>
+                <dependency>
+                    <groupId>com.clickhouse</groupId>
+                    <artifactId>clickhouse-data</artifactId>
+                    <version>0.9.6</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+            <instructions><![CDATA[
 Fragment-Host: wrapped-click.com.clickhouse.jdbc-v2
 Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
 version:               ${version_cleanup;${mvnVersion}}
@@ -110,17 +110,17 @@ Import-Package:        *;resolution:=optional
 Export-Package:        *;version="${version}";-noimport:=true
 DynamicImport-Package: *
 ]]></instructions>
-    	</location>
-    	<location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
-        	<dependencies>
-            	<dependency>
-                	<groupId>com.clickhouse</groupId>
-                	<artifactId>client-v2</artifactId>
-                	<version>0.9.6</version>
-                	<type>jar</type>
-            	</dependency>
-        	</dependencies>
-        	<instructions><![CDATA[
+        </location>
+        <location includeDependencyDepth="none" includeDependencyScopes="compile" includeSource="true" missingManifest="generate" type="Maven">
+            <dependencies>
+                <dependency>
+                    <groupId>com.clickhouse</groupId>
+                    <artifactId>client-v2</artifactId>
+                    <version>0.9.6</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+            <instructions><![CDATA[
 Bundle-Name:           Bundle derived from maven artifact ${mvnGroupId}:${mvnArtifactId}:${mvnVersion}
 version:               ${version_cleanup;${mvnVersion}}
 Bundle-SymbolicName:   wrapped-click.${mvnGroupId}.${mvnArtifactId}
@@ -129,6 +129,6 @@ Import-Package:        *;resolution:=optional
 Export-Package:        *;version="${version}";-noimport:=true
 DynamicImport-Package: *
 ]]></instructions>
-    	</location>
-	</locations>
+        </location>
+    </locations>
 </target>
