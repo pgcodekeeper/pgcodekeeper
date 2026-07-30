@@ -9,13 +9,30 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Added
 
-- Added deletion of a file with links in case of a deserialization error.
+### Changed
+
+### Fixed
+
+## [15.1.0] - 2026-07-30
+
+### Added
+
+- Added support for changing table and column compression settings via `ALTER TABLE` commands instead of recreating objects when the Greenplum 7 syntax is enabled.
 
 ### Changed
 
+- Disabled dependency analysis for objects that could not be parsed correctly, reducing the number of irrelevant errors displayed to the user.
 - Saving a project file no longer re-reads the whole project.
+- Added deletion of a file with links in case of a deserialization error.
 
 ### Fixed
+
+- Fixed a parsing error for the `ALTER SEQUENCE ... SET LOGGED/UNLOGGED` command for regular sequences in PostgreSQL.
+- Fixed an error in the order of PostgreSQL `ALTER TABLE ... OWNER TO` and `ALTER SEQUENCE ... OWNER TO` commands by moving the latter to the end of the migration script.
+
+### Security
+
+- Increased version of lz4-java library due to CVE-2026-59949.
 
 ## [15.0.0] - 2026-07-14
 
@@ -2538,7 +2555,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.0.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.1.0...HEAD
+[15.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.0.0...15.1.0
 [15.0.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.7.0...15.0.0
 [14.7.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.6.0...14.7.0
 [14.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v14.5.0...14.6.0
