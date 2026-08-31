@@ -58,7 +58,7 @@
                 <dependency>
                     <groupId>com.clickhouse</groupId>
                     <artifactId>jdbc-v2</artifactId>
-                    <version>0.9.6</version>
+                    <version>0.10.0</version>
                     <type>jar</type>
                 </dependency>
             </dependencies>
@@ -77,7 +77,7 @@ DynamicImport-Package: *
                 <dependency>
                     <groupId>com.clickhouse</groupId>
                     <artifactId>clickhouse-client</artifactId>
-                    <version>0.9.6</version>
+                    <version>0.10.0</version>
                     <type>jar</type>
                 </dependency>
             </dependencies>
@@ -96,7 +96,7 @@ DynamicImport-Package: *
                 <dependency>
                     <groupId>com.clickhouse</groupId>
                     <artifactId>clickhouse-data</artifactId>
-                    <version>0.9.6</version>
+                    <version>0.10.0</version>
                     <type>jar</type>
                 </dependency>
             </dependencies>
@@ -116,7 +116,7 @@ DynamicImport-Package: *
                 <dependency>
                     <groupId>com.clickhouse</groupId>
                     <artifactId>client-v2</artifactId>
-                    <version>0.9.6</version>
+                    <version>0.10.0</version>
                     <type>jar</type>
                 </dependency>
             </dependencies>

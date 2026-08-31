@@ -69,7 +69,7 @@ public class ChDbInfoConnector extends ChJdbcConnector implements IDbInfoConnect
     protected Properties makeProperties() {
         Properties props = super.makeProperties();
         makeDefaultDbInfoProps(props, dbInfo);
-        props.setProperty("connect_timeout", String.valueOf(timeoutSeconds * 1000)); //$NON-NLS-1$
+        props.setProperty("connection_timeout", String.valueOf(timeoutSeconds * 1000)); //$NON-NLS-1$
         return props;
     }
 }
