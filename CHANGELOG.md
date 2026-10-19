@@ -13,6 +13,29 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [15.4.0] - 2026-10-19
+
+### Added
+
+- Added support for MS SQL 2025.
+- Added support for PostgreSQL 19.
+
+### Changed
+
+- Updated library dependencies. To use [Windows authentication](https://pgcodekeeper.readthedocs.io/en/latest/windowsauth.html#id2) you need to update [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v13.6.1).
+
+### Fixed
+
+- Fixed an error when reading partitions from a PostgreSQL dump.
+
+### Removed
+
+- Removed support for PostgreSQL versions below 15.
+
+### Security
+
+- Increased version of lz4-java library due to CVE-2026-106453 and CVE-2026-106452.
+
 ## [15.3.0] - 2026-08-10
 
 ### Added
@@ -2571,7 +2594,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...HEAD
+[15.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...v15.4.0
 [15.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.2.0...v15.3.0
 [15.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.1.0...v15.2.0
 [15.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.0.0...15.1.0

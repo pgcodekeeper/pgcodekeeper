@@ -13,6 +13,29 @@
 
 ### Исправлено
 
+## [15.4.0] - 2026-10-19
+
+### Добавлено
+
+- Добавлена поддержка MS SQL 2025.
+- Добавлена поддержка PostgreSQL 19.
+
+### Изменено
+
+- Обновлены библиотечные зависимости. Для использования [Windows аутентификации](https://pgcodekeeper.readthedocs.io/ru/latest/windowsauth.html#id2) требуется обновить [DDL](https://github.com/microsoft/mssql-jdbc/releases/tag/v13.6.1).
+
+### Исправлено
+
+- Исправлена ошибка при чтения партиций из дампа PostgreSQL.
+
+### Удалено
+
+- Прекращена поддержка версий PostgreSQL ниже 15.
+
+### Безопасность
+
+- Повышена версия библиотеки lz4-java из-за CVE-2026-106453 и CVE-2026-106452.
+
 ## [15.3.0] - 2026-08-25
 
 ### Добавлено
@@ -2571,7 +2594,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...HEAD
+[15.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...v15.4.0
 [15.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.2.0...v15.3.0
 [15.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.1.0...v15.2.0
 [15.1.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.0.0...15.1.0
