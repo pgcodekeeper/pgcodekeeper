@@ -41,10 +41,8 @@
         <sonar.exclusions>**/*.sql, **/*.xml, **/Messages.java</sonar.exclusions>
         <sonar.coverage.jacoco.xmlReportPaths>${maven.multiModuleProjectDirectory}/ru.taximaxim.codekeeper.mainapp/report/target/site/jacoco-aggregate/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
 
-        <tycho.version>4.0.13</tycho.version>
+        <tycho.version>5.0.4</tycho.version>
         <jacoco.version>0.8.15</jacoco.version>
-        <maven.enforcer.version>3.6.3</maven.enforcer.version>
-        <maven.jarsigner.version>3.1.0</maven.jarsigner.version>
     </properties>
 
     <profiles>
@@ -55,7 +53,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jarsigner-plugin</artifactId>
-                        <version>${maven.jarsigner.version}</version>
+                        <version>3.1.0</version>
                         <configuration>
                             <keystore>${keystore}</keystore>
                             <alias>pgCodeKeeper</alias>
@@ -119,7 +117,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>${maven.enforcer.version}</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <goals>

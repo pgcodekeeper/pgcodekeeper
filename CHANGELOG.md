@@ -36,7 +36,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 - Increased version of lz4-java library due to CVE-2026-106453 and CVE-2026-106452.
 
-## [15.3.0] - 2026-08-10
+## [15.3.0] - 2026-08-25
 
 ### Added
 
