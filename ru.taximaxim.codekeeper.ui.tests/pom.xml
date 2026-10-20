@@ -25,6 +25,7 @@
                         <useUIThread>false</useUIThread>
                         <useUIHarness>true</useUIHarness>
                         <appArgLine>-nl en -consoleLog -perspective ru.taximaxim.codekeeper.ui.mainperspective</appArgLine>
+                        <providerHint>junit5</providerHint>
                     </configuration>
             </plugin>
         </plugins>
