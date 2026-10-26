@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
+- Updated ClickHouse JDBC driver version.
+
 ### Fixed
 
 ## [15.4.0] - 2026-10-19
