@@ -11,9 +11,21 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Changed
 
-- Updated ClickHouse JDBC driver version.
+### Fixed
+
+## [15.5.0] - 2026-11-18
+
+### Changed
+
+- Improved dependency graph construction performance.
 
 ### Fixed
+
+- Fixed false differences related to the `pg_attver` column property.
+
+### Security
+
+- Updated ClickHouse JDBC driver version due to CVE-2026-102554.
 
 ## [15.4.0] - 2026-10-19
 
@@ -2596,7 +2608,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.5.0...HEAD
+[15.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...v15.5.0
 [15.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...v15.4.0
 [15.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.2.0...v15.3.0
 [15.2.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.1.0...v15.2.0
