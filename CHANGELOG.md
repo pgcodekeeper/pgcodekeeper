@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [15.6.0] - 2026-11-26
+
+### Changed
+
+- Added `NOT VALID` syntax for PostgreSQL 18+ partition table constraints when the setting `Use current database version syntax to generate migration script` is enabled.
+- Updated library dependencies.
+
+### Fixed
+
+- Fixed an error in determining the location of columns and constraints for PostgreSQL and MS SQL.
+- Files from the OVERRIDES directory no longer override the privileges of library objects with the `ignore privileges` option enabled.
+
 ## [15.5.0] - 2026-11-18
 
 ### Changed
@@ -64,7 +76,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
-- Fixed false differences when comparing library objects with the "ignore privileges" option enabled.
+- Fixed false differences when comparing library objects with the `ignore privileges` option enabled.
 
 ## [15.1.0] - 2026-07-30
 
@@ -2608,7 +2620,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.5.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.6.0...HEAD
+[15.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.5.0...v15.6.0
 [15.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...v15.5.0
 [15.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...v15.4.0
 [15.3.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.2.0...v15.3.0
