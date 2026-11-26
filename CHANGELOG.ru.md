@@ -13,6 +13,12 @@
 
 ### Исправлено
 
+## [15.6.1] - 2026-11-26
+
+### Исправлено
+
+- Исправлена ошибка при чтении ограничений.
+
 ## [15.6.0] - 2026-11-26
 
 ### Изменено
@@ -2620,7 +2626,8 @@
 
 - Добавлен парсинг ORDER BY для агрегатных функции.
 
-[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.6.0...HEAD
+[Новое]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.6.1...HEAD
+[15.6.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.5.0...v15.6.1
 [15.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.5.0...v15.6.0
 [15.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...v15.5.0
 [15.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...v15.4.0
