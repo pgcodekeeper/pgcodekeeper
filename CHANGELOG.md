@@ -13,6 +13,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ### Fixed
 
+## [15.6.1] - 2026-11-26
+
+### Fixed
+
+- Fixed an error when reading constraints.
+
 ## [15.6.0] - 2026-11-26
 
 ### Changed
@@ -2620,7 +2626,8 @@ We increment major version in this release due to decision to shift our developm
 
 - ORDER BY parsing has been added to the aggregate functions.
 
-[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.6.0...HEAD
+[Unreleased]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.6.1...HEAD
+[15.6.1]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.6.0...v15.6.1
 [15.6.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.5.0...v15.6.0
 [15.5.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.4.0...v15.5.0
 [15.4.0]: https://github.com/pgcodekeeper/pgcodekeeper/compare/v15.3.0...v15.4.0
